@@ -158,7 +158,7 @@ class ApiHelper {
 
         JWT::$leeway = 60; // $leeway dalam detik
         // dd(env('JWT_SECRET'));
-        return JWT::encode($payload, 'LINK_AJA','HS256');
+        return JWT::encode($payload, 'ECONFYAMAHA','HS256');
     }
 
     static function createJwtSignature($data = NULL, $is_refresh_token = FALSE) {

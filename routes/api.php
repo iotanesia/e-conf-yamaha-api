@@ -34,5 +34,6 @@ Route::prefix('v1')
     });
 
     Route::post('login',[AuthControler::class,'login']);
+    Route::post('register',[AuthControler::class,'register']);
 });
 
