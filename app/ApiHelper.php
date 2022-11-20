@@ -36,7 +36,13 @@ class ApiHelper {
             'Access-Control-Allow-Headers'     => 'X-TIMESTAMP,X-CLIENT-KEY,X-CLIENT-SECRET,Content-Type,X-SIGNATURE,Accept,Authorization,Authorization-Customer,ORIGIN,X-PARTNER-ID,X-EXTERNAL-ID,X-IP-ADDRESS,X-DEVICE-ID,CHANNEL-ID,X-LATITUDE,X-LONGITUDE',
             'originalExternalId' => self::setEksternalId()
         ];
-        return response()->json($data, $statusCode,$headers);
+        $response = [
+            "responseCode" => $statusCode,
+            "responseMessage" => 'success',
+            "responseAttr" => $data['attributes'] ?? null,
+            "responseData" => $data['items'] ?? null,
+        ];
+        return response()->json($response, $statusCode,$headers);
     }
 
      static function setEksternalId()

@@ -13,13 +13,13 @@ use Illuminate\Support\Facades\File;
 class AuthControler extends Controller
 {
     public function login(Request $request) {
-        return ResponseInterface::responseData(
+        return ResponseInterface::resultResponse(
             Service::authenticateuser($request)
         );
     }
 
     public function register(Request $request) {
-        return ResponseInterface::responseData(
+        return ResponseInterface::resultResponse(
             User::register($request)
         );
     }
