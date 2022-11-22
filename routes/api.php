@@ -1,10 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthControler;
-use App\Http\Controllers\Api\Bri\BriController;
-use App\Http\Controllers\Api\Mandiri\MandiriController;
-use App\Http\Controllers\Api\RSAController;
-use App\Http\Controllers\Api\UserControler;
+use App\Http\Controllers\Master\PositionController;
+use App\Http\Controllers\Master\RoleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Spatie\Health\Http\Controllers\HealthCheckJsonResultsController;
@@ -35,5 +33,11 @@ Route::prefix('v1')
 
     Route::post('login',[AuthControler::class,'login']);
     Route::post('register',[AuthControler::class,'register']);
+    
+    Route::prefix('master')->group(function(){
+        Route::get('role',[RoleController::class,'index']);
+        Route::get('position',[PositionController::class,'index']);
+
+    });
 });
 

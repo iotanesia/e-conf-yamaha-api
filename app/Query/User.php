@@ -12,12 +12,13 @@ class User {
 
         DB::beginTransaction();
         try {
-            Model::create($data);
+            $model = Model::create($data);
+            $data['id_users'] = $model->id;
+            $model->refUserRole()->create($data);
             DB::commit();
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
-
     }
 }

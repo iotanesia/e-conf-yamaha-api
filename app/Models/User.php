@@ -36,6 +36,11 @@ class User extends Authenticatable
 	    'updated_at',
 	    'deleted_at'
     ];
+    
+    public function refUserRole()
+    {
+        return $this->belongsTo(UsersRole::class,'id_users','id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
