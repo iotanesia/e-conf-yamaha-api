@@ -17,12 +17,44 @@ class User {
         if (!$params->password) $required_params[] = 'password';
         if (count($required_params)) throw new \Exception("Parameter berikut harus diisi: " . implode(", ", $required_params));
 
-        $user = Model::where('username',$params->username)->first();
+        $user = Model::where('username',$params->username)
+        ->with(['refUserRole.manyPermission' => function($query){
+            $query->whereHas('refMenu',function($queries){
+                $queries->whereNull('parent');
+            });
+        },
+        'refUserRole.manyPermission.refMenu.ManyChild'])
+        ->first();
+        // dd($user);
         if(!$user) throw new \Exception("Pengguna belum terdaftar.");
         if (!Hash::check($params->password, $user->password)) throw new \Exception("Email atau password salah.");
         $user->access_token = Helper::createJwt($user);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
+        $menu = $user->refUserRole->manyPermission ?? [];
+        if($menu) {
+            $menu->transform(function ($item){
+                $subMenu = $item->refMenu->manyChild ?? null;
+                if($subMenu) {
+                    $subMenu->transform(function ($item){
+                        return [
+                            'icon'=>'Home',
+                            'title'=>$item->name ?? null,
+                            'pathname'=>$item->url ?? null
+                        ];
+                    });
+                }
+                return [
+                    'icon'=>'Home',
+                    'title'=>$item->refMenu->name  ?? null,
+                    'subMenu'=> $subMenu,
+                    'pathname'=>$item->refMenu->url  ?? null
+
+                ];
+            });
+        }
+        $user->menu = $menu;
         unset($user->ip_whitelist);
+        unset($user->refUserRole);
         return [
             'items' => $user,
             'attributes' => null

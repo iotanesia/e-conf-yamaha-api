@@ -39,7 +39,7 @@ class User extends Authenticatable
     
     public function refUserRole()
     {
-        return $this->belongsTo(UsersRole::class,'id_users','id');
+        return $this->belongsTo(UsersRole::class,'id','id_users');
     }
 
     /**

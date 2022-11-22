@@ -17,4 +17,19 @@ class Role extends Model {
 	    'updated_at',
 	    'deleted_at'
     ];
+
+    public function manyPermission()
+    {
+        return $this->hasMany(Permission::class,'id','id_role');
+    }
+
+    public function refPermission()
+    {
+        return $this->belongsTo(Permission::class,'id_role','id');
+    }
+
+    public function refPosition()
+    {
+        return $this->belongsTo(Position::class,'id_position','id');
+    }
 }
