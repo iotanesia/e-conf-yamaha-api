@@ -33,11 +33,14 @@ Route::prefix('v1')
 
     Route::post('login',[AuthControler::class,'login']);
     Route::post('register',[AuthControler::class,'register']);
-    
+
     Route::prefix('master')->group(function(){
         Route::get('role',[RoleController::class,'index']);
         Route::get('position',[PositionController::class,'index']);
 
     });
 });
+
+require __DIR__.'/master.php';
+
 

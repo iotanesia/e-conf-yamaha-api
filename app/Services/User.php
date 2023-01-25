@@ -17,15 +17,7 @@ class User {
         if (!$params->password) $required_params[] = 'password';
         if (count($required_params)) throw new \Exception("Parameter berikut harus diisi: " . implode(", ", $required_params));
 
-        $user = Model::where('username',$params->username)
-        ->with(['refUserRole.manyPermission' => function($query){
-            $query->whereHas('refMenu',function($queries){
-                $queries->whereNull('parent');
-            });
-        },
-        'refUserRole.manyPermission.refMenu.ManyChild'])
-        ->first();
-        // dd($user);
+        $user = Model::where('username',$params->username)->first();
         if(!$user) throw new \Exception("Pengguna belum terdaftar.");
         if (!Hash::check($params->password, $user->password)) throw new \Exception("Email atau password salah.");
         $user->access_token = Helper::createJwt($user);

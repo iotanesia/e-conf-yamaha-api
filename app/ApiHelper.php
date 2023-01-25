@@ -79,7 +79,7 @@ class ApiHelper {
 
         $codeSt = $th->getCode() == 0 ? 500 : $th->getCode();
         $result = json_decode($th->getMessage());
-        if($codeSt == 500) $result = [
+        if(in_array($codeSt,[500,400])) $result = [
             "responseCode" => $result->responseCode ?? $codeSt,
             "responseMessage" => self::getMessageForPatner($th->getMessage()),
             // "infoError" => $th
@@ -164,7 +164,7 @@ class ApiHelper {
 
         JWT::$leeway = 60; // $leeway dalam detik
         // dd(env('JWT_SECRET'));
-        return JWT::encode($payload, 'ECONFYAMAHA','HS256');
+        return JWT::encode($payload, env('JWT_SECRET'),'HS256');
     }
 
     static function createJwtSignature($data = NULL, $is_refresh_token = FALSE) {
@@ -345,6 +345,24 @@ class ApiHelper {
         }
 
         return $ip;
+    }
+
+    public static function requireParams($params,$unset = [])
+    {
+          try {
+                $required_params = [];
+                foreach ($params as $key => $item) {
+                    $data = $item;
+                    if(in_array($item,$unset)) $data = null;
+                    if($data) {
+                        if(!request()->$data) $required_params[] = $data;
+                    }
+                }
+                $statusCode = 400;
+                if(count(array_filter($required_params)) > 0) throw new \Exception("tidak ditemukan parameter : " . implode(", ", array_filter($required_params)),$statusCode);
+          } catch (\Throwable $th) {
+            throw $th;
+          }
     }
 
 }
