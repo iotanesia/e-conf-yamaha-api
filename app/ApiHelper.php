@@ -50,7 +50,7 @@ class ApiHelper {
         return rand(0,999999999);
     }
 
-    static function createErrorResponse($data,$statusCode = 400){
+    static function createErrorResponse($data,$statusCode = 400, $th = null){
         $headers = [
             'Access-Control-Allow-Origin'      => '*',
             'Access-Control-Allow-Methods'     => 'HEAD, POST, GET, OPTIONS, PUT, DELETE',
@@ -61,9 +61,15 @@ class ApiHelper {
         ];
         $codeSt = $statusCode == 0 ? 500 : $statusCode;
         $code = 500;
+
+        $infoError = env('APP_DEBUG') === false ? "please contact your administration" : [
+            "line" => $th->getLine(),
+            "file" => $th->getFile(),
+        ];
         return response()->json([
             "responseCode" => $code ?? $codeSt,
-            "responseMessage" => $data
+            "responseMessage" => $data,
+            "infoError" => $infoError
         ],$codeSt,$headers);
     }
 

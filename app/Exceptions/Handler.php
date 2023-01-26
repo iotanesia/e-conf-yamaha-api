@@ -98,7 +98,7 @@ class Handler extends ExceptionHandler
         return ResponseInterface::createErrorResponse(
             $exception->getMessage()
             ,$statusCode,
-            $headers
+            $exception
         );
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\AuthControler;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Master\PositionController;
 use App\Http\Controllers\Master\RoleController;
 use Illuminate\Http\Request;
@@ -31,8 +31,8 @@ Route::prefix('v1')
        return "service up";
     });
 
-    Route::post('login',[AuthControler::class,'login']);
-    Route::post('register',[AuthControler::class,'register']);
+    Route::post('login',[AuthController::class,'login']);
+    Route::post('register',[AuthController::class,'register']);
 
     Route::prefix('master')->group(function(){
         Route::get('role',[RoleController::class,'index']);
@@ -41,6 +41,7 @@ Route::prefix('v1')
     });
 });
 
+require __DIR__.'/auth.php';
 require __DIR__.'/master.php';
 
 
