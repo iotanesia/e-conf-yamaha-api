@@ -5,6 +5,7 @@ use App\Models\User AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Constants\Constant;
 use App\Mail\ForgotPassword;
 use Illuminate\Support\Facades\Mail;
 
@@ -13,38 +14,40 @@ class User extends Model {
     public static function authenticateuser($params)
     {
         $required_params = [];
-        if (!$params->username) $required_params[] = 'username';
+        if (!$params->username) {
+            if(!$params->nik) $required_params[] = 'nik';
+        }
+
+        if (!$params->nik) {
+            if(!$params->username) $required_params[] = 'username';
+        }
+
         if (!$params->password) $required_params[] = 'password';
         if (count($required_params)) throw new \Exception("Parameter berikut harus diisi: " . implode(", ", $required_params));
 
-        $user = Model::where('username',$params->username)->first();
+        $user = Model::where(function ($query) use ($params)
+        {
+            $query->where('username',$params->username);
+            $query->orWhere('nik',$params->nik);
+        })
+        ->with(['refUserRole' => function ($query){
+            $query->with(['manyPermission' => function ($permission){
+                $permission->with(['refMenu' => function ($menu){
+                    $menu->whereNull('parent');
+                }]);
+            }]);
+        }])
+        ->whereHas('refUserRole',function ($query){
+            $query->orderBy('is_active','desc');
+        })
+        ->first();
         if(!$user) throw new \Exception("Pengguna belum terdaftar.");
         if (!Hash::check($params->password, $user->password)) throw new \Exception("Email atau password salah.");
+        $user->id_role = $user->refUserRole->id_roles;
+        $user->role = $user->refUserRole->refRole->name ?? null;
         $user->access_token = Helper::createJwt($user);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
-        $menu = $user->refUserRole->manyPermission ?? [];
-        if($menu) {
-            $menu->transform(function ($item){
-                $subMenu = $item->refMenu->manyChild ?? null;
-                if($subMenu) {
-                    $subMenu->transform(function ($item){
-                        return [
-                            'icon'=>'Home',
-                            'title'=>$item->name ?? null,
-                            'pathname'=>$item->url ?? null
-                        ];
-                    });
-                }
-                return [
-                    'icon'=>'Home',
-                    'title'=>$item->refMenu->name  ?? null,
-                    'subMenu'=> $subMenu,
-                    'pathname'=>$item->refMenu->url  ?? null
-
-                ];
-            });
-        }
-        $user->menu = $menu;
+        $user->menu = QueryPermission::getParentMenu($user->id_role);
         unset($user->ip_whitelist);
         unset($user->refUserRole);
         return [
