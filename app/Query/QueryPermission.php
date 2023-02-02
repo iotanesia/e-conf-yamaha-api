@@ -41,10 +41,10 @@ class QueryPermission extends Model {
                 'icon'=>'Activity',
                 'id_menu'=> $id_menu,
                 'title'=> $item->refMenu->name  ?? null,
-                // 'subMenu'=> self::getChildMenu($id_role,$id_menu),
-                'subMenu' => null,
+                'subMenu'=> self::getChildMenu($id_role,$id_menu),
                 'pathname'=> $item->refMenu->url  ?? null
             ];
         });
     }
+
 }
