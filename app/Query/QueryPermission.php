@@ -38,7 +38,7 @@ class QueryPermission extends Model {
         ->get()->map(function ($item) use ($id_role){
             $id_menu = $item->refMenu->id  ?? null;
             return [
-                'icon'=>'Home',
+                'icon'=>'Activity',
                 'id_menu'=> $id_menu,
                 'title'=> $item->refMenu->name  ?? null,
                 'subMenu'=> self::getChildMenu($id_role,$id_menu),
