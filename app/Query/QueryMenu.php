@@ -1,0 +1,114 @@
+<?php
+
+namespace App\Query;
+
+use App\Constants\Constant;
+use App\Models\Menu AS Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\ApiHelper as Helper;
+use Illuminate\Support\Facades\Cache;
+
+class QueryMenu extends Model {
+
+
+    const cast = 'setting-menu';
+
+
+    public static function getAll($params)
+    {
+        $key = self::cast.json_encode($params->query());
+        return Helper::storageCache($key, function () use ($params){
+            $query = self::where(function ($query) use ($params){
+               if($params->kueri) $query->where('name',"%$params->kueri%");
+
+            });
+            if($params->withTrashed == 'true') $query->withTrashed();
+            $data = $query
+            ->whereNull('parent')
+            ->orderBy('order','asc')
+            ->paginate($params->limit ?? null);
+            return [
+                'items' => $data->getCollection()->transform(function ($item){
+                    $item->children = $item->manyChild;
+                    unset($item->manyChild);
+                    return $item;
+                }),
+                'paginate' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        });
+    }
+
+    public static function byId($id)
+    {
+        return self::find($id);
+    }
+
+    public static function store($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'name',
+                'url',
+                'order'
+            ]);
+
+
+            $params = $request->all();
+            self::create($params);
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function change($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'id',
+                'name',
+                'url',
+                'order'
+            ]);
+
+            $params = $request->all();
+            $update = self::find($params['id']);
+            if(!$update) throw new \Exception("id tida ditemukan", 400);
+            $update->fill($params);
+            $update->save();
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function deleted($id,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            self::destroy($id);
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+
+}

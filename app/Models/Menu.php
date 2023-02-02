@@ -14,7 +14,7 @@ class Menu extends Model {
         'url',
         'tag_variant',
         'parent',
-        'other',
+        'order',
 	    'created_by',
 	    'created_at',
 	    'updated_by',
@@ -25,6 +25,6 @@ class Menu extends Model {
 
     public function manyChild()
     {
-        return $this->hasMany(Menu::class,'parent','id');
+        return $this->hasMany(Menu::class,'parent','id')->orderBy('order','asc');
     }
 }

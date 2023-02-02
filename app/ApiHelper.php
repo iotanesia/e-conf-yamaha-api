@@ -365,7 +365,7 @@ class ApiHelper {
                     }
                 }
                 $statusCode = 400;
-                if(count(array_filter($required_params)) > 0) throw new \Exception("tidak ditemukan parameter : " . implode(", ", array_filter($required_params)),$statusCode);
+                if(count(array_filter($required_params)) > 0) throw new \Exception("not found parameters : " . implode(", ", array_filter($required_params)),$statusCode);
           } catch (\Throwable $th) {
             throw $th;
           }
