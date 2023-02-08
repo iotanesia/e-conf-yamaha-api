@@ -19,7 +19,7 @@ class UserControler extends Controller
     public function getById(Request $request,$id)
     {
         return ResponseInterface::responseData(
-            // Service::byId($id)
+            Service::byId($id)
         );
     }
 

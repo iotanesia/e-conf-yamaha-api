@@ -112,11 +112,10 @@ class User {
 
             $insert = new Model;
             $insert->username = $params->username;
-            $insert->app_name = $params->app_name;
+            $insert->name = $params->name;
             $insert->email = $params->email;
-            $insert->ip_whitelist = $params->ip_whitelist;
-            $insert->description = $params->description;
-            $insert->group_id = Group::PUBLIC_USER;
+            $insert->is_active = $params->is_active;
+            $insert->nik = $params->nik;
             $insert->password = Hash::make($params->password);
             $insert->save();
 
@@ -138,10 +137,10 @@ class User {
             $update = Model::find($id);
             if(!$update) throw new \Exception("id tidak ditemukan.");
             $update->username = $params->username;
-            $update->app_name = $params->app_name;
+            $update->name = $params->name;
             $update->email = $params->email;
-            $update->ip_whitelist = $params->ip_whitelist;
-            $update->description = $params->description;
+            $update->is_active = $params->is_active;
+            $update->nik = $params->nik;
             $update->save();
             DB::commit();
             return [
