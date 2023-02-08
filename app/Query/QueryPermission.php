@@ -21,7 +21,7 @@ class QueryPermission extends Model {
        return Helper::storageCache($key,function () use ($id_role){
             return self::where('id_role',$id_role)
             ->whereHas('refMenu',function ($query){
-                $query->whereNull('parent');
+                $query->whereNull('parent')->orderBy('order', 'asc');
             })
             ->get()
             ->map(function ($item) use ($id_role){
@@ -44,7 +44,7 @@ class QueryPermission extends Model {
         return Helper::storageCache($key,function () use ($id_role,$id_menu){
             return self::where('id_role',$id_role)
             ->whereHas('refMenu',function ($query) use ($id_menu){
-                $query->where('parent',$id_menu);
+                $query->where('parent',$id_menu)->orderBy('order', 'asc');
             })
             ->get()
             ->map(function ($item) use ($id_role){
