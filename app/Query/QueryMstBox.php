@@ -20,7 +20,7 @@ class QueryMstBox extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('nama',"%$params->kueri%");
+               if($params->kueri) $query->where('no_box',"%$params->kueri%");
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
