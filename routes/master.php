@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Master\BoxController;
 use App\Http\Controllers\Api\Master\ConsigneeController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,5 +47,14 @@ Route::prefix('v1/master')
         Route::put('/',[PortController::class,'update']);
         Route::get('/{id}',[PortController::class,'show']);
         Route::delete('/{id}',[PortController::class,'destroy']);
+    });
+
+      // port
+      Route::group(['prefix' => 'box'],function (){
+        Route::get('/',[BoxController::class,'index']);
+        Route::post('/',[BoxController::class,'store']);
+        Route::put('/',[BoxController::class,'update']);
+        Route::get('/{id}',[BoxController::class,'show']);
+        Route::delete('/{id}',[BoxController::class,'destroy']);
     });
 });
