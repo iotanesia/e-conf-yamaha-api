@@ -3,16 +3,16 @@
 namespace App\Query;
 
 use App\Constants\Constant;
-use App\Models\MstContainer AS Model;
+use App\Models\MstPortOfDischarge AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use Illuminate\Support\Facades\Cache;
 
-class QueryMstContainer extends Model {
+class QueryMstPortOfDischarge extends Model {
 
 
-    const cast = 'master-container';
+    const cast = 'master-port-of-discharge';
 
 
     public static function getAll($params)
@@ -20,7 +20,7 @@ class QueryMstContainer extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('nama',"%$params->kueri%");
+               if($params->kueri) $query->where('mot',"%$params->kueri%");
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -28,7 +28,17 @@ class QueryMstContainer extends Model {
             ->orderBy('id','asc')
             ->paginate($params->limit ?? null);
             return [
-                'items' => $data->items(),
+                'items' => $data->getCollection()->transform(function($item){
+                    $item->port_code = $item->refPort->code ?? null;
+                    $item->port_name = $item->refPort->name ?? null;
+                    $item->consignee_code = $item->refConsignee->code ?? null;
+                    $item->consignee_name = $item->refConsignee->name ?? null;
+                    unset(
+                        $item->refPort,
+                        $item->refConsignee
+                    );
+                    return $item;
+                }),
                 'paginate' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
@@ -41,7 +51,20 @@ class QueryMstContainer extends Model {
 
     public static function byId($id)
     {
-        return self::find($id);
+        $data = self::find($id);
+
+        if($data){
+            $data->port_code = $data->refPort->code ?? null;
+            $data->port_name = $data->refPort->name ?? null;
+            $data->consignee_code = $data->refConsignee->code ?? null;
+            $data->consignee_name = $data->refConsignee->name ?? null;
+            unset(
+                $data->refPort,
+                $data->refConsignee
+            );
+        }
+
+        return $data;
     }
 
     public static function store($request,$is_transaction = true)
@@ -50,6 +73,17 @@ class QueryMstContainer extends Model {
         try {
 
             $params = $request->all();
+
+            if($params["id_port"]){
+                $port = QueryMstPort::find($params["id_port"]);
+                if(!$port) throw new \Exception("Port dengan id ".$params["id_port"]." tidak ditemukan", 400);
+            }
+            if($params["id_consignee"]){
+                $port = QueryMstConsignee::find($params["id_consignee"]);
+                if(!$port) throw new \Exception("Consignee dengan id ".$params["id_consignee"]." tidak ditemukan", 400);
+            }
+
+
             self::create($params);
 
             if($is_transaction) DB::commit();
@@ -72,7 +106,17 @@ class QueryMstContainer extends Model {
 
             $params = $request->all();
             $update = self::find($params['id']);
-            if(!$update) throw new \Exception("id tida ditemukan", 400);
+            if(!$update) throw new \Exception("id tidak ditemukan", 400);
+
+            if($params["id_port"]){
+                $port = QueryMstPort::find($params["id_port"]);
+                if(!$port) throw new \Exception("Port dengan id ".$params["id_port"]." tidak ditemukan", 400);
+            }
+            if($params["id_consignee"]){
+                $port = QueryMstConsignee::find($params["id_consignee"]);
+                if(!$port) throw new \Exception("Consignee dengan id ".$params["id_consignee"]." tidak ditemukan", 400);
+            }
+            
             $update->fill($params);
             $update->save();
             if($is_transaction) DB::commit();

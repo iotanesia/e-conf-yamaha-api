@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Master\ContrainerController;
 use App\Http\Controllers\Api\Master\PartController;
 use App\Http\Controllers\Api\Master\PortController;
+use App\Http\Controllers\Api\Master\PortOfDischargeController;
 
 //with middleware
 Route::prefix('v1/master')
@@ -46,5 +47,14 @@ Route::prefix('v1/master')
         Route::put('/',[PortController::class,'update']);
         Route::get('/{id}',[PortController::class,'show']);
         Route::delete('/{id}',[PortController::class,'destroy']);
+    });
+
+    // port of discharge
+    Route::group(['prefix' => 'port-of-discharge'],function (){
+        Route::get('/',[PortOfDischargeController::class,'index']);
+        Route::post('/',[PortOfDischargeController::class,'store']);
+        Route::put('/',[PortOfDischargeController::class,'update']);
+        Route::get('/{id}',[PortOfDischargeController::class,'show']);
+        Route::delete('/{id}',[PortOfDischargeController::class,'destroy']);
     });
 });

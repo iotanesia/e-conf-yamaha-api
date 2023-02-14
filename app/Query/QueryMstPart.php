@@ -57,6 +57,7 @@ class QueryMstPart extends Model {
 
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
+            throw $th;
         }
     }
 
