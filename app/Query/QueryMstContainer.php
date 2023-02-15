@@ -29,7 +29,7 @@ class QueryMstContainer extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->items(),
-                'paginate' => [
+                'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
                     'from' => $data->currentPage(),

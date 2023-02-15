@@ -12,7 +12,7 @@ use App\Services\User as Service;
 class PositionController extends Controller
 {
     public function index(Request $request) {
-        return ResponseInterface::resultResponse(
+        return ResponseInterface::responseData(
             Position::getAll($request)
         );
     }

@@ -34,7 +34,7 @@ class QueryMenu extends Model {
                     unset($item->manyChild);
                     return $item;
                 }),
-                'paginate' => [
+                'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
                     'from' => $data->currentPage(),
