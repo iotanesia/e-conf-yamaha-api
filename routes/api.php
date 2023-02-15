@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Main\OrderEntryController;
 use App\Http\Controllers\Master\PositionController;
 use App\Http\Controllers\Master\RoleController;
 use Illuminate\Http\Request;
@@ -37,7 +38,15 @@ Route::prefix('v1')
     Route::prefix('master')->group(function(){
         Route::get('role',[RoleController::class,'index']);
         Route::get('position',[PositionController::class,'index']);
+    });
 
+    // main
+    Route::prefix('order-entry')->group(function(){
+        Route::get('/',[OrderEntryController::class,'index']);
+        Route::post('/',[OrderEntryController::class,'store']);
+        Route::put('/',[OrderEntryController::class,'update']);
+        Route::get('/{id}',[OrderEntryController::class,'show']);
+        Route::delete('/{id}',[OrderEntryController::class,'destroy']);
     });
 });
 
