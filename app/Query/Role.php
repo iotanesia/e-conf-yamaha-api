@@ -19,6 +19,7 @@ class Role {
                     'items' => $data->getCollection()->transform(function ($item){
                         return $item;
                     }),
+                    'last_page' => $data->lastPage(),
                     'attributes' => [
                         'total' => $data->total(),
                         'current_page' => $data->currentPage(),

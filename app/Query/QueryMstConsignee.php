@@ -29,7 +29,8 @@ class QueryMstConsignee extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->items(),
-                'paginate' => [
+                'last_page' => $data->lastPage(),
+                'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
                     'from' => $data->currentPage(),
