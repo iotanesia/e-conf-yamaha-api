@@ -3,11 +3,11 @@
 namespace App\Query;
 
 use App\Constants\Constant;
-use App\Models\Role AS Model;
+use App\Models\Position AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class Role {
+class Position {
     public static function getAll($request)
     {
         try {

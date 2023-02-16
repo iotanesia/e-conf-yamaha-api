@@ -29,6 +29,7 @@ class QueryMstPart extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->items(),
+                'last_page' => $data->lastPage(),
                 'paginate' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),

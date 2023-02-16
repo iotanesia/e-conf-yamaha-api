@@ -113,6 +113,7 @@ class ApiHelper {
                 "message" => EM::NONE,
                 "page" => $data['attributes'] ?? null
             ],
+            "last_page" => $data['last_page'] ?? null,
             "data" => $data['items'] ?? null
         ];
         return response()->json($response, 200);
