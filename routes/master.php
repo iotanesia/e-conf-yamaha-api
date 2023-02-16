@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Master\PartController;
 use App\Http\Controllers\Api\Master\PortController;
 use App\Http\Controllers\Api\Master\PortOfDischargeController;
 use App\Http\Controllers\Api\Master\SupplierController;
+use App\Http\Controllers\Api\Master\GroupProductController;
 
 //with middleware
 Route::prefix('v1/master')
@@ -76,5 +77,14 @@ Route::prefix('v1/master')
         Route::put('/',[SupplierController::class,'update']);
         Route::get('/{id}',[SupplierController::class,'show']);
         Route::delete('/{id}',[SupplierController::class,'destroy']);
+    });
+
+    // group product
+    Route::group(['prefix' => 'group-product'],function (){
+        Route::get('/',[GroupProductController::class,'index']);
+        Route::post('/',[GroupProductController::class,'store']);
+        Route::put('/',[GroupProductController::class,'update']);
+        Route::get('/{id}',[GroupProductController::class,'show']);
+        Route::delete('/{id}',[GroupProductController::class,'destroy']);
     });
 });
