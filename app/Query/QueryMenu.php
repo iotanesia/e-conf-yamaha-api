@@ -24,10 +24,11 @@ class QueryMenu extends Model {
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
+            $limit = isset($params->dropdown) && intval($params->dropdown) == 1? null : ($params->limit?? null);
             $data = $query
             ->whereNull('parent')
             ->orderBy('order','asc')
-            ->paginate($params->limit ?? null);
+            ->paginate($limit);
             return [
                 'items' => $data->getCollection()->transform(function ($item){
                     $item->children = $item->manyChild;
