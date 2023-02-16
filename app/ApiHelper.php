@@ -85,17 +85,24 @@ class ApiHelper {
 
         $codeSt = $th->getCode() == 0 ? 500 : $th->getCode();
         $codeSt = $codeSt > 500 ? 500 : $codeSt;
+        $codeSt = is_string($codeSt) ? 500 : $codeSt;
         $result = json_decode($th->getMessage());
-
         if(in_array($codeSt,[500,400])) $result = [
-            "responseCode" => $result->responseCode ?? $codeSt,
-            "responseMessage" => self::getMessageForPatner($th->getMessage()),
-            "infoError" => env('APP_DEBUG') ? [
-                'file' => $th->getFile(),
-                'line' => $th->getLine(),
-                'trace' => $th->getTraceAsString()
-            ] : []
+            "meta" => [
+                "error" => $result->responseCode ?? $codeSt,
+                "message" => self::getMessageForPatner($th->getMessage()),
+                "info" =>  [
+                    'file' => $th->getFile(),
+                    'line' => $th->getLine(),
+                    'trace' => $th->getTraceAsString()
+                ],
+                "page" => $data['attributes'] ?? null
+            ],
+            "data" => $data['items'] ?? null
         ];
+
+        Log::error($result);
+        if(env('APP_DEBUG') == false) unset($result['meta']['info']);
         return response()->json($result,$codeSt,$headers);
     }
 
