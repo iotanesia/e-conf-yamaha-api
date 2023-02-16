@@ -19,7 +19,7 @@ class QueryRegularOrderEntry extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('no_box',"%$params->kueri%");
+               if($params->kueri) $query->where('year',"%$params->kueri%");
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -27,15 +27,8 @@ class QueryRegularOrderEntry extends Model {
             ->orderBy('id','desc')
             ->paginate($params->limit ?? null);
             return [
-                'items' => $data->getCollection()->transform(function($item){
-                    $item->part_item_no = $item->refPart->item_no ?? null;
-                    $item->part_description = $item->refPart->description ?? null;
-                    unset(
-                        $item->refPart
-                    );
-                    return $item;
-                }),
-                'paginate' => [
+                'items' => $data->items(),
+                'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
                     'from' => $data->currentPage(),

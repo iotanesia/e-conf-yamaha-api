@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Master\ContrainerController;
 use App\Http\Controllers\Api\Master\PartController;
 use App\Http\Controllers\Api\Master\PortController;
 use App\Http\Controllers\Api\Master\PortOfDischargeController;
+use App\Http\Controllers\Api\Master\SupplierController;
 
 //with middleware
 Route::prefix('v1/master')
@@ -50,7 +51,7 @@ Route::prefix('v1/master')
         Route::delete('/{id}',[PortController::class,'destroy']);
     });
 
-    // port
+    // box
     Route::group(['prefix' => 'box'],function (){
         Route::get('/',[BoxController::class,'index']);
         Route::post('/',[BoxController::class,'store']);
@@ -66,5 +67,14 @@ Route::prefix('v1/master')
         Route::put('/',[PortOfDischargeController::class,'update']);
         Route::get('/{id}',[PortOfDischargeController::class,'show']);
         Route::delete('/{id}',[PortOfDischargeController::class,'destroy']);
+    });
+
+    // supplier
+    Route::group(['prefix' => 'supplier'],function (){
+        Route::get('/',[SupplierController::class,'index']);
+        Route::post('/',[SupplierController::class,'store']);
+        Route::put('/',[SupplierController::class,'update']);
+        Route::get('/{id}',[SupplierController::class,'show']);
+        Route::delete('/{id}',[SupplierController::class,'destroy']);
     });
 });
