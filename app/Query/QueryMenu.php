@@ -24,7 +24,7 @@ class QueryMenu extends Model {
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
-            $limit = isset($params->dropdown) && intval($params->dropdown) == 1? null : ($params->limit?? null);
+            $limit = isset($params->dropdown) && intval($params->dropdown) == Constant::IS_ACTIVE? Model::count() : ($params->limit?? null);
             $data = $query
             ->whereNull('parent')
             ->orderBy('order','asc')

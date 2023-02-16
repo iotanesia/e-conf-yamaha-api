@@ -10,5 +10,14 @@ class MstPosition extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'mst_position';
-    public $fillable = ['*'];
+    public $fillable = [
+        'id',
+        'name',
+        'nickname',
+        'created_at',
+        'created_by',
+        'updated_at',
+        'updated_by',
+        'deleted_at'
+    ];
 }

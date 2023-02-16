@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\Master\PortController;
 use App\Http\Controllers\Api\Master\PortOfDischargeController;
 use App\Http\Controllers\Api\Master\SupplierController;
 use App\Http\Controllers\Api\Master\GroupProductController;
+use App\Http\Controllers\Api\Master\PositionController;
+use App\Http\Controllers\Api\Master\RoleController;
 
 //with middleware
 Route::prefix('v1/master')
@@ -86,5 +88,23 @@ Route::prefix('v1/master')
         Route::put('/',[GroupProductController::class,'update']);
         Route::get('/{id}',[GroupProductController::class,'show']);
         Route::delete('/{id}',[GroupProductController::class,'destroy']);
+    });
+
+    // position
+    Route::group(['prefix' => 'position'],function (){
+        Route::get('/',[PositionController::class,'index']);
+        Route::post('/',[PositionController::class,'store']);
+        Route::put('/',[PositionController::class,'update']);
+        Route::get('/{id}',[PositionController::class,'show']);
+        Route::delete('/{id}',[PositionController::class,'destroy']);
+    });
+
+    // role
+    Route::group(['prefix' => 'role'],function (){
+        Route::get('/',[RoleController::class,'index']);
+        Route::post('/',[RoleController::class,'store']);
+        Route::put('/',[RoleController::class,'update']);
+        Route::get('/{id}',[RoleController::class,'show']);
+        Route::delete('/{id}',[RoleController::class,'destroy']);
     });
 });
