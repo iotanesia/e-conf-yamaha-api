@@ -9,13 +9,14 @@
         "firebase/php-jwt": "^6.1",
         "fruitcake/laravel-cors": "^3.0",
         "guzzlehttp/guzzle": "^7.0.1",
+        "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
+        "maatwebsite/excel": "^3.1",
         "phpseclib/phpseclib": "^3.0",
         "seffeng/laravel-rsa": "^1.0",
         "spatie/laravel-health": "^1.9",
-        "jenssegers/agent": "^2.6",
         "stevebauman/location": "^6.3"
     },
     "require-dev": {

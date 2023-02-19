@@ -132,5 +132,16 @@ class QueryRegularOrderEntryUpload extends Model {
     }
 
 
+    public static function deletedByIdOrderEntry($id_order_entry,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            self::where('id_regular_order_entry',$id_order_entry)->delete();
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
 
 }

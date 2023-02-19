@@ -85,4 +85,30 @@ class QueryRegularOrderEntry extends Model {
             'datasource' => $request->datasource,
         ])->count() + 1;
     }
+
+    public static function change($request,$uuid, $is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'file',
+                'year'
+            ]);
+
+            $update = self::where('uuid',$uuid)->first();
+            if(!$update) throw new \Exception("Data not found", 400);
+            $params = $request->all();
+            $update->fill($params);
+            $update->save();
+            $request->id_regular_order_entry = $update->id;
+            QueryRegularOrderEntryUpload::deletedByIdOrderEntry($update->id,false);
+            QueryRegularOrderEntryUpload::saveFile($request,false);
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
 }

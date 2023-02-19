@@ -39,7 +39,7 @@ Route::prefix('v1')
     Route::prefix('order-entry')->group(function(){
         Route::get('/',[OrderEntryController::class,'index']);
         Route::post('/',[OrderEntryController::class,'store']);
-        Route::put('/',[OrderEntryController::class,'update']);
+        Route::post('/{id}',[OrderEntryController::class,'update']);
         Route::get('/{id}',[OrderEntryController::class,'show']);
         Route::delete('/{id}',[OrderEntryController::class,'destroy']);
     });

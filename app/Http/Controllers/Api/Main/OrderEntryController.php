@@ -81,9 +81,15 @@ class OrderEntryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request,$id)
     {
-        //
+        try {
+            return ResponseInterface::responseData([
+                "items" => QueryRegularOrderEntry::change($request,$id)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
     }
 
     /**
