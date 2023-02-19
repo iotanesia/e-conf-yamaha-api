@@ -28,8 +28,12 @@ class QueryRegularOrderEntry extends Model {
             });
 
             if($params->datasource) $query->where('datasource', "$params->datasource");
-
             if($params->withTrashed == 'true') $query->withTrashed();
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+            
             $data = $query
             ->orderBy('id','desc')
             ->paginate($params->limit ?? null);
