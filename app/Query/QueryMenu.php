@@ -24,17 +24,39 @@ class QueryMenu extends Model {
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
+            $limit = isset($params->dropdown) && intval($params->dropdown) == Constant::IS_ACTIVE? Model::count() : ($params->limit?? null);
             $data = $query
             ->whereNull('parent')
             ->orderBy('order','asc')
-            ->paginate($params->limit ?? null);
+            ->paginate($limit);
+
+            $items = $data->getCollection()->transform(function ($item){
+                $item->children = $item->manyChild;
+                unset($item->manyChild);
+                return $item;
+            });
+
+            if(isset($params->dropdown) && intval($params->dropdown) && isset($params->parent) && intval($params->parent) == 1){
+                $menuList = [];
+                foreach($items->toArray() as $item){
+                    $menu = new \stdClass;
+                    $menu->id = $item['id'];
+                    $menu->name = $item['name'];
+                    $menu->category = $item['category'];
+                    $menu->icon = $item['icon'];
+                    $menu->url = $item['url'];
+                    $menu->tag_variant = $item['tag_variant'];
+                    $menu->order = $item['order'];
+
+                    array_push($menuList, $menu);
+                }
+
+                $items = $menuList;
+            }
+
             return [
-                'items' => $data->getCollection()->transform(function ($item){
-                    $item->children = $item->manyChild;
-                    unset($item->manyChild);
-                    return $item;
-                }),
-                'paginate' => [
+                'items' => $items,
+                'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
                     'from' => $data->currentPage(),

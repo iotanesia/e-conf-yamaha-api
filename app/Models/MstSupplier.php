@@ -6,14 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class MstPosition extends Model
+class MstSupplier extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'mst_position';
+    protected $table = 'mst_supplier';
     public $fillable = [
         'id',
-        'name',
-        'nickname',
+        'code',
+        'supplier',
+        'is_active',
         'created_at',
         'created_by',
         'updated_at',

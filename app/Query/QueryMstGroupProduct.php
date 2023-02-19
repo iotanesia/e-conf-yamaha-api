@@ -3,16 +3,16 @@
 namespace App\Query;
 
 use App\Constants\Constant;
-use App\Models\MstConsignee AS Model;
+use App\Models\MstGroupProduct AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use Illuminate\Support\Facades\Cache;
 
-class QueryMstConsignee extends Model {
+class QueryMstGroupProduct extends Model {
 
 
-    const cast = 'master-consignee';
+    const cast = 'master-group-product';
 
 
     public static function getAll($params)
@@ -20,7 +20,7 @@ class QueryMstConsignee extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('nama',"%$params->kueri%");
+               if($params->kueri) $query->where('group_product',"%$params->kueri%");
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -29,7 +29,6 @@ class QueryMstConsignee extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->items(),
-                'last_page' => $data->lastPage(),
                 'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
@@ -42,7 +41,8 @@ class QueryMstConsignee extends Model {
 
     public static function byId($id)
     {
-        return self::find($id);
+        $data = self::find($id);
+        return $data;
     }
 
     public static function store($request,$is_transaction = true)
@@ -51,6 +51,10 @@ class QueryMstConsignee extends Model {
         try {
 
             $params = $request->all();
+            Helper::requireParams([
+                'group_product',
+            ]);
+
             self::create($params);
 
             if($is_transaction) DB::commit();
@@ -66,14 +70,16 @@ class QueryMstConsignee extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
+            $params = $request->all();
 
             Helper::requireParams([
-                'id'
+                'id',
+                'group_product'
             ]);
 
-            $params = $request->all();
             $update = self::find($params['id']);
-            if(!$update) throw new \Exception("id tida ditemukan", 400);
+            if(!$update) throw new \Exception("id tidak ditemukan", 400);
+
             $update->fill($params);
             $update->save();
             if($is_transaction) DB::commit();

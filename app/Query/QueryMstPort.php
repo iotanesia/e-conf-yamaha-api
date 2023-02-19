@@ -30,7 +30,7 @@ class QueryMstPort extends Model {
             return [
                 'items' => $data->items(),
                 'last_page' => $data->lastPage(),
-                'paginate' => [
+                'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
                     'from' => $data->currentPage(),
@@ -58,6 +58,7 @@ class QueryMstPort extends Model {
 
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
+            throw $th;
         }
     }
 

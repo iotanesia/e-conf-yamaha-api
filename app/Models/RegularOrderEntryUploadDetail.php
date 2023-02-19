@@ -9,5 +9,29 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class RegularOrderEntryUploadDetail extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'reguler_order_entry_upload_detail';
+    protected $table = 'regular_order_entry_upload_detail';
+    public $fillable = [
+        "id",
+        "id_regular_order_entry_upload",
+        "code_consignee",
+        "model",
+        "item_no",
+        "disburse",
+        "delivery",
+        "qty",
+        "status",
+        "order_no",
+        "cust_item_no",
+        "created_at",
+        "created_by",
+        "updated_at",
+        "updated_by",
+        "deleted_at",
+        "uuid"
+    ];
+
+    public function refRegularOrderEntryUpload()
+    {
+        return $this->belongsTo(RegularOrderEntryUpload::class,'id_regular_order_entry_upload','id');
+    }
 }

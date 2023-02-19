@@ -3,41 +3,42 @@
 namespace App\Query;
 
 use App\Constants\Constant;
-use App\Models\MstConsignee AS Model;
+use App\Models\Role AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use Illuminate\Support\Facades\Cache;
 
-class QueryMstConsignee extends Model {
-
-
-    const cast = 'master-consignee';
-
+class QueryRole extends Model {
+    
+    const cast = 'master-position';
 
     public static function getAll($params)
     {
-        $key = self::cast.json_encode($params->query());
-        return Helper::storageCache($key, function () use ($params){
+        try {
+            $key = self::cast.json_encode($params->query());
+            if($params->dropdown == Constant::IS_ACTIVE) $params->limit = Model::count();
+            
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('nama',"%$params->kueri%");
-
-            });
-            if($params->withTrashed == 'true') $query->withTrashed();
-            $data = $query
-            ->orderBy('id','asc')
-            ->paginate($params->limit ?? null);
-            return [
-                'items' => $data->items(),
-                'last_page' => $data->lastPage(),
-                'attributes' => [
-                    'total' => $data->total(),
-                    'current_page' => $data->currentPage(),
-                    'from' => $data->currentPage(),
-                    'per_page' => (int) $data->perPage(),
-                ]
-            ];
-        });
+                if($params->kueri) $query->where('name',"%$params->kueri%");
+ 
+             });
+             if($params->withTrashed == 'true') $query->withTrashed();
+             $data = $query
+             ->orderBy('id','asc')
+             ->paginate($params->limit ?? null);
+             return [
+                 'items' => $data->items(),
+                 'attributes' => [
+                     'total' => $data->total(),
+                     'current_page' => $data->currentPage(),
+                     'from' => $data->currentPage(),
+                     'per_page' => (int) $data->perPage(),
+                 ]
+             ];
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     public static function byId($id)
@@ -96,6 +97,4 @@ class QueryMstConsignee extends Model {
             throw $th;
         }
     }
-
-
 }

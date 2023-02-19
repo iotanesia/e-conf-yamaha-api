@@ -35,11 +35,6 @@ Route::prefix('v1')
     Route::post('login',[AuthController::class,'login']);
     Route::post('register',[AuthController::class,'register']);
 
-    Route::prefix('master')->group(function(){
-        Route::get('role',[RoleController::class,'index']);
-        Route::get('position',[PositionController::class,'index']);
-    });
-
     // main
     Route::prefix('order-entry')->group(function(){
         Route::get('/',[OrderEntryController::class,'index']);
@@ -54,5 +49,4 @@ require __DIR__.'/auth.php';
 require __DIR__.'/master.php';
 require __DIR__.'/setting.php';
 require __DIR__.'/user.php';
-
-
+require __DIR__.'/regular.php';

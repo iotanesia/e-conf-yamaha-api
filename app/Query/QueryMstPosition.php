@@ -20,7 +20,7 @@ class QueryMstPosition extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('nama',"%$params->kueri%");
+               if($params->kueri) $query->where('name',"%$params->kueri%");
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -29,7 +29,7 @@ class QueryMstPosition extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->items(),
-                'paginate' => [
+                'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
                     'from' => $data->currentPage(),
@@ -57,6 +57,7 @@ class QueryMstPosition extends Model {
 
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
+            throw $th;
         }
     }
 
