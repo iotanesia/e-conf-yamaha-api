@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\Api\Main\OrderEntryController;
+use App\Http\Controllers\Api\Main\OrderEntryUploadController;
+use App\Http\Controllers\Api\Main\OrderEntryUploadDetailController;
+
+//with middleware
+Route::prefix('v1/regular')
+->namespace('Api')
+->group(function () {
+
+     // order-entry
+     Route::group(['prefix' => 'order-entry'],function (){
+         Route::get('/',[OrderEntryController::class,'index']);
+     });
+     
+     // order-entry
+     Route::group(['prefix' => 'order-entry-upload'],function (){
+         Route::get('/',[OrderEntryUploadController::class,'index']);
+         Route::get('/{id}',[OrderEntryUploadController::class,'show']);
+     });
+
+     // order-entry
+     Route::group(['prefix' => 'order-entry-upload-detail'],function (){
+         Route::get('/',[OrderEntryUploadDetailController::class,'index']);
+         Route::get('/{id}',[OrderEntryUploadDetailController::class,'show']);
+         Route::put('/',[OrderEntryUploadDetailController::class,'update']);
+      });
+     
+});
