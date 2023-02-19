@@ -30,11 +30,12 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                             ->orWhere('cust_item_no', 'like', "'%$params->search%'");
                 });
 
-            if($params->withTrashed == 'true') 
-                $query->withTrashed();
-
-            if($params->id_regular_order_entry_upload) 
-                $query->where('id_regular_order_entry_upload', $params->id_regular_order_entry_upload);
+            if($params->withTrashed == 'true') $query->withTrashed();
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+            if($params->id_regular_order_entry_upload) $query->where('id_regular_order_entry_upload', $params->id_regular_order_entry_upload);
 
             $data = $query
             ->orderBy('id','asc')

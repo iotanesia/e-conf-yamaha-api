@@ -25,11 +25,12 @@ class QueryRegularOrderEntryUpload extends Model {
             });
 
             if($params->status) $query->where('status', "$params->status");
-
-            if($params->withTrashed == 'true') 
-                $query->withTrashed();
-            if($params->id_regular_order_entry) 
-                $query->where('id_regular_order_entry', $params->id_regular_order_entry);
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+            if($params->withTrashed == 'true') $query->withTrashed();
+            if($params->id_regular_order_entry) $query->where('id_regular_order_entry', $params->id_regular_order_entry);
 
             $data = $query
             ->orderBy('id','desc')
