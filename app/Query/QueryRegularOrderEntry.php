@@ -7,7 +7,9 @@ use App\Models\RegularOrderEntry AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Imports\OrderEntry;
 use Illuminate\Support\Facades\Cache;
+use Maatwebsite\Excel\Facades\Excel;
 
 class QueryRegularOrderEntry extends Model {
 
@@ -19,7 +21,7 @@ class QueryRegularOrderEntry extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->search) 
+               if($params->search)
                     $query->where('year', 'like', "'%$params->search%'")
                             ->orWhere('month', 'like',  "'%$params->search%'")
                             ->orWhere('period', 'like',  "'%$params->search%'")
@@ -33,7 +35,7 @@ class QueryRegularOrderEntry extends Model {
                 $params->limit = null;
                 $params->page = 1;
             }
-            
+
             $data = $query
             ->orderBy('id','desc')
             ->paginate($params->limit ?? null);
@@ -68,6 +70,7 @@ class QueryRegularOrderEntry extends Model {
             $store = self::create($params);
             $request->id_regular_order_entry = $store->id;
             QueryRegularOrderEntryUpload::saveFile($request,false);
+
 
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache

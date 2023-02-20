@@ -7,10 +7,14 @@ use App\Models\RegularOrderEntryUpload AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Imports\OrderEntry;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+
 class QueryRegularOrderEntryUpload extends Model {
 
     const cast = 'regular-order-entry-upload';
@@ -20,7 +24,7 @@ class QueryRegularOrderEntryUpload extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->search) 
+               if($params->search)
                     $query->where('filename', 'like', "'%$params->search%'");
             });
 
@@ -111,7 +115,7 @@ class QueryRegularOrderEntryUpload extends Model {
             $file = $request->file('file');
             $filename = $file->getClientOriginalName();
             $ext = $file->getClientOriginalExtension();
-            if(!in_array($ext,['xlx','xlsx'])) throw new \Exception("file format error", 400);
+            if(!in_array($ext,['xlx','xlsx','xlsb'])) throw new \Exception("file format error", 400);
             $savedname = (string) Str::uuid().'.'.$ext;
             $params = [
                 'id_regular_order_entry' => $request->id_regular_order_entry,
@@ -123,7 +127,13 @@ class QueryRegularOrderEntryUpload extends Model {
                 'uuid' => (string) Str::uuid()
             ];
             Storage::putFileAs(str_replace($savedname,'',$params['filepath']),$file,$savedname);
-            self::create($params);
+
+            $store = self::create($params);
+
+
+            Excel::queueImport(new OrderEntry($store->id),storage_path().'/app/'.$params['filepath']);
+
+
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
@@ -137,6 +147,21 @@ class QueryRegularOrderEntryUpload extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             self::where('id_regular_order_entry',$id_order_entry)->delete();
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+
+    public static function updateStatusAfterImport($id,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $store = self::find($id);
+            $store->status = Constant::STS_PROCESS_FINISHED;
+            $store->save();
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();

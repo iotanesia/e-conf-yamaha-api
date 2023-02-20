@@ -36,13 +36,13 @@ Route::prefix('v1')
     Route::post('register',[AuthController::class,'register']);
 
     // main
-    Route::prefix('order-entry')->group(function(){
-        Route::get('/',[OrderEntryController::class,'index']);
-        Route::post('/',[OrderEntryController::class,'store']);
-        Route::post('/{id}',[OrderEntryController::class,'update']);
-        Route::get('/{id}',[OrderEntryController::class,'show']);
-        Route::delete('/{id}',[OrderEntryController::class,'destroy']);
-    });
+    // Route::prefix('order-entry')->group(function(){
+    //     Route::get('/',[OrderEntryController::class,'index']);
+    //     Route::post('/',[OrderEntryController::class,'store']);
+    //     Route::post('/{id}',[OrderEntryController::class,'update']);
+    //     Route::get('/{id}',[OrderEntryController::class,'show']);
+    //     Route::delete('/{id}',[OrderEntryController::class,'destroy']);
+    // });
 });
 
 require __DIR__.'/auth.php';

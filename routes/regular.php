@@ -15,8 +15,10 @@ Route::prefix('v1/regular')
      // order-entry
      Route::group(['prefix' => 'order-entry'],function (){
          Route::get('/',[OrderEntryController::class,'index']);
+         Route::post('/',[OrderEntryController::class,'store']);
+         Route::post('/{id}',[OrderEntryController::class,'update']);
      });
-     
+
      // order-entry-upload
      Route::group(['prefix' => 'order-entry-upload'],function (){
          Route::get('/',[OrderEntryUploadController::class,'index']);
@@ -39,6 +41,6 @@ Route::prefix('v1/regular')
      Route::group(['prefix' => 'delivery-plan-detail'],function (){
         Route::get('/',[DeliveryPlanController::class,'getDeliveryPlanDetail']);
       });
-    
-     
+
+
 });
