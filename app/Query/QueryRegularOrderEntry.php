@@ -114,4 +114,20 @@ class QueryRegularOrderEntry extends Model {
             throw $th;
         }
     }
+
+    public static function getListDatasource()
+    {
+        $data = self::select("datasource")->whereNotNull('datasource')
+                        ->groupBy('datasource')
+                        ->get();
+
+        $arr = array();
+
+        foreach($data as $item){
+            array_push($arr, $item->datasource);
+        }
+
+        return $arr;
+    }
+
 }
