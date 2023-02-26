@@ -15,7 +15,6 @@ Route::prefix('v1/regular')
      // order-entry
      Route::group(['prefix' => 'order-entry'],function (){
         Route::get('/',[OrderEntryController::class,'index']);
-        Route::get('/list-datasource',[OrderEntryController::class,'getListDatasource']);
         Route::post('/',[OrderEntryController::class,'store']);
         Route::post('/{id}',[OrderEntryController::class,'update']);
      });

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Master\SupplierController;
 use App\Http\Controllers\Api\Master\GroupProductController;
 use App\Http\Controllers\Api\Master\PositionController;
 use App\Http\Controllers\Api\Master\RoleController;
+use App\Http\Controllers\Api\Master\DatasourceController;
 
 //with middleware
 Route::prefix('v1/master')
@@ -106,5 +107,14 @@ Route::prefix('v1/master')
         Route::put('/',[RoleController::class,'update']);
         Route::get('/{id}',[RoleController::class,'show']);
         Route::delete('/{id}',[RoleController::class,'destroy']);
+    });
+
+    // datasource
+    Route::group(['prefix' => 'datasource'],function (){
+        Route::get('/',[DatasourceController::class,'index']);
+        Route::post('/',[DatasourceController::class,'store']);
+        Route::put('/',[DatasourceController::class,'update']);
+        Route::get('/{nama}',[DatasourceController::class,'show']);
+        Route::delete('/{nama}',[DatasourceController::class,'destroy']);
     });
 });

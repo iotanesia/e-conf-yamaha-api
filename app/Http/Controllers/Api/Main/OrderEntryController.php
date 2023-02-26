@@ -103,13 +103,4 @@ class OrderEntryController extends Controller
         //
     }
 
-    public function getListDatasource(){
-        try {
-            return ResponseInterface::responseData([
-                "items" => QueryRegularOrderEntry::getListDatasource()
-            ]);
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
 }
