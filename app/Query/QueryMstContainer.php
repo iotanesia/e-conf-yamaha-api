@@ -20,12 +20,15 @@ class QueryMstContainer extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('nama',"%$params->kueri%");
-
+               if($params->search) $query->where('container_type',"like", "%$params->search%")
+                                            ->orWhere('capacity',"like", "%$params->search%")
+                                            ->orWhere('long',"like", "%$params->search%")
+                                            ->orWhere('wide',"like", "%$params->search%")
+                                            ->orWhere('height',"like", "%$params->search%");
             });
             if($params->withTrashed == 'true') $query->withTrashed();
             $data = $query
-            ->orderBy('id','asc')
+            ->orderBy('id','desc')
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->items(),
