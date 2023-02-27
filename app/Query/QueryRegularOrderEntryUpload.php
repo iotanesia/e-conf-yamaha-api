@@ -20,15 +20,15 @@ class QueryRegularOrderEntryUpload extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->search) 
+               if($params->search)
                     $query->where('filename', 'like', "'%$params->search%'");
             });
 
             if($params->status) $query->where('status', "$params->status");
 
-            if($params->withTrashed == 'true') 
+            if($params->withTrashed == 'true')
                 $query->withTrashed();
-            if($params->id_regular_order_entry) 
+            if($params->id_regular_order_entry)
                 $query->where('id_regular_order_entry', $params->id_regular_order_entry);
 
             $data = $query
@@ -73,7 +73,7 @@ class QueryRegularOrderEntryUpload extends Model {
 
     public static function byId($id)
     {
-        $data = self::find($id);
+        $data = self::where('id_regular_order_entry', $id)->get();
 
         if($data == null) throw new \Exception("id tidak ditemukan", 400);
 
