@@ -43,9 +43,13 @@ class QueryRegularDeliveryPlan extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->getCollection()->transform(function ($item){
-                    $item->month = $item->refRegularOrderEntry->month ?? null;
-                    $item->year = $item->refRegularOrderEntry->year ?? null;
-                    return $item;
+                    return [
+                        'month' => $item->refRegularOrderEntry->month ?? null,
+                        'year' => $item->refRegularOrderEntry->year ?? null,
+                        'uploaded' => $item->refRegularOrderEntry->uploaded ?? null,
+                        'updated_at' => $item->refRegularOrderEntry->updated_at ?? null,
+                        'id' => $item->id ?? null,
+                    ];
                 }),
                 'attributes' => [
                     'total' => $data->total(),
