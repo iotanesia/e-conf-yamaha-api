@@ -20,7 +20,8 @@ class QueryRole extends Model {
             if($params->dropdown == Constant::IS_ACTIVE) $params->limit = Model::count();
             
             $query = self::where(function ($query) use ($params){
-                if($params->kueri) $query->where('name',"%$params->kueri%");
+                if($params->search) $query->where('name',"like", "%$params->search%")
+                                            ->orWHere('nickname',"like", "%$params->search%");
  
              });
              if($params->withTrashed == 'true') $query->withTrashed();
@@ -29,6 +30,7 @@ class QueryRole extends Model {
              ->paginate($params->limit ?? null);
              return [
                  'items' => $data->items(),
+                 'last_page' => $data->lastPage(),
                  'attributes' => [
                      'total' => $data->total(),
                      'current_page' => $data->currentPage(),

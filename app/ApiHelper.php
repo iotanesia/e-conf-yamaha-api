@@ -83,7 +83,7 @@ class ApiHelper {
 
         ];
 
-        $codeSt = $th->getCode() == 0 ? 500 : $th->getCode();
+        $codeSt = $th->getCode() < 200 ? 500 : $th->getCode();
         $codeSt = $codeSt > 500 ? 500 : $codeSt;
         $codeSt = is_string($codeSt) ? 500 : $codeSt;
         $result = json_decode($th->getMessage());

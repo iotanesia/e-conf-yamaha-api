@@ -18,7 +18,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->search) 
+               if($params->search)
                     $query->where('code_consignee', 'like', "'%$params->search%'")
                             ->orWhere('model', 'like', "'%$params->search%'")
                             ->orWhere('item_no', 'like', "'%$params->search%'")
@@ -30,11 +30,12 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                             ->orWhere('cust_item_no', 'like', "'%$params->search%'");
                 });
 
-            if($params->withTrashed == 'true') 
-                $query->withTrashed();
-
-            if($params->id_regular_order_entry_upload) 
-                $query->where('id_regular_order_entry_upload', $params->id_regular_order_entry_upload);
+            if($params->withTrashed == 'true') $query->withTrashed();
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+            if($params->id_regular_order_entry_upload) $query->where('id_regular_order_entry_upload', $params->id_regular_order_entry_upload);
 
             $data = $query
             ->orderBy('id','asc')
@@ -78,6 +79,19 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
             $update->fill($params);
             $update->save();
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function store($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            self::insert($request);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {

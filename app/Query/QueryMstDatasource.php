@@ -3,16 +3,16 @@
 namespace App\Query;
 
 use App\Constants\Constant;
-use App\Models\MstContainer AS Model;
+use App\Models\MstDatasource AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use Illuminate\Support\Facades\Cache;
 
-class QueryMstContainer extends Model {
+class QueryMstDatasource extends Model {
 
 
-    const cast = 'master-container';
+    const cast = 'master-datasource';
 
 
     public static function getAll($params)
@@ -20,15 +20,16 @@ class QueryMstContainer extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->search) $query->where('container_type',"like", "%$params->search%")
-                                            ->orWhere('capacity',"like", "%$params->search%")
-                                            ->orWhere('long',"like", "%$params->search%")
-                                            ->orWhere('wide',"like", "%$params->search%")
-                                            ->orWhere('height',"like", "%$params->search%");
+               if($params->search) $query->where('nama', "like", "%$params->kueri%");
+
             });
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
             if($params->withTrashed == 'true') $query->withTrashed();
             $data = $query
-            ->orderBy('id','desc')
+            ->orderBy('nama','asc')
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->items(),
@@ -43,9 +44,11 @@ class QueryMstContainer extends Model {
         });
     }
 
-    public static function byId($id)
+
+    public static function byNama($nama)
     {
-        return self::find($id);
+        $data = self::where('nama' , $nama)->first();
+        return $data;
     }
 
     public static function store($request,$is_transaction = true)
@@ -71,14 +74,14 @@ class QueryMstContainer extends Model {
         try {
 
             Helper::requireParams([
-                'id'
+                'nama_old',
+                'nama_new'
             ]);
 
             $params = $request->all();
-            $update = self::find($params['id']);
-            if(!$update) throw new \Exception("id tida ditemukan", 400);
-            $update->fill($params);
-            $update->save();
+            $update = self::where('nama' , $params["nama_old"])->first();
+            if(!$update) throw new \Exception("nama tidak ditemukan", 400);
+            self::where("nama", $params["nama_old"])->update(["nama" => $params["nama_new"]]);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
@@ -87,11 +90,11 @@ class QueryMstContainer extends Model {
         }
     }
 
-    public static function deleted($id,$is_transaction = true)
+    public static function deleted($nama,$is_transaction = true)
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            self::destroy($id);
+            self::where("nama", $nama)->delete();
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
@@ -99,6 +102,5 @@ class QueryMstContainer extends Model {
             throw $th;
         }
     }
-
 
 }

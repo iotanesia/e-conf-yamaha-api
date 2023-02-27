@@ -13,7 +13,6 @@ class QueryPermission extends Model {
 
     const cast = 'setting-permission';
 
-
     public static function getParentMenu($id_role)
     {
 
