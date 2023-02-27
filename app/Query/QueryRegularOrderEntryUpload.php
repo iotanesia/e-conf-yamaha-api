@@ -88,12 +88,12 @@ class QueryRegularOrderEntryUpload extends Model {
 
         if($data == null) throw new \Exception("id tidak ditemukan", 400);
 
-        $regularOrderEntry = $data->refRegularOrderEntry;
-        if($regularOrderEntry){
-            $data->regular_order_entry_period = $regularOrderEntry->period;
-            $data->regular_order_entry_month = $regularOrderEntry->month;
-            $data->regular_order_entry_year = $regularOrderEntry->year;
-        }
+//        $regularOrderEntry = $data->refRegularOrderEntry;
+//        if($regularOrderEntry){
+//            $data->regular_order_entry_period = $regularOrderEntry->period;
+//            $data->regular_order_entry_month = $regularOrderEntry->month;
+//            $data->regular_order_entry_year = $regularOrderEntry->year;
+//        }
 
         unset($data->refRegularOrderEntry);
 
