@@ -43,8 +43,11 @@ class QueryRegularDeliveryPlan extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->getCollection()->transform(function ($item){
+
+                    $month_code = $item->refRegularOrderEntry->month ?? null;
                     return [
-                        'month' => $item->refRegularOrderEntry->month ?? null,
+                        'month_code' => $month_code,
+                        'month' => Helper::monthName($month_code),
                         'year' => $item->refRegularOrderEntry->year ?? null,
                         'uploaded' => $item->refRegularOrderEntry->uploaded ?? null,
                         'updated_at' => $item->refRegularOrderEntry->updated_at ?? null,
@@ -95,8 +98,6 @@ class QueryRegularDeliveryPlan extends Model {
                 'items' => $data->getCollection()->transform(function($item){
                     $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
                     unset($item->manyDeliveryPlanBox);
-
-
                     foreach($item->regular_delivery_plan_box as $box){
                         $box->box = $box->refBox;
                         unset($box->refBox);
