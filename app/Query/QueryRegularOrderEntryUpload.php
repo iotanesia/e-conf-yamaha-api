@@ -30,7 +30,6 @@ class QueryRegularOrderEntryUpload extends Model {
                 $query->withTrashed();
             if($params->id_regular_order_entry)
                 $query->where('id_regular_order_entry', $params->id_regular_order_entry);
-
             $data = $query
             ->orderBy('id','desc')
             ->paginate($params->limit ?? null);
