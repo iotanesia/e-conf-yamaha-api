@@ -37,7 +37,7 @@ class QueryRegularOrderEntry extends Model {
             }
 
             $data = $query
-            ->orderBy('id','desc')
+            ->orderBy('year','desc')
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->items(),

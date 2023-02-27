@@ -78,19 +78,15 @@ class QueryRegularOrderEntryUpload extends Model {
 
     public static function byId($id)
     {
-        $data = self::find($id);
+        $data = self::where('id_regular_order_entry',$id)->first();
 
         if($data == null) throw new \Exception("id tidak ditemukan", 400);
 
         $regularOrderEntry = $data->refRegularOrderEntry;
-        if($regularOrderEntry){
-            $data->regular_order_entry_period = $regularOrderEntry->period;
-            $data->regular_order_entry_month = $regularOrderEntry->month;
-            $data->regular_order_entry_year = $regularOrderEntry->year;
-        }
-
+        $data->regular_order_entry_period = $regularOrderEntry->period ?? null;
+        $data->regular_order_entry_month = $regularOrderEntry->month ?? null;
+        $data->regular_order_entry_year = $regularOrderEntry->year ?? null;
         unset($data->refRegularOrderEntry);
-
         $data->status_desc = null;
         if($data->status == 0)
             $data->status_desc = "Proses";
