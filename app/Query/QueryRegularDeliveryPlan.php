@@ -18,7 +18,9 @@ class QueryRegularDeliveryPlan extends Model {
     {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
-            $query = self::where(function ($query) use ($params){
+            $query = self::select(
+                'id_regular_order_entry'
+            )->where(function ($query) use ($params){
                if($params->search)
                     $query->where('code_consignee', 'like', "'%$params->search%'")
                             ->orWhere('model', 'like', "'%$params->search%'")
@@ -39,7 +41,8 @@ class QueryRegularDeliveryPlan extends Model {
             }
 
             $data = $query
-            ->orderBy('id','desc')
+            ->groupBy('id_regular_order_entry')
+            ->orderBy('id_regular_order_entry','desc')
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->getCollection()->transform(function ($item){
@@ -51,7 +54,7 @@ class QueryRegularDeliveryPlan extends Model {
                         'year' => $item->refRegularOrderEntry->year ?? null,
                         'uploaded' => $item->refRegularOrderEntry->uploaded ?? null,
                         'updated_at' => $item->refRegularOrderEntry->updated_at ?? null,
-                        'id' => $item->id ?? null,
+                        'id' => $item->id_regular_order_entry ?? null,
                     ];
                 }),
                 'attributes' => [
