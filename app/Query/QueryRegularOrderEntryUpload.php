@@ -29,12 +29,20 @@ class QueryRegularOrderEntryUpload extends Model {
             });
 
             if($params->status) $query->where('status', "$params->status");
+<<<<<<< HEAD
             if($params->dropdown == Constant::IS_ACTIVE) {
                 $params->limit = null;
                 $params->page = 1;
             }
             if($params->withTrashed == 'true') $query->withTrashed();
             if($params->id_regular_order_entry) $query->where('id_regular_order_entry', $params->id_regular_order_entry);
+=======
+
+            if($params->withTrashed == 'true')
+                $query->withTrashed();
+            if($params->id_regular_order_entry)
+                $query->where('id_regular_order_entry', $params->id_regular_order_entry);
+>>>>>>> 3992681e1aff5fb952c87128776ed7bcd9926746
 
             $data = $query
             ->orderBy('id','desc')
@@ -78,7 +86,7 @@ class QueryRegularOrderEntryUpload extends Model {
 
     public static function byId($id)
     {
-        $data = self::find($id);
+        $data = self::where('id_regular_order_entry', $id)->get();
 
         if($data == null) throw new \Exception("id tidak ditemukan", 400);
 
