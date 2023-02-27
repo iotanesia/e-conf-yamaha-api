@@ -19,7 +19,7 @@ class QueryRegularDeliveryPlan extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->search) 
+               if($params->search)
                     $query->where('code_consignee', 'like', "'%$params->search%'")
                             ->orWhere('model', 'like', "'%$params->search%'")
                             ->orWhere('item_no', 'like', "'%$params->search%'")
@@ -37,20 +37,15 @@ class QueryRegularDeliveryPlan extends Model {
                 $params->limit = null;
                 $params->page = 1;
             }
-            
+
             $data = $query
             ->orderBy('id','desc')
             ->paginate($params->limit ?? null);
             return [
-                'items' => $data->map(function ($item){
-                    $res = new \stdClass;
-                    $regularOrderEntry = $item->refRegularOrderEntry;
-                    if($regularOrderEntry){
-                        $res->month = $regularOrderEntry->month;
-                        $res->year = $regularOrderEntry->year;
-                    }
-
-                    return $res;
+                'items' => $data->getCollection()->transform(function ($item){
+                    $item->month = $item->refRegularOrderEntry->month ?? null;
+                    $item->year = $item->refRegularOrderEntry->year ?? null;
+                    return $item;
                 }),
                 'attributes' => [
                     'total' => $data->total(),
@@ -68,7 +63,7 @@ class QueryRegularDeliveryPlan extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->search) 
+               if($params->search)
                     $query->where('code_consignee', 'like', "'%$params->search%'")
                             ->orWhere('model', 'like', "'%$params->search%'")
                             ->orWhere('item_no', 'like', "'%$params->search%'")
@@ -81,14 +76,14 @@ class QueryRegularDeliveryPlan extends Model {
 
             });
 
-            if($params->withTrashed == 'true') 
+            if($params->withTrashed == 'true')
                 $query->withTrashed();
 
-            if($params->id_regular_order_entry) 
+            if($params->id_regular_order_entry)
                 $query->where("id_regular_order_entry", $params->id_regular_order_entry);
             else
                 throw new \Exception("id_regular_order_entry must be sent in request", 400);
-            
+
             $data = $query
             ->orderBy('id','desc')
             ->paginate($params->limit ?? null);
@@ -96,7 +91,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'items' => $data->getCollection()->transform(function($item){
                     $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
                     unset($item->manyDeliveryPlanBox);
-                    
+
 
                     foreach($item->regular_delivery_plan_box as $box){
                         $box->box = $box->refBox;
