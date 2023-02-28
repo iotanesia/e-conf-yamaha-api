@@ -35,7 +35,7 @@ class OrderEntryUploadController extends Controller
     {
         try {
             return ResponseInterface::responseData([
-                "items" => QueryRegularOrderEntryUpload::byId($id)
+                "items" => QueryRegularOrderEntryUpload::updateStatusSendToPc($request)
             ]);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
