@@ -165,4 +165,18 @@ class QueryRegularOrderEntryUpload extends Model {
         }
     }
 
+    public static function updateStatusSendToPc($id,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $store = self::find($id);
+            $store->status = Constant::STS_PROCESS_SEND_TO_PC;
+            $store->save();
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
 }

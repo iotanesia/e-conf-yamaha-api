@@ -30,4 +30,15 @@ class OrderEntryUploadController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function sendPc(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData([
+                "items" => QueryRegularOrderEntryUpload::byId($id)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

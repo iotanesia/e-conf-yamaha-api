@@ -23,6 +23,7 @@ Route::prefix('v1/regular')
      Route::group(['prefix' => 'order-entry-upload'],function (){
          Route::get('/',[OrderEntryUploadController::class,'index']);
          Route::get('/{id}',[OrderEntryUploadController::class,'show']);
+         Route::post('/send-pc',[OrderEntryUploadController::class,'sendPc']);
      });
 
      // order-entry-uplaod-detail
