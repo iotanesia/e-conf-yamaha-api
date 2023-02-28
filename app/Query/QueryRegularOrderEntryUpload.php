@@ -88,17 +88,17 @@ class QueryRegularOrderEntryUpload extends Model {
         $data->regular_order_entry_year = $regularOrderEntry->year ?? null;
         unset($data->refRegularOrderEntry);
         $data->status_desc = null;
-        if($data->status == 0)
+        if($data->status == 1)
             $data->status_desc = "Proses";
-        else if($data->status == 1)
-            $data->status_desc = "Selesai";
         else if($data->status == 2)
-            $data->status_desc = "Send To PC";
+            $data->status_desc = "Selesai";
         else if($data->status == 3)
-            $data->status_desc = "Revisi";
+            $data->status_desc = "Send To PC";
         else if($data->status == 4)
-            $data->status_desc = "Approved";
+            $data->status_desc = "Revisi";
         else if($data->status == 5)
+            $data->status_desc = "Approved";
+        else if($data->status == 6)
             $data->status_desc = "Error";
         return $data;
     }
