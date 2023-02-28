@@ -118,5 +118,10 @@ class QueryMstBox extends Model {
         }
     }
 
+    public static function byItemNoCdConsignee($itemNo,$consingee)
+    {
+        return self::where('item_no',$itemNo)->where('code_consignee',$consingee)->first();
+    }
+
 
 }

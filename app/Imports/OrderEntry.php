@@ -2,6 +2,8 @@
 
 namespace App\Imports;
 
+use App\Jobs\OrderEntryBox;
+use App\Query\QueryMstBox;
 use App\Query\QueryRegularOrderEntryUpload;
 use App\Query\QueryRegularOrderEntryUploadDetail;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -51,6 +53,16 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
             foreach ($collection->chunk(1000) as $i => $chunk) {
                 foreach ($chunk as $row) {
                     if(in_array($row[7],['940E'])) {
+
+                        $uuid = (String) Str::uuid();
+
+                        OrderEntryBox::dispatch([
+                            'code_consignee' => trim($row[1]),
+                            'item_no' => trim($row[5]),
+                            'qty' => trim($row[15]),
+                            'uuid_regular_order_entry_upload_detail' => $uuid
+                        ]);
+
                         $ext[] = [
                             'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                             'code_consignee' => trim($row[1]),
@@ -62,7 +74,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                             'status' => trim($row[20]),
                             'order_no' => trim($row[22]),
                             'cust_item_no' => trim($row[23]),
-                            'uuid' => (String) Str::uuid(),
+                            'uuid' => $uuid,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];

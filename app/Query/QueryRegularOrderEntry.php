@@ -62,7 +62,7 @@ class QueryRegularOrderEntry extends Model {
             ]);
 
             $iteration = self::checkIteration($request);
-            if($iteration == 3) throw new \Exception("error iteration by year, month, and datasouce", 400);
+            // if($iteration == 3) throw new \Exception("Upload data exceeds the maximum limit", 400);
             $request->iteration = $iteration;
             $params = $request->all();
             $params['status'] = Constant::STS_PROCESSED;
