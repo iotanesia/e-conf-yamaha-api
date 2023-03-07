@@ -47,7 +47,7 @@ class OrderEntryUploadDetailController extends Controller
         try {
             return ResponseInterface::responseDataPivot([
                 "items" => QueryRegularOrderEntryUploadDetail::editPivot($request),
-                "column"=> array('id', 'id_regular_order_entry_upload')
+                "column" => QueryRegularOrderEntryUploadDetail::getColumn()
             ]);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

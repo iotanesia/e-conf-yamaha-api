@@ -128,10 +128,11 @@ class ApiHelper {
             ],
             "last_page" => $data['last_page'] ?? null,
             "data" => [
-                $data['column'] ?? null,
-                $data['items'] ?? null,
+                "column" => $data['column'] ?? null,
+                "items" => $data['items'] ?? null,
             ]
         ];
+        return response()->json($response, 200);
     }
 
     static function createResponse($EC, $EM, $data = false) {

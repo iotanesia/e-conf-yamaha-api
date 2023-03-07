@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class QueryRegularOrderEntryUploadDetail extends Model {
 
@@ -136,8 +137,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
     }
 
     public static function getColumn(){
-
-
+            return Schema::getColumnListing('regular_order_entry_upload_detail');
     }
 
     public static function editPivot($params)
