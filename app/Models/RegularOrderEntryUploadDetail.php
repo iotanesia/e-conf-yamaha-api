@@ -34,4 +34,9 @@ class RegularOrderEntryUploadDetail extends Model
     {
         return $this->belongsTo(RegularOrderEntryUpload::class,'id_regular_order_entry_upload','id');
     }
+
+    public function refRegularOrderEntryUploadDetailBox()
+    {
+        return $this->belongsTo(RegularOrderEntryUploadDetailBox::class,'uuid_regular_order_entry_upload_detail','uuid');
+    }
 }

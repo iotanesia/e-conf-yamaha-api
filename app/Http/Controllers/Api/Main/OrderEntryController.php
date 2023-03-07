@@ -25,6 +25,18 @@ class OrderEntryController extends Controller
         }
     }
 
+    public function indexPc(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularOrderEntry::getAllPc($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+
     /**
      * Show the form for creating a new resource.
      *

@@ -22,5 +22,8 @@ class RegularOrderEntryUploadDetailBox extends Model
         "uuid"
     ];
 
+    public function refBox(){
+        return $this->belongsTo(MstBox::class,'id_box','id');
+    }
 
 }

@@ -4,6 +4,7 @@ namespace App\Query;
 
 use App\Constants\Constant;
 use App\Models\RegularOrderEntryUploadDetail AS Model;
+use App\Models\RegularOrderEntryUploadDetailBox;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
@@ -43,8 +44,33 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
             return [
                 'items' => $data->map(function ($item){
+                    $etd_jkt = date('Y-m-d',strtotime($item->delivery)) ?? null;
+                    $box = self::getDetailBox($item->uuid);
+
+                    $set["id"] = $item->id;
+                    $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
+                    $set["code_consignee"] = $item->code_consignee;
+                    $set["model"] = $item->model;
+                    $set["item_no"] = $item->item_no;
+                    $set["disburse"] = $item->disburse;
+                    $set["delivery"] = $item->delivery;
+                    $set["qty"] = $item->qty;
+                    $set["status"] = $item->status;
+                    $set["order_no"] = $item->order_no;
+                    $set["cust_item_no"] = $item->cust_item_no;
+                    $set["created_at"] = $item->created_at;
+                    $set["created_by"] = $item->created_by;
+                    $set["updated_at"] = $item->updated_at;
+                    $set["updated_by"] = $item->updated_by;
+                    $set["deleted_at"] = $item->deleted_at;
+                    $set["uuid"] = $item->uuid;
+                    $set["etd_jkt"] = $etd_jkt;
+                    $set["etd_wh"] = date_create($etd_jkt)->modify('-2 days')->format('Y-m-d');
+                    $set["etd_ypmi"] = date_create($etd_jkt)->modify('-4 days')->format('Y-m-d');
+                    $set["box"] = $box;
+
                     unset($item->refRegularOrderEntryUpload);
-                    return $item;
+                    return $set;
                 }),
                 'attributes' => [
                     'total' => $data->total(),
@@ -54,6 +80,15 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 ]
             ];
         });
+    }
+
+    public static function getDetailBox($uuid){
+        $data = RegularOrderEntryUploadDetailBox::select('mst_box.qty','mst_box.length','mst_box.width','mst_box.height')
+                ->where('uuid_regular_order_entry_upload_detail', $uuid)
+                ->join('mst_box','mst_box.id','regular_order_entry_upload_detail_box.id_box')
+                ->get();
+
+        return $data;
     }
 
     public static function byId($id)

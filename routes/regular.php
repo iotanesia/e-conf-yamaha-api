@@ -19,6 +19,11 @@ Route::prefix('v1/regular')
         Route::post('/{id}',[OrderEntryController::class,'update']);
      });
 
+     // order entry pc
+    Route::group(['prefix' => 'order-entry-pc'],function (){
+        Route::get('/',[OrderEntryController::class,'indexPc']);
+    });
+
      // order-entry-upload
      Route::group(['prefix' => 'order-entry-upload'],function (){
          Route::get('/',[OrderEntryUploadController::class,'index']);

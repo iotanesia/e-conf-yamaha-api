@@ -51,6 +51,40 @@ class QueryRegularOrderEntry extends Model {
         });
     }
 
+    public static function getAllPc($params)
+    {
+        $key = self::cast.json_encode($params->query());
+        return Helper::storageCache($key, function () use ($params){
+            $query = self::where(function ($query) use ($params){
+                if($params->search)
+                    $query->where('year', 'like', "'%$params->search%'")
+                        ->orWhere('month', 'like',  "'%$params->search%'")
+                        ->orWhere('period', 'like',  "'%$params->search%'")
+                        ->orWhere('datasource', 'like',  "'%$params->search%'");
+            });
+
+            if($params->datasource) $query->where('datasource', "$params->datasource");
+            if($params->withTrashed == 'true') $query->withTrashed();
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+
+            $data = $query
+                ->orderBy('year','desc')
+                ->paginate($params->limit ?? null);
+            return [
+                'items' => $data->items(),
+                'attributes' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        });
+    }
+
     public static function store($request,$is_transaction = true)
     {
         if($is_transaction) DB::beginTransaction();
