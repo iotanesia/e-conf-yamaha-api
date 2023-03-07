@@ -119,6 +119,21 @@ class ApiHelper {
         return response()->json($response, 200);
     }
 
+    static function responseDataPivot($data = false){
+        $response = [
+            "meta" => [
+                "error" => EC::NOTHING,
+                "message" => EM::NONE,
+                "page" => $data['attributes'] ?? null
+            ],
+            "last_page" => $data['last_page'] ?? null,
+            "data" => [
+                $data['column'] ?? null,
+                $data['items'] ?? null,
+            ]
+        ];
+    }
+
     static function createResponse($EC, $EM, $data = false) {
         if (!$data && [] !== $data) $data = json_decode("{}");
 

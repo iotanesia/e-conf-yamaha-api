@@ -51,17 +51,17 @@ class QueryRegularOrderEntryUpload extends Model {
                     unset($item->refRegularOrderEntry);
 
                     $item->status_desc = null;
-                    if($item->status == 0)
+                    if($item->status == 1)
                         $item->status_desc = "Proses";
-                    else if($item->status == 1)
-                        $item->status_desc = "Selesai";
                     else if($item->status == 2)
-                        $item->status_desc = "Send To PC";
+                        $item->status_desc = "Selesai";
                     else if($item->status == 3)
-                        $item->status_desc = "Revisi";
+                        $item->status_desc = "Send To PC";
                     else if($item->status == 4)
-                        $item->status_desc = "Approved";
+                        $item->status_desc = "Revisi";
                     else if($item->status == 5)
+                        $item->status_desc = "Approved";
+                    else if($item->status == 6)
                         $item->status_desc = "Error";
 
                     return $item;
@@ -78,28 +78,35 @@ class QueryRegularOrderEntryUpload extends Model {
 
     public static function byId($id)
     {
-        $data = self::where('id_regular_order_entry',$id)->first();
+        $data = self::where('id_regular_order_entry',$id)->get();
 
         if($data == null) throw new \Exception("id tidak ditemukan", 400);
 
-        $regularOrderEntry = $data->refRegularOrderEntry;
-        $data->regular_order_entry_period = $regularOrderEntry->period ?? null;
-        $data->regular_order_entry_month = $regularOrderEntry->month ?? null;
-        $data->regular_order_entry_year = $regularOrderEntry->year ?? null;
-        unset($data->refRegularOrderEntry);
-        $data->status_desc = null;
-        if($data->status == 1)
-            $data->status_desc = "Proses";
-        else if($data->status == 2)
-            $data->status_desc = "Selesai";
-        else if($data->status == 3)
-            $data->status_desc = "Send To PC";
-        else if($data->status == 4)
-            $data->status_desc = "Revisi";
-        else if($data->status == 5)
-            $data->status_desc = "Approved";
-        else if($data->status == 6)
-            $data->status_desc = "Error";
+        $data->map(function ($item){
+            $regularOrderEntry = $item->refRegularOrderEntry;
+            if($regularOrderEntry){
+                $item->regular_order_entry_period = $regularOrderEntry->period;
+                $item->regular_order_entry_month = $regularOrderEntry->month;
+                $item->regular_order_entry_year = $regularOrderEntry->year;
+            }
+
+            unset($item->refRegularOrderEntry);
+            $item->status_desc = null;
+            if($item->status == 1)
+                $item->status_desc = "Proses";
+            else if($item->status == 2)
+                $item->status_desc = "Selesai";
+            else if($item->status == 3)
+                $item->status_desc = "Send To PC";
+            else if($item->status == 4)
+                $item->status_desc = "Revisi";
+            else if($item->status == 5)
+                $item->status_desc = "Approved";
+            else if($item->status == 6)
+                $item->status_desc = "Error";
+
+        });
+
         return $data;
     }
 
