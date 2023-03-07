@@ -41,4 +41,15 @@ class OrderEntryUploadDetailController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function editPivot(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData([
+                "items" => QueryRegularOrderEntryUploadDetail::editPivot($request)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

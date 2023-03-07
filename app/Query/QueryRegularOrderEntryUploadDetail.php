@@ -99,4 +99,36 @@ class QueryRegularOrderEntryUploadDetail extends Model {
             throw $th;
         }
     }
+
+    public static function editPivot($params)
+    {
+        try {
+            $query = self::where('id_regular_order_entry_upload', $params->id_regular_order_entry_upload);
+            if($params->category && $params->value)
+                $query->whereAnd($params->category, "'$params->value'");
+
+            $query->whereBetween("delivery", ["'$params->start_date'","'$params->end_date'"]);
+            
+            $data = $query
+            ->orderBy('id','asc')
+            ->paginate($params->limit ?? null);
+
+            return [
+                'items' => $data->map(function ($item){
+                    unset($item->refRegularOrderEntryUpload);
+                    return $item;
+                }),
+                'last_page' => $data->lastPage(),
+                'attributes' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }    
+    }
 }
