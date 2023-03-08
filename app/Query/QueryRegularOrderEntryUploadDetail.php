@@ -137,255 +137,283 @@ class QueryRegularOrderEntryUploadDetail extends Model {
     }
 
     public static function getColumn(){
-        $columns = array();
-        $dummyObj = `   { title: "Id", field: "name", width: 160, headerSort: false },
-                        { title: "Cust Name", field: "name", width: 160, headerSort: false },
-                        { title: "Item No", field: "name", width: 160, headerSort: false },
-                        { title: "Item Name", field: "name", width: 160, headerSort: false },
+        $dummyObj = '[
+            {
+              "title": "Id",
+              "field": "name",
+              "width": 160,
+              "headerSort": false
+            },
+            {
+              "title": "Cust Name",
+              "field": "name",
+              "width": 160,
+              "headerSort": false
+            },
+            {
+              "title": "Item No",
+              "field": "name",
+              "width": 160,
+              "headerSort": false
+            },
+            {
+              "title": "Item Name",
+              "field": "name",
+              "width": 160,
+              "headerSort": false
+            },
+            {
+              "title": "Customer Item No",
+              "field": "name",
+              "width": 170,
+              "headerSort": false
+            },
+            {
+              "title": "Registration Code",
+              "field": "name",
+              "width": 170,
+              "headerSort": false
+            },
+            {
+              "title": "",
+              "columns": [
+                {
+                  "title": "ETD YPMI",
+                  "field": "progress",
+                  "hozAlign": "right",
+                  "sorter": "number",
+                  "width": 150,
+                  "headerSort": false,
+                  "headerHozAlign": "center",
+                  "columns": [
+                    {
+                      "title": "ETD W/H",
+                      "width": 150,
+                      "hozAlign": "center",
+                      "headerHozAlign": "center",
+                      "columns": [
                         {
-                        title: "Customer Item No",
-                        field: "name",
-                        width: 170,
-                        headerSort: false,
-                        },
+                          "title": "ETD JKT",
+                          "width": 150,
+                          "headerSort": false,
+                          "hozAlign": "center",
+                          "headerHozAlign": "center",
+                          "columns": [
+                            {
+                              "title": "Customer OD No",
+                              "width": 150,
+                              "headerSort": false,
+                              "hozAlign": "center",
+                              "headerHozAlign": "center"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "28-JUL",
+                  "field": "progress",
+                  "hozAlign": "right",
+                  "sorter": "number",
+                  "width": 150,
+                  "headerSort": false,
+                  "headerHozAlign": "center",
+                  "columns": [
+                    {
+                      "title": "4-AUG",
+                      "width": 150,
+                      "hozAlign": "center",
+                      "headerHozAlign": "center",
+                      "columns": [
                         {
-                        title: "Registration Code",
-                        field: "name",
-                        width: 170,
-                        headerSort: false,
-                        },
+                          "title": "7-AUG",
+                          "width": 150,
+                          "headerSort": false,
+                          "hozAlign": "center",
+                          "headerHozAlign": "center",
+                          "columns": [
+                            {
+                              "title": "QTY",
+                              "width": 150,
+                              "headerSort": false,
+                              "hozAlign": "center",
+                              "headerHozAlign": "center"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "BOX",
+                  "field": "car",
+                  "hozAlign": "center",
+                  "width": 150,
+                  "headerSort": false,
+                  "headerHozAlign": "center"
+                }
+              ]
+            },
+            {
+              "title": "AUG",
+              "columns": [
+                {
+                  "title": "28-JUL",
+                  "field": "progress",
+                  "hozAlign": "right",
+                  "sorter": "number",
+                  "width": 150,
+                  "headerSort": false,
+                  "headerHozAlign": "center",
+                  "columns": [
+                    {
+                      "title": "4-AUG",
+                      "width": 150,
+                      "hozAlign": "center",
+                      "headerHozAlign": "center",
+                      "columns": [
                         {
-                        //create column group
-                        title: "",
-                        columns: [
+                          "title": "7-AUG",
+                          "width": 150,
+                          "headerSort": false,
+                          "hozAlign": "center",
+                          "headerHozAlign": "center",
+                          "columns": [
                             {
-                            title: "ETD YPMI",
-                            field: "progress",
-                            hozAlign: "right",
-                            sorter: "number",
-                            width: 150,
-                            headerSort: false,
-                            headerHozAlign: "center",
-                            columns: [
-                                {
-                                title: "ETD W/H",
-                                width: 150, hozAlign: "center",
-                                headerHozAlign: "center",
-                                columns: [
-                                    {
-                                    title: "ETD JKT",
-                                    width: 150,
-                                    headerSort: false, hozAlign: "center",
-                                    headerHozAlign: "center",
-                                    columns: [
-                                        {
-                                        title: "Customer OD No",
-                                        width: 150,
-                                        headerSort: false, hozAlign: "center",
-                                        headerHozAlign: "center",
-                                        },
-                                    ],
-                                    },
-                                ],
-                                },
-                            ],
-                            },
+                              "title": "QTY",
+                              "width": 150,
+                              "headerSort": false,
+                              "hozAlign": "center",
+                              "headerHozAlign": "center"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "BOX",
+                  "field": "car",
+                  "hozAlign": "center",
+                  "width": 150,
+                  "headerSort": false,
+                  "headerHozAlign": "center"
+                }
+              ]
+            },
+            {
+              "title": "",
+              "columns": [
+                {
+                  "title": "28-JUL",
+                  "field": "progress",
+                  "hozAlign": "right",
+                  "sorter": "number",
+                  "width": 150,
+                  "headerSort": false,
+                  "headerHozAlign": "center",
+                  "columns": [
+                    {
+                      "title": "4-AUG",
+                      "width": 150,
+                      "hozAlign": "center",
+                      "headerHozAlign": "center",
+                      "columns": [
+                        {
+                          "title": "7-AUG",
+                          "width": 150,
+                          "headerSort": false,
+                          "hozAlign": "center",
+                          "headerHozAlign": "center",
+                          "columns": [
                             {
-                            title: "28-JUL",
-                            field: "progress",
-                            hozAlign: "right",
-                            sorter: "number",
-                            width: 150,
-                            headerSort: false,
-                            headerHozAlign: "center",
-                            columns: [
-                                {
-                                title: "4-AUG",
-                                width: 150, hozAlign: "center",
-                                headerHozAlign: "center",
-                                columns: [
-                                    {
-                                    title: "7-AUG",
-                                    width: 150,
-                                    headerSort: false, hozAlign: "center",
-                                    headerHozAlign: "center",
-                                    columns: [
-                                        {
-                                        title: "QTY",
-                                        width: 150,
-                                        headerSort: false, hozAlign: "center",
-                                        headerHozAlign: "center",
-                                        },
-                                    ],
-                                    },
-                                ],
-                                },
-                            ],
-                            },
+                              "title": "QTY",
+                              "width": 150,
+                              "headerSort": false,
+                              "hozAlign": "center",
+                              "headerHozAlign": "center"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "BOX",
+                  "field": "car",
+                  "hozAlign": "center",
+                  "width": 150,
+                  "headerSort": false,
+                  "headerHozAlign": "center"
+                }
+              ]
+            },
+            {
+              "title": "",
+              "columns": [
+                {
+                  "title": "28-JUL",
+                  "field": "progress",
+                  "hozAlign": "right",
+                  "sorter": "number",
+                  "width": 150,
+                  "headerSort": false,
+                  "headerHozAlign": "center",
+                  "columns": [
+                    {
+                      "title": "4-AUG",
+                      "width": 150,
+                      "hozAlign": "center",
+                      "headerHozAlign": "center",
+                      "columns": [
+                        {
+                          "title": "7-AUG",
+                          "width": 150,
+                          "headerSort": false,
+                          "hozAlign": "center",
+                          "headerHozAlign": "center",
+                          "columns": [
                             {
-                            title: "BOX",
-                            field: "car",
-                            hozAlign: "center",
-                            width: 150,
-                            headerSort: false,
+                              "title": "QTY",
+                              "width": 150,
+                              "headerSort": false,
+                              "hozAlign": "center",
+                              "headerHozAlign": "center"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "BOX",
+                  "field": "car",
+                  "hozAlign": "center",
+                  "width": 150,
+                  "headerSort": false,
+                  "headerHozAlign": "center"
+                },
+                {
+                  "title": "TOTAL",
+                  "field": "total",
+                  "width": 160,
+                  "headerSort": false,
+                  "hozAlign": "center",
+                  "headerHozAlign": "center"
+                }
+              ]
+            }
+          ]';
 
-                            headerHozAlign: "center",
-                            },
-                        ],
-                        },
 
-                        {
-                        //create column group
-                        title: "AUG",
-                        columns: [
-                            {
-                            title: "28-JUL",
-                            field: "progress",
-                            hozAlign: "right",
-                            sorter: "number",
-                            width: 150,
-                            headerSort: false,
-                            headerHozAlign: "center",
-                            columns: [
-                                {
-                                title: "4-AUG",
-                                width: 150, hozAlign: "center",
-                                headerHozAlign: "center",
-                                columns: [
-                                    {
-                                    title: "7-AUG",
-                                    width: 150,
-                                    headerSort: false, hozAlign: "center",
-                                    headerHozAlign: "center",
-                                    columns: [
-                                        {
-                                        title: "QTY",
-                                        width: 150,
-                                        headerSort: false, hozAlign: "center",
-                                        headerHozAlign: "center",
-                                        },
-                                    ],
-                                    },
-                                ],
-                                },
-                            ],
-                            },
-                            {
-                            title: "BOX",
-                            field: "car",
-                            hozAlign: "center",
-                            width: 150,
-                            headerSort: false,
-
-                            headerHozAlign: "center",
-                            },
-                        ],
-                        },
-                        {
-                        //create column group
-                        title: "",
-                        columns: [
-                            {
-                            title: "28-JUL",
-                            field: "progress",
-                            hozAlign: "right",
-                            sorter: "number",
-                            width: 150,
-                            headerSort: false,
-                            headerHozAlign: "center",
-                            columns: [
-                                {
-                                title: "4-AUG",
-                                width: 150, hozAlign: "center",
-                                headerHozAlign: "center",
-                                columns: [
-                                    {
-                                    title: "7-AUG",
-                                    width: 150,
-                                    headerSort: false, hozAlign: "center",
-                                    headerHozAlign: "center",
-                                    columns: [
-                                        {
-                                        title: "QTY",
-                                        width: 150,
-                                        headerSort: false, hozAlign: "center",
-                                        headerHozAlign: "center",
-                                        },
-                                    ],
-                                    },
-                                ],
-                                },
-                            ],
-                            },
-                            {
-                            title: "BOX",
-                            field: "car",
-                            hozAlign: "center",
-                            width: 150,
-                            headerSort: false,
-
-                            headerHozAlign: "center",
-                            },
-                        ],
-                        },
-                        {
-                        //create column group
-                        title: "",
-                        columns: [
-                            {
-                            title: "28-JUL",
-                            field: "progress",
-                            hozAlign: "right",
-                            sorter: "number",
-                            width: 150,
-                            headerSort: false,
-                            headerHozAlign: "center",
-                            columns: [
-                                {
-                                title: "4-AUG",
-                                width: 150, hozAlign: "center",
-                                headerHozAlign: "center",
-                                columns: [
-                                    {
-                                    title: "7-AUG",
-                                    width: 150,
-                                    headerSort: false, hozAlign: "center",
-                                    headerHozAlign: "center",
-                                    columns: [
-                                        {
-                                        title: "QTY",
-                                        width: 150,
-                                        headerSort: false, hozAlign: "center",
-                                        headerHozAlign: "center",
-                                        },
-                                    ],
-                                    },
-                                ],
-                                },
-                            ],
-                            },
-                            {
-                            title: "BOX",
-                            field: "car",
-                            hozAlign: "center",
-                            width: 150,
-                            headerSort: false,
-                            headerHozAlign: "center",
-                            },
-                            {
-                            title: "TOTAL",
-                            field: "total",
-                            width: 160,
-                            headerSort: false,
-                            hozAlign: "center",
-                            headerHozAlign: "center",
-                            },
-                        ],
-                        }`;
         //return Schema::getColumnListing('regular_order_entry_upload_detail');
-
-        array_push($columns, json_decode($dummyObj));
-        return $columns;
+        return  json_decode($dummyObj);
     }
 
     public static function editPivot($params)
@@ -440,7 +468,6 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 ],
             ];
         } catch (\Throwable $th) {
-            if($is_transaction) DB::rollBack();
             throw $th;
         }
     }
