@@ -94,8 +94,34 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
     public static function byId($id)
     {
-        $data = self::find($id);
+        $data = self::where('id_regular_order_entry_upload',$id)->get();
+
         if($data == null) throw new \Exception("id tidak ditemukan", 400);
+
+        $data->map(function ($item){
+            $regularOrderEntry = $item->refRegularOrderEntry;
+            if($regularOrderEntry){
+                $item->regular_order_entry_period = $regularOrderEntry->period;
+                $item->regular_order_entry_month = $regularOrderEntry->month;
+                $item->regular_order_entry_year = $regularOrderEntry->year;
+            }
+
+            unset($item->refRegularOrderEntry);
+            $item->status_desc = null;
+            if($item->status == 1)
+                $item->status_desc = "Proses";
+            else if($item->status == 2)
+                $item->status_desc = "Selesai";
+            else if($item->status == 3)
+                $item->status_desc = "Send To PC";
+            else if($item->status == 4)
+                $item->status_desc = "Revisi";
+            else if($item->status == 5)
+                $item->status_desc = "Approved";
+            else if($item->status == 6)
+                $item->status_desc = "Error";
+
+        });
 
         return $data;
     }
@@ -140,7 +166,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
         $dummyObj = '[
             {
               "title": "Id",
-              "field": "name",
+              "field": "id",
               "width": 160,
               "headerSort": false
             },
@@ -152,25 +178,25 @@ class QueryRegularOrderEntryUploadDetail extends Model {
             },
             {
               "title": "Item No",
-              "field": "name",
+              "field": "item_no",
               "width": 160,
               "headerSort": false
             },
             {
               "title": "Item Name",
-              "field": "name",
+              "field": "item_name",
               "width": 160,
               "headerSort": false
             },
             {
               "title": "Customer Item No",
-              "field": "name",
+              "field": "customer_item_no",
               "width": 170,
               "headerSort": false
             },
             {
               "title": "Registration Code",
-              "field": "name",
+              "field": "registration_code",
               "width": 170,
               "headerSort": false
             },
