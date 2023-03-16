@@ -213,6 +213,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     $result->status = $item->status;
                     return $result;
                 }),
+                'last_page' => $data->lastPage(),
                 'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
