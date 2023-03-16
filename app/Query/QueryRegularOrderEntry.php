@@ -95,16 +95,19 @@ class QueryRegularOrderEntry extends Model {
                 'year'
             ]);
 
+            $check = self::check($request);
             $iteration = self::checkIteration($request);
             // if($iteration == 3) throw new \Exception("Upload data exceeds the maximum limit", 400);
             $request->iteration = $iteration;
             $params = $request->all();
             $params['status'] = Constant::STS_PROCESSED;
             $params['uploaded'] = $iteration;
-            $store = self::create($params);
+
+            if(!$check) $store = self::create($params);
+            else $store = $check;
+
             $request->id_regular_order_entry = $store->id;
             QueryRegularOrderEntryUpload::saveFile($request,false);
-
 
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
@@ -121,6 +124,15 @@ class QueryRegularOrderEntry extends Model {
             'month' => $request->month,
             'datasource' => $request->datasource,
         ])->count() + 1;
+    }
+
+     public static function check($request)
+    {
+        return self::where([
+            'year' => $request->year,
+            'month' => $request->month,
+            'datasource' => $request->datasource,
+        ])->first();
     }
 
     public static function change($request,$uuid, $is_transaction = true)
