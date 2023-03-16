@@ -194,6 +194,10 @@ class QueryRegularOrderEntryUpload extends Model {
             $query = self::where(function ($query) use ($params){
                $query->where('status',Constant::STS_PROCESS_SEND_TO_PC);
                if($params->search) $query->where('filename', 'like', "'%$params->search%'");
+            })
+            ->whereHas('refRegularOrderEntry',function ($query) use ($params){
+                if($params->datasoruce) $query->where('datasoruce',$params->datasoruce);
+                if($params->date) $query->whereDate('created_at',$params->date);
             });
 
 
