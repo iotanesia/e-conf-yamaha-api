@@ -186,4 +186,41 @@ class QueryRegularOrderEntryUpload extends Model {
         }
     }
 
+
+    public static  function getOrderEntryPc($params)
+    {
+        $key = self::cast.'-pc-'.json_encode($params->query());
+        return Helper::storageCache($key, function () use ($params){
+            $query = self::where(function ($query) use ($params){
+               $query->where('status',Constant::STS_PROCESS_SEND_TO_PC);
+               if($params->search) $query->where('filename', 'like', "'%$params->search%'");
+            });
+
+
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+
+            if($params->withTrashed == 'true') $query->withTrashed();
+
+            $data = $query
+            ->orderBy('id','desc')
+            ->paginate($params->limit ?? null);
+            return [
+                'items' => $data->getCollection()->transform(function ($item){
+                    $result = $item->refRegularOrderEntry;
+                    $result->status = $item->status;
+                    return $result;
+                }),
+                'attributes' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        });
+    }
+
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Main\OrderEntryController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadDetailController;
 use App\Http\Controllers\Api\Main\DeliveryPlanController;
+use App\Http\Controllers\Api\Main\OrderEntryPcController;
 
 //with middleware
 Route::prefix('v1/regular')
@@ -21,7 +22,7 @@ Route::prefix('v1/regular')
 
      // order entry pc
     Route::group(['prefix' => 'order-entry-pc'],function (){
-        Route::get('/',[OrderEntryController::class,'indexPc']);
+        Route::get('/',[OrderEntryPcController::class,'index']);
     });
 
      // order-entry-upload
