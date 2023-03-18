@@ -629,4 +629,6 @@ class QueryRegularOrderEntryUploadDetail extends Model {
             throw $th;
         }
     }
+
+
 }

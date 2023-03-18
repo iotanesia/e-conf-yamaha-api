@@ -27,11 +27,27 @@ class RegularOrderEntry extends Model
 	    'deleted_at'
     ];
 
+    public function manyUpload()
+    {
+        return $this->hasMany(RegularOrderEntryUpload::class,'id_regular_order_entry','id');
+    }
+
     public static function boot()
     {
         parent::boot();
         static::creating(function ($model){
             $model->uuid = (string) Str::uuid();
         });
+
+        static::deleting(function($item) { // before delete() method call this
+            foreach ($item->manyUpload as $key => $detail) {
+                foreach ($detail->manyDetail as $key => $box) {
+                    $box->manyDetailBox()->forceDelete();
+                }
+                $detail->manyDetail()->forceDelete();
+            }
+            $item->manyUpload()->forceDelete();
+            // do the rest of the cleanup...
+       });
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use App\Imports\OrderEntry;
+use App\Models\RegularOrderEntry;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -228,4 +229,22 @@ class QueryRegularOrderEntryUpload extends Model {
         });
     }
 
+    public static function destroyz($id,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            $data = self::find($id);
+            if(!$data) throw new \Exception("Data not found.", 400);
+
+            $check = self::where('id_regular_order_entry',$data->id_regular_order_entry)->count();
+            if($check > 1) $data->forceDelete();
+            else RegularOrderEntry::find($data->id_regular_order_entry)->forceDelete();
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
 }

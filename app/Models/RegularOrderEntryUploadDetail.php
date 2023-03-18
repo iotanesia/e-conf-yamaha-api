@@ -39,4 +39,9 @@ class RegularOrderEntryUploadDetail extends Model
     {
         return $this->belongsTo(RegularOrderEntryUploadDetailBox::class,'uuid_regular_order_entry_upload_detail','uuid');
     }
+
+    public function manyDetailBox()
+    {
+        return $this->hasMany(RegularOrderEntryUploadDetailBox::class,'uuid_regular_order_entry_upload_detail','uuid');
+    }
 }

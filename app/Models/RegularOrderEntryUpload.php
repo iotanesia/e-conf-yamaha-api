@@ -30,4 +30,23 @@ class RegularOrderEntryUpload extends Model
     {
         return $this->belongsTo(RegularOrderEntry::class,'id_regular_order_entry','id');
     }
+
+    public function manyDetail()
+    {
+        return $this->hasMany(RegularOrderEntryUploadDetail::class,'id_regular_order_entry_upload','id');
+    }
+
+    public static function boot() {
+        parent::boot();
+
+        static::deleting(function($item) { // before delete() method call this
+             foreach ($item->manyDetail as $key => $box) {
+                $box->manyDetailBox()->forceDelete();
+             }
+             $item->manyDetail()->forceDelete();
+             // do the rest of the cleanup...
+        });
+    }
+
+
 }
