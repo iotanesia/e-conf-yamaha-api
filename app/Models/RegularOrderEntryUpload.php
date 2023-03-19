@@ -10,6 +10,7 @@ class RegularOrderEntryUpload extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'regular_order_entry_upload';
+    protected $primaryKey = 'id';
     public $fillable = [
         'id',
         'uuid',

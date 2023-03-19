@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class RegularOrderEntryUploadRevision extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'regular_order_entry_upload';
+    protected $table = 'regular_order_entry_upload_revision';
     public $fillable = [
         'id',
         'id_regular_order_entry_upload',
@@ -26,8 +26,6 @@ class RegularOrderEntryUploadRevision extends Model
     {
         return $this->belongsTo(User::class,'id_user','id');
     }
-
-
 
     public static function boot() {
         parent::boot();

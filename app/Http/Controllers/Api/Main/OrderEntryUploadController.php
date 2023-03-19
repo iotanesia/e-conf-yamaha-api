@@ -64,4 +64,15 @@ class OrderEntryUploadController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function sendRevision(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData([
+                "items" => QueryRegularOrderEntryUploadRevision::sendRevision($request)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

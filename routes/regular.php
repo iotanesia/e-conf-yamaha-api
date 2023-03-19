@@ -28,8 +28,9 @@ Route::prefix('v1/regular')
      // order-entry-upload
      Route::group(['prefix' => 'order-entry-upload'],function (){
          Route::get('/',[OrderEntryUploadController::class,'index']);
-         Route::get('/delete',[OrderEntryUploadController::class,'revision']);
+         Route::get('/revision',[OrderEntryUploadController::class,'revision']);
          Route::post('/send-pc',[OrderEntryUploadController::class,'sendPc']);
+         Route::post('/revision',[OrderEntryUploadController::class,'sendRevision']);
          Route::get('/{id}',[OrderEntryUploadController::class,'show']);
          Route::delete('/{id}',[OrderEntryUploadController::class,'delete']);
      });

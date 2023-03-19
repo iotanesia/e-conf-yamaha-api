@@ -4,6 +4,7 @@ namespace App\Query;
 
 use App\Constants\Constant;
 use App\Models\RegularOrderEntryUploadRevision AS Model;
+use App\Models\RegularOrderEntryUpload AS RegularOrderEntryUpload;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
@@ -34,7 +35,7 @@ class QueryRegularOrderEntryUploadRevision extends Model {
                 $params->page = 1;
             }
             if($params->withTrashed == 'true') $query->withTrashed();
-            if($params->id_regular_order_entry) $query->where('id_regular_order_entry', $params->id_regular_order_entry);
+            if($params->id_regular_order_entry) $query->where('id_regular_order_entry', $params->id);
 
             $data = $query
             ->orderBy('id','desc')
@@ -54,4 +55,29 @@ class QueryRegularOrderEntryUploadRevision extends Model {
         });
     }
 
+    public static function sendRevision($request, $is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            if(!$request->id) throw new \Exception("id tidak ditemukan", 400);
+            if(!$request->id_user) throw new \Exception("user id tidak ditemukan", 400);
+            if(!$request->note) throw new \Exception("note belum terisi", 400);
+
+            //update upload
+            $update = RegularOrderEntryUpload::where('id',$request->id)
+                        ->update(['status' => Constant::STS_PROCESS_REVISION]);
+
+            //save revisi
+            $params['id_regular_order_entry_upload'] = $request->id;
+            $params['id_user'] = $request->id_user;
+            $params['note'] = $request->note;
+            self::create($params);
+
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
 }
