@@ -40,12 +40,12 @@ class RegularOrderEntry extends Model
         });
 
         static::deleting(function($item) { // before delete() method call this
-            foreach ($item->manyUpload as $key => $detail) {
-                foreach ($detail->manyDetail as $key => $box) {
-                    $box->manyDetailBox()->forceDelete();
-                }
-                $detail->manyDetail()->forceDelete();
-            }
+            // foreach ($item->manyUpload as $key => $detail) {
+            //     foreach ($detail->manyDetail as $key => $box) {
+            //         $box->manyDetailBox()->forceDelete();
+            //     }
+            //     $detail->manyDetail()->forceDelete();
+            // }
             $item->manyUpload()->forceDelete();
             // do the rest of the cleanup...
        });

@@ -41,10 +41,10 @@ class RegularOrderEntryUpload extends Model
         parent::boot();
 
         static::deleting(function($item) { // before delete() method call this
-             foreach ($item->manyDetail as $key => $box) {
-                $box->manyDetailBox()->forceDelete();
-             }
-             $item->manyDetail()->forceDelete();
+            //  foreach ($item->manyDetail as $key => $box) {
+            //     $box->manyDetailBox()->forceDelete();
+            //  }
+            //  $item->manyDetail()->forceDelete();
              // do the rest of the cleanup...
         });
     }
