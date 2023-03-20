@@ -135,6 +135,13 @@ class ApiHelper {
         return response()->json($response, 200);
     }
 
+    static function responseDataPivotNew($data = false){
+        $response = [
+            "items" => $data
+        ];
+        return response()->json($response, 200);
+    }
+
     static function createResponse($EC, $EM, $data = false) {
         if (!$data && [] !== $data) $data = json_decode("{}");
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use stdClass;
 
 class QueryRegularOrderEntryUploadDetail extends Model {
 
@@ -585,7 +586,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
             ->paginate($params->limit ?? null);
 
             return [
-                'items' => json_decode(),
+                'items' => json_decode(''),
 
 //                'items' => $data->map(function ($item){
 //
@@ -630,5 +631,57 @@ class QueryRegularOrderEntryUploadDetail extends Model {
         }
     }
 
+    public static function getPivotDetail($param) {
+        $dataFirst = [];
+        $dataHeader = Model::select('code_consignee', 'item_no', 'cust_item_no')->where('id_regular_order_entry_upload',$param->id_regular_order_entry_upload)->groupBy('code_consignee', 'item_no', 'cust_item_no')->get();
+        $dataHeader->transform(function($item){
+            return self::setPivotJson($item);
+        });
+        foreach($dataHeader as $val) {
+            $val->_children = null;
+            $dataFirst = Model::select('*',DB::raw('ROW_NUMBER() OVER (ORDER BY code_consignee) AS header'))
+            ->where('code_consignee',$val->code_consignee)
+            ->where('item_no',$val->item_no)
+            ->where('cust_item_no',$val->customer_item_no)
+            ->where('id_regular_order_entry_upload',$param->id_regular_order_entry_upload)
+            ->get();
+            $val->_children = $dataFirst->transform(function($item){
+                return self::setPivotJson($item);
+            });
+            foreach ($dataFirst as $key => $value) {
+                $etd = [];
+                $etd[] = self::setPivotJson($value,'etd ypmi',$value->etd_ypmi);
+                $etd[] = self::setPivotJson($value,'etd wh',$value->etd_wh);
+                $etd[] = self::setPivotJson($value,'etd jkt',$value->etd_jkt);
+                $value->_children = $etd;
+            }
+        }
+        return $dataHeader;
+    }
 
+    public static function setPivotJson($param,$etd = null,$tanggal = null ) {
+          $data = new stdClass;
+          $data->id = $param->id ?? null;
+          $data->name = $param->name ?? null;
+          $data->item_no = $param->item_no ?? null;
+          $data->item_name = 'yow';
+          $data->customer_item_no = $param->cust_item_no ?? null;
+          $data->etd = $etd;
+          $data->tanggal = $tanggal;
+          $data->customer_od_no = $param->order_no;
+          $data->qty = '120';
+          $data->box = [
+            '10 PCS',
+            '20 PCS',
+            '30 PCS'
+          ];
+          $data->total = '2000';
+          $data->code_consignee =$param->code_consignee ?? null;
+          $data->etd_ypmi =$param->etd_ypmi ?? null;
+          $data->etd_wh =$param->etd_wh ?? null;
+          $data->etd_jkt =$param->etd_jkt ?? null;
+          $data->order_no =$param->order_no ?? null;
+
+        return $data;
+    }
 }
