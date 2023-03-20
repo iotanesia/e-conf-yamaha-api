@@ -43,6 +43,17 @@ class OrderEntryUploadController extends Controller
         }
     }
 
+    public function sendDcManager(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData([
+                "items" => QueryRegularOrderEntryUpload::updateStatusSendToDcManager($request)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function delete(Request $request,$id)
     {
         try {

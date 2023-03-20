@@ -187,6 +187,20 @@ class QueryRegularOrderEntryUpload extends Model {
         }
     }
 
+    public static function updateStatusSendToDcManager($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $store = self::find($request->id);
+            $store->status = Constant::STS_SEND_TO_DC_MANAGER;
+            $store->save();
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
 
     public static  function getOrderEntryPc($params)
     {
@@ -194,6 +208,47 @@ class QueryRegularOrderEntryUpload extends Model {
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
                $query->where('status',Constant::STS_PROCESS_SEND_TO_PC);
+               if($params->search) $query->where('filename', 'like', "'%$params->search%'");
+            })
+            ->whereHas('refRegularOrderEntry',function ($query) use ($params){
+                if($params->datasoruce) $query->where('datasoruce',$params->datasoruce);
+                if($params->date) $query->whereDate('created_at',$params->date);
+            });
+
+
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+
+            if($params->withTrashed == 'true') $query->withTrashed();
+
+            $data = $query
+            ->orderBy('id','desc')
+            ->paginate($params->limit ?? null);
+            return [
+                'items' => $data->getCollection()->transform(function ($item){
+                    $result = $item->refRegularOrderEntry;
+                    $result->status = $item->status;
+                    return $result;
+                }),
+                'last_page' => $data->lastPage(),
+                'attributes' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        });
+    }
+
+    public static  function getOrderEntryDcManager($params)
+    {
+        $key = self::cast.'-dc-'.json_encode($params->query());
+        return Helper::storageCache($key, function () use ($params){
+            $query = self::where(function ($query) use ($params){
+               $query->where('status',Constant::STS_SEND_TO_DC_MANAGER);
                if($params->search) $query->where('filename', 'like', "'%$params->search%'");
             })
             ->whereHas('refRegularOrderEntry',function ($query) use ($params){

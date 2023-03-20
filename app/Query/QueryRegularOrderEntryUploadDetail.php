@@ -46,7 +46,6 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
             return [
                 'items' => $data->map(function ($item){
-                    $etd_jkt = date('Y-m-d',strtotime($item->delivery)) ?? null;
                     $box = self::getDetailBox($item->uuid);
 
                     $set["id"] = $item->id;
@@ -66,9 +65,9 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                     $set["updated_by"] = $item->updated_by;
                     $set["deleted_at"] = $item->deleted_at;
                     $set["uuid"] = $item->uuid;
-                    $set["etd_jkt"] = $etd_jkt;
-                    $set["etd_wh"] = date_create($etd_jkt)->modify('-2 days')->format('Y-m-d');
-                    $set["etd_ypmi"] = date_create($etd_jkt)->modify('-4 days')->format('Y-m-d');
+                    $set["etd_jkt"] = $item->etd_jkt;
+                    $set["etd_wh"] = $item->etd_wh;
+                    $set["etd_ypmi"] = $item->etd_ypmi;
                     $set["box"] = $box;
 
                     unset($item->refRegularOrderEntryUpload);

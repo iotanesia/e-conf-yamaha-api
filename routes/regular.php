@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Main\OrderEntryController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadDetailController;
 use App\Http\Controllers\Api\Main\DeliveryPlanController;
+use App\Http\Controllers\Api\Main\OrderEntryDcManagerController;
 use App\Http\Controllers\Api\Main\OrderEntryPcController;
 
 //with middleware
@@ -25,11 +26,17 @@ Route::prefix('v1/regular')
         Route::get('/',[OrderEntryPcController::class,'index']);
     });
 
+    // order entry pc
+    Route::group(['prefix' => 'order-entry-dc-manager'],function (){
+        Route::get('/',[OrderEntryDcManagerController::class,'index']);
+    });
+
      // order-entry-upload
      Route::group(['prefix' => 'order-entry-upload'],function (){
          Route::get('/',[OrderEntryUploadController::class,'index']);
          Route::get('/revision',[OrderEntryUploadController::class,'revision']);
          Route::post('/send-pc',[OrderEntryUploadController::class,'sendPc']);
+         Route::post('/send-dc-manager',[OrderEntryUploadController::class,'sendDcManager']);
          Route::post('/revision',[OrderEntryUploadController::class,'sendRevision']);
          Route::get('/{id}',[OrderEntryUploadController::class,'show']);
          Route::delete('/{id}',[OrderEntryUploadController::class,'delete']);
