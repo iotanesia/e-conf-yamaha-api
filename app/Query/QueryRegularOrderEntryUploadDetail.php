@@ -631,31 +631,32 @@ class QueryRegularOrderEntryUploadDetail extends Model {
     }
 
     public static function getPivotDetail($param) {
-        $dataFirst = [];
-        $dataHeader = Model::select('code_consignee', 'item_no', 'cust_item_no')->where('id_regular_order_entry_upload',$param->id_regular_order_entry_upload)->groupBy('code_consignee', 'item_no', 'cust_item_no')->get();
-        $dataHeader->transform(function($item){
-            return self::setPivotJson($item);
-        });
-        foreach($dataHeader as $val) {
-            $val->_children = null;
-            $dataFirst = Model::select('*',DB::raw('ROW_NUMBER() OVER (ORDER BY code_consignee) AS header'))
-            ->where('code_consignee',$val->code_consignee)
-            ->where('item_no',$val->item_no)
-            ->where('cust_item_no',$val->customer_item_no)
-            ->where('id_regular_order_entry_upload',$param->id_regular_order_entry_upload)
-            ->get();
-            $val->_children = $dataFirst->transform(function($item){
-                return self::setPivotJson($item);
-            });
-            foreach ($dataFirst as $key => $value) {
-                $etd = [];
-                $etd[] = self::setPivotJson($value,'etd ypmi',$value->etd_ypmi);
-                $etd[] = self::setPivotJson($value,'etd wh',$value->etd_wh);
-                $etd[] = self::setPivotJson($value,'etd jkt',$value->etd_jkt);
-                $value->_children = $etd;
-            }
-        }
-        return $dataHeader;
+        return Model::where('id_regular_order_entry_upload',$param->id_regular_order_entry_upload)->get();
+        // $dataFirst = [];
+        // $dataHeader = Model::select('code_consignee', 'item_no', 'cust_item_no')->where('id_regular_order_entry_upload',$param->id_regular_order_entry_upload)->groupBy('code_consignee', 'item_no', 'cust_item_no')->get();
+        // $dataHeader->transform(function($item){
+        //     return self::setPivotJson($item);
+        // });
+        // foreach($dataHeader as $val) {
+        //     $val->_children = null;
+        //     $dataFirst = Model::select('*',DB::raw('ROW_NUMBER() OVER (ORDER BY code_consignee) AS header'))
+        //     ->where('code_consignee',$val->code_consignee)
+        //     ->where('item_no',$val->item_no)
+        //     ->where('cust_item_no',$val->customer_item_no)
+        //     ->where('id_regular_order_entry_upload',$param->id_regular_order_entry_upload)
+        //     ->get();
+        //     $val->_children = $dataFirst->transform(function($item){
+        //         return self::setPivotJson($item);
+        //     });
+        //     foreach ($dataFirst as $key => $value) {
+        //         $etd = [];
+        //         $etd[] = self::setPivotJson($value,'etd ypmi',$value->etd_ypmi);
+        //         $etd[] = self::setPivotJson($value,'etd wh',$value->etd_wh);
+        //         $etd[] = self::setPivotJson($value,'etd jkt',$value->etd_jkt);
+        //         $value->_children = $etd;
+        //     }
+        // }
+        // return $dataHeader;
     }
 
     public static function setPivotJson($param,$etd = null,$tanggal = null ) {
