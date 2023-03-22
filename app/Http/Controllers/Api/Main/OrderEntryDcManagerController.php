@@ -16,6 +16,7 @@ class OrderEntryDcManagerController extends Controller
      */
     public function index(Request $request)
     {
+
         try {
             return ResponseInterface::responseData(
                 QueryRegularOrderEntryUpload::getOrderEntryDcManager($request)

@@ -94,17 +94,21 @@ class QueryRegularOrderEntryUpload extends Model {
             unset($item->refRegularOrderEntry);
             $item->status_desc = null;
             if($item->status == 1)
-                $item->status_desc = "Proses";
+                $item->status_desc = "Process";
             else if($item->status == 2)
-                $item->status_desc = "Selesai";
+                $item->status_desc = "Done Upload";
             else if($item->status == 3)
                 $item->status_desc = "Send To PC";
             else if($item->status == 4)
-                $item->status_desc = "Revisi";
+                $item->status_desc = "Correction";
             else if($item->status == 5)
-                $item->status_desc = "Approved";
+                $item->status_desc = "Approved PC";
             else if($item->status == 6)
                 $item->status_desc = "Error";
+            else if($item->status == 7)
+                $item->status_desc = "Send To DC Manager";
+            else if($item->status == 8)
+                $item->status_desc = "Finish";
 
         });
 
