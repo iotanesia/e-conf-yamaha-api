@@ -137,6 +137,11 @@ class ApiHelper {
 
     static function responseDataPivotNew($data = false){
         $response = [
+            "meta" => [
+                "error" => EC::NOTHING,
+                "message" => EM::NONE,
+                "page" => $data['attributes'] ?? null
+            ],
             "items" => $data
         ];
         return response()->json($response, 200);
