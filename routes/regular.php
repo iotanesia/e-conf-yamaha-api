@@ -48,6 +48,7 @@ Route::prefix('v1/regular')
          Route::get('/{id}',[OrderEntryUploadDetailController::class,'show']);
          Route::put('/',[OrderEntryUploadDetailController::class,'update']);
          Route::post('/edit-pivot',[OrderEntryUploadDetailController::class,'editPivot']);
+         Route::get('/box-pivot',[OrderEntryUploadDetailController::class,'editPivot']);
       });
 
       // delivery-plan

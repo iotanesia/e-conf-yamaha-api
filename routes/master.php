@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Main\OrderEntryUploadDetailController;
 use App\Http\Controllers\Api\Master\BoxController;
 use App\Http\Controllers\Api\Master\ConsigneeController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Api\Master\GroupProductController;
 use App\Http\Controllers\Api\Master\PositionController;
 use App\Http\Controllers\Api\Master\RoleController;
 use App\Http\Controllers\Api\Master\DatasourceController;
+use App\Query\QueryRegularOrderEntryUploadDetail;
 
 //with middleware
 Route::prefix('v1/master')
@@ -116,5 +118,10 @@ Route::prefix('v1/master')
         Route::put('/',[DatasourceController::class,'update']);
         Route::get('/{nama}',[DatasourceController::class,'show']);
         Route::delete('/{nama}',[DatasourceController::class,'destroy']);
+    });
+
+    // category pivot
+    Route::group(['prefix' => 'category-pivot'],function (){
+        Route::get('/',[OrderEntryUploadDetailController::class,'categoryPivot']);
     });
 });

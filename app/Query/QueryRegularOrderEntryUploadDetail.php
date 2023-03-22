@@ -684,4 +684,16 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
         return $data;
     }
+
+    public static function getCategoryPivot($param) {
+        $result[] = ['value'=>'cust_name','label'=>'Customer Name'];
+        $result[] = ['value'=>'item_no','label'=>'Item No'];
+        $result[] = ['value'=>'item_name','label'=>'Item Name'];
+        $result[] = ['value'=>'cust_item_no','label'=>'Customer Item No'];
+        $result[] = ['value'=>'etd_ypmi','label'=>'ETD YPMI'];
+        $result[] = ['value'=>'etd_wh','label'=>'ETD W/H'];
+        $result[] = ['value'=>'etd_jkt','label'=>'ETD JKT'];
+        return $result;
+    }
+    
 }
