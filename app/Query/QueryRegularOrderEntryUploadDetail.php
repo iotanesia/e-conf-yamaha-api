@@ -4,6 +4,7 @@ namespace App\Query;
 
 use App\Constants\Constant;
 use App\Models\RegularOrderEntryUploadDetail AS Model;
+use App\Models\VRegularOrderEntryUploadDetail AS VModel;
 use App\Models\RegularOrderEntryUploadDetailBox;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -631,7 +632,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
     }
 
     public static function getPivotDetail($param) {
-        return Model::where('id_regular_order_entry_upload',$param->id_regular_order_entry_upload)->get();
+        return VModel::where('id_regular_order_entry_upload',$param->id_regular_order_entry_upload)->get();
         // $dataFirst = [];
         // $dataHeader = Model::select('code_consignee', 'item_no', 'cust_item_no')->where('id_regular_order_entry_upload',$param->id_regular_order_entry_upload)->groupBy('code_consignee', 'item_no', 'cust_item_no')->get();
         // $dataHeader->transform(function($item){
