@@ -42,7 +42,7 @@ class User extends Model {
         })
         ->first();
         if(!$user) throw new \Exception("Pengguna belum terdaftar.");
-        if (!Hash::check($params->password, $user->password)) throw new \Exception("Email atau password salah.");
+        if (!Hash::check($params->password, $user->password)) throw new \Exception("Email atau password salah.",200);
         $user->id_role = $user->refUserRole->id_roles;
         $user->role = $user->refUserRole->refRole->name ?? null;
         $user->position = $user->refUserRole->refPosition->name ?? null;
