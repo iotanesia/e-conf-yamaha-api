@@ -41,7 +41,7 @@ class User extends Model {
             $query->orderBy('is_active','desc');
         })
         ->first();
-        if(!$user) throw new \Exception("Pengguna belum terdaftar.");
+        if(!$user) throw new \Exception("Pengguna belum terdaftar.",200);
         if (!Hash::check($params->password, $user->password)) throw new \Exception("Email atau password salah.",200);
         $user->id_role = $user->refUserRole->id_roles;
         $user->role = $user->refUserRole->refRole->name ?? null;
