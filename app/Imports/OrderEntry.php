@@ -27,10 +27,12 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
     use RegistersEventListeners;
 
     private $id_regular_order_entry_upload;
+    private $params;
 
-    public function __construct($id_regular_order_entry_upload)
+    public function __construct($id_regular_order_entry_upload,$params)
     {
         $this->id_regular_order_entry_upload = $id_regular_order_entry_upload;
+        $this->params = $params;
     }
 
     public function sheets(): array
@@ -52,17 +54,16 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
             $ext = [];
             foreach ($collection->chunk(1000) as $i => $chunk) {
                 foreach ($chunk as $row) {
-                    if(in_array($row[7],['940E'])) {
-
+                    $fillter_yearmonth = $this->params['year'].$this->params['month'];
+                    $deliver_yearmonth = Carbon::parse(trim($row[14]))->format('Ym');
+                    if(in_array($row[7],['940E']) && $deliver_yearmonth  == $fillter_yearmonth) {
                         $uuid = (String) Str::uuid();
-
                         OrderEntryBox::dispatch([
                             'code_consignee' => trim($row[1]),
                             'item_no' => trim($row[5]),
                             'qty' => trim($row[15]),
                             'uuid_regular_order_entry_upload_detail' => $uuid
                         ]);
-
                         $ext[] = [
                             'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                             'code_consignee' => trim($row[1]),

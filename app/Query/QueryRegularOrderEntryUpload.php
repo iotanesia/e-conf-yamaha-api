@@ -139,7 +139,10 @@ class QueryRegularOrderEntryUpload extends Model {
             $store = self::create($params);
 
 
-            Excel::queueImport(new OrderEntry($store->id),storage_path().'/app/'.$params['filepath']);
+            Excel::queueImport(new OrderEntry($store->id,[
+                'year' => $request->year,
+                'month' => $request->month,
+            ]),storage_path().'/app/'.$params['filepath']);
 
 
             if($is_transaction) DB::commit();
@@ -234,6 +237,7 @@ class QueryRegularOrderEntryUpload extends Model {
                 'items' => $data->getCollection()->transform(function ($item){
                     $result = $item->refRegularOrderEntry;
                     $result->status = $item->status;
+                    $result->status_desc = Constant::STS_PROCESS_RG_ENTRY[$item->status];
                     return $result;
                 }),
                 'last_page' => $data->lastPage(),
@@ -275,6 +279,7 @@ class QueryRegularOrderEntryUpload extends Model {
                 'items' => $data->getCollection()->transform(function ($item){
                     $result = $item->refRegularOrderEntry;
                     $result->status = $item->status;
+                    $result->status_desc = "";
                     return $result;
                 }),
                 'last_page' => $data->lastPage(),
