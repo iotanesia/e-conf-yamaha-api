@@ -32,4 +32,9 @@ class UsersRole extends Model {
     {
         return $this->belongsTo(Role::class,'id_roles','id_role');
     }
+
+    public function refPosition()
+    {
+        return $this->belongsTo(MstPosition::class,'id_position','id');
+    }
 }

@@ -45,6 +45,8 @@ class User extends Model {
         if (!Hash::check($params->password, $user->password)) throw new \Exception("Email atau password salah.");
         $user->id_role = $user->refUserRole->id_roles;
         $user->role = $user->refUserRole->refRole->name ?? null;
+        $user->position = $user->refUserRole->refPosition->name ?? null;
+        $user->id_position = $user->refUserRole->id_position ?? null;
         $user->access_token = Helper::createJwt($user);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
         $user->menu = QueryPermission::getParentMenu($user->id_role);
