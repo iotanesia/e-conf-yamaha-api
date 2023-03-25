@@ -194,6 +194,20 @@ class QueryRegularOrderEntryUpload extends Model {
         }
     }
 
+    public static function updateStatusSendToApprove($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $store = self::find($request->id);
+            $store->status = Constant::STS_PROCESS_APPROVED;
+            $store->save();
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
     public static function updateStatusSendToDcManager($request,$is_transaction = true)
     {
         if($is_transaction) DB::beginTransaction();
