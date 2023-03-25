@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use App\Imports\OrderEntry;
+use App\Models\RegularDeliveryPlan;
 use App\Models\RegularOrderEntry;
+use App\Models\RegularOrderEntryUploadDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -318,6 +320,59 @@ class QueryRegularOrderEntryUpload extends Model {
             $check = self::where('id_regular_order_entry',$data->id_regular_order_entry)->count();
             if($check > 1) $data->forceDelete();
             else RegularOrderEntry::find($data->id_regular_order_entry)->forceDelete();
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function retriveFinish($params,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'id_order_entry'
+            ]);
+
+
+            $items = RegularOrderEntry::find($params->id_order_entry);
+            if(!$items) throw new \Exception("Data tidak ditemukan", 500);
+            $data = self::whereHas('refRegularOrderEntry',function ($query){
+                $query->where('year','2023');
+                $query->where('month','02');
+            })->get()->pluck('id');
+
+            $detail = RegularOrderEntryUploadDetail::whereIn('id_regular_order_entry_upload',$data->toArray())->get()
+            ->where('status','fixed')
+            ->map(function ($item) use ($params){
+                $item->id_regular_order_entry = $params->id_order_entry;
+                return $item;
+            })
+            ->toArray();
+
+            $ext = [];
+            foreach ($detail as $key => $item) {
+                $ext[] = [
+                    "model" => $item['model'],
+                    "item_no" => $item['item_no'],
+                    "code_consignee" => $item['code_consignee'],
+                    "disburse" => $item['disburse'],
+                    "delivery" => $item['delivery'],
+                    "qty" => $item['qty'],
+                    "order_no" => $item['order_no'],
+                    "cust_item_no" => $item['cust_item_no'],
+                    "id_regular_order_entry" => $item['id_regular_order_entry'],
+                    "created_at" => now(),
+                    "uuid" => (string) Str::uuid()
+                ];
+            }
+
+            foreach (array_chunk($ext,1000) as $param) {
+                RegularDeliveryPlan::insert($param);
+            }
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {

@@ -35,6 +35,7 @@ Route::prefix('v1/regular')
      Route::group(['prefix' => 'order-entry-upload'],function (){
          Route::get('/',[OrderEntryUploadController::class,'index']);
          Route::get('/revision',[OrderEntryUploadController::class,'revision']);
+         Route::post('/finish',[OrderEntryUploadController::class,'finish']);
          Route::post('/send-pc',[OrderEntryUploadController::class,'sendPc']);
          Route::post('/send-approve',[OrderEntryUploadController::class,'sendApprove']);
          Route::post('/send-dc-manager',[OrderEntryUploadController::class,'sendDcManager']);
