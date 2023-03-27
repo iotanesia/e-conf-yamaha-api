@@ -32,6 +32,9 @@ class QueryRegularDeliveryPlan extends Model {
                             ->orWhere('order_no', 'like', "'%$params->search%'")
                             ->orWhere('cust_item_no', 'like', "'%$params->search%'");
 
+            })
+            ->whereHas('refRegularOrderEntry',function ($query){
+                
             });
 
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -48,6 +51,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'items' => $data->getCollection()->transform(function ($item){
 
                     $month_code = $item->refRegularOrderEntry->month ?? null;
+                    $sts = $item->refRegularOrderEntry->status ?? null;
                     return [
                         'month_code' => $month_code,
                         'month' => Helper::monthName($month_code),
@@ -55,6 +59,8 @@ class QueryRegularDeliveryPlan extends Model {
                         'uploaded' => $item->refRegularOrderEntry->uploaded ?? null,
                         'updated_at' => $item->refRegularOrderEntry->updated_at ?? null,
                         'id' => $item->id_regular_order_entry ?? null,
+                        'status' =>  $item->refRegularOrderEntry->status ?? null,
+                        'status_desc' =>  Constant::STS_PROCESS_RG_ENTRY[$sts] ?? null,
                     ];
                 }),
                 'attributes' => [
