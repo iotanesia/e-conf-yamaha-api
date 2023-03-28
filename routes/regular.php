@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Main\OrderEntryUploadDetailController;
 use App\Http\Controllers\Api\Main\DeliveryPlanController;
 use App\Http\Controllers\Api\Main\OrderEntryDcManagerController;
 use App\Http\Controllers\Api\Main\OrderEntryPcController;
+use App\Http\Controllers\Api\Main\ProspectContainerController;
 
 //with middleware
 Route::prefix('v1/regular')
@@ -63,5 +64,9 @@ Route::prefix('v1/regular')
         Route::get('/',[DeliveryPlanController::class,'getDeliveryPlanDetail']);
       });
 
+      // order entry pc
+    Route::group(['prefix' => 'prospect-container'],function (){
+        Route::get('/',[ProspectContainerController::class,'index']);
+    });
 
 });
