@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Master\GroupProductController;
 use App\Http\Controllers\Api\Master\PositionController;
 use App\Http\Controllers\Api\Master\RoleController;
 use App\Http\Controllers\Api\Master\DatasourceController;
+use App\Http\Controllers\Api\Master\MotController;
 use App\Query\QueryRegularOrderEntryUploadDetail;
 
 //with middleware
@@ -123,5 +124,14 @@ Route::prefix('v1/master')
     // category pivot
     Route::group(['prefix' => 'category-pivot'],function (){
         Route::get('/',[OrderEntryUploadDetailController::class,'categoryPivot']);
+    });
+
+    // mot
+    Route::group(['prefix' => 'mot'],function (){
+        Route::get('/',[MotController::class,'index']);
+        Route::post('/',[MotController::class,'store']);
+        Route::put('/',[MotController::class,'update']);
+        Route::get('/{id}',[MotController::class,'show']);
+        Route::delete('/{id}',[MotController::class,'destroy']);
     });
 });
