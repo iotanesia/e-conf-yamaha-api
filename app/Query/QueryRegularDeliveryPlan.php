@@ -141,9 +141,20 @@ class QueryRegularDeliveryPlan extends Model {
             $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
             $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
             $item->regular_order_entry_year = $regularOrderEntry->year ?? null;
+            $item->box = $item->manyDeliveryPlanBox->map(function ($item)
+            {
+                return [
+                    'id' => $item->id,
+                    'id_box' => $item->id_box,
+                    'qty' => $item->refBox->qty ?? null,
+                    'width' => $item->refBox->width ?? null,
+                    'height' => $item->refBox->height ?? null,
+                ];
+            });
 
             unset(
-                $item->refRegularOrderEntry
+                $item->refRegularOrderEntry,
+                $item->manyDeliveryPlanBox
             );
 
         });

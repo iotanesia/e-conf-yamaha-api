@@ -454,6 +454,7 @@ class QueryRegularOrderEntryUpload extends Model {
             ->chunk(100,function ($datas) use ($params){
                 foreach ($datas as $key => $items) {
                     $item = $items->toArray();
+
                     $store = RegularDeliveryPlan::create([
                         "model" => $item['model'],
                         "item_no" => $item['item_no'],
