@@ -65,6 +65,8 @@ Route::prefix('v1/regular')
       // delivery-plan
      Route::group(['prefix' => 'delivery-plan'],function (){
         Route::get('/',[DeliveryPlanController::class,'getDeliveryPlan']);
+        Route::post('/inquiry',[DeliveryPlanController::class,'inquiryProcess']);
+        Route::get('/{id}',[DeliveryPlanController::class,'show']);
       });
 
       // delivery-plan-detail

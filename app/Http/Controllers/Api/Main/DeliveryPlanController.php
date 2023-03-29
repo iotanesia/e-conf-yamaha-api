@@ -9,7 +9,7 @@ use App\Query\QueryRegularDeliveryPlan;
 
 class DeliveryPlanController extends Controller
 {
-   
+
     public function getDeliveryPlan(Request $request)
     {
         try {
@@ -20,6 +20,29 @@ class DeliveryPlanController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function show(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData([
+                'items' => QueryRegularDeliveryPlan::detail($id)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function inquiryProcess(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData([
+                'items' => QueryRegularDeliveryPlan::inquiryProcess($request)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
 
     public function getDeliveryPlanDetail(Request $request)
     {

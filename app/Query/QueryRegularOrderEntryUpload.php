@@ -451,8 +451,12 @@ class QueryRegularOrderEntryUpload extends Model {
                     "qty" => $item['qty'],
                     "order_no" => $item['order_no'],
                     "cust_item_no" => $item['cust_item_no'],
+                    "etd_jkt" => $item['etd_jkt'],
+                    "etd_ypmi" => $item['etd_ypmi'],
+                    "etd_wh" => $item['etd_wh'],
                     "id_regular_order_entry" => $item['id_regular_order_entry'],
                     "created_at" => now(),
+                    'is_inquiry' => 0,
                     "uuid" => (string) Str::uuid()
                 ];
             }

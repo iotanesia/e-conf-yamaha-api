@@ -33,8 +33,8 @@ class QueryRegularDeliveryPlan extends Model {
                             ->orWhere('cust_item_no', 'like', "'%$params->search%'");
 
             })
-            ->whereHas('refRegularOrderEntry',function ($query){
-                
+            ->whereHas('refRegularOrderEntry',function ($query) use ($params){
+                if($params->datasource) $query->where('datasource',$params->datasource);
             });
 
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -60,6 +60,7 @@ class QueryRegularDeliveryPlan extends Model {
                         'updated_at' => $item->refRegularOrderEntry->updated_at ?? null,
                         'id' => $item->id_regular_order_entry ?? null,
                         'status' =>  $item->refRegularOrderEntry->status ?? null,
+                        'datasource' =>  $item->refRegularOrderEntry->datasource ?? null,
                         'status_desc' =>  Constant::STS_PROCESS_RG_ENTRY[$sts] ?? null,
                     ];
                 }),
@@ -121,5 +122,49 @@ class QueryRegularDeliveryPlan extends Model {
                 ]
             ];
         });
+    }
+
+    public static function detail($id_regular_order_entry)
+    {
+        $data = self::where('id_regular_order_entry',$id_regular_order_entry)
+        ->where('is_inquiry',0)->get();
+        if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
+
+        $data->map(function ($item){
+            $regularOrderEntry = $item->refRegularOrderEntry;
+            $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
+            $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
+            $item->regular_order_entry_year = $regularOrderEntry->year ?? null;
+
+            unset(
+                $item->refRegularOrderEntry
+            );
+
+        });
+        return $data;
+    }
+
+    public static function inquiryProcess($params, $is_trasaction = true)
+    {
+        if($is_trasaction) DB::beginTransaction();
+        try {
+            //
+            dd($params);
+
+           $request = array_map(function ($item){
+
+                return [
+                    'code_consignee' => '',
+                    'no_packaging' => '',
+                    'etd_jkt' => '',
+                ];
+
+           },$params->id);
+
+          if($is_trasaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_trasaction) DB::rollBack();
+            throw $th;
+        }
     }
 }
