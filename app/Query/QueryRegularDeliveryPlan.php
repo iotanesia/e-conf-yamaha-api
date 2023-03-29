@@ -246,9 +246,8 @@ class QueryRegularDeliveryPlan extends Model {
         }
     }
 
-    public static function noPackaging($params,$is_trasaction = true)
+    public static function noPackaging($params)
     {
-        if($is_trasaction) DB::beginTransaction();
         try {
 
             Helper::requireParams([
@@ -281,6 +280,30 @@ class QueryRegularDeliveryPlan extends Model {
                     'tanggal' => $tanggal,
                 ]
             ];
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public static function changeEtd($params,$is_trasaction = true)
+    {
+        if($is_trasaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'id',
+                'etd_jkt'
+            ]);
+
+            $data = self::find($params->id);
+            if(!$data) throw new \Exception("Data not found", 400);
+            $request = $params->all();
+            $request['etd_jkt'] = Carbon::parse($params->etd_jkt)->format('Ymd');
+            $request['etd_ypmi'] =Carbon::parse($params->etd_jkt)->subDays(4)->format('Ymd');
+            $request['etd_wh'] =Carbon::parse($params->etd_jkt)->subDays(2)->format('Ymd');
+            $data->fill($request);
+            $data->save();
 
             if($is_trasaction) DB::commit();
         } catch (\Throwable $th) {
