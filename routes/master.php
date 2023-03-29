@@ -21,6 +21,7 @@ use App\Query\QueryRegularOrderEntryUploadDetail;
 //with middleware
 Route::prefix('v1/master')
 ->namespace('Api')
+// ->middleware('access')
 ->group(function () {
 
      // container
