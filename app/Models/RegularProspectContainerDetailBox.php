@@ -6,25 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-class RegularProspectContainerDetail extends Model
+class RegularProspectContainerDetailBox extends Model
 {
     use HasFactory,SoftDeletes;
-    protected $table = 'regular_prospect_container_detail';
+    protected $table = 'regular_prospect_container_detail_box';
     public $fillable = [
         "id",
-        "id_prospect_container_fifo",
-        "id_prospect_container",
-        "code_consignee",
-        "model",
-        "item_no",
-        "disburse",
-        "delivery",
-        "qty",
-        "status",
-        "order_no",
-        "cust_item_no",
-        "etd_wh",
-        "etd_jkt",
+        "id_box",
+        "id_prospect_container_detail",
         "created_at",
         "created_by",
         "updated_at",
@@ -37,7 +26,7 @@ class RegularProspectContainerDetail extends Model
     {
         parent::boot();
         static::creating(function ($model){
-            $model->uuid = (string) Str::uuid();
+            // $model->uuid = (string) Str::uuid();
         });
     }
 }

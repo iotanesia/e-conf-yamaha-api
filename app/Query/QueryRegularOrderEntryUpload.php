@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use App\Imports\OrderEntry;
 use App\Models\RegularDeliveryPlan;
+use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularOrderEntry;
 use App\Models\RegularOrderEntryUploadDetail;
+use App\Models\RegularOrderEntryUploadDetailBox;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -441,43 +443,52 @@ class QueryRegularOrderEntryUpload extends Model {
 
             $items = RegularOrderEntry::find($params->id_order_entry);
             if(!$items) throw new \Exception("Data tidak ditemukan", 500);
-            $data = self::whereHas('refRegularOrderEntry',function ($query){
-                $query->where('year','2023');
-                $query->where('month','02');
+
+            $data = self::whereHas('refRegularOrderEntry',function ($query) use ($items){
+                $query->where('year',$items->year);
+                $query->where('month',$items->month);
             })->get()->pluck('id');
 
-            $detail = RegularOrderEntryUploadDetail::whereIn('id_regular_order_entry_upload',$data->toArray())->get()
+            RegularOrderEntryUploadDetail::whereIn('id_regular_order_entry_upload',$data->toArray())
             ->where('status','fixed')
-            ->map(function ($item) use ($params){
-                $item->id_regular_order_entry = $params->id_order_entry;
-                return $item;
-            })
-            ->toArray();
+            ->chunk(100,function ($datas) use ($params){
+                foreach ($datas as $key => $items) {
+                    $item = $items->toArray();
+                    $store = RegularDeliveryPlan::create([
+                        "model" => $item['model'],
+                        "item_no" => $item['item_no'],
+                        "code_consignee" => $item['code_consignee'],
+                        "disburse" => $item['disburse'],
+                        "delivery" => $item['delivery'],
+                        "qty" => $item['qty'],
+                        "order_no" => $item['order_no'],
+                        "cust_item_no" => $item['cust_item_no'],
+                        "etd_jkt" => $item['etd_jkt'],
+                        "etd_ypmi" => $item['etd_ypmi'],
+                        "etd_wh" => $item['etd_wh'],
+                        "id_regular_order_entry" => $params->id_order_entry,
+                        "created_at" => now(),
+                        'is_inquiry' => 0,
+                        "uuid" => (string) Str::uuid()
+                    ]);
 
-            $ext = [];
-            foreach ($detail as $key => $item) {
-                $ext[] = [
-                    "model" => $item['model'],
-                    "item_no" => $item['item_no'],
-                    "code_consignee" => $item['code_consignee'],
-                    "disburse" => $item['disburse'],
-                    "delivery" => $item['delivery'],
-                    "qty" => $item['qty'],
-                    "order_no" => $item['order_no'],
-                    "cust_item_no" => $item['cust_item_no'],
-                    "etd_jkt" => $item['etd_jkt'],
-                    "etd_ypmi" => $item['etd_ypmi'],
-                    "etd_wh" => $item['etd_wh'],
-                    "id_regular_order_entry" => $item['id_regular_order_entry'],
-                    "created_at" => now(),
-                    'is_inquiry' => 0,
-                    "uuid" => (string) Str::uuid()
-                ];
-            }
+                    $box = RegularOrderEntryUploadDetailBox::where('uuid_regular_order_entry_upload_detail',$item['uuid'])
+                    ->get()->map(function ($item) use ($store) {
+                        return [
+                            'id_box' => $item->id_box,
+                            'id_regular_delivery_plan' => $store->id,
+                            'created_at' => now()
+                        ];
+                    })->toArray();
 
-            foreach (array_chunk($ext,1000) as $param) {
-                RegularDeliveryPlan::insert($param);
-            }
+                    foreach (array_chunk($box,1000) as $item_box) {
+                        RegularDeliveryPlanBox::insert($item_box);
+                    }
+
+                }
+
+            });
+
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
