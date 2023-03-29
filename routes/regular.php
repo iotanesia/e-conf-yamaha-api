@@ -38,17 +38,17 @@ Route::prefix('v1/regular')
         Route::get('/pc',[PlanController::class,'indexPc']);
         Route::get('/dc-spv',[PlanController::class,'indexDcSpv']);
         Route::get('/dc-off',[PlanController::class,'indexDcOff']);
+        Route::get('/revision',[OrderEntryUploadController::class,'revision']);
+        Route::post('/finish',[OrderEntryUploadController::class,'finish']);
+        Route::post('/send-approve',[OrderEntryUploadController::class,'sendApprove']);
+        Route::post('/send-dc-manager',[OrderEntryUploadController::class,'sendDcManager']);
+        Route::post('/revision',[OrderEntryUploadController::class,'sendRevision']);
     });
 
      // order-entry-upload
      Route::group(['prefix' => 'order-entry-upload'],function (){
          Route::get('/',[OrderEntryUploadController::class,'index']);
-         Route::get('/revision',[OrderEntryUploadController::class,'revision']);
-         Route::post('/finish',[OrderEntryUploadController::class,'finish']);
          Route::post('/send-pc',[OrderEntryUploadController::class,'sendPc']);
-         Route::post('/send-approve',[OrderEntryUploadController::class,'sendApprove']);
-         Route::post('/send-dc-manager',[OrderEntryUploadController::class,'sendDcManager']);
-         Route::post('/revision',[OrderEntryUploadController::class,'sendRevision']);
          Route::get('/{id}',[OrderEntryUploadController::class,'show']);
          Route::delete('/{id}',[OrderEntryUploadController::class,'delete']);
      });
