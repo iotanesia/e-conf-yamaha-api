@@ -144,6 +144,7 @@ class QueryRegularDeliveryPlan extends Model {
             $item->box = $item->manyDeliveryPlanBox->map(function ($item)
             {
                 return [
+                    'id' => $item->id,
                     'id_box' => $item->id_box,
                     'qty' => $item->refBox->qty ?? null,
                     'width' => $item->refBox->width ?? null,
