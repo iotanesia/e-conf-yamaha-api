@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Master\PositionController;
 use App\Http\Controllers\Api\Master\RoleController;
 use App\Http\Controllers\Api\Master\DatasourceController;
 use App\Http\Controllers\Api\Master\MotController;
+use App\Http\Controllers\Api\Master\TypeDeliveryController;
 use App\Query\QueryRegularOrderEntryUploadDetail;
 
 //with middleware
@@ -133,5 +134,14 @@ Route::prefix('v1/master')
         Route::put('/',[MotController::class,'update']);
         Route::get('/{id}',[MotController::class,'show']);
         Route::delete('/{id}',[MotController::class,'destroy']);
+    });
+
+    // type delivery
+    Route::group(['prefix' => 'type-delivery'],function (){
+        Route::get('/',[TypeDeliveryController::class,'index']);
+        Route::post('/',[TypeDeliveryController::class,'store']);
+        Route::put('/',[TypeDeliveryController::class,'update']);
+        Route::get('/{id}',[TypeDeliveryController::class,'show']);
+        Route::delete('/{id}',[TypeDeliveryController::class,'destroy']);
     });
 });
