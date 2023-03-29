@@ -54,4 +54,15 @@ class DeliveryPlanController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function noPackaging(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::noPackaging($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

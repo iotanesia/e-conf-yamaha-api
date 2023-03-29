@@ -6,6 +6,8 @@ use App\Constants\Constant;
 use App\Models\RegularDeliveryPlan AS Model;
 use Illuminate\Support\Facades\DB;
 use App\ApiHelper as Helper;
+use App\ApiHelper;
+use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularProspectContainer;
 use App\Models\RegularProspectContainerDetail;
@@ -150,6 +152,13 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function inquiryProcess($params, $is_trasaction = true)
     {
+        Helper::requireParams([
+            'id',
+            'no_packaging',
+            'etd_jkt',
+            'code_consignee',
+            'datasource'
+        ]);
 
         if($is_trasaction) DB::beginTransaction();
         try {
@@ -211,6 +220,49 @@ class QueryRegularDeliveryPlan extends Model {
            });
 
           if($is_trasaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_trasaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function noPackaging($params,$is_trasaction = true)
+    {
+        if($is_trasaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'id',
+
+            ]);
+
+
+            $check = RegularDeliveryPlan::select('etd_jkt','code_consignee')->whereIn('id',$params->id)
+            ->groupBy('etd_jkt','code_consignee')
+            ->get()
+            ->toArray();
+
+            if(count($check) > 1) throw new \Exception("etd_jkt & code_consignee not same" . json_encode($check), 400);
+
+            $data = RegularDeliveryPlan::select(DB::raw('count(cust_item_no) as total'),'cust_item_no')->whereIn('id',$params->id)
+            ->groupBy('cust_item_no')
+            ->orderBy('total','desc')
+            ->get()
+            ->toArray();
+
+            if(count($data) == 0) throw new \Exception("Data not found", 400);
+
+            $no_packaging = $data[0]['cust_item_no'].substr(mt_rand(),0,5);
+            $tanggal = $check[0]['etd_jkt'];
+
+            return [
+                "items" => [
+                    'no_packaging' => $no_packaging,
+                    'tanggal' => $tanggal,
+                ]
+            ];
+
+            if($is_trasaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_trasaction) DB::rollBack();
             throw $th;
