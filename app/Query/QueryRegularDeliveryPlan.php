@@ -7,6 +7,9 @@ use App\Models\RegularDeliveryPlan AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\RegularDeliveryPlan;
+use App\Models\RegularOrderEntry;
+use App\Models\RegularProspectContainer;
 use Illuminate\Support\Facades\Cache;
 
 class QueryRegularDeliveryPlan extends Model {
@@ -49,7 +52,6 @@ class QueryRegularDeliveryPlan extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->getCollection()->transform(function ($item){
-
                     $month_code = $item->refRegularOrderEntry->month ?? null;
                     $sts = $item->refRegularOrderEntry->status ?? null;
                     return [
@@ -146,20 +148,31 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function inquiryProcess($params, $is_trasaction = true)
     {
+
         if($is_trasaction) DB::beginTransaction();
         try {
-            //
-            dd($params);
-
-           $request = array_map(function ($item){
-
+           $check = RegularProspectContainer::where('no_packaging',$params->no_packaging)->first();
+           if($check) throw new \Exception("no_packaging registered", 400);
+           $data = RegularDeliveryPlan::where(function ($query) use ($params)
+           {
+                $query->whereIn('id_regular_order_entry',$params->id);
+                $query->where('code_consignee',$params->code_consignee);
+           })
+           ->get()
+           ->map(function ($item) use ($params){
                 return [
-                    'code_consignee' => '',
-                    'no_packaging' => '',
-                    'etd_jkt' => '',
+                    "code_consignee" => $item->code_consignee,
+                    "etd_ypmi" => null,
+                    "etd_wh" => null,
+                    "etd_jkt" => $params->etd_jkt,
+                    "no_packaging" => $params->no_packaging,
+                    "created_at" => now(),
                 ];
+           })->toArray();
 
-           },$params->id);
+           foreach (array_chunk($data,1000) as $item) {
+                RegularProspectContainer::insert($item);
+           }
 
           if($is_trasaction) DB::commit();
         } catch (\Throwable $th) {
