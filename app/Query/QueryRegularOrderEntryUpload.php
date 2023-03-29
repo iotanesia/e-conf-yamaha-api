@@ -81,13 +81,13 @@ class QueryRegularOrderEntryUpload extends Model {
         });
     }
 
-    public static function byId($id)
+    public static function byId($params,$id)
     {
-        $data = self::where('id_regular_order_entry',$id)->get();
+        $data = self::where('id_regular_order_entry',$id)->paginate($params->limit ?? null);
 
         if($data == null) throw new \Exception("id tidak ditemukan", 400);
 
-        $data->map(function ($item){
+        $data->transform(function ($item){
             $regularOrderEntry = $item->refRegularOrderEntry;
             if($regularOrderEntry){
                 $item->regular_order_entry_period = $regularOrderEntry->period;
@@ -95,28 +95,16 @@ class QueryRegularOrderEntryUpload extends Model {
                 $item->regular_order_entry_year = $regularOrderEntry->year;
             }
 
+            $item->status_desc = Constant::STS_PROCESS_RG_ENTRY[$item->status];
             unset($item->refRegularOrderEntry);
-            $item->status_desc = null;
-            if($item->status == 1)
-                $item->status_desc = "Process";
-            else if($item->status == 2)
-                $item->status_desc = "Done Upload";
-            else if($item->status == 3)
-                $item->status_desc = "Send To PC";
-            else if($item->status == 4)
-                $item->status_desc = "Correction";
-            else if($item->status == 5)
-                $item->status_desc = "Approved PC";
-            else if($item->status == 6)
-                $item->status_desc = "Error";
-            else if($item->status == 7)
-                $item->status_desc = "Send To DC Manager";
-            else if($item->status == 8)
-                $item->status_desc = "Finish";
+            return $item;
 
         });
 
-        return $data;
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage(),
+        ];
     }
 
     public static function saveFile($request,$is_transaction = true)

@@ -130,13 +130,14 @@ class QueryRegularDeliveryPlan extends Model {
         });
     }
 
-    public static function detail($id_regular_order_entry)
+    public static function detail($params,$id_regular_order_entry)
     {
         $data = self::where('id_regular_order_entry',$id_regular_order_entry)
-        ->where('is_inquiry',0)->get();
+        ->where('is_inquiry',0)
+        ->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
-        $data->map(function ($item){
+        $data->transform(function ($item){
             $regularOrderEntry = $item->refRegularOrderEntry;
             $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
             $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
@@ -157,8 +158,16 @@ class QueryRegularDeliveryPlan extends Model {
                 $item->manyDeliveryPlanBox
             );
 
+            return $item;
+
         });
-        return $data;
+
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage(),
+
+        ];
     }
 
     public static function inquiryProcess($params, $is_trasaction = true)

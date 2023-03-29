@@ -23,9 +23,9 @@ class OrderEntryUploadDetailController extends Controller
     public function show(Request $request,$id)
     {
         try {
-            return ResponseInterface::responseData([
-                "items" => QueryRegularOrderEntryUploadDetail::byId($id)
-            ]);
+            return ResponseInterface::responseData(
+                QueryRegularOrderEntryUploadDetail::byId($request,$id)
+            );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }

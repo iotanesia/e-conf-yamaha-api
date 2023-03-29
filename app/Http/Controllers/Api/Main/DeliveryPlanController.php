@@ -24,9 +24,9 @@ class DeliveryPlanController extends Controller
     public function show(Request $request,$id)
     {
         try {
-            return ResponseInterface::responseData([
-                'items' => QueryRegularDeliveryPlan::detail($id)
-            ]);
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::detail($request,$id)
+            );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }
