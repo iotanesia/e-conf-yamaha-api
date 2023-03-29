@@ -15,6 +15,7 @@ class RegularOrderEntryUploadRevision extends Model
         'id_regular_order_entry_upload',
         'id_user',
         'note',
+        'type',
         'created_by',
 	    'created_at',
 	    'updated_by',
