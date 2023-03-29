@@ -104,8 +104,11 @@ class QueryRegularOrderEntry extends Model {
             $params['uploaded'] = $iteration;
 
             if(!$check) $store = self::create($params);
-            else $store = $check;
-
+            else {
+                $store = $check;
+                $store->fill($params);
+                $store->save();
+            }
             $request->id_regular_order_entry = $store->id;
             QueryRegularOrderEntryUpload::saveFile($request,false);
 
