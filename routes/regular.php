@@ -43,6 +43,7 @@ Route::prefix('v1/regular')
         Route::post('/send-approve',[OrderEntryUploadController::class,'sendApprove']);
         Route::post('/send-dc-manager',[OrderEntryUploadController::class,'sendDcManager']);
         Route::post('/revision',[OrderEntryUploadController::class,'sendRevision']);
+        Route::post('/rejected',[OrderEntryUploadController::class,'sendRejected']);
     });
 
      // order-entry-upload
