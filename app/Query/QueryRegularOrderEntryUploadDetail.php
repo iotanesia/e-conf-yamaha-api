@@ -80,6 +80,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                     unset($item->refRegularOrderEntryUpload);
                     return $set;
                 }),
+                'last_page' => $data->lastPage(),
                 'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
