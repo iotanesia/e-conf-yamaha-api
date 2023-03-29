@@ -4,6 +4,8 @@ namespace App\Query;
 
 use App\Constants\Constant;
 use App\Models\RegularOrderEntryUploadDetail AS Model;
+use App\Models\MstConsignee;
+use App\Models\MstPart;
 use App\Models\VRegularOrderEntryUploadDetail AS VModel;
 use App\Models\RegularOrderEntryUploadDetailBox;
 use Illuminate\Support\Facades\DB;
@@ -48,11 +50,15 @@ class QueryRegularOrderEntryUploadDetail extends Model {
             return [
                 'items' => $data->map(function ($item){
                     $box = self::getDetailBox($item->uuid);
+                    $custname = self::getCustName($item->code_consignee);
+                    $itemname = self::getPart($item->item_no);
 
                     $set["id"] = $item->id;
                     $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
                     $set["code_consignee"] = $item->code_consignee;
+                    $set["cust_name"] = $custname;
                     $set["model"] = $item->model;
+                    $set["item_name"] = $itemname;
                     $set["item_no"] = $item->item_no;
                     $set["disburse"] = $item->disburse;
                     $set["delivery"] = $item->delivery;
@@ -90,6 +96,16 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 ->join('mst_box','mst_box.id','regular_order_entry_upload_detail_box.id_box')
                 ->get();
 
+        return $data;
+    }
+
+    public static function getCustName($code_consignee){
+        $data = MstConsignee::where('code', $code_consignee)->first()->nick_name;
+        return $data;
+    }
+
+    public static function getPart($id_part){
+        $data = MstPart::where('item_no', $id_part)->first()->description;
         return $data;
     }
 
