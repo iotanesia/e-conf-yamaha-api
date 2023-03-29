@@ -100,8 +100,15 @@ class User {
 
     public static function byId($id)
     {
+        $data = Model::find($id);
+        $data->id_roles = $data->refUserRole->id_roles ?? null;
+        $data->roles = $data->refUserRole->refRole->name ?? null;
+        $data->id_position = $data->refUserRole->id_position ?? null;
+        $data->position = $data->refUserRole->refPosition->name ?? null;
+        unset($data->refUserRole);
+
         return [
-            'items' => Model::find($id),
+            'items' => $data,
             'attributes' => null
         ];
     }
