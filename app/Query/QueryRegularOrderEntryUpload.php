@@ -254,6 +254,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     $result = $item->refRegularOrderEntry;
                     $result->filename = $item->filename;
                     $result->batch = $item->iteration;
+                    $result->status = "Send To Dc Spv";
                     return $result;
                 }),
                 'last_page' => $data->lastPage(),
@@ -298,6 +299,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     $result = $item->refRegularOrderEntry;
                     $result->filename = $item->filename;
                     $result->batch = $item->iteration;
+                    $result->status = "Send To Pc";
                     return $result;
                 }),
                 'last_page' => $data->lastPage(),
@@ -316,7 +318,7 @@ class QueryRegularOrderEntryUpload extends Model {
         $key = self::cast.'-pc-'.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-                $query->whereIn('status',[Constant::STS_PROCESS_REVISION, Constant::STS_PROCESS_APPROVED]);
+                $query->whereIn('status',[Constant::STS_PROCESS_REVISION, Constant::STS_PROCESS_APPROVED, Constant::STS_PROCESS_REJECTED]);
                 if($params->search) $query->where('filename', 'like', "'%$params->search%'");
             })
                 ->whereHas('refRegularOrderEntry',function ($query) use ($params){
@@ -341,6 +343,15 @@ class QueryRegularOrderEntryUpload extends Model {
                     $result = $item->refRegularOrderEntry;
                     $result->filename = $item->filename;
                     $result->batch = $item->iteration;
+                    if($item->status == 4)
+                        $result->status_desc = 'Correction';
+                    else if($item->status == 5)
+                        $result->status_desc = 'Approved';
+                    else if($item->status == 9)
+                        $result->status_desc = 'Rejected';
+                    else
+                        $result->status_desc = 'Error';
+
                     return $result;
                 }),
                 'last_page' => $data->lastPage(),

@@ -72,6 +72,7 @@ class QueryRegularOrderEntryUploadRevision extends Model {
             $params['id_regular_order_entry_upload'] = $request->id;
             $params['id_user'] = $request->id_user;
             $params['note'] = $request->note;
+            $params['type'] = 'REVISION';
             self::create($params);
 
             if($is_transaction) DB::commit();
@@ -98,6 +99,7 @@ class QueryRegularOrderEntryUploadRevision extends Model {
             $params['id_regular_order_entry_upload'] = $request->id;
             $params['id_user'] = $request->id_user;
             $params['note'] = $request->note;
+            $params['type'] = 'REJECTED';
             self::create($params);
 
             if($is_transaction) DB::commit();
