@@ -61,7 +61,26 @@ class User {
             ->orWhere('ip_whitelist','ilike',"%{$params->search}%");
         })->paginate($params->limit ?? null);
         return [
-            'items' => $data->items(),
+            'items' => $data->map(function ($item){
+                return [
+                    'id' => $item->id,
+                    'email' => $item->email,
+                    'password' => $item->password,
+                    'nik' => $item->nik,
+                    'username' => $item->username,
+                    'name' => $item->name,
+                    'remember_token' => $item->remember_token,
+                    'is_active' => $item->is_active,
+                    'created_by' => $item->created_by,
+                    'created_at' => $item->created_at,
+                    'updated_by' => $item->updated_by,
+                    'updated_at' => $item->updated_at,
+                    'id_roles' => $item->refUserRole->id_roles ?? null,
+                    'roles' => $item->refUserRole->refRole->name ?? null,
+                    'id_position' => $item->refUserRole->id_position ?? null,
+                    'position' => $item->refUserRole->refPosition->name ?? null,
+                ];
+            }),
             'attributes' => [
                 'total' => $data->total(),
                 'current_page' => $data->currentPage(),
