@@ -7,6 +7,9 @@ use App\Models\RegularDeliveryPlan AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\RegularDeliveryPlan;
+use App\Models\RegularOrderEntry;
+use App\Models\RegularProspectContainer;
 use Illuminate\Support\Facades\Cache;
 
 class QueryRegularDeliveryPlan extends Model {
@@ -33,8 +36,8 @@ class QueryRegularDeliveryPlan extends Model {
                             ->orWhere('cust_item_no', 'like', "'%$params->search%'");
 
             })
-            ->whereHas('refRegularOrderEntry',function ($query){
-                
+            ->whereHas('refRegularOrderEntry',function ($query) use ($params){
+                if($params->datasource) $query->where('datasource',$params->datasource);
             });
 
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -49,7 +52,6 @@ class QueryRegularDeliveryPlan extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->getCollection()->transform(function ($item){
-
                     $month_code = $item->refRegularOrderEntry->month ?? null;
                     $sts = $item->refRegularOrderEntry->status ?? null;
                     return [
@@ -60,6 +62,7 @@ class QueryRegularDeliveryPlan extends Model {
                         'updated_at' => $item->refRegularOrderEntry->updated_at ?? null,
                         'id' => $item->id_regular_order_entry ?? null,
                         'status' =>  $item->refRegularOrderEntry->status ?? null,
+                        'datasource' =>  $item->refRegularOrderEntry->datasource ?? null,
                         'status_desc' =>  Constant::STS_PROCESS_RG_ENTRY[$sts] ?? null,
                     ];
                 }),
@@ -121,5 +124,60 @@ class QueryRegularDeliveryPlan extends Model {
                 ]
             ];
         });
+    }
+
+    public static function detail($id_regular_order_entry)
+    {
+        $data = self::where('id_regular_order_entry',$id_regular_order_entry)
+        ->where('is_inquiry',0)->get();
+        if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
+
+        $data->map(function ($item){
+            $regularOrderEntry = $item->refRegularOrderEntry;
+            $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
+            $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
+            $item->regular_order_entry_year = $regularOrderEntry->year ?? null;
+
+            unset(
+                $item->refRegularOrderEntry
+            );
+
+        });
+        return $data;
+    }
+
+    public static function inquiryProcess($params, $is_trasaction = true)
+    {
+
+        if($is_trasaction) DB::beginTransaction();
+        try {
+           $check = RegularProspectContainer::where('no_packaging',$params->no_packaging)->first();
+           if($check) throw new \Exception("no_packaging registered", 400);
+           $data = RegularDeliveryPlan::where(function ($query) use ($params)
+           {
+                $query->whereIn('id_regular_order_entry',$params->id);
+                $query->where('code_consignee',$params->code_consignee);
+           })
+           ->get()
+           ->map(function ($item) use ($params){
+                return [
+                    "code_consignee" => $item->code_consignee,
+                    "etd_ypmi" => null,
+                    "etd_wh" => null,
+                    "etd_jkt" => $params->etd_jkt,
+                    "no_packaging" => $params->no_packaging,
+                    "created_at" => now(),
+                ];
+           })->toArray();
+
+           foreach (array_chunk($data,1000) as $item) {
+                RegularProspectContainer::insert($item);
+           }
+
+          if($is_trasaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_trasaction) DB::rollBack();
+            throw $th;
+        }
     }
 }

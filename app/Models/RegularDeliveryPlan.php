@@ -48,4 +48,9 @@ class RegularDeliveryPlan extends Model
     {
         return $this->hasMany(RegularDeliveryPlanBox::class,'id_regular_delivery_plan','id')->orderBy('id','asc');
     }
+
+    public function refRegularOrderEntrySingle()
+    {
+        return $this->hasOne(RegularOrderEntry::class,'id','id_regular_order_entry');
+    }
 }

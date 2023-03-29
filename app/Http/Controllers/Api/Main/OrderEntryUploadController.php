@@ -108,4 +108,15 @@ class OrderEntryUploadController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function sendRejected(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData([
+                "items" => QueryRegularOrderEntryUploadRevision::sendRejected($request)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Main\DeliveryPlanController;
 use App\Http\Controllers\Api\Main\OrderEntryDcManagerController;
 use App\Http\Controllers\Api\Main\OrderEntryPcController;
 use App\Http\Controllers\Api\Main\ProspectContainerController;
+use App\Http\Controllers\Api\Main\PlanController;
 
 //with middleware
 Route::prefix('v1/regular')
@@ -32,15 +33,23 @@ Route::prefix('v1/regular')
         Route::get('/',[OrderEntryDcManagerController::class,'index']);
     });
 
+    //plan
+    Route::group(['prefix' => 'plan'],function (){
+        Route::get('/pc',[PlanController::class,'indexPc']);
+        Route::get('/dc-spv',[PlanController::class,'indexDcSpv']);
+        Route::get('/dc-off',[PlanController::class,'indexDcOff']);
+        Route::get('/revision',[OrderEntryUploadController::class,'revision']);
+        Route::post('/finish',[OrderEntryUploadController::class,'finish']);
+        Route::post('/send-approve',[OrderEntryUploadController::class,'sendApprove']);
+        Route::post('/send-dc-manager',[OrderEntryUploadController::class,'sendDcManager']);
+        Route::post('/revision',[OrderEntryUploadController::class,'sendRevision']);
+        Route::post('/rejected',[OrderEntryUploadController::class,'sendRejected']);
+    });
+
      // order-entry-upload
      Route::group(['prefix' => 'order-entry-upload'],function (){
          Route::get('/',[OrderEntryUploadController::class,'index']);
-         Route::get('/revision',[OrderEntryUploadController::class,'revision']);
-         Route::post('/finish',[OrderEntryUploadController::class,'finish']);
          Route::post('/send-pc',[OrderEntryUploadController::class,'sendPc']);
-         Route::post('/send-approve',[OrderEntryUploadController::class,'sendApprove']);
-         Route::post('/send-dc-manager',[OrderEntryUploadController::class,'sendDcManager']);
-         Route::post('/revision',[OrderEntryUploadController::class,'sendRevision']);
          Route::get('/{id}',[OrderEntryUploadController::class,'show']);
          Route::delete('/{id}',[OrderEntryUploadController::class,'delete']);
      });
@@ -57,6 +66,8 @@ Route::prefix('v1/regular')
       // delivery-plan
      Route::group(['prefix' => 'delivery-plan'],function (){
         Route::get('/',[DeliveryPlanController::class,'getDeliveryPlan']);
+        Route::post('/inquiry',[DeliveryPlanController::class,'inquiryProcess']);
+        Route::get('/{id}',[DeliveryPlanController::class,'show']);
       });
 
       // delivery-plan-detail

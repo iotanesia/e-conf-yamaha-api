@@ -224,8 +224,51 @@ class QueryRegularOrderEntryUpload extends Model {
         }
     }
 
+    public static function getOrderDcSpv($params)
+    {
+        $key = self::cast.'-pc-'.json_encode($params->query());
+        return Helper::storageCache($key, function () use ($params){
+            $query = self::where(function ($query) use ($params){
+                $query->where('status',Constant::STS_SEND_TO_DC_MANAGER);
+                if($params->search) $query->where('filename', 'like', "'%$params->search%'");
+            })
+                ->whereHas('refRegularOrderEntry',function ($query) use ($params){
+                    if($params->datasoruce) $query->where('datasoruce',$params->datasoruce);
+                    if($params->date) $query->whereDate('created_at',$params->date);
+                });
 
-    public static  function getOrderEntryPc($params)
+
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+
+            if($params->withTrashed == 'true') $query->withTrashed();
+
+            $data = $query
+                ->orderBy('id','desc')
+                ->paginate($params->limit ?? null);
+            return [
+
+                'items' => $data->getCollection()->transform(function ($item){
+                    $result = $item->refRegularOrderEntry;
+                    $result->filename = $item->filename;
+                    $result->batch = $item->iteration;
+                    return $result;
+                }),
+                'last_page' => $data->lastPage(),
+                'attributes' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        });
+    }
+
+
+    public static function getOrderEntryPc($params)
     {
         $key = self::cast.'-pc-'.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
@@ -250,10 +293,54 @@ class QueryRegularOrderEntryUpload extends Model {
             ->orderBy('id','desc')
             ->paginate($params->limit ?? null);
             return [
+
                 'items' => $data->getCollection()->transform(function ($item){
                     $result = $item->refRegularOrderEntry;
-                    $result->status = $item->status;
-                    $result->status_desc = Constant::STS_PROCESS_RG_ENTRY[$item->status];
+                    $result->filename = $item->filename;
+                    $result->batch = $item->iteration;
+                    return $result;
+                }),
+                'last_page' => $data->lastPage(),
+                'attributes' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        });
+    }
+
+    public static function getOrderEntryDcOff($params)
+    {
+        $key = self::cast.'-pc-'.json_encode($params->query());
+        return Helper::storageCache($key, function () use ($params){
+            $query = self::where(function ($query) use ($params){
+                $query->whereIn('status',[Constant::STS_PROCESS_REVISION, Constant::STS_PROCESS_APPROVED]);
+                if($params->search) $query->where('filename', 'like', "'%$params->search%'");
+            })
+                ->whereHas('refRegularOrderEntry',function ($query) use ($params){
+                    if($params->datasoruce) $query->where('datasoruce',$params->datasoruce);
+                    if($params->date) $query->whereDate('created_at',$params->date);
+                });
+
+
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+
+            if($params->withTrashed == 'true') $query->withTrashed();
+
+            $data = $query
+                ->orderBy('id','desc')
+                ->paginate($params->limit ?? null);
+            return [
+
+                'items' => $data->getCollection()->transform(function ($item){
+                    $result = $item->refRegularOrderEntry;
+                    $result->filename = $item->filename;
+                    $result->batch = $item->iteration;
                     return $result;
                 }),
                 'last_page' => $data->lastPage(),
@@ -364,8 +451,12 @@ class QueryRegularOrderEntryUpload extends Model {
                     "qty" => $item['qty'],
                     "order_no" => $item['order_no'],
                     "cust_item_no" => $item['cust_item_no'],
+                    "etd_jkt" => $item['etd_jkt'],
+                    "etd_ypmi" => $item['etd_ypmi'],
+                    "etd_wh" => $item['etd_wh'],
                     "id_regular_order_entry" => $item['id_regular_order_entry'],
                     "created_at" => now(),
+                    'is_inquiry' => 0,
                     "uuid" => (string) Str::uuid()
                 ];
             }
