@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Main\DeliveryPlanController;
 use App\Http\Controllers\Api\Main\OrderEntryDcManagerController;
 use App\Http\Controllers\Api\Main\OrderEntryPcController;
 use App\Http\Controllers\Api\Main\ProspectContainerController;
+use App\Http\Controllers\Api\Main\PlanController;
 
 //with middleware
 Route::prefix('v1/regular')
@@ -30,6 +31,13 @@ Route::prefix('v1/regular')
     // order entry pc
     Route::group(['prefix' => 'order-entry-dc-manager'],function (){
         Route::get('/',[OrderEntryDcManagerController::class,'index']);
+    });
+
+    //plan
+    Route::group(['prefix' => 'plan'],function (){
+        Route::get('/pc',[PlanController::class,'indexPc']);
+        Route::get('/dc-spv',[PlanController::class,'indexDcSpv']);
+        Route::get('/dc-off',[PlanController::class,'indexDcOff']);
     });
 
      // order-entry-upload
