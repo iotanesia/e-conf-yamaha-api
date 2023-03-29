@@ -8,6 +8,7 @@ use App\ApiHelper as Helper;
 use App\Constants\Constant;
 use App\Mail\ForgotPassword;
 use Illuminate\Support\Facades\Mail;
+use stdClass;
 
 class User extends Model {
 
@@ -47,7 +48,17 @@ class User extends Model {
         $user->role = $user->refUserRole->refRole->name ?? null;
         $user->position = $user->refUserRole->refPosition->name ?? null;
         $user->id_position = $user->refUserRole->id_position ?? null;
-        $user->access_token = Helper::createJwt($user);
+        $paramSetUSer = new stdClass;
+        $paramSetUSer->id = $user->id;
+        $paramSetUSer->id_position = $user->id_position;
+        $paramSetUSer->position = $user->position;
+        $paramSetUSer->role = $user->role;
+        $paramSetUSer->id_role = $user->id_role;
+        $paramSetUSer->email = $user->email;
+        $paramSetUSer->name = $user->name;
+        $paramSetUSer->username = $user->username;
+        $paramSetUSer->nik = $user->nik;
+        $user->access_token = Helper::createJwt($paramSetUSer);
         $user->expires_in = Helper::decodeJwt($user->access_token)->exp;
         $user->menu = QueryPermission::getParentMenu($user->id_role);
         unset($user->ip_whitelist);
