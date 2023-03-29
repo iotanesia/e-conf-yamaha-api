@@ -5,12 +5,14 @@ namespace App\Query;
 use App\Constants\Constant;
 use App\Models\RegularDeliveryPlan AS Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
-use App\Models\RegularDeliveryPlan;
-use App\Models\RegularOrderEntry;
+use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularProspectContainer;
+use App\Models\RegularProspectContainerDetail;
+use App\Models\RegularProspectContainerDetailBox;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class QueryRegularDeliveryPlan extends Model {
 
@@ -153,26 +155,60 @@ class QueryRegularDeliveryPlan extends Model {
         try {
            $check = RegularProspectContainer::where('no_packaging',$params->no_packaging)->first();
            if($check) throw new \Exception("no_packaging registered", 400);
-           $data = RegularDeliveryPlan::where(function ($query) use ($params)
-           {
-                $query->whereIn('id_regular_order_entry',$params->id);
-                $query->where('code_consignee',$params->code_consignee);
-           })
-           ->get()
-           ->map(function ($item) use ($params){
-                return [
-                    "code_consignee" => $item->code_consignee,
-                    "etd_ypmi" => null,
-                    "etd_wh" => null,
-                    "etd_jkt" => $params->etd_jkt,
-                    "no_packaging" => $params->no_packaging,
-                    "created_at" => now(),
-                ];
-           })->toArray();
 
-           foreach (array_chunk($data,1000) as $item) {
-                RegularProspectContainer::insert($item);
-           }
+           $store = RegularProspectContainer::create([
+                        "code_consignee" => $params->code_consignee,
+                        "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
+                        "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
+                        "etd_jkt" => $params->etd_jkt,
+                        "no_packaging" => $params->no_packaging,
+                        "datasource" => $params->datasource,
+                        "created_at" => now(),
+            ]);
+
+
+           self::where(function ($query) use ($params){
+                   $query->whereIn('id',$params->id);
+                   $query->where('code_consignee',$params->code_consignee);
+           })
+           ->chunk(1000,function ($data) use ($params,$store){
+                foreach ($data as $key => $item) {
+
+                    $detail = RegularProspectContainerDetail::create([
+                        "code_consignee" => $item->code_consignee,
+                        "model" => $item->model,
+                        "item_no" => $item->item_no,
+                        "delivery" => $item->delivery,
+                        "qty" => $item->qty,
+                        "status" => $item->status,
+                        "order_no" => $item->order_no,
+                        "cust_item_no" => $item->cust_item_no,
+                        "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
+                        "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
+                        "etd_jkt" => $params->etd_jkt,
+                        "created_at" => now(),
+                        "id_prospect_container" => $store->id,
+                        "uuid" => (string) Str::uuid()
+                    ]);
+
+                    $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$item->id)
+                    ->get()->map(function ($item) use ($detail) {
+                        return [
+                            'id_box' => $item->id_box,
+                            'id_prospect_container_detail' => $detail->id,
+                            'created_at' => now()
+                        ];
+                    })->toArray();
+
+                    foreach (array_chunk($box,1000) as $item_box) {
+                        RegularProspectContainerDetailBox::insert($item_box);
+                    }
+
+                    $item->is_inquiry = Constant::IS_ACTIVE;
+                    $item->save();
+
+                }
+           });
 
           if($is_trasaction) DB::commit();
         } catch (\Throwable $th) {
