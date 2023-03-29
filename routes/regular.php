@@ -41,7 +41,7 @@ Route::prefix('v1/regular')
         Route::get('/revision',[OrderEntryUploadController::class,'revision']);
         Route::post('/finish',[OrderEntryUploadController::class,'finish']);
         Route::post('/send-approve',[OrderEntryUploadController::class,'sendApprove']);
-        Route::post('/send-dc-manager',[OrderEntryUploadController::class,'sendDcManager']);
+        Route::post('/send-dc-spv',[OrderEntryUploadController::class,'sendDcSpv']);
         Route::post('/revision',[OrderEntryUploadController::class,'sendRevision']);
         Route::post('/rejected',[OrderEntryUploadController::class,'sendRejected']);
     });

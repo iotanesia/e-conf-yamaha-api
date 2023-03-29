@@ -54,7 +54,7 @@ class OrderEntryUploadController extends Controller
         }
     }
 
-    public function sendDcManager(Request $request)
+    public function sendDcSpv(Request $request)
     {
         try {
             return ResponseInterface::responseData([
