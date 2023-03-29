@@ -119,6 +119,8 @@ class User {
             $insert->password = Hash::make($params->password);
             $insert->save();
 
+            $insert->refUserRole()->create(self::setParamUserRole($params,$insert->id));
+
             DB::commit();
             return [
                 'items' => $insert,
@@ -136,12 +138,9 @@ class User {
         try {
             $update = Model::find($id);
             if(!$update) throw new \Exception("id tidak ditemukan.");
-            $update->username = $params->username;
-            $update->name = $params->name;
-            $update->email = $params->email;
-            $update->is_active = $params->is_active;
-            $update->nik = $params->nik;
+            $update->fill($params->all());
             $update->save();
+            $update->refUserRole ? $update->refUserRole()->update(['id_roles'=>$params->id_roles,'id_position'=>$params->id_position]) : $update->refUserRole()->create(self::setParamUserRole($params,$id));
             DB::commit();
             return [
                 'items' => $update,
@@ -153,6 +152,13 @@ class User {
         }
     }
 
+    public static function setParamUserRole($params,$id) {
+        return [
+            'id_users' => $id,
+            'id_roles' => $params->id_roles,
+            'id_position' => $params->id_position
+        ];
+    }
     public static function deleteData($id)
     {
         DB::beginTransaction();
