@@ -26,6 +26,7 @@ class QueryRegularOrderEntryUploadRevision extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
+               $query->where('type', 'REVISION');
                if($params->search)
                     $query->where('note', 'like', "'%$params->search%'");
             });
@@ -42,8 +43,9 @@ class QueryRegularOrderEntryUploadRevision extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->map(function ($item){
-                    $item->name = $item->refUser->name;
-                    return $item;
+                    $result = $item;
+                    $result->user = $item->refUser->name;
+                    return $result;
                 }),
                 'attributes' => [
                     'total' => $data->total(),
