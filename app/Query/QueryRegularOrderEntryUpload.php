@@ -252,6 +252,7 @@ class QueryRegularOrderEntryUpload extends Model {
 
                 'items' => $data->getCollection()->transform(function ($item){
                     $result = $item->refRegularOrderEntry;
+                    $result->id_upload = $item->id;
                     $result->filename = $item->filename;
                     $result->batch = $item->iteration;
                     $result->status = "Send To Dc Spv";
@@ -297,6 +298,7 @@ class QueryRegularOrderEntryUpload extends Model {
 
                 'items' => $data->getCollection()->transform(function ($item){
                     $result = $item->refRegularOrderEntry;
+                    $result->id_upload = $item->id;
                     $result->filename = $item->filename;
                     $result->batch = $item->iteration;
                     $result->status = "Send To Pc";
@@ -341,6 +343,7 @@ class QueryRegularOrderEntryUpload extends Model {
 
                 'items' => $data->getCollection()->transform(function ($item){
                     $result = $item->refRegularOrderEntry;
+                    $result->id_upload = $item->id;
                     $result->filename = $item->filename;
                     $result->batch = $item->iteration;
                     if($item->status == 4)
