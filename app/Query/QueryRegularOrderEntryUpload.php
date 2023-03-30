@@ -426,7 +426,7 @@ class QueryRegularOrderEntryUpload extends Model {
         try {
 
             Helper::requireParams([
-                'id_order_entry'
+                'id'
             ]);
 
             $upload = RegularOrderEntryUpload::find($params->id);
