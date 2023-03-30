@@ -23,6 +23,7 @@ class QueryMstTypeDelivery extends Model {
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
+            if($params->id_mot) $query->where('id_mot',$params->id_mot);
             $data = $query
             ->orderBy('id','asc')
             ->paginate($params->limit ?? null);
