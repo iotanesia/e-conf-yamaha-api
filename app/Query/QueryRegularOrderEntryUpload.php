@@ -11,6 +11,7 @@ use App\Imports\OrderEntry;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularOrderEntry;
+use App\Models\RegularOrderEntryUpload;
 use App\Models\RegularOrderEntryUploadDetail;
 use App\Models\RegularOrderEntryUploadDetailBox;
 use Carbon\Carbon;
@@ -428,8 +429,10 @@ class QueryRegularOrderEntryUpload extends Model {
                 'id_order_entry'
             ]);
 
-
-            $items = RegularOrderEntry::find($params->id_order_entry);
+            $upload = RegularOrderEntryUpload::find($params->id);
+            $upload->status = Constant::STS_FINISH;
+            $upload->save();
+            $items = RegularOrderEntry::find($upload->id_regular_order_entry);
             if(!$items) throw new \Exception("Data tidak ditemukan", 500);
 
             $data = self::whereHas('refRegularOrderEntry',function ($query) use ($items){
@@ -455,7 +458,7 @@ class QueryRegularOrderEntryUpload extends Model {
                         "etd_jkt" => $item['etd_jkt'],
                         "etd_ypmi" => $item['etd_ypmi'],
                         "etd_wh" => $item['etd_wh'],
-                        "id_regular_order_entry" => $params->id_order_entry,
+                        "id_regular_order_entry" => $upload->id_regular_order_entry,
                         "created_at" => now(),
                         'is_inquiry' => 0,
                         "uuid" => (string) Str::uuid()
