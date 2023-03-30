@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\Main\OrderEntryController;
 use App\Http\Controllers\Master\PositionController;
 use App\Http\Controllers\Master\RoleController;
@@ -35,14 +36,9 @@ Route::prefix('v1')
     Route::post('login',[AuthController::class,'login']);
     Route::post('register',[AuthController::class,'register']);
 
-    // main
-    // Route::prefix('order-entry')->group(function(){
-    //     Route::get('/',[OrderEntryController::class,'index']);
-    //     Route::post('/',[OrderEntryController::class,'store']);
-    //     Route::post('/{id}',[OrderEntryController::class,'update']);
-    //     Route::get('/{id}',[OrderEntryController::class,'show']);
-    //     Route::delete('/{id}',[OrderEntryController::class,'destroy']);
-    // });
+    Route::prefix('file')->group(function (){
+        Route::get('/download',[FileController::class,'download'])->name('file.download');
+    });
 });
 
 require __DIR__.'/auth.php';

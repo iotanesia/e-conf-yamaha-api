@@ -42,6 +42,16 @@ class RegularDeliveryPlan extends Model
         });
     }
 
+    public function refPart()
+    {
+        return $this->belongsTo(MstPart::class,'item_no','item_no');
+    }
+
+    public function refConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
+
     public function refRegularOrderEntry()
     {
         return $this->belongsTo(RegularOrderEntry::class,'id_regular_order_entry','id');
