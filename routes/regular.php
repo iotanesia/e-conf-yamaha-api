@@ -83,6 +83,7 @@ Route::prefix('v1/regular')
       // order entry pc
     Route::group(['prefix' => 'prospect-container'],function (){
         Route::get('/',[ProspectContainerController::class,'index']);
+        Route::post('/booking',[ProspectContainerController::class,'booking']);
     });
 
 });
