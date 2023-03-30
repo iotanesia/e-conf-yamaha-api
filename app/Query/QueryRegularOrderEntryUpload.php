@@ -442,7 +442,7 @@ class QueryRegularOrderEntryUpload extends Model {
 
             RegularOrderEntryUploadDetail::whereIn('id_regular_order_entry_upload',$data->toArray())
             ->where('status','fixed')
-            ->chunk(100,function ($datas) use ($params){
+            ->chunk(100,function ($datas) use ($upload){
                 foreach ($datas as $key => $items) {
                     $item = $items->toArray();
 
