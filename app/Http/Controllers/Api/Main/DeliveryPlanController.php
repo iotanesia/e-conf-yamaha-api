@@ -76,4 +76,26 @@ class DeliveryPlanController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function labeling(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::label($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function storeLabeling(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::storeLabel($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

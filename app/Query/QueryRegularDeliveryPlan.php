@@ -15,6 +15,7 @@ use App\Models\RegularProspectContainerDetailBox;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class QueryRegularDeliveryPlan extends Model {
 
@@ -306,6 +307,103 @@ class QueryRegularDeliveryPlan extends Model {
             $data->save();
 
             if($is_trasaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_trasaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function label($params,$id)
+    {
+
+        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+
+
+        $data->transform(function ($item)
+        {
+            $no = $item->refBox->no_box ?? null;
+            $qty = $item->refBox->qty ?? null;
+            return [
+                'id' => $item->id,
+                'item_name' => $item->refRegularDeliveryPlan->refPart->description ?? null,
+                'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
+                'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
+                'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
+                'qty' => $qty,
+                'namebox' => $no. " ".$qty. " pcs" ,
+            ];
+        });
+
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
+
+
+    }
+
+    public static function storeLabel($params,$is_trasaction = true)
+    {
+
+        if($is_trasaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'data',
+            ]);
+
+
+            $request = $params->all();
+
+            $id = [];
+            foreach ($request['data'] as $key => $item) {
+                $check = RegularDeliveryPlanBox::find($item['id']);
+                if($check) {
+                    $check->fill($item);
+                    $check->save();
+                }
+                $id[] = $item['id'];
+            }
+
+
+            if($is_trasaction) DB::commit();
+
+            $data = RegularDeliveryPlanBox::whereIn('id',$id)->paginate($params->limit ?? null);
+            $data->transform(function ($item)
+            {
+                $no = $item->refBox->no_box ?? null;
+                $qty = $item->refBox->qty ?? null;
+
+                $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
+
+                $qr_name = (string) Str::uuid().'.png';
+                $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt;
+                QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
+
+                $item->qrcode = $qr_name;
+                $item->save();
+
+                return [
+                    'id' => $item->id,
+                    'item_name' => $item->refRegularDeliveryPlan->refPart->description ?? null,
+                    'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
+                    'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
+                    'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
+                    'qty_pcs_box' => $item->qty_pcs_box,
+                    'namebox' => $no. " ".$qty. " pcs" ,
+                    'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling'
+                ];
+            });
+
+
+
+            return [
+                'items' => $data->items(),
+                'last_page' => $data->lastPage()
+            ];
+
         } catch (\Throwable $th) {
             if($is_trasaction) DB::rollBack();
             throw $th;
