@@ -5,15 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
-class RegularProspectContainerDetailBox extends Model
+
+class RegularProspectContainerFifo extends Model
 {
     use HasFactory,SoftDeletes;
-    protected $table = 'regular_prospect_container_detail_box';
+    protected $table = 'regular_prospect_container_fifo';
     public $fillable = [
         "id",
-        "id_box",
-        "id_prospect_container_detail",
+        "id_prospect_container",
+        "id_type_delivery",
+        "id_mot",
+        "id_lsp",
+        "id_container",
+        "summary_box",
+        "measurement",
+        "item_no",
         "created_at",
         "created_by",
         "updated_at",
@@ -21,11 +27,6 @@ class RegularProspectContainerDetailBox extends Model
         "deleted_at",
         "uuid"
     ];
-
-    public function refBox()
-    {
-        return $this->belongsTo(MstBox::class,'id_box','id');
-    }
 
     public static function boot()
     {

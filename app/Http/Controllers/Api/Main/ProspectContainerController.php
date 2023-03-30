@@ -34,4 +34,15 @@ class ProspectContainerController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function fifo(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularProspectContainer::fifoProcess($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

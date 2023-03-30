@@ -86,6 +86,7 @@ Route::prefix('v1/regular')
     Route::group(['prefix' => 'prospect-container'],function (){
         Route::get('/',[ProspectContainerController::class,'index']);
         Route::post('/booking',[ProspectContainerController::class,'booking']);
+        Route::post('/fifo',[ProspectContainerController::class,'fifo']);
     });
 
 });

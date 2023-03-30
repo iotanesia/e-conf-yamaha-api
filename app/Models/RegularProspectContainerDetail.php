@@ -33,6 +33,16 @@ class RegularProspectContainerDetail extends Model
         "uuid"
     ];
 
+    public function refRegularProspectContainer()
+    {
+        return $this->belongsTo(RegularProspectContainer::class,'id_prospect_container','id');
+    }
+
+    public function manyBox()
+    {
+        return $this->hasMany(RegularProspectContainerDetailBox::class,'id_prospect_container_detail','id');
+    }
+
     public static function boot()
     {
         parent::boot();
