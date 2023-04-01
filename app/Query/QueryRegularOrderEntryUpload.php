@@ -437,7 +437,7 @@ class QueryRegularOrderEntryUpload extends Model {
             if(!$items) throw new \Exception("Data tidak ditemukan", 500);
 
 
-            RegularOrderEntryUploadDetail::whereIn('id_regular_order_entry_upload',$params->id)
+            RegularOrderEntryUploadDetail::where('id_regular_order_entry_upload',$params->id)
             ->where('status','fixed')
             ->chunk(100,function ($datas) use ($upload){
                 foreach ($datas as $key => $items) {
