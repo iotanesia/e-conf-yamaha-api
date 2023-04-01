@@ -37,4 +37,8 @@ class RegularProspectContainer extends Model
             // $model->uuid = (string) Str::uuid();
         });
     }
+
+    public function refMstConsignee(){
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
 }

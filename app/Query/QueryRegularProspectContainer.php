@@ -36,7 +36,22 @@ class QueryRegularProspectContainer extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->map(function ($item){
-                    return $item;
+                    $items = [
+                        "id" => $item->id,
+                        "code_consignee" => $item->code_consignee,
+                        "customer_name" => $item->refMstConsignee->nick_name,
+                        "no_packaging" => $item->no_packaging,
+                        "datasource" => $item->datasource,
+                        "etd_ypmi" => $item->etd_ypmi,
+                        "etd_wh" => $item->etd_wh,
+                        "etd_jkt" => $item->etd_jkt,
+                        "created_at" => $item->created_at,
+                        "created_by" => $item->created_by,
+                        "updated_at" => $item->updated_at,
+                        "updated_by" => $item->updated_by,
+                        "deleted_at" => $item->deleted_at
+                    ];
+                    return $items;
                 }),
                 'attributes' => [
                     'total' => $data->total(),
