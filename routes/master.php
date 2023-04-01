@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Master\PositionController;
 use App\Http\Controllers\Api\Master\RoleController;
 use App\Http\Controllers\Api\Master\DatasourceController;
 use App\Http\Controllers\Api\Master\MotController;
+use App\Http\Controllers\Api\Master\ShipmentController;
 use App\Http\Controllers\Api\Master\TypeDeliveryController;
 use App\Query\QueryRegularOrderEntryUploadDetail;
 
@@ -143,5 +144,14 @@ Route::prefix('v1/master')
         Route::put('/',[TypeDeliveryController::class,'update']);
         Route::get('/{id}',[TypeDeliveryController::class,'show']);
         Route::delete('/{id}',[TypeDeliveryController::class,'destroy']);
+    });
+    
+    // shipment
+    Route::group(['prefix' => 'shipment'],function (){
+        Route::get('/',[ShipmentController::class,'index']);
+        Route::post('/',[ShipmentController::class,'store']);
+        Route::put('/',[ShipmentController::class,'update']);
+        Route::get('/{id}',[ShipmentController::class,'show']);
+        Route::delete('/{id}',[ShipmentController::class,'destroy']);
     });
 });
