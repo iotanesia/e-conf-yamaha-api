@@ -379,7 +379,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
                     'lot_packing' => $item->lot_packing,
                     'packing_date' => $item->packing_date,
-                    'box_number' => 'test-01',
+                    'no_box' => $item->refBox->no_box ?? null,
                 ];
             });
 
@@ -442,7 +442,7 @@ class QueryRegularDeliveryPlan extends Model {
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
-        $data->transform(function ($item) { 
+        $data->transform(function ($item) {
             return [
                 'code_consignee' => $item->code_consignee,
                 'etd_jkt' => $item->etd_jkt,
