@@ -10,6 +10,7 @@ use App\ApiHelper;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainer;
+use App\Models\RegularDeliveryPlanShippingInsruction;
 use App\Models\RegularProspectContainer;
 use App\Models\RegularProspectContainerCreation;
 use App\Models\RegularProspectContainerDetail;
@@ -411,5 +412,27 @@ class QueryRegularDeliveryPlan extends Model {
             if($is_transaction) DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function shipping($params)
+    {
+        $data = RegularDeliveryPlanShippingInsruction::paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function shippingDetail($params,$id)
+    {
+        $data = RegularProspectContainerCreation::select('code_consignee','etd_jkt',DB::raw('COUNT(etd_jkt) AS count'))->where('id_shipping_instruction',$id)->groupBy('code_consignee','etd_jkt')->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
     }
 }

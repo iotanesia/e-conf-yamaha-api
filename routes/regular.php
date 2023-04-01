@@ -83,6 +83,11 @@ Route::prefix('v1/regular')
             Route::put('/edit-mot',[DeliveryPlanController::class,'editMot']);
         });
 
+        Route::group(['prefix' => 'shipping-instruction'],function (){
+            Route::get('/',[DeliveryPlanController::class,'shippingInstruction']);
+            Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
+        });
+
         Route::get('/{id}',[DeliveryPlanController::class,'show']);
       });
 

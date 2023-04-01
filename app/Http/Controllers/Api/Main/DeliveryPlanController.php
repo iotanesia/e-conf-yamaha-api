@@ -109,4 +109,26 @@ class DeliveryPlanController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function shippingInstruction(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::shipping($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function shippingInstructionDetail(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::shippingDetail($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }
