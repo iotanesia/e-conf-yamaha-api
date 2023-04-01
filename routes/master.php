@@ -164,5 +164,6 @@ Route::prefix('v1/master')
         Route::put('/',[ShipmentController::class,'update']);
         Route::get('/{id}',[ShipmentController::class,'show']);
         Route::delete('/{id}',[ShipmentController::class,'destroy']);
+        Route::get('/active/shipment-active',[ShipmentController::class,'isActive']);
     });
 });

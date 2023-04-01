@@ -115,4 +115,15 @@ class ShipmentController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function isActive(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryMstShipment::isActive($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }
