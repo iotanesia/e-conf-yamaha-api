@@ -442,14 +442,11 @@ class QueryRegularDeliveryPlan extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             $params = $request->all();
-
             Helper::requireParams([
                 'to',
                 'cc'
             ]);
-
             RegularDeliveryPlanShippingInsructionCreation::create($params);
-
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
