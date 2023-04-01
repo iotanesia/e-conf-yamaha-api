@@ -376,7 +376,10 @@ class QueryRegularDeliveryPlan extends Model {
                     'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
                     'qty_pcs_box' => $item->qty_pcs_box,
                     'namebox' => $no. " ".$qty. " pcs" ,
-                    'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling'
+                    'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
+                    'lot_packing' => $item->lot_packing,
+                    'packing_date' => $item->packing_date,
+                    'no_box' => $item->refBox->no_box ?? null,
                 ];
             });
 
@@ -404,7 +407,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'id_mot',
                 'id_type_delivery'
             ]);
-            
+
             $update = RegularProspectContainerCreation::find($params['id']);
             if(!$update) throw new \Exception("id tidak ditemukan", 400);
 
@@ -449,7 +452,7 @@ class QueryRegularDeliveryPlan extends Model {
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
-        $data->transform(function ($item) { 
+        $data->transform(function ($item) {
             return [
                 'code_consignee' => $item->code_consignee,
                 'etd_jkt' => $item->etd_jkt,
