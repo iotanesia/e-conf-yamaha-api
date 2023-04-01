@@ -90,6 +90,10 @@ Route::prefix('v1/regular')
             Route::post('/',[DeliveryPlanController::class,'shippingInstructionStore']);
         });
 
+        Route::group(['prefix' => 'booking'],function(){
+            Route::post('/',[DeliveryPlanController::class,'booking']);
+        });
+
         Route::get('/{id}',[DeliveryPlanController::class,'show']);
       });
 

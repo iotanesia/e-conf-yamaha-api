@@ -431,10 +431,20 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function shippingDetail($params,$id)
     {
-        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp',DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS count'),DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging"),DB::raw("string_agg(DISTINCT hs_code::character varying, ',') as hs_code"))
+        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp'
+        ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS count')
+        ,DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging")
+        ,DB::raw("string_agg(DISTINCT hs_code::character varying, ',') as hs_code")
+        ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
+        ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
+        ,DB::raw("string_agg(DISTINCT e.name::character varying, ',') as type_delivery")
+        )
         ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction',$id)
         ->join('regular_delivery_plan_prospect_container as a','regular_delivery_plan_prospect_container_creation.id_prospect_container','a.id')
         ->join('mst_part as b','regular_delivery_plan_prospect_container_creation.item_no','b.item_no')
+        ->join('mst_mot as c','regular_delivery_plan_prospect_container_creation.id_mot','c.id')
+        ->join('mst_port_of_discharge as d','regular_delivery_plan_prospect_container_creation.code_consignee','d.code_consignee')
+        ->join('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
         ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp')
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
@@ -446,6 +456,9 @@ class QueryRegularDeliveryPlan extends Model {
                 'count' => $item->count,
                 'no_packaging' => $item->no_packaging,
                 'hs_code' => $item->hs_code,
+                'mot' => $item->mot,
+                'port' => $item->port,
+                'type_delivery' => $item->type_delivery,
                 'to' => $item->refMstLsp->name ?? null,
                 'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null
             ];
@@ -473,6 +486,17 @@ class QueryRegularDeliveryPlan extends Model {
 
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function book($request,$is_transaction = true) {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            Helper::requireParams(['to']);
+            if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
