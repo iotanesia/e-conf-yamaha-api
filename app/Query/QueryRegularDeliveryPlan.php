@@ -349,14 +349,16 @@ class QueryRegularDeliveryPlan extends Model {
                 $no = $item->refBox->no_box ?? null;
                 $qty = $item->refBox->qty ?? null;
 
-                $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
-
-                $qr_name = (string) Str::uuid().'.png';
-                $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt;
-                QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
-
-                $item->qrcode = $qr_name;
-                $item->save();
+                if(!$item->qrcode) {
+                    $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
+    
+                    $qr_name = (string) Str::uuid().'.png';
+                    $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt;
+                    QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
+    
+                    $item->qrcode = $qr_name;
+                    $item->save();
+                }
 
                 return [
                     'id' => $item->id,
