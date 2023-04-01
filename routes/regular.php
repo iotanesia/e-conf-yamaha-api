@@ -72,7 +72,7 @@ Route::prefix('v1/regular')
         Route::post('/no-packaging',[DeliveryPlanController::class,'noPackaging']);
         Route::post('/inquiry',[DeliveryPlanController::class,'inquiryProcess']);
         Route::post('/edit',[DeliveryPlanController::class,'update']);
-        
+
         Route::group(['prefix' => 'produksi'],function (){
             Route::post('/labeling',[DeliveryPlanController::class,'storeLabeling']);
             Route::get('/labeling/{id}',[DeliveryPlanController::class,'labeling']);
@@ -81,6 +81,7 @@ Route::prefix('v1/regular')
         Route::group(['prefix' => 'prospect-container'],function (){
             Route::post('/creation',[ProspectContainerController::class,'creation']);
             Route::put('/edit-mot',[DeliveryPlanController::class,'editMot']);
+            Route::get('/fifo/{id}',[ProspectContainerController::class,'show']);
         });
 
         Route::group(['prefix' => 'shipping-instruction'],function (){

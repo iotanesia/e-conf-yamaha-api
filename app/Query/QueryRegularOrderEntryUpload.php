@@ -432,20 +432,20 @@ class QueryRegularOrderEntryUpload extends Model {
             $upload = RegularOrderEntryUpload::find($params->id);
             $upload->status = Constant::STS_FINISH;
             $upload->save();
+
             $items = RegularOrderEntry::find($upload->id_regular_order_entry);
             if(!$items) throw new \Exception("Data tidak ditemukan", 500);
 
-            $data = self::whereHas('refRegularOrderEntry',function ($query) use ($items){
-                $query->where('year',$items->year);
-                $query->where('month',$items->month);
-            })->get()->pluck('id');
 
-            RegularOrderEntryUploadDetail::whereIn('id_regular_order_entry_upload',$data->toArray())
+            RegularOrderEntryUploadDetail::where('id_regular_order_entry_upload',$params->id)
             ->where('status','fixed')
             ->chunk(100,function ($datas) use ($upload){
                 foreach ($datas as $key => $items) {
-                    $item = $items->toArray();
 
+                    $items->is_delivery_plan = Constant::IS_ACTIVE;
+                    $items->save();
+
+                    $item = $items->toArray();
                     $store = RegularDeliveryPlan::create([
                         "model" => $item['model'],
                         "item_no" => $item['item_no'],
@@ -460,7 +460,7 @@ class QueryRegularOrderEntryUpload extends Model {
                         "etd_wh" => $item['etd_wh'],
                         "id_regular_order_entry" => $upload->id_regular_order_entry,
                         "created_at" => now(),
-                        'is_inquiry' => 0,
+                        "is_inquiry" => 0,
                         "uuid" => (string) Str::uuid()
                     ]);
 

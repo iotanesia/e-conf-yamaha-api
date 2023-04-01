@@ -17,6 +17,49 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     const cast = 'regular-delivery-plan-prospect-container-container';
 
 
+    public static function byIdProspectContainer($params,$id)
+    {
+        $data = RegularDeliveryPlan::where('id_prospect_container',$id)
+        ->paginate($params->limit ?? null);
+        if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
+
+        $data->transform(function ($item){
+            $item->item_name = $item->refPart->description ?? null;
+            $item->cust_name = $item->refConsignee->nick_name ?? null;
+            $regularOrderEntry = $item->refRegularOrderEntry;
+            $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
+            $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
+            $item->regular_order_entry_year = $regularOrderEntry->year ?? null;
+            $item->box = $item->manyDeliveryPlanBox->map(function ($item)
+            {
+                return [
+                    'id' => $item->id,
+                    'id_box' => $item->id_box,
+                    'qty' => $item->refBox->qty ?? null,
+                    'width' => $item->refBox->width ?? null,
+                    'height' => $item->refBox->height ?? null,
+                ];
+            });
+
+            unset(
+                $item->refRegularOrderEntry,
+                $item->manyDeliveryPlanBox,
+                $item->refPart,
+                $item->refConsignee
+            );
+
+            return $item;
+
+        });
+
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage(),
+
+        ];
+    }
+
 
     public static function createionProcess($params,$is_transaction = true)
     {
@@ -32,7 +75,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
          ->count('id_prospect_container');
 
          if($check) throw new \Exception("Data already exist in table creation", 400);
-         
+
          $item_no = RegularDeliveryPlan::select('item_no')
          ->whereIn('id_prospect_container',$params->id)
          ->groupBy('item_no','id_prospect_container')
