@@ -75,6 +75,7 @@ Route::prefix('v1/regular')
         Route::post('/labeling',[DeliveryPlanController::class,'storeLabeling']);
         Route::get('/labeling/{id}',[DeliveryPlanController::class,'labeling']);
         Route::get('/{id}',[DeliveryPlanController::class,'show']);
+        Route::put('/prospect-container/edit-mot',[DeliveryPlanController::class,'editMot']);
       });
 
       // delivery-plan-detail

@@ -109,5 +109,27 @@ class QueryMstShipment extends Model {
         }
     }
 
-
+    public static function isActive($params)
+    {
+        $key = self::cast.json_encode($params->query());
+        return Helper::storageCache($key, function () use ($params){
+            $query = self::where(function ($query) use ($params){
+               if($params->kueri) $query->where('shipment',"%$params->kueri%");
+               $query->where('is_active', 1);
+            });
+            if($params->withTrashed == 'true') $query->withTrashed();
+            $data = $query
+            ->orderBy('id','asc')
+            ->paginate($params->limit ?? null);
+            return [
+                'items' => $data->items(),
+                'attributes' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        });
+    }
 }

@@ -10,6 +10,7 @@ use App\ApiHelper;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularProspectContainer;
+use App\Models\RegularProspectContainerCreation;
 use App\Models\RegularProspectContainerDetail;
 use App\Models\RegularProspectContainerDetailBox;
 use Carbon\Carbon;
@@ -406,6 +407,31 @@ class QueryRegularDeliveryPlan extends Model {
 
         } catch (\Throwable $th) {
             if($is_trasaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function updateProspectContainerCreation($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $params = $request->all();
+
+            Helper::requireParams([
+                'id',
+                'id_mot',
+                'id_type_delivery'
+            ]);
+            
+            $update = RegularProspectContainerCreation::find($params['id']);
+            if(!$update) throw new \Exception("id tidak ditemukan", 400);
+
+            $update->fill($params);
+            $update->save();
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
             throw $th;
         }
     }
