@@ -7,6 +7,7 @@ use App\Models\RegularDeliveryPlan AS Model;
 use Illuminate\Support\Facades\DB;
 use App\ApiHelper as Helper;
 use App\ApiHelper;
+use App\Models\MstShipment;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainer;
@@ -428,8 +429,25 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function shippingDetail($params,$id)
     {
-        $data = RegularProspectContainerCreation::select('code_consignee','etd_jkt',DB::raw('COUNT(etd_jkt) AS count'))->where('id_shipping_instruction',$id)->groupBy('code_consignee','etd_jkt')->paginate($params->limit ?? null);
+        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp',DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS count'),DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging"),DB::raw("string_agg(DISTINCT hs_code::character varying, ',') as hs_code"))
+        ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction',$id)
+        ->join('regular_delivery_plan_prospect_container as a','regular_delivery_plan_prospect_container_creation.id_prospect_container','a.id')
+        ->join('mst_part as b','regular_delivery_plan_prospect_container_creation.item_no','b.item_no')
+        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp')
+        ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
+
+        $data->transform(function ($item) { 
+            return [
+                'code_consignee' => $item->code_consignee,
+                'etd_jkt' => $item->etd_jkt,
+                'count' => $item->count,
+                'no_packaging' => $item->no_packaging,
+                'hs_code' => $item->hs_code,
+                'to' => $item->refMstLsp->name ?? null,
+                'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null
+            ];
+        });
 
         return [
             'items' => $data->items(),
@@ -444,7 +462,7 @@ class QueryRegularDeliveryPlan extends Model {
             $params = $request->all();
             Helper::requireParams([
                 'to',
-                'cc'
+                'cc',
             ]);
             RegularDeliveryPlanShippingInsructionCreation::create($params);
             if($is_transaction) DB::commit();
