@@ -441,6 +441,7 @@ class QueryRegularDeliveryPlan extends Model {
         ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
         ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
         ,DB::raw("string_agg(DISTINCT e.name::character varying, ',') as type_delivery")
+        ,DB::raw("string_agg(DISTINCT f.container_type::character varying, ',') as container_type")
         )
         ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction',$id)
         ->join('regular_delivery_plan_prospect_container as a','regular_delivery_plan_prospect_container_creation.id_prospect_container','a.id')
@@ -448,6 +449,7 @@ class QueryRegularDeliveryPlan extends Model {
         ->join('mst_mot as c','regular_delivery_plan_prospect_container_creation.id_mot','c.id')
         ->join('mst_port_of_discharge as d','regular_delivery_plan_prospect_container_creation.code_consignee','d.code_consignee')
         ->join('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
+        ->join('mst_container as f','regular_delivery_plan_prospect_container_creation.id_container','f.id')
         ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp')
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
@@ -459,7 +461,10 @@ class QueryRegularDeliveryPlan extends Model {
                 'count' => $item->count,
                 'no_packaging' => $item->no_packaging,
                 'hs_code' => $item->hs_code,
-                'mot' => $item->mot,
+                'via' => $item->mot,
+                'freight_chart' => 'COLLECT',
+                'incorterm' => 'FOB',
+                'container' => $item->container_type,
                 'port' => $item->port,
                 'type_delivery' => $item->type_delivery,
                 'to' => $item->refMstLsp->name ?? null,
