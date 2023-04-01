@@ -7,10 +7,12 @@ use App\Models\RegularDeliveryPlan AS Model;
 use Illuminate\Support\Facades\DB;
 use App\ApiHelper as Helper;
 use App\ApiHelper;
+use App\Models\MstConsignee;
 use App\Models\MstShipment;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainer;
+use App\Models\RegularDeliveryPlanProspectContainerCreation;
 use App\Models\RegularDeliveryPlanShippingInsruction;
 use App\Models\RegularDeliveryPlanShippingInsructionCreation;
 use App\Models\RegularProspectContainer;
@@ -459,12 +461,16 @@ class QueryRegularDeliveryPlan extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
+            $consignee = MstConsignee::where('code',$request->code_consignee)->first();
+            $request->merge(['consignee'=>json_encode($consignee)]);
             $params = $request->all();
             Helper::requireParams([
                 'to',
                 'cc',
             ]);
-            RegularDeliveryPlanShippingInsructionCreation::create($params);
+            $insert = RegularDeliveryPlanShippingInsructionCreation::create($params);
+            RegularDeliveryPlanProspectContainerCreation::where('code_consignee',$request->code_consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_shipping_instruction_creation'=>$insert->id]);
+
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
