@@ -11,6 +11,7 @@ use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainer;
 use App\Models\RegularDeliveryPlanShippingInsruction;
+use App\Models\RegularDeliveryPlanShippingInsructionCreation;
 use App\Models\RegularProspectContainer;
 use App\Models\RegularProspectContainerCreation;
 use App\Models\RegularProspectContainerDetail;
@@ -434,5 +435,26 @@ class QueryRegularDeliveryPlan extends Model {
             'items' => $data->items(),
             'last_page' => $data->lastPage()
         ];
+    }
+
+    public static function shippingStore($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $params = $request->all();
+
+            Helper::requireParams([
+                'to',
+                'cc'
+            ]);
+
+            RegularDeliveryPlanShippingInsructionCreation::create($params);
+
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
     }
 }

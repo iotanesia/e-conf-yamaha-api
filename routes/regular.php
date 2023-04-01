@@ -86,6 +86,7 @@ Route::prefix('v1/regular')
         Route::group(['prefix' => 'shipping-instruction'],function (){
             Route::get('/',[DeliveryPlanController::class,'shippingInstruction']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
+            Route::post('/{id}',[DeliveryPlanController::class,'shippingInstructionStore']);
         });
 
         Route::get('/{id}',[DeliveryPlanController::class,'show']);
