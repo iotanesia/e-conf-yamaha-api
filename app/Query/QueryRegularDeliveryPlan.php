@@ -443,6 +443,9 @@ class QueryRegularDeliveryPlan extends Model {
         ,DB::raw("string_agg(DISTINCT e.name::character varying, ',') as type_delivery")
         ,DB::raw("string_agg(DISTINCT f.container_type::character varying, ',') as container_type")
         ,DB::raw("string_agg(DISTINCT f.container_value::character varying, ',') as container_value")
+        ,DB::raw("SUM(f.net_weight) as net_weight")
+        ,DB::raw("SUM(f.gross_weight) as gross_weight")
+        ,DB::raw("SUM(f.measurement) as measurement")
         )
         ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction',$id)
         ->join('regular_delivery_plan_prospect_container as a','regular_delivery_plan_prospect_container_creation.id_prospect_container','a.id')
@@ -467,6 +470,9 @@ class QueryRegularDeliveryPlan extends Model {
                 'incorterm' => 'FOB',
                 'container_value' => $item->container_type,
                 'container_type' => $item->container_value,
+                'net_weight' => $item->net_weight,
+                'gross_weight' => $item->gross_weight,
+                'measurement' => $item->measurement,
                 'port' => $item->port,
                 'type_delivery' => $item->type_delivery,
                 'to' => $item->refMstLsp->name ?? null,
