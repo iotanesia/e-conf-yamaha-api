@@ -140,6 +140,8 @@ class QueryRegularDeliveryPlan extends Model {
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
         $data->transform(function ($item){
+            $item->item_name = $item->refPart->description ?? null;
+            $item->cust_name = $item->refConsignee->nick_name ?? null;
             $regularOrderEntry = $item->refRegularOrderEntry;
             $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
             $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
@@ -157,7 +159,9 @@ class QueryRegularDeliveryPlan extends Model {
 
             unset(
                 $item->refRegularOrderEntry,
-                $item->manyDeliveryPlanBox
+                $item->manyDeliveryPlanBox,
+                $item->refPart,
+                $item->refConsignee
             );
 
             return $item;
@@ -231,7 +235,7 @@ class QueryRegularDeliveryPlan extends Model {
             ->get()
             ->toArray();
 
-            if(count($check) > 1) throw new \Exception("etd_jkt & code_consignee not same" . json_encode($check), 400);
+            if(count($check) > 1) throw new \Exception("etd jkt & code consignee not same", 400);
 
             $data = RegularDeliveryPlan::select(DB::raw('count(cust_item_no) as total'),'cust_item_no')->whereIn('id',$params->id)
             ->groupBy('cust_item_no')
