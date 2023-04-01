@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class RegularProspectContainer extends Model
 {
     use HasFactory,SoftDeletes;
-    protected $table = 'regular_prospect_container';
+    protected $table = 'regular_delivery_plan_prospect_container';
     public $fillable = [
         "id",
         "code_consignee",
