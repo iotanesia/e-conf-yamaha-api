@@ -358,6 +358,9 @@ class QueryRegularDeliveryPlan extends Model {
     
                     $item->qrcode = $qr_name;
                     $item->save();
+                
+                } else {
+                    $qr_name = $item->qrcode;
                 }
 
                 return [
