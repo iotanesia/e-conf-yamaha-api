@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\ApiHelper as ResponseInterface;
 use App\Exports\BookingExport;
 use App\Query\QueryRegularProspectContainer;
+use App\Query\QueryRegulerDeliveryPlanProspectContainer;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProspectContainerController extends Controller
@@ -41,6 +42,19 @@ class ProspectContainerController extends Controller
             return ResponseInterface::responseData(
                 QueryRegularProspectContainer::fifoProcess($request)
             );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public static function creation(Request $request)
+    {
+        try {
+
+            return ResponseInterface::responseData(
+                QueryRegulerDeliveryPlanProspectContainer::createionProcess($request)
+            );
+
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }

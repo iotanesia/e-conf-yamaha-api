@@ -9,6 +9,7 @@ use App\ApiHelper as Helper;
 use App\ApiHelper;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
+use App\Models\RegularDeliveryPlanProspectContainer;
 use App\Models\RegularProspectContainer;
 use App\Models\RegularProspectContainerCreation;
 use App\Models\RegularProspectContainerDetail;
@@ -179,21 +180,19 @@ class QueryRegularDeliveryPlan extends Model {
             'no_packaging',
             'etd_jkt',
             'code_consignee',
-            'datasource'
         ]);
 
         if($is_trasaction) DB::beginTransaction();
         try {
-           $check = RegularProspectContainer::where('no_packaging',$params->no_packaging)->first();
+           $check = RegularDeliveryPlanProspectContainer::where('no_packaging',$params->no_packaging)->first();
            if($check) throw new \Exception("no_packaging registered", 400);
 
-           $store = RegularProspectContainer::create([
+           $store = RegularDeliveryPlanProspectContainer::create([
                         "code_consignee" => $params->code_consignee,
                         "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
                         "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
                         "etd_jkt" => $params->etd_jkt,
                         "no_packaging" => $params->no_packaging,
-                        "datasource" => $params->datasource,
                         "created_at" => now(),
             ]);
 
@@ -201,43 +200,13 @@ class QueryRegularDeliveryPlan extends Model {
            self::where(function ($query) use ($params){
                    $query->whereIn('id',$params->id);
                    $query->where('code_consignee',$params->code_consignee);
+                   $query->where('etd_jkt',$params->etd_jkt);
            })
            ->chunk(1000,function ($data) use ($params,$store){
                 foreach ($data as $key => $item) {
-
-                    $detail = RegularProspectContainerDetail::create([
-                        "code_consignee" => $item->code_consignee,
-                        "model" => $item->model,
-                        "item_no" => $item->item_no,
-                        "delivery" => $item->delivery,
-                        "qty" => $item->qty,
-                        "status" => $item->status,
-                        "order_no" => $item->order_no,
-                        "cust_item_no" => $item->cust_item_no,
-                        "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
-                        "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
-                        "etd_jkt" => $params->etd_jkt,
-                        "created_at" => now(),
-                        "id_prospect_container" => $store->id,
-                        "uuid" => (string) Str::uuid()
-                    ]);
-
-                    $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$item->id)
-                    ->get()->map(function ($item) use ($detail) {
-                        return [
-                            'id_box' => $item->id_box,
-                            'id_prospect_container_detail' => $detail->id,
-                            'created_at' => now()
-                        ];
-                    })->toArray();
-
-                    foreach (array_chunk($box,1000) as $item_box) {
-                        RegularProspectContainerDetailBox::insert($item_box);
-                    }
-
                     $item->is_inquiry = Constant::IS_ACTIVE;
+                    $item->id_prospect_container = $store->id;
                     $item->save();
-
                 }
            });
 
@@ -269,17 +238,21 @@ class QueryRegularDeliveryPlan extends Model {
             ->groupBy('cust_item_no')
             ->orderBy('total','desc')
             ->get()
+
             ->toArray();
 
             if(count($data) == 0) throw new \Exception("Data not found", 400);
 
             $no_packaging = $data[0]['cust_item_no'].substr(mt_rand(),0,5);
             $tanggal = $check[0]['etd_jkt'];
+            $code_consignee = $check[0]['code_consignee'];
 
             return [
                 "items" => [
+                    'id' => $params->id,
                     'no_packaging' => $no_packaging,
-                    'tanggal' => $tanggal,
+                    'etd_jkt' => $tanggal,
+                    'code_consignee' => $code_consignee,
                 ]
             ];
 
@@ -380,7 +353,7 @@ class QueryRegularDeliveryPlan extends Model {
                 $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
 
                 $qr_name = (string) Str::uuid().'.png';
-                $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt;
+                $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
                 QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
 
                 $item->qrcode = $qr_name;
