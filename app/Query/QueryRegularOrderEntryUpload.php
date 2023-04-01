@@ -9,8 +9,11 @@ use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use App\Imports\OrderEntry;
 use App\Models\RegularDeliveryPlan;
+use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularOrderEntry;
+use App\Models\RegularOrderEntryUpload;
 use App\Models\RegularOrderEntryUploadDetail;
+use App\Models\RegularOrderEntryUploadDetailBox;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -79,13 +82,13 @@ class QueryRegularOrderEntryUpload extends Model {
         });
     }
 
-    public static function byId($id)
+    public static function byId($params,$id)
     {
-        $data = self::where('id_regular_order_entry',$id)->get();
+        $data = self::where('id_regular_order_entry',$id)->paginate($params->limit ?? null);
 
         if($data == null) throw new \Exception("id tidak ditemukan", 400);
 
-        $data->map(function ($item){
+        $data->transform(function ($item){
             $regularOrderEntry = $item->refRegularOrderEntry;
             if($regularOrderEntry){
                 $item->regular_order_entry_period = $regularOrderEntry->period;
@@ -93,28 +96,16 @@ class QueryRegularOrderEntryUpload extends Model {
                 $item->regular_order_entry_year = $regularOrderEntry->year;
             }
 
+            $item->status_desc = Constant::STS_PROCESS_RG_ENTRY[$item->status];
             unset($item->refRegularOrderEntry);
-            $item->status_desc = null;
-            if($item->status == 1)
-                $item->status_desc = "Process";
-            else if($item->status == 2)
-                $item->status_desc = "Done Upload";
-            else if($item->status == 3)
-                $item->status_desc = "Send To PC";
-            else if($item->status == 4)
-                $item->status_desc = "Correction";
-            else if($item->status == 5)
-                $item->status_desc = "Approved PC";
-            else if($item->status == 6)
-                $item->status_desc = "Error";
-            else if($item->status == 7)
-                $item->status_desc = "Send To DC Manager";
-            else if($item->status == 8)
-                $item->status_desc = "Finish";
+            return $item;
 
         });
 
-        return $data;
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage(),
+        ];
     }
 
     public static function saveFile($request,$is_transaction = true)
@@ -224,8 +215,53 @@ class QueryRegularOrderEntryUpload extends Model {
         }
     }
 
+    public static function getOrderDcSpv($params)
+    {
+        $key = self::cast.'-pc-'.json_encode($params->query());
+        return Helper::storageCache($key, function () use ($params){
+            $query = self::where(function ($query) use ($params){
+                $query->where('status',Constant::STS_SEND_TO_DC_MANAGER);
+                if($params->search) $query->where('filename', 'like', "'%$params->search%'");
+            })
+                ->whereHas('refRegularOrderEntry',function ($query) use ($params){
+                    if($params->datasoruce) $query->where('datasoruce',$params->datasoruce);
+                    if($params->date) $query->whereDate('created_at',$params->date);
+                });
 
-    public static  function getOrderEntryPc($params)
+
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+
+            if($params->withTrashed == 'true') $query->withTrashed();
+
+            $data = $query
+                ->orderBy('id','desc')
+                ->paginate($params->limit ?? null);
+            return [
+
+                'items' => $data->getCollection()->transform(function ($item){
+                    $result = $item->refRegularOrderEntry;
+                    $result->id_upload = $item->id;
+                    $result->filename = $item->filename;
+                    $result->batch = $item->iteration;
+                    $result->status = "Send To Dc Spv";
+                    return $result;
+                }),
+                'last_page' => $data->lastPage(),
+                'attributes' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        });
+    }
+
+
+    public static function getOrderEntryPc($params)
     {
         $key = self::cast.'-pc-'.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
@@ -250,10 +286,66 @@ class QueryRegularOrderEntryUpload extends Model {
             ->orderBy('id','desc')
             ->paginate($params->limit ?? null);
             return [
+
                 'items' => $data->getCollection()->transform(function ($item){
                     $result = $item->refRegularOrderEntry;
-                    $result->status = $item->status;
-                    $result->status_desc = Constant::STS_PROCESS_RG_ENTRY[$item->status];
+                    $result->id_upload = $item->id;
+                    $result->filename = $item->filename;
+                    $result->batch = $item->iteration;
+                    $result->status = "Send To Pc";
+                    return $result;
+                }),
+                'last_page' => $data->lastPage(),
+                'attributes' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        });
+    }
+
+    public static function getOrderEntryDcOff($params)
+    {
+        $key = self::cast.'-pc-'.json_encode($params->query());
+        return Helper::storageCache($key, function () use ($params){
+            $query = self::where(function ($query) use ($params){
+                $query->whereIn('status',[Constant::STS_PROCESS_REVISION, Constant::STS_PROCESS_APPROVED, Constant::STS_PROCESS_REJECTED]);
+                if($params->search) $query->where('filename', 'like', "'%$params->search%'");
+            })
+                ->whereHas('refRegularOrderEntry',function ($query) use ($params){
+                    if($params->datasoruce) $query->where('datasoruce',$params->datasoruce);
+                    if($params->date) $query->whereDate('created_at',$params->date);
+                });
+
+
+            if($params->dropdown == Constant::IS_ACTIVE) {
+                $params->limit = null;
+                $params->page = 1;
+            }
+
+            if($params->withTrashed == 'true') $query->withTrashed();
+
+            $data = $query
+                ->orderBy('id','desc')
+                ->paginate($params->limit ?? null);
+            return [
+
+                'items' => $data->getCollection()->transform(function ($item){
+                    $result = $item->refRegularOrderEntry;
+                    $result->id_upload = $item->id;
+                    $result->filename = $item->filename;
+                    $result->batch = $item->iteration;
+                    if($item->status == 4)
+                        $result->status_desc = 'Correction';
+                    else if($item->status == 5)
+                        $result->status_desc = 'Approved';
+                    else if($item->status == 9)
+                        $result->status_desc = 'Rejected';
+                    else
+                        $result->status_desc = 'Error';
+
                     return $result;
                 }),
                 'last_page' => $data->lastPage(),
@@ -334,45 +426,61 @@ class QueryRegularOrderEntryUpload extends Model {
         try {
 
             Helper::requireParams([
-                'id_order_entry'
+                'id'
             ]);
 
-
-            $items = RegularOrderEntry::find($params->id_order_entry);
+            $upload = RegularOrderEntryUpload::find($params->id);
+            $upload->status = Constant::STS_FINISH;
+            $upload->save();
+            $items = RegularOrderEntry::find($upload->id_regular_order_entry);
             if(!$items) throw new \Exception("Data tidak ditemukan", 500);
-            $data = self::whereHas('refRegularOrderEntry',function ($query){
-                $query->where('year','2023');
-                $query->where('month','02');
+
+            $data = self::whereHas('refRegularOrderEntry',function ($query) use ($items){
+                $query->where('year',$items->year);
+                $query->where('month',$items->month);
             })->get()->pluck('id');
 
-            $detail = RegularOrderEntryUploadDetail::whereIn('id_regular_order_entry_upload',$data->toArray())->get()
+            RegularOrderEntryUploadDetail::whereIn('id_regular_order_entry_upload',$data->toArray())
             ->where('status','fixed')
-            ->map(function ($item) use ($params){
-                $item->id_regular_order_entry = $params->id_order_entry;
-                return $item;
-            })
-            ->toArray();
+            ->chunk(100,function ($datas) use ($upload){
+                foreach ($datas as $key => $items) {
+                    $item = $items->toArray();
 
-            $ext = [];
-            foreach ($detail as $key => $item) {
-                $ext[] = [
-                    "model" => $item['model'],
-                    "item_no" => $item['item_no'],
-                    "code_consignee" => $item['code_consignee'],
-                    "disburse" => $item['disburse'],
-                    "delivery" => $item['delivery'],
-                    "qty" => $item['qty'],
-                    "order_no" => $item['order_no'],
-                    "cust_item_no" => $item['cust_item_no'],
-                    "id_regular_order_entry" => $item['id_regular_order_entry'],
-                    "created_at" => now(),
-                    "uuid" => (string) Str::uuid()
-                ];
-            }
+                    $store = RegularDeliveryPlan::create([
+                        "model" => $item['model'],
+                        "item_no" => $item['item_no'],
+                        "code_consignee" => $item['code_consignee'],
+                        "disburse" => $item['disburse'],
+                        "delivery" => $item['delivery'],
+                        "qty" => $item['qty'],
+                        "order_no" => $item['order_no'],
+                        "cust_item_no" => $item['cust_item_no'],
+                        "etd_jkt" => $item['etd_jkt'],
+                        "etd_ypmi" => $item['etd_ypmi'],
+                        "etd_wh" => $item['etd_wh'],
+                        "id_regular_order_entry" => $upload->id_regular_order_entry,
+                        "created_at" => now(),
+                        'is_inquiry' => 0,
+                        "uuid" => (string) Str::uuid()
+                    ]);
 
-            foreach (array_chunk($ext,1000) as $param) {
-                RegularDeliveryPlan::insert($param);
-            }
+                    $box = RegularOrderEntryUploadDetailBox::where('uuid_regular_order_entry_upload_detail',$item['uuid'])
+                    ->get()->map(function ($item) use ($store) {
+                        return [
+                            'id_box' => $item->id_box,
+                            'id_regular_delivery_plan' => $store->id,
+                            'created_at' => now()
+                        ];
+                    })->toArray();
+
+                    foreach (array_chunk($box,1000) as $item_box) {
+                        RegularDeliveryPlanBox::insert($item_box);
+                    }
+
+                }
+
+            });
+
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {

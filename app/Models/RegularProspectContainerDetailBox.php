@@ -6,25 +6,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-
-class RegularDeliveryPlanBox extends Model
+class RegularProspectContainerDetailBox extends Model
 {
     use HasFactory,SoftDeletes;
-    protected $table = 'regular_delivery_plan_box';
+    protected $table = 'regular_prospect_container_detail_box';
     public $fillable = [
         "id",
-        "id_regular_delivery_plan",
         "id_box",
-        "id_proc",
-        "qty_pcs_box",
-        "lot_packing",
-        "packing_date",
-        "qrcode",
+        "id_prospect_container_detail",
         "created_at",
         "created_by",
         "updated_at",
         "updated_by",
-        "deleted_at"
+        "deleted_at",
+        "uuid"
     ];
 
     public function refBox()
@@ -32,8 +27,11 @@ class RegularDeliveryPlanBox extends Model
         return $this->belongsTo(MstBox::class,'id_box','id');
     }
 
-    public function refRegularDeliveryPlan()
+    public static function boot()
     {
-        return $this->belongsTo(RegularDeliveryPlan::class,'id_regular_delivery_plan','id');
+        parent::boot();
+        static::creating(function ($model){
+            // $model->uuid = (string) Str::uuid();
+        });
     }
 }

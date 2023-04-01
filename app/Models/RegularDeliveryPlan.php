@@ -23,6 +23,9 @@ class RegularDeliveryPlan extends Model
         "status",
         "order_no",
         "cust_item_no",
+        "etd_jkt",
+        "etd_ypmi",
+        "etd_wh",
         "created_at",
         "created_by",
         "updated_at",
@@ -39,6 +42,16 @@ class RegularDeliveryPlan extends Model
         });
     }
 
+    public function refPart()
+    {
+        return $this->belongsTo(MstPart::class,'item_no','item_no');
+    }
+
+    public function refConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
+
     public function refRegularOrderEntry()
     {
         return $this->belongsTo(RegularOrderEntry::class,'id_regular_order_entry','id');
@@ -47,5 +60,10 @@ class RegularDeliveryPlan extends Model
     public function manyDeliveryPlanBox()
     {
         return $this->hasMany(RegularDeliveryPlanBox::class,'id_regular_delivery_plan','id')->orderBy('id','asc');
+    }
+
+    public function refRegularOrderEntrySingle()
+    {
+        return $this->hasOne(RegularOrderEntry::class,'id','id_regular_order_entry');
     }
 }

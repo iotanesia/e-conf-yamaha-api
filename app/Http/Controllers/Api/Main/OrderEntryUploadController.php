@@ -24,9 +24,9 @@ class OrderEntryUploadController extends Controller
     public function show(Request $request,$id)
     {
         try {
-            return ResponseInterface::responseData([
-                "items" => QueryRegularOrderEntryUpload::byId($id)
-            ]);
+            return ResponseInterface::responseData(
+                QueryRegularOrderEntryUpload::byId($request,$id)
+            );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }
@@ -54,7 +54,7 @@ class OrderEntryUploadController extends Controller
         }
     }
 
-    public function sendDcManager(Request $request)
+    public function sendDcSpv(Request $request)
     {
         try {
             return ResponseInterface::responseData([
@@ -108,4 +108,17 @@ class OrderEntryUploadController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function sendRejected(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData([
+                "items" => QueryRegularOrderEntryUploadRevision::sendRejected($request)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+
 }

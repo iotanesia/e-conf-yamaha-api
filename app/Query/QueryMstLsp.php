@@ -3,15 +3,16 @@
 namespace App\Query;
 
 use App\Constants\Constant;
-use App\Models\MstTypeDelivery AS Model;
+use App\Models\MstLsp AS Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use Illuminate\Support\Facades\Cache;
 
-class QueryMstTypeDelivery extends Model {
+class QueryMstLsp extends Model {
 
 
-    const cast = 'master-type-delivery';
+    const cast = 'master-lsp';
 
 
     public static function getAll($params)
@@ -23,7 +24,6 @@ class QueryMstTypeDelivery extends Model {
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
-            if($params->id_mot) $query->where('id_mot',$params->id_mot);
             $data = $query
             ->orderBy('id','asc')
             ->paginate($params->limit ?? null);
@@ -73,7 +73,7 @@ class QueryMstTypeDelivery extends Model {
 
             $params = $request->all();
             $update = self::find($params['id']);
-            if(!$update) throw new \Exception("id tidak ditemukan", 400);
+            if(!$update) throw new \Exception("id tida ditemukan", 400);
             $update->fill($params);
             $update->save();
             if($is_transaction) DB::commit();

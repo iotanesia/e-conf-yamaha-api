@@ -61,7 +61,26 @@ class User {
             ->orWhere('ip_whitelist','ilike',"%{$params->search}%");
         })->paginate($params->limit ?? null);
         return [
-            'items' => $data->items(),
+            'items' => $data->map(function ($item){
+                return [
+                    'id' => $item->id,
+                    'email' => $item->email,
+                    'password' => $item->password,
+                    'nik' => $item->nik,
+                    'username' => $item->username,
+                    'name' => $item->name,
+                    'remember_token' => $item->remember_token,
+                    'is_active' => $item->is_active,
+                    'created_by' => $item->created_by,
+                    'created_at' => $item->created_at,
+                    'updated_by' => $item->updated_by,
+                    'updated_at' => $item->updated_at,
+                    'id_roles' => $item->refUserRole->id_roles ?? null,
+                    'roles' => $item->refUserRole->refRole->name ?? null,
+                    'id_position' => $item->refUserRole->id_position ?? null,
+                    'position' => $item->refUserRole->refPosition->name ?? null,
+                ];
+            }),
             'attributes' => [
                 'total' => $data->total(),
                 'current_page' => $data->currentPage(),
@@ -81,8 +100,15 @@ class User {
 
     public static function byId($id)
     {
+        $data = Model::find($id);
+        $data->id_roles = $data->refUserRole->id_roles ?? null;
+        $data->roles = $data->refUserRole->refRole->name ?? null;
+        $data->id_position = $data->refUserRole->id_position ?? null;
+        $data->position = $data->refUserRole->refPosition->name ?? null;
+        unset($data->refUserRole);
+
         return [
-            'items' => Model::find($id),
+            'items' => $data,
             'attributes' => null
         ];
     }
@@ -119,6 +145,8 @@ class User {
             $insert->password = Hash::make($params->password);
             $insert->save();
 
+            $insert->refUserRole()->create(self::setParamUserRole($params,$insert->id));
+
             DB::commit();
             return [
                 'items' => $insert,
@@ -136,12 +164,9 @@ class User {
         try {
             $update = Model::find($id);
             if(!$update) throw new \Exception("id tidak ditemukan.");
-            $update->username = $params->username;
-            $update->name = $params->name;
-            $update->email = $params->email;
-            $update->is_active = $params->is_active;
-            $update->nik = $params->nik;
+            $update->fill($params->all());
             $update->save();
+            $update->refUserRole ? $update->refUserRole()->update(['id_roles'=>$params->id_roles,'id_position'=>$params->id_position]) : $update->refUserRole()->create(self::setParamUserRole($params,$id));
             DB::commit();
             return [
                 'items' => $update,
@@ -153,6 +178,13 @@ class User {
         }
     }
 
+    public static function setParamUserRole($params,$id) {
+        return [
+            'id_users' => $id,
+            'id_roles' => $params->id_roles,
+            'id_position' => $params->id_position
+        ];
+    }
     public static function deleteData($id)
     {
         DB::beginTransaction();

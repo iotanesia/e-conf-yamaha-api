@@ -4,6 +4,8 @@ namespace App\Query;
 
 use App\Constants\Constant;
 use App\Models\RegularOrderEntryUploadDetail AS Model;
+use App\Models\MstConsignee;
+use App\Models\MstPart;
 use App\Models\VRegularOrderEntryUploadDetail AS VModel;
 use App\Models\RegularOrderEntryUploadDetailBox;
 use Illuminate\Support\Facades\DB;
@@ -48,11 +50,15 @@ class QueryRegularOrderEntryUploadDetail extends Model {
             return [
                 'items' => $data->map(function ($item){
                     $box = self::getDetailBox($item->uuid);
+                    $custname = self::getCustName($item->code_consignee);
+                    $itemname = self::getPart($item->item_no);
 
                     $set["id"] = $item->id;
                     $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
                     $set["code_consignee"] = $item->code_consignee;
+                    $set["cust_name"] = $custname;
                     $set["model"] = $item->model;
+                    $set["item_name"] = $itemname;
                     $set["item_no"] = $item->item_no;
                     $set["disburse"] = $item->disburse;
                     $set["delivery"] = $item->delivery;
@@ -74,12 +80,14 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                     unset($item->refRegularOrderEntryUpload);
                     return $set;
                 }),
+                'last_page' => $data->lastPage(),
                 'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
                     'from' => $data->currentPage(),
                     'per_page' => (int) $data->perPage(),
-                ]
+                ],
+                'last_page' => $data->lastPage()
             ];
         });
     }
@@ -93,13 +101,21 @@ class QueryRegularOrderEntryUploadDetail extends Model {
         return $data;
     }
 
-    public static function byId($id)
+    public static function getCustName($code_consignee){
+        $data = MstConsignee::where('code', $code_consignee)->first()->nick_name;
+        return $data;
+    }
+
+    public static function getPart($id_part){
+        $data = MstPart::where('item_no', $id_part)->first()->description;
+        return $data;
+    }
+
+    public static function byId($params,$id)
     {
-        $data = self::where('id_regular_order_entry_upload',$id)->get();
-
+        $data = self::where('id_regular_order_entry_upload',$id)->paginate($params->limit ?? null);
         if($data == null) throw new \Exception("id tidak ditemukan", 400);
-
-        $data->map(function ($item){
+        $data->transform(function ($item){
             $regularOrderEntry = $item->refRegularOrderEntry;
             if($regularOrderEntry){
                 $item->regular_order_entry_period = $regularOrderEntry->period;
@@ -108,23 +124,15 @@ class QueryRegularOrderEntryUploadDetail extends Model {
             }
 
             unset($item->refRegularOrderEntry);
-            $item->status_desc = null;
-            if($item->status == 1)
-                $item->status_desc = "Proses";
-            else if($item->status == 2)
-                $item->status_desc = "Selesai";
-            else if($item->status == 3)
-                $item->status_desc = "Send To PC";
-            else if($item->status == 4)
-                $item->status_desc = "Revisi";
-            else if($item->status == 5)
-                $item->status_desc = "Approved";
-            else if($item->status == 6)
-                $item->status_desc = "Error";
+            $item->status_desc = Constant::STS_PROCESS_RG_ENTRY[$item->status];
+            return $item;
 
         });
 
-        return $data;
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage(),
+        ];
     }
 
     public static function change($request,$is_transaction = true)

@@ -9,7 +9,7 @@ use App\Query\QueryRegularDeliveryPlan;
 
 class DeliveryPlanController extends Controller
 {
-   
+
     public function getDeliveryPlan(Request $request)
     {
         try {
@@ -21,11 +21,78 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function show(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::detail($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function inquiryProcess(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData([
+                'items' => QueryRegularDeliveryPlan::inquiryProcess($request)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+
     public function getDeliveryPlanDetail(Request $request)
     {
         try {
             return ResponseInterface::responseData(
                 QueryRegularDeliveryPlan::getDeliveryPlanDetail($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function noPackaging(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::noPackaging($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function update(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::changeEtd($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function labeling(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::label($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function storeLabeling(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::storeLabel($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

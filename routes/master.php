@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Master\GroupProductController;
 use App\Http\Controllers\Api\Master\PositionController;
 use App\Http\Controllers\Api\Master\RoleController;
 use App\Http\Controllers\Api\Master\DatasourceController;
+use App\Http\Controllers\Api\Master\LspController;
 use App\Http\Controllers\Api\Master\MotController;
 use App\Http\Controllers\Api\Master\ShipmentController;
 use App\Http\Controllers\Api\Master\TypeDeliveryController;
@@ -22,6 +23,7 @@ use App\Query\QueryRegularOrderEntryUploadDetail;
 //with middleware
 Route::prefix('v1/master')
 ->namespace('Api')
+// ->middleware('access')
 ->group(function () {
 
      // container
@@ -135,6 +137,15 @@ Route::prefix('v1/master')
         Route::put('/',[MotController::class,'update']);
         Route::get('/{id}',[MotController::class,'show']);
         Route::delete('/{id}',[MotController::class,'destroy']);
+    });
+
+    // Lsp
+    Route::group(['prefix' => 'lsp'],function (){
+        Route::get('/',[LspController::class,'index']);
+        Route::post('/',[LspController::class,'store']);
+        Route::put('/',[LspController::class,'update']);
+        Route::get('/{id}',[LspController::class,'show']);
+        Route::delete('/{id}',[LspController::class,'destroy']);
     });
 
     // type delivery
