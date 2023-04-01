@@ -13,6 +13,7 @@ class RegularDeliveryPlanProspectContainerCreation extends Model
     public $fillable = [
         "id",
         "id_type_delivery",
+        "id_prospect_container",
         "id_mot",
         "id_mot",
         "id_container",
