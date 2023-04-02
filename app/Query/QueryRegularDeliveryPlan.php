@@ -469,7 +469,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'hs_code' => $item->hs_code,
                 'via' => $item->mot,
                 'freight_chart' => 'COLLECT',
-                'incorterm' => 'FOB',
+                'incoterm' => 'FOB',
                 'shipped_by' => 'YPMI',
                 'container_value' => $item->container_type,
                 'container_type' => $item->container_value,

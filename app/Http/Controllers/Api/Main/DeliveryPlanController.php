@@ -143,11 +143,11 @@ class DeliveryPlanController extends Controller
         }
     }
 
-    public function booking(Request $request)
+    public function generateNobooking(Request $request)
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularDeliveryPlan::book($request)
+                QueryRegularDeliveryPlan::genNoBook($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
