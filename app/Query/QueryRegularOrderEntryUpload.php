@@ -440,26 +440,11 @@ class QueryRegularOrderEntryUpload extends Model {
             $data = self::getDifferentPart($upload->id_regular_order_entry,$params->id);
             $result = collect($data)->toArray() ?? null;
 
+            // dd(count($result));
+
             if($result){
                 foreach ($result as $item){
 
-                    dd([
-                        "model" => $item->model,
-                        "item_no" => $item->item_no,
-                        "code_consignee" => $item->code_consignee,
-                        "disburse" => $item->disburse,
-                        "delivery" => $item->delivery,
-                        "qty" => $item->qty,
-                        "order_no" => $item->order_no,
-                        "cust_item_no" => $item->cust_item_no,
-                        "etd_jkt" => $item->etd_jkt,
-                        "etd_ypmi" => $item->etd_ypmi,
-                        "etd_wh" => $item->etd_wh,
-                        "id_regular_order_entry" => $upload->id_regular_order_entry,
-                        "created_at" => now(),
-                        "is_inquiry" => 0,
-                        "uuid" => $item->uuid
-                    ]);
 
                     $store = RegularDeliveryPlan::create([
                        "model" => $item->model,
@@ -479,20 +464,20 @@ class QueryRegularOrderEntryUpload extends Model {
                        "uuid" => $item->uuid
                    ]);
 
-                   $box = RegularOrderEntryUploadDetailBox::where('uuid_regular_order_entry_upload_detail',$item->uuid)
-                   ->get()->map(function ($item) use ($store) {
-                       return [
-                           'id_box' => $item->id_box,
-                           'id_regular_delivery_plan' => $store->id,
-                           'id_order_entry_upload_detail' => $item->id_regular_order_entry_upload_detail,
-                           'id_order_entry_upload_detail_box' => $item->id,
-                           'created_at' => now()
-                       ];
-                   })->toArray();
+                //    $box = RegularOrderEntryUploadDetailBox::where('uuid_regular_order_entry_upload_detail',$item->uuid)
+                //    ->get()->map(function ($item) use ($store) {
+                //        return [
+                //            'id_box' => $item->id_box,
+                //            'id_regular_delivery_plan' => $store->id,
+                //            'id_order_entry_upload_detail' => $item->id_regular_order_entry_upload_detail,
+                //            'id_order_entry_upload_detail_box' => $item->id,
+                //            'created_at' => now()
+                //        ];
+                //    })->toArray();
 
-                   foreach (array_chunk($box,1000) as $item_box) {
-                       RegularDeliveryPlanBox::insert($item_box);
-                   }
+                //    foreach (array_chunk($box,1000) as $item_box) {
+                //        RegularDeliveryPlanBox::insert($item_box);
+                //    }
 
                 }
             }
@@ -508,7 +493,6 @@ class QueryRegularOrderEntryUpload extends Model {
     public static function getDifferentPart($id,$id_regular_order_entry_upload){
 
         return DB::select(DB::raw("SELECT
-                    c.uuid,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
@@ -528,7 +512,6 @@ class QueryRegularOrderEntryUpload extends Model {
                     a.id = ? and b.id = ?
                     EXCEPT
                     SELECT
-                    c.uuid,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
