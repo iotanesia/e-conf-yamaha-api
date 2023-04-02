@@ -434,10 +434,10 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function shippingDetail($params,$id)
     {
-        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','status'
+        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation'
         ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS count')
         ,DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging")
-        ,DB::raw("string_agg(DISTINCT hs_code::character varying, ',') as hs_code")
+        ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
         ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
         ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
         ,DB::raw("string_agg(DISTINCT e.name::character varying, ',') as type_delivery")
@@ -455,7 +455,7 @@ class QueryRegularDeliveryPlan extends Model {
         ->join('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
         ->join('mst_container as f','regular_delivery_plan_prospect_container_creation.id_container','f.id')
         ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation','g.id')
-        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status')
+        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation')
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
@@ -479,6 +479,8 @@ class QueryRegularDeliveryPlan extends Model {
                 'type_delivery' => $item->type_delivery,
                 'summary_box' => $item->summary_box_sum,
                 'to' => $item->refMstLsp->name ?? null,
+                'status' => $item->status ?? null,
+                'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
                 'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null
             ];
         });
