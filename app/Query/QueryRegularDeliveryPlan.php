@@ -511,10 +511,12 @@ class QueryRegularDeliveryPlan extends Model {
     }
 
     public static function book($request,$is_transaction = true) {
+        Helper::requireParams(['to','etd_jkt']);
         if($is_transaction) DB::beginTransaction();
         try {
-            Helper::requireParams(['to','etd_jkt']);
-            $code = 'BOOK'.Carbon::parse($request->etd_jkt)->format('dmY');
+            $data = $request->all();
+            $data['code'] = 'BOOK'.Carbon::parse($request->etd_jkt)->format('dmY').Str::random(5);
+            RegularDeliveryPlanShippingInsruction::create($data);
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
