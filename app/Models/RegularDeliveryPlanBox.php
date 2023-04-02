@@ -14,8 +14,8 @@ class RegularDeliveryPlanBox extends Model
     public $fillable = [
         "id",
         "id_regular_delivery_plan",
-        "id_order_entry_upload_detail",
-        "id_order_entry_upload_detail_box",
+        "id_regular_order_entry_upload_detail",
+        "id_regular_order_entry_upload_detail_box",
         "id_box",
         "id_proc",
         "qty_pcs_box",

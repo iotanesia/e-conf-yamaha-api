@@ -26,6 +26,7 @@ class RegularDeliveryPlan extends Model
         "etd_jkt",
         "etd_ypmi",
         "etd_wh",
+        "id_order_entry_upload_detail",
         "created_at",
         "created_by",
         "updated_at",

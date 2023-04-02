@@ -445,7 +445,6 @@ class QueryRegularOrderEntryUpload extends Model {
             if($result){
                 foreach ($result as $item){
 
-
                     $store = RegularDeliveryPlan::create([
                        "model" => $item->model,
                        "item_no" => $item->item_no,
@@ -461,26 +460,30 @@ class QueryRegularOrderEntryUpload extends Model {
                        "id_regular_order_entry" => $upload->id_regular_order_entry,
                        "created_at" => now(),
                        "is_inquiry" => 0,
+                       "id_regular_order_entry_upload_detail" => $item->id,
                        "uuid" => (string) Str::uuid()
                    ]);
 
-                //    $box = RegularOrderEntryUploadDetailBox::where('uuid_regular_order_entry_upload_detail',$item->uuid)
-                //    ->get()->map(function ($item) use ($store) {
-                //        return [
-                //            'id_box' => $item->id_box,
-                //            'id_regular_delivery_plan' => $store->id,
-                //            'id_order_entry_upload_detail' => $item->id_regular_order_entry_upload_detail,
-                //            'id_order_entry_upload_detail_box' => $item->id,
-                //            'created_at' => now()
-                //        ];
-                //    })->toArray();
+                   $box = RegularOrderEntryUploadDetailBox::where('id_regular_order_entry_upload_detail',$item->id)
+                   ->get()->map(function ($item) use ($store) {
 
-                //    foreach (array_chunk($box,1000) as $item_box) {
-                //        RegularDeliveryPlanBox::insert($item_box);
-                //    }
+                       return [
+                           'id_box' => $item->id_box,
+                           'id_regular_delivery_plan' => $store->id,
+                           'id_regular_order_entry_upload_detail' => $item->id_regular_order_entry_upload_detail,
+                           'id_regular_order_entry_upload_detail_box' => $item->id,
+                           'created_at' => now()
+                       ];
+                   })->toArray();
+
+                   foreach (array_chunk($box,1000) as $item_box) {
+                       RegularDeliveryPlanBox::insert($item_box);
+                   }
 
                 }
             }
+
+
 
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
@@ -490,9 +493,40 @@ class QueryRegularOrderEntryUpload extends Model {
         }
     }
 
+    public static function getBox()
+    {
+        return DB::select(DB::raw("SELECT
+            d.id_box,
+            d.id
+            FROM
+            regular_order_entry a,
+            regular_order_entry_upload b,
+            regular_order_entry_upload_detail c,
+            regular_order_entry_upload_detail_box d
+            where a.id = b.id_regular_order_entry and
+            b.id = c.id_regular_order_entry_upload and
+            c.status = 'fixed' and c.is_delivery_plan = 0 and
+            b.id = 203 and
+            a.id = 207
+            EXCEPT
+            SELECT
+                d.id_box,
+                d.id_order_entry_upload_detail_box
+            FROM
+            regular_delivery_plan c,
+            regular_delivery_plan_box d
+            WHERE
+            c.id = d.id_regular_delivery_plan and
+            c.id_regular_order_entry = 207"));
+    }
+
     public static function getDifferentPart($id,$id_regular_order_entry_upload){
 
         return DB::select(DB::raw("SELECT
+                    (
+                        SELECT id from regular_order_entry_upload_detail z
+                        where z.id = c.id
+                    ) as id,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
@@ -512,6 +546,10 @@ class QueryRegularOrderEntryUpload extends Model {
                     a.id = ? and b.id = ?
                     EXCEPT
                     SELECT
+                    (
+                        SELECT z.id_regular_order_entry_upload_detail from regular_delivery_plan z
+                        where z.id = c.id
+                    ) as id,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
