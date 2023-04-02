@@ -434,7 +434,7 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function shippingDetail($params,$id)
     {
-        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp'
+        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','status'
         ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS count')
         ,DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging")
         ,DB::raw("string_agg(DISTINCT hs_code::character varying, ',') as hs_code")
@@ -454,7 +454,8 @@ class QueryRegularDeliveryPlan extends Model {
         ->join('mst_port_of_discharge as d','regular_delivery_plan_prospect_container_creation.code_consignee','d.code_consignee')
         ->join('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
         ->join('mst_container as f','regular_delivery_plan_prospect_container_creation.id_container','f.id')
-        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp')
+        ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation','g.id')
+        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status')
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
