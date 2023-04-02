@@ -437,18 +437,14 @@ class QueryRegularOrderEntryUpload extends Model {
             $items = RegularOrderEntry::find($upload->id_regular_order_entry);
             if(!$items) throw new \Exception("Data tidak ditemukan", 500);
 
-            $data = self::getDifferentPart($upload->id_regular_order_entry);
+            $data = self::getDifferentPart($upload->id_regular_order_entry,$params->id);
             $result = collect($data)->toArray() ?? null;
+
+            dd(count($result));
+
 
             if($result){
                 foreach ($result as $item){
-                    $key = explode('-',$item->key);
-                    if($key[0] == 'upload') {
-                        $detail = RegularOrderEntryUploadDetail::find($key[1]);
-                        $detail->is_delivery_plan = Constant::IS_ACTIVE;
-                        $detail->save();
-                    }
-
                     $store = RegularDeliveryPlan::create([
                        "model" => $item->model,
                        "item_no" => $item->item_no,
@@ -464,7 +460,7 @@ class QueryRegularOrderEntryUpload extends Model {
                        "id_regular_order_entry" => $upload->id_regular_order_entry,
                        "created_at" => now(),
                        "is_inquiry" => 0,
-                       "uuid" => (string) Str::uuid()
+                       "uuid" => $item->uuid
                    ]);
 
                    $box = RegularOrderEntryUploadDetailBox::where('uuid_regular_order_entry_upload_detail',$item->uuid)
@@ -472,6 +468,8 @@ class QueryRegularOrderEntryUpload extends Model {
                        return [
                            'id_box' => $item->id_box,
                            'id_regular_delivery_plan' => $store->id,
+                           'id_order_entry_upload_detail' => $item->id_regular_order_entry_upload_detail,
+                           'id_order_entry_upload_detail_box' => $item->id,
                            'created_at' => now()
                        ];
                    })->toArray();
@@ -491,10 +489,9 @@ class QueryRegularOrderEntryUpload extends Model {
         }
     }
 
-    public static function getDifferentPart($id){
+    public static function getDifferentPart($id,$id_regular_order_entry_upload){
 
         return DB::select(DB::raw("SELECT
-                    concat('upload-',c.id) as key,
                     c.uuid,
                     c.code_consignee,
                     c.model, c.item_no,
@@ -512,11 +509,10 @@ class QueryRegularOrderEntryUpload extends Model {
                     where a.id = b.id_regular_order_entry and
                     b.id = c.id_regular_order_entry_upload and
                     c.status = 'fixed' and c.is_delivery_plan = 0 and
-                    a.id = ?
+                    a.id = ? and b.id = ?
                     EXCEPT
                     SELECT
-                    concat('plan-',c.id) as key,
-                    concat('idz-',c.id) as uuid,
+                    c.uuid,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
@@ -527,6 +523,6 @@ class QueryRegularOrderEntryUpload extends Model {
                     c.etd_ypmi,
                     c.etd_wh
                     FROM
-                    regular_delivery_plan c WHERE c.id_regular_order_entry = ?"), [$id,$id]) ?? null;
+                    regular_delivery_plan c WHERE c.id_regular_order_entry = ?"), [$id,$id_regular_order_entry_upload,$id]) ?? null;
     }
 }

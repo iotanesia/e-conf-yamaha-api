@@ -38,7 +38,7 @@ class RegularDeliveryPlan extends Model
     {
         parent::boot();
         static::creating(function ($model){
-            $model->uuid = (string) Str::uuid();
+            // $model->uuid = (string) Str::uuid();
         });
     }
 
