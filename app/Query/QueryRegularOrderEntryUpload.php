@@ -465,13 +465,12 @@ class QueryRegularOrderEntryUpload extends Model {
                    ]);
 
                    $box = RegularOrderEntryUploadDetailBox::where('id_regular_order_entry_upload_detail',$item->id)
-                   ->get()->map(function ($item) use ($store) {
-
+                   ->get()->map(function ($item_box) use ($store,$item) {
                        return [
-                           'id_box' => $item->id_box,
+                           'id_box' => $item_box->id_box,
                            'id_regular_delivery_plan' => $store->id,
-                           'id_regular_order_entry_upload_detail' => $item->id_regular_order_entry_upload_detail,
-                           'id_regular_order_entry_upload_detail_box' => $item->id,
+                           'id_regular_order_entry_upload_detail' => $item->id,
+                           'id_regular_order_entry_upload_detail_box' => $item_box->id,
                            'created_at' => now()
                        ];
                    })->toArray();
