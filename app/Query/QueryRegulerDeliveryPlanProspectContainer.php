@@ -16,6 +16,14 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     const cast = 'regular-delivery-plan-prospect-container-container';
 
+    public static function getAll($params) {
+        $data = Model::paginate($params->limit ?? null);
+        if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
+    }
 
     public static function byIdProspectContainer($params,$id)
     {

@@ -12,6 +12,17 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ProspectContainerController extends Controller
 {
+    public function index(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegulerDeliveryPlanProspectContainer::getAll($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function show(Request $request,$id)
     {
         try {
