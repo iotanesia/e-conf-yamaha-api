@@ -15,6 +15,7 @@ use App\Models\RegularDeliveryPlanProspectContainer;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
 use App\Models\RegularDeliveryPlanShippingInsruction;
 use App\Models\RegularDeliveryPlanShippingInsructionCreation;
+use App\Models\RegularDeliveryPlanShippingInsructionCreationDraft;
 use App\Models\RegularProspectContainer;
 use App\Models\RegularProspectContainerCreation;
 use App\Models\RegularProspectContainerDetail;
@@ -505,7 +506,7 @@ class QueryRegularDeliveryPlan extends Model {
             $insert = RegularDeliveryPlanShippingInsructionCreation::create($params);
             RegularDeliveryPlanProspectContainerCreation::where('code_consignee',$request->code_consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_shipping_instruction_creation'=>$insert->id]);
             $params['id_regular_delivery_plan_shipping_instruction_creation'] = $insert->id;
-            RegularDeliveryPlanShippingInsructionCreation::create($params);
+            RegularDeliveryPlanShippingInsructionCreationDraft::create($params);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
@@ -514,8 +515,8 @@ class QueryRegularDeliveryPlan extends Model {
         }
     }
 
-    public static function book($request,$is_transaction = true) {
-        Helper::requireParams(['to','etd_jkt']);
+    public static function genNoBook($request,$is_transaction = true) {
+        Helper::requireParams(['id']);
         if($is_transaction) DB::beginTransaction();
         try {
             $data = $request->all();

@@ -17,7 +17,7 @@ class Constant
     const STS_FINISH = 8;
     const STS_PROCESS_REJECTED = 9;
     const DRAFT = 1;
-    const SELESAI = 2;
+    const FINISH = 2;
 
     const STS_PROCESS_RG_ENTRY = [
         1 => 'Proses', 2 => 'Done Upload', 3 => 'Send To PC', 4 => 'Revisi', 5 => 'Approved', 6 => 'Error', 7 => 'Send To DC Manager', 8 => 'Finish', 9 => "Reject"

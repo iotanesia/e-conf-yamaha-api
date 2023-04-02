@@ -91,7 +91,7 @@ Route::prefix('v1/regular')
         });
 
         Route::group(['prefix' => 'booking'],function(){
-            Route::post('/',[DeliveryPlanController::class,'booking']);
+            Route::post('/generate-no-booking',[DeliveryPlanController::class,'generateNobooking']);
         });
 
         Route::get('/{id}',[DeliveryPlanController::class,'show']);
