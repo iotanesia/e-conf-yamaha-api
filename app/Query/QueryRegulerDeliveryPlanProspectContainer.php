@@ -21,22 +21,23 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     {
         $data = RegularDeliveryPlan::where('id_prospect_container',$id)
         ->whereHas('refRegularDeliveryPlanProspectContainer', function ($query){
-            
+
         })
         ->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
-        $data->transform(function ($item){
+        $data->transform(function ($item) use ($id){
             $item->item_name = $item->refPart->description ?? null;
             $item->cust_name = $item->refConsignee->nick_name ?? null;
             $regularOrderEntry = $item->refRegularOrderEntry;
             $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
             $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
             $item->regular_order_entry_year = $regularOrderEntry->year ?? null;
-            $item->box = $item->manyDeliveryPlanBox->map(function ($item)
+            $item->box = $item->manyDeliveryPlanBox->map(function ($item) use ($id)
             {
                 return [
                     'id' => $item->id,
+                    'id_prospect_container' => $id,
                     'id_box' => $item->id_box,
                     'qty' => $item->refBox->qty ?? null,
                     'width' => $item->refBox->width ?? null,
