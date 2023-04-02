@@ -88,10 +88,12 @@ Route::prefix('v1/regular')
             Route::get('/',[DeliveryPlanController::class,'shippingInstruction']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
             Route::post('/',[DeliveryPlanController::class,'shippingInstructionStore']);
+            Route::post('/update-status',[DeliveryPlanController::class,'shippingInstructionUpdate']);
         });
 
         Route::group(['prefix' => 'booking'],function(){
             Route::post('/generate-no-booking',[DeliveryPlanController::class,'generateNobooking']);
+            Route::post('/save-booking',[DeliveryPlanController::class,'savebooking']);
         });
 
         Route::get('/{id}',[DeliveryPlanController::class,'show']);

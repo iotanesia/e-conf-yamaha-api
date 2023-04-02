@@ -11,7 +11,6 @@ class RegularDeliveryPlanShippingInsruction extends Model
     use HasFactory,SoftDeletes;
     protected $table = 'regular_delivery_plan_shipping_instruction';
     public $fillable = [
-        "id",
         "no_booking",
         "booking_date",
         "datasource",

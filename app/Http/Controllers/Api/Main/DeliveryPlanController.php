@@ -143,11 +143,33 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function shippingInstructionUpdate(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::shippingUpdate($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function generateNobooking(Request $request)
     {
         try {
             return ResponseInterface::responseData(
                 QueryRegularDeliveryPlan::genNoBook($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function savebooking(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::saveBook($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

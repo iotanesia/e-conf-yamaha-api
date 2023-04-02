@@ -515,14 +515,52 @@ class QueryRegularDeliveryPlan extends Model {
         }
     }
 
+    public static function shippingUpdate($request,$is_transaction = true) 
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $update = RegularDeliveryPlanProspectContainerCreation::find($request->id_shipping_instruction_creation);
+            $update->status = Constant::FINISH;
+            $update->save();
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack(); 
+            throw $th;
+        }
+    }
+
     public static function genNoBook($request,$is_transaction = true) {
         Helper::requireParams(['id']);
         if($is_transaction) DB::beginTransaction();
         try {
             $data = $request->all();
-            $data['code'] = 'BOOK'.Carbon::parse($request->etd_jkt)->format('dmY').Str::random(5);
-            RegularDeliveryPlanShippingInsruction::create($data);
+            $etdJkt = RegularDeliveryPlanProspectContainerCreation::select('etd_jkt','datasource')->whereIn('id',$request->id)->groupBy('etd_jkt','datasource')->get();
+            if(!count($etdJkt)) throw new \Exception("Data not found", 400);
+            if(count($etdJkt) > 1)  throw new \Exception("Invalid ETD JKT", 400);
+            $data['no_booking'] = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').mt_rand(10000,99999);
+            $data['datasource'] = $etdJkt[0]->datasource;
+            $data['booking_date'] = Carbon::now()->format('Y-m-d');
+            $insert = RegularDeliveryPlanShippingInsruction::create($data);
             if($is_transaction) DB::commit();
+            return [
+                'items' => ['id'=>$insert->id,'no_booking'=>$data['no_booking'],'etd_jkt'=>$etdJkt[0]->etd_jkt]
+            ];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function saveBook($request,$is_transaction = true) {
+        Helper::requireParams(['id']);
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $res = RegularDeliveryPlanShippingInsruction::find($request->id);
+            $res->status = Constant::STS_BOOK_FINISH;
+            $res->save();
+            if($is_transaction) DB::commit();
+            return ['items'=>$res];
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;

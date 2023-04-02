@@ -38,6 +38,11 @@ class RegularDeliveryPlanProspectContainerCreation extends Model
         "uuid"
     ];
 
+    public function refRegularDeliveryPlanPropspectContainer()
+    {
+        return $this->belongsTo(RegularDeliveryPlanProspectContainer::class,'id_prospect_container','id');
+    }
+
     public static function boot()
     {
         parent::boot();
