@@ -430,14 +430,15 @@ class QueryRegularOrderEntryUpload extends Model {
             ]);
 
             $upload = RegularOrderEntryUpload::find($params->id);
+            if(!$upload) throw new \Exception("Data not found", 400);
             $upload->status = Constant::STS_FINISH;
             $upload->save();
 
             $items = RegularOrderEntry::find($upload->id_regular_order_entry);
             if(!$items) throw new \Exception("Data tidak ditemukan", 500);
 
-            $data = self::getDifferentPart(199);
-            $result = collect($data)->chunk(50)->toArray() ?? null;
+            $data = self::getDifferentPart($upload->id_regular_order_entry);
+            $result = collect($data)->toArray() ?? null;
             if($result){
                 foreach ($result as $key => $items){
                     foreach ($items as $indx => $item){
@@ -476,54 +477,40 @@ class QueryRegularOrderEntryUpload extends Model {
                                 RegularDeliveryPlanBox::insert($item_box);
                             }
                     }
+
+                    $store = RegularDeliveryPlan::create([
+                       "model" => $item->model,
+                       "item_no" => $item->item_no,
+                       "code_consignee" => $item->code_consignee,
+                       "disburse" => $item->disburse,
+                       "delivery" => $item->delivery,
+                       "qty" => $item->qty,
+                       "order_no" => $item->order_no,
+                       "cust_item_no" => $item->cust_item_no,
+                       "etd_jkt" => $item->etd_jkt,
+                       "etd_ypmi" => $item->etd_ypmi,
+                       "etd_wh" => $item->etd_wh,
+                       "id_regular_order_entry" => $upload->id_regular_order_entry,
+                       "created_at" => now(),
+                       "is_inquiry" => 0,
+                       "uuid" => (string) Str::uuid()
+                   ]);
+
+                   $box = RegularOrderEntryUploadDetailBox::where('uuid_regular_order_entry_upload_detail',$item->uuid)
+                   ->get()->map(function ($item) use ($store) {
+                       return [
+                           'id_box' => $item->id_box,
+                           'id_regular_delivery_plan' => $store->id,
+                           'created_at' => now()
+                       ];
+                   })->toArray();
+
+                   foreach (array_chunk($box,1000) as $item_box) {
+                       RegularDeliveryPlanBox::insert($item_box);
+                   }
+
                 }
             }
-
-
-
-//            RegularOrderEntryUploadDetail::where('id_regular_order_entry_upload',$params->id)
-//            ->where('status','fixed')
-//            ->chunk(100,function ($datas) use ($upload){
-//                foreach ($datas as $key => $items) {
-//
-//                    $items->is_delivery_plan = Constant::IS_ACTIVE;
-//                    $items->save();
-//
-//                    $item = $items->toArray();
-//                    $store = RegularDeliveryPlan::create([
-//                        "model" => $item['model'],
-//                        "item_no" => $item['item_no'],
-//                        "code_consignee" => $item['code_consignee'],
-//                        "disburse" => $item['disburse'],
-//                        "delivery" => $item['delivery'],
-//                        "qty" => $item['qty'],
-//                        "order_no" => $item['order_no'],
-//                        "cust_item_no" => $item['cust_item_no'],
-//                        "etd_jkt" => $item['etd_jkt'],
-//                        "etd_ypmi" => $item['etd_ypmi'],
-//                        "etd_wh" => $item['etd_wh'],
-//                        "id_regular_order_entry" => $upload->id_regular_order_entry,
-//                        "created_at" => now(),
-//                        "is_inquiry" => 0,
-//                        "uuid" => (string) Str::uuid()
-//                    ]);
-//
-//                    $box = RegularOrderEntryUploadDetailBox::where('uuid_regular_order_entry_upload_detail',$item['uuid'])
-//                    ->get()->map(function ($item) use ($store) {
-//                        return [
-//                            'id_box' => $item->id_box,
-//                            'id_regular_delivery_plan' => $store->id,
-//                            'created_at' => now()
-//                        ];
-//                    })->toArray();
-//
-//                    foreach (array_chunk($box,1000) as $item_box) {
-//                        RegularDeliveryPlanBox::insert($item_box);
-//                    }
-//
-//                }
-//
-//            });
 
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
@@ -536,13 +523,17 @@ class QueryRegularOrderEntryUpload extends Model {
     public static function getDifferentPart($id){
 
         return DB::select(DB::raw("SELECT
+                    concat('upload-',c.id) as key,
+                    c.uuid,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
                     c.delivery,
                     c.qty, c.order_no,
                     c.cust_item_no,
-                    c.etd_jkt
+                    c.etd_jkt,
+                    c.etd_ypmi,
+                    c.etd_wh
                     FROM
                     regular_order_entry a,
                     regular_order_entry_upload b,
@@ -553,13 +544,17 @@ class QueryRegularOrderEntryUpload extends Model {
                     a.id = ?
                     EXCEPT
                     SELECT
+                    concat('plan-',c.id) as key,
+                    c.uuid,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
                     c.delivery,
                     c.qty, c.order_no,
                     c.cust_item_no,
-                    c.etd_jkt
+                    c.etd_jkt,
+                    c.etd_ypmi,
+                    c.etd_wh
                     FROM
                     regular_delivery_plan c WHERE c.id_regular_order_entry = ?"), [$id,$id]) ?? null;
     }
