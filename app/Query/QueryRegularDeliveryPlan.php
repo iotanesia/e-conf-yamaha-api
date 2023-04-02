@@ -446,7 +446,7 @@ class QueryRegularDeliveryPlan extends Model {
         ,DB::raw("SUM(f.net_weight) as net_weight")
         ,DB::raw("SUM(f.gross_weight) as gross_weight")
         ,DB::raw("SUM(f.measurement) as measurement")
-        )
+        ,DB::raw("SUM(regular_delivery_plan_prospect_container_creation.summary_box) as summary_box_sum"))
         ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction',$id)
         ->join('regular_delivery_plan_prospect_container as a','regular_delivery_plan_prospect_container_creation.id_prospect_container','a.id')
         ->join('mst_part as b','regular_delivery_plan_prospect_container_creation.item_no','b.item_no')
@@ -468,6 +468,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'via' => $item->mot,
                 'freight_chart' => 'COLLECT',
                 'incorterm' => 'FOB',
+                'shipped_by' => 'YPMI',
                 'container_value' => $item->container_type,
                 'container_type' => $item->container_value,
                 'net_weight' => $item->net_weight,
@@ -475,6 +476,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'measurement' => $item->measurement,
                 'port' => $item->port,
                 'type_delivery' => $item->type_delivery,
+                'summary_box' => $item->summary_box_sum,
                 'to' => $item->refMstLsp->name ?? null,
                 'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null
             ];
@@ -509,9 +511,12 @@ class QueryRegularDeliveryPlan extends Model {
     }
 
     public static function book($request,$is_transaction = true) {
+        Helper::requireParams(['to','etd_jkt']);
         if($is_transaction) DB::beginTransaction();
         try {
-            Helper::requireParams(['to']);
+            $data = $request->all();
+            $data['code'] = 'BOOK'.Carbon::parse($request->etd_jkt)->format('dmY').Str::random(5);
+            RegularDeliveryPlanShippingInsruction::create($data);
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
