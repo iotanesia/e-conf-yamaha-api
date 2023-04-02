@@ -49,6 +49,7 @@ class OrderEntryBox implements ShouldQueue
                 $ext[] = [
                     'uuid' => (string) Str::uuid(),
                     'uuid_regular_order_entry_upload_detail' => $params['uuid_regular_order_entry_upload_detail'],
+                    'id_regular_order_entry_upload_detail' => $params['id_regular_order_entry_upload_detail'],
                     'id_box' => $box['id'],
                     'created_at' => now(),
                     'updated_at' => now(),

@@ -162,9 +162,24 @@ class QueryRegularOrderEntryUploadDetail extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            self::insert($request);
+            $store = self::insert($request);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
+            return $store;
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function created($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $store = self::create($request);
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+            return $store;
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;

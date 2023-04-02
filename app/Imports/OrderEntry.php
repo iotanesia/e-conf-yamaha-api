@@ -58,13 +58,8 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                     $deliver_yearmonth = Carbon::parse(trim($row[14]))->format('Ym');
                     if(in_array($row[7],['940E']) && $deliver_yearmonth  == $fillter_yearmonth) {
                         $uuid = (String) Str::uuid();
-                        OrderEntryBox::dispatch([
-                            'code_consignee' => trim($row[1]),
-                            'item_no' => trim($row[5]),
-                            'qty' => trim($row[15]),
-                            'uuid_regular_order_entry_upload_detail' => $uuid
-                        ]);
-                        $ext[] = [
+
+                        $detail = QueryRegularOrderEntryUploadDetail::created([
                             'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                             'code_consignee' => trim($row[1]),
                             'model' => trim($row[4]),
@@ -81,10 +76,37 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                             'uuid' => $uuid,
                             'created_at' => now(),
                             'updated_at' => now(),
-                        ];
+                        ],false);
+
+
+                        OrderEntryBox::dispatch([
+                            'code_consignee' => trim($row[1]),
+                            'item_no' => trim($row[5]),
+                            'qty' => trim($row[15]),
+                            'uuid_regular_order_entry_upload_detail' => $uuid,
+                            'id_regular_order_entry_upload_detail' => $detail->id,
+                        ]);
+                        // $ext[] = [
+                        //     'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
+                        //     'code_consignee' => trim($row[1]),
+                        //     'model' => trim($row[4]),
+                        //     'item_no' => trim($row[5]),
+                        //     'disburse' => trim($row[12]),
+                        //     'delivery' => trim($row[14]),
+                        //     'etd_jkt' => trim($row[14]),
+                        //     'etd_wh' => Carbon::parse(trim($row[14]))->subDays(2)->format('Ymd'),
+                        //     'etd_ypmi' => Carbon::parse(trim($row[14]))->subDays(4)->format('Ymd'),
+                        //     'qty' => trim($row[15]),
+                        //     'status' => trim($row[20]),
+                        //     'order_no' => trim($row[22]),
+                        //     'cust_item_no' => trim($row[23]),
+                        //     'uuid' => $uuid,
+                        //     'created_at' => now(),
+                        //     'updated_at' => now(),
+                        // ];
                     }
                 }
-                QueryRegularOrderEntryUploadDetail::store($ext,false);
+                // QueryRegularOrderEntryUploadDetail::store($ext,false);
             }
             Log::info('Process finish');
         } catch (\Throwable $th) {
