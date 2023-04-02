@@ -493,7 +493,7 @@ class QueryRegularDeliveryPlan extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             $consignee = MstConsignee::where('code',$request->code_consignee)->first();
-            $request->merge(['consignee'=>json_encode($consignee)]);
+            $request->merge(['consignee'=>json_encode($consignee),'status'=>Constant::DRAFT]);
             $params = $request->all();
             Helper::requireParams([
                 'to',
@@ -501,7 +501,8 @@ class QueryRegularDeliveryPlan extends Model {
             ]);
             $insert = RegularDeliveryPlanShippingInsructionCreation::create($params);
             RegularDeliveryPlanProspectContainerCreation::where('code_consignee',$request->code_consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_shipping_instruction_creation'=>$insert->id]);
-
+            $params['id_regular_delivery_plan_shipping_instruction_creation'] = $insert->id;
+            RegularDeliveryPlanShippingInsructionCreation::create($params);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
