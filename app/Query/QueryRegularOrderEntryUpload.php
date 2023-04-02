@@ -461,7 +461,7 @@ class QueryRegularOrderEntryUpload extends Model {
                        "id_regular_order_entry" => $upload->id_regular_order_entry,
                        "created_at" => now(),
                        "is_inquiry" => 0,
-                       "uuid" => $item->uuid
+                       "uuid" => (string) Str::uuid()
                    ]);
 
                 //    $box = RegularOrderEntryUploadDetailBox::where('uuid_regular_order_entry_upload_detail',$item->uuid)
