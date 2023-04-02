@@ -439,6 +439,9 @@ class QueryRegularOrderEntryUpload extends Model {
 
             $data = self::getDifferentPart($upload->id_regular_order_entry);
             $result = collect($data)->toArray() ?? null;
+
+            dd($result);
+
             if($result){
                 foreach ($result as $item){
                     $key = explode('-',$item->key);
@@ -515,7 +518,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     EXCEPT
                     SELECT
                     concat('plan-',c.id) as key,
-                    c.uuid,
+                    concat('idz-',c.id) as uuid,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
