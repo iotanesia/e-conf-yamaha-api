@@ -569,4 +569,15 @@ class QueryRegularDeliveryPlan extends Model {
             throw $th;
         }
     }
+    
+    public static function detailById($params)
+    {
+        $data = RegularProspectContainerCreation::whereIn('id_prospect_container',$params->id)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
+    }
 }
