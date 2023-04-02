@@ -440,11 +440,27 @@ class QueryRegularOrderEntryUpload extends Model {
             $data = self::getDifferentPart($upload->id_regular_order_entry,$params->id);
             $result = collect($data)->toArray() ?? null;
 
-            // dd(count($result));
-
-
             if($result){
                 foreach ($result as $item){
+
+                    dd([
+                        "model" => $item->model,
+                        "item_no" => $item->item_no,
+                        "code_consignee" => $item->code_consignee,
+                        "disburse" => $item->disburse,
+                        "delivery" => $item->delivery,
+                        "qty" => $item->qty,
+                        "order_no" => $item->order_no,
+                        "cust_item_no" => $item->cust_item_no,
+                        "etd_jkt" => $item->etd_jkt,
+                        "etd_ypmi" => $item->etd_ypmi,
+                        "etd_wh" => $item->etd_wh,
+                        "id_regular_order_entry" => $upload->id_regular_order_entry,
+                        "created_at" => now(),
+                        "is_inquiry" => 0,
+                        "uuid" => $item->uuid
+                    ]);
+
                     $store = RegularDeliveryPlan::create([
                        "model" => $item->model,
                        "item_no" => $item->item_no,
