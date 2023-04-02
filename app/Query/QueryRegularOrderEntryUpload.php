@@ -440,7 +440,7 @@ class QueryRegularOrderEntryUpload extends Model {
             $data = self::getDifferentPart($upload->id_regular_order_entry,$params->id);
             $result = collect($data)->toArray() ?? null;
 
-            dd(count($result));
+            // dd(count($result));
 
 
             if($result){
