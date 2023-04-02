@@ -437,7 +437,7 @@ class QueryRegularOrderEntryUpload extends Model {
             $items = RegularOrderEntry::find($upload->id_regular_order_entry);
             if(!$items) throw new \Exception("Data tidak ditemukan", 500);
 
-            $data = self::getDifferentPart($upload->id_regular_order_entry);
+            $data = self::getDifferentPart($upload->id_regular_order_entry,$params->id);
             $result = collect($data)->toArray() ?? null;
 
             if($result){
@@ -491,7 +491,7 @@ class QueryRegularOrderEntryUpload extends Model {
         }
     }
 
-    public static function getDifferentPart($id){
+    public static function getDifferentPart($id,$id_regular_order_entry_upload){
 
         return DB::select(DB::raw("SELECT
                     concat('upload-',c.id) as key,
@@ -512,7 +512,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     where a.id = b.id_regular_order_entry and
                     b.id = c.id_regular_order_entry_upload and
                     c.status = 'fixed' and c.is_delivery_plan = 0 and
-                    a.id = ?
+                    a.id = ? and b.id = ?
                     EXCEPT
                     SELECT
                     concat('plan-',c.id) as key,
@@ -527,6 +527,6 @@ class QueryRegularOrderEntryUpload extends Model {
                     c.etd_ypmi,
                     c.etd_wh
                     FROM
-                    regular_delivery_plan c WHERE c.id_regular_order_entry = ?"), [$id,$id]) ?? null;
+                    regular_delivery_plan c WHERE c.id_regular_order_entry = ?"), [$id,$id_regular_order_entry_upload,$id]) ?? null;
     }
 }
