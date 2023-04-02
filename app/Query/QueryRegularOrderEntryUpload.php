@@ -439,9 +439,42 @@ class QueryRegularOrderEntryUpload extends Model {
             $data = self::getDifferentPart(199);
             $result = collect($data)->chunk(50)->toArray() ?? null;
             if($result){
-                foreach ($result as $key => $item){
-                    foreach ($item as $indx => $items){
-                        echo $items->code_consignee;
+                foreach ($result as $key => $items){
+                    foreach ($items as $indx => $item){
+
+                        $item->is_delivery_plan = Constant::IS_ACTIVE;
+                        $items->save();
+
+                        $store = RegularDeliveryPlan::create([
+                            "model" => $item['model'],
+                            "item_no" => $item['item_no'],
+                            "code_consignee" => $item['code_consignee'],
+                            "disburse" => $item['disburse'],
+                            "delivery" => $item['delivery'],
+                            "qty" => $item['qty'],
+                            "order_no" => $item['order_no'],
+                            "cust_item_no" => $item['cust_item_no'],
+                            "etd_jkt" => $item['etd_jkt'],
+                            "etd_ypmi" => $item['etd_ypmi'],
+                            "etd_wh" => $item['etd_wh'],
+                            "id_regular_order_entry" => $upload->id_regular_order_entry,
+                            "created_at" => now(),
+                            "is_inquiry" => 0,
+                            "uuid" => (string) Str::uuid(),
+                        ]);
+
+                        $box = RegularOrderEntryUploadDetailBox::where('uuid_regular_order_entry_upload_detail',$item['uuid'])
+                            ->get()->map(function ($item) use ($store) {
+                                return [
+                                    'id_box' => $item->id_box,
+                                    'id_regular_delivery_plan' => $store->id,
+                                    'created_at' => now()
+                                ];
+                            })->toArray();
+
+                            foreach (array_chunk($box,1000) as $item_box) {
+                                RegularDeliveryPlanBox::insert($item_box);
+                            }
                     }
                 }
             }
