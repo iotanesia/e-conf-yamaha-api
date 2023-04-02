@@ -544,6 +544,7 @@ class QueryRegularDeliveryPlan extends Model {
             $data['datasource'] = $etdJkt[0]->datasource;
             $data['booking_date'] = Carbon::now()->format('Y-m-d');
             $insert = RegularDeliveryPlanShippingInsruction::create($data);
+            RegularDeliveryPlanProspectContainerCreation::select('etd_jkt','datasource')->whereIn('id',$request->id)->update(['id_shipping_instruction'=>$insert->id]);
             if($is_transaction) DB::commit();
             return [
                 'items' => ['id'=>$insert->id,'no_booking'=>$data['no_booking'],'etd_jkt'=>$etdJkt[0]->etd_jkt]
