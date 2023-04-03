@@ -28,10 +28,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     public static function byIdProspectContainer($params,$id)
     {
         $data = RegularDeliveryPlan::where('id_prospect_container',$id)
-        ->whereHas('refRegularDeliveryPlanProspectContainer', function ($query){
+        // ->whereHas('refRegularDeliveryPlanProspectContainer', function ($query){
 
-        })
+        // })
         ->paginate($params->limit ?? null);
+        
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
         $data->transform(function ($item) use ($id){
