@@ -15,7 +15,7 @@ class RegularDeliveryPlanProspectContainerCreation extends Model
         "id_type_delivery",
         "id_prospect_container",
         "id_mot",
-        "id_mot",
+        "id_lsp",
         "id_container",
         "item_no",
         "code_consignee",
@@ -41,6 +41,21 @@ class RegularDeliveryPlanProspectContainerCreation extends Model
     public function refRegularDeliveryPlanPropspectContainer()
     {
         return $this->belongsTo(RegularDeliveryPlanProspectContainer::class,'id_prospect_container','id');
+    }
+
+    public function refMstLsp()
+    {
+        return $this->belongsTo(MstLsp::class,'id_lsp','id');
+    }
+
+    public function refMstTypeDelivery()
+    {
+        return $this->belongsTo(MstTypeDelivery::class,'id_type_delivery','id');
+    }
+
+    public function refMstMot()
+    {
+        return $this->belongsTo(MstMot::class,'id_mot','id');
     }
 
     public static function boot()

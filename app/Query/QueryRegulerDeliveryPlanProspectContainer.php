@@ -86,7 +86,25 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
          $check = RegularDeliveryPlanProspectContainerCreation::where('id_prospect_container',$params->id)
          ->count('id_prospect_container');
 
-         if($check) throw new \Exception("Data already exist in table creation", 400);
+        //  if($check) throw new \Exception("Data already exist in table creation", 400);
+
+        if ($check) {
+            $creation = RegularDeliveryPlanProspectContainerCreation::where('id_prospect_container',$params->id)
+                                                                ->get()
+                                                                ->map(function ($item){
+                                                                    $item->nama_lsp = $item->refMstLsp->name ?? null;
+                                                                    $item->nama_mot = $item->refMstMot->name ?? null;
+                                                                    $item->nama_type_delivery = $item->refMstTypeDelivery->name ?? null;
+                                                
+                                                                    unset(
+                                                                        $item->refMstLsp,
+                                                                        $item->refMstMot,
+                                                                        $item->refMstTypeDelivery,
+                                                                    );
+                                                                    return $item;
+                                                                })->toArray();
+            return ['items' => $creation];
+        }
 
          $item_no = RegularDeliveryPlan::select('item_no')
          ->whereIn('id_prospect_container',$params->id)
