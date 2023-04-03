@@ -37,7 +37,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function byIdProspectContainer($params,$id)
     {
-        $data = RegularDeliveryPlan::where('id_prospect_container',$id)
+        $data = RegularDeliveryPlan::where('id_prospect_container_creation',$id)
         // ->whereHas('refRegularDeliveryPlanProspectContainer', function ($query){
 
         // })
