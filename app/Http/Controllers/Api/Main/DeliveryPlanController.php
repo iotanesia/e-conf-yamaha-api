@@ -186,4 +186,16 @@ class DeliveryPlanController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function shippingInstructionDownloadDoc(Request $request,$id)
+    {
+        try {
+            $data = QueryRegularDeliveryPlan::downloadDoc($request,$id);
+            $filename = 'shipping-instruction-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/shipping_instruction/'.$filename;
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

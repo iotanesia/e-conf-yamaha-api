@@ -20,6 +20,7 @@ use App\Models\RegularProspectContainer;
 use App\Models\RegularProspectContainerCreation;
 use App\Models\RegularProspectContainerDetail;
 use App\Models\RegularProspectContainerDetailBox;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -579,5 +580,22 @@ class QueryRegularDeliveryPlan extends Model {
             'items' => $data->items(),
             'last_page' => $data->lastPage()
         ];
+    }
+
+    public static function downloadDoc($params,$id)
+    {
+        try {
+            $data = RegularDeliveryPlanShippingInsructionCreation::find($id);
+            $filename = 'shipping-instruction-'.$id.'.pdf';
+            $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
+            Pdf::loadView('pdf.shipping_instruction',[
+              'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 }

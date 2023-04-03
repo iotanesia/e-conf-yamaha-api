@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
 class ApiHelper {
 
      static function storageCache($key, $callback, $ttl = null )
@@ -422,6 +424,22 @@ class ApiHelper {
         return $month[$key] ?? null;
     }
 
+    public static function responseViewFile($pathToFile,$filename)
+    {
+        $headers =['Access-Control-Allow-Origin'      => '*',
+                'Access-Control-Allow-Methods'     => 'POST, GET, OPTIONS, PUT, DELETE',
+                'Access-Control-Allow-Credentials' => 'true',
+                'Access-Control-Max-Age'           => '86400',
+                'Access-Control-Allow-Headers'     => 'Content-Type, Accept, Authorization, X-Requested-With, Application, Origin, Authorization, APIKey, Timestamp, AccessToken',
+                'Content-Disposition' => 'filename='.$filename,
+                'Pragma' => 'public',
+                'Content-Transfer-Encoding' => 'binary',
+                'Content-Type' =>   self::getContentType($pathToFile),
+                'Content-Length' => filesize($pathToFile)];
+
+        $response = new BinaryFileResponse($pathToFile, 200 , $headers);
+        return $response;
+    }
 
 
 }
