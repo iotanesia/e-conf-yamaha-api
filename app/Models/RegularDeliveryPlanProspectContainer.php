@@ -35,4 +35,9 @@ class RegularDeliveryPlanProspectContainer extends Model
             // $model->uuid = (string) Str::uuid();
         });
     }
+
+    public function refConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
 }

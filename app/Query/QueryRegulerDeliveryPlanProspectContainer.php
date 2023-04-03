@@ -19,6 +19,16 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     public static function getAll($params) {
         $data = Model::paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
+
+        $data->map(function ($item){
+            $item->cust_name = $item->refConsignee->nick_name ?? null;
+
+            unset(
+                $item->refConsignee
+            );
+            return $item;
+        })->toArray();
+
         return [
             'items' => $data->items(),
             'last_page' => $data->lastPage()
