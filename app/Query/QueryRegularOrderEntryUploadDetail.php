@@ -24,8 +24,16 @@ class QueryRegularOrderEntryUploadDetail extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->search)
-                    $query->where('code_consignee', 'like', "'%$params->search%'")
+
+               $category = $params->category ?? null;
+               if($category) {
+                    $query->where($category, 'ilike', $params->kueri);
+               }
+
+               $filterdate = Helper::filterDate($params);
+               if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
+
+               if($params->search) $query->where('code_consignee', 'like', "'%$params->search%'")
                             ->orWhere('model', 'like', "'%$params->search%'")
                             ->orWhere('item_no', 'like', "'%$params->search%'")
                             ->orWhere('disburse', 'like', "'%$params->search%'")
