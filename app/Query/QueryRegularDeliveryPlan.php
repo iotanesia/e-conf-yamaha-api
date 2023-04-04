@@ -315,7 +315,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
                 'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
                 'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
-                'qty' => $qty,
+                'qty_pcs_box' => $qty,
                 'namebox' => $no. " ".$qty. " pcs" ,
             ];
         });
@@ -516,7 +516,7 @@ class QueryRegularDeliveryPlan extends Model {
         }
     }
 
-    public static function shippingUpdate($request,$is_transaction = true) 
+    public static function shippingUpdate($request,$is_transaction = true)
     {
         if($is_transaction) DB::beginTransaction();
         try {
@@ -528,7 +528,7 @@ class QueryRegularDeliveryPlan extends Model {
             return ['items'=>$update];
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
-            if($is_transaction) DB::rollBack(); 
+            if($is_transaction) DB::rollBack();
             throw $th;
         }
     }
@@ -570,7 +570,7 @@ class QueryRegularDeliveryPlan extends Model {
             throw $th;
         }
     }
-    
+
     public static function detailById($params)
     {
         $data = RegularProspectContainerCreation::whereIn('id_prospect_container',$params->id)->paginate($params->limit ?? null);
