@@ -107,8 +107,8 @@ class QueryRegularOrderEntryUploadDetail extends Model {
     }
 
     public static function getPart($id_part){
-        $data = MstPart::where('item_no', $id_part)->first()->description;
-        return $data;
+        $data = MstPart::where('item_no', $id_part)->first();
+        return $data->description ?? null;
     }
 
     public static function byId($params,$id)
