@@ -588,7 +588,6 @@ class QueryRegularDeliveryPlan extends Model {
             $data = RegularDeliveryPlanShippingInsructionCreation::find($id);
             $filename = 'shipping-instruction-'.$id.'.pdf';
             $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
-            dd($pathToFile);
             Pdf::loadView('pdf.shipping_instruction',[
               'data' => $data
             ])
