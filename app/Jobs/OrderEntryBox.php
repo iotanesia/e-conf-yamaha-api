@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\RegularOrderEntryUploadDetail;
 use App\Models\RegularOrderEntryUploadDetailBox;
 use App\Query\QueryMstBox;
 use Illuminate\Bus\Queueable;
@@ -37,28 +38,34 @@ class OrderEntryBox implements ShouldQueue
     {
        try {
             $params = $this->params;
-            $box = QueryMstBox::byItemNoCdConsignee($params['item_no'],$params['code_consignee'])->toArray();
-            if(!$box) throw new \Exception("box not found", 400);
+            RegularOrderEntryUploadDetail::where([
+                'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
+            ])
+            ->each(function ($item){
+                $request = $item->toArray();
+                $box = QueryMstBox::byItemNoCdConsignee($request['item_no'],$request['code_consignee']);
+                if($box) {
+                    $box = $box->toArray();
+                    $box_capacity = $box['qty'];
+                    $qty = $request['qty'];
+                    $loops = (int) ceil($qty / $box_capacity);
+                    $ext = [];
+                    for ($i=0; $i < $loops ; $i++) {
+                        $ext[] = [
+                            'uuid' => (string) Str::uuid(),
+                            'id_regular_order_entry_upload_detail' => $request['id'],
+                            'uuid_regular_order_entry_upload_detail' => $request['uuid'],
+                            'id_box' => $box['id'],
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
 
-            $box_capacity = $box['qty'];
-            $qty = $params['qty'];
-            $loops = (int) ceil($qty / $box_capacity);
-
-            $ext = [];
-            for ($i=0; $i < $loops ; $i++) {
-                $ext[] = [
-                    'uuid' => (string) Str::uuid(),
-                    'uuid_regular_order_entry_upload_detail' => $params['uuid_regular_order_entry_upload_detail'],
-                    'id_regular_order_entry_upload_detail' => $params['id_regular_order_entry_upload_detail'],
-                    'id_box' => $box['id'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-            foreach (array_chunk($ext,1000) as $chunk) {
-                RegularOrderEntryUploadDetailBox::insert($chunk);
-            }
-
+                    foreach (array_chunk($ext,10000) as $chunk) {
+                        RegularOrderEntryUploadDetailBox::insert($chunk);
+                    }
+                }
+            });
        } catch (\Throwable $th) {
             Log::debug('jobs-insert-to-box'.json_encode($th->getMessage()));
        }
