@@ -436,7 +436,7 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function shippingDetail($params,$id)
     {
-        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation'
+        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port'
         ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS count')
         ,DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging")
         ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
@@ -457,7 +457,7 @@ class QueryRegularDeliveryPlan extends Model {
         ->join('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
         ->join('mst_container as f','regular_delivery_plan_prospect_container_creation.id_container','f.id')
         ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation','g.id')
-        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation')
+        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port')
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
@@ -577,7 +577,7 @@ class QueryRegularDeliveryPlan extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
-            'items' => $data->items(),
+            'items' => $data->first(),
             'last_page' => $data->lastPage()
         ];
     }
