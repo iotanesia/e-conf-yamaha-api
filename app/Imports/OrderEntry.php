@@ -62,8 +62,8 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                     return in_array($row[7],['940E']) && $fillter_yearmonth == $deliver_yearmonth;
                 });
 
-                $data = $filteredData->map(function ($row) use ($id_regular_order_entry_upload) {
-                    return [
+                $filteredData->each(function ($row) use ($id_regular_order_entry_upload) {
+                    QueryRegularOrderEntryUploadDetail::created([
                         'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                         'code_consignee' => trim($row[1]),
                         'model' => trim($row[4]),
@@ -80,13 +80,13 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                         'uuid' => (string) Str::uuid(),
                         'created_at' => now(),
                         'updated_at' => now(),
-                    ];
+                    ]);
                 });
 
 
-                foreach ($data->toArray() as $params) {
-                    QueryRegularOrderEntryUploadDetail::store($params);
-                }
+                // foreach ($data->toArray() as $params) {
+                //     QueryRegularOrderEntryUploadDetail::store($params);
+                // }
 
                 // foreach ($chunk as $row) {
 
@@ -178,8 +178,6 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
     {
         return [
             AfterImport::class => function (AfterImport $event){
-                // dd($event);
-
                 QueryRegularOrderEntryUpload::updateStatusAfterImport($this->id_regular_order_entry_upload);
                 OrderEntryBox::dispatch([
                     'id_regular_order_entry_upload' => $this->id_regular_order_entry_upload

@@ -54,12 +54,13 @@ class OrderEntryBox implements ShouldQueue
                         $ext[] = [
                             'uuid' => (string) Str::uuid(),
                             'id_regular_order_entry_upload_detail' => $request['id'],
+                            'id_regular_order_entry_upload_detail' => $request['uuid'],
                             'id_box' => $box['id'],
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];
                     }
-                    foreach (array_chunk($ext,1000) as $chunk) {
+                    foreach (array_chunk($ext,10000) as $chunk) {
                         RegularOrderEntryUploadDetailBox::insert($chunk);
                     }
                 }
