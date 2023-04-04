@@ -78,6 +78,13 @@ Route::prefix('v1/regular')
             Route::get('/labeling/{id}',[DeliveryPlanController::class,'labeling']);
         });
 
+        Route::group(['prefix' => 'prospect-container'],function (){
+            Route::post('/creation',[ProspectContainerController::class,'creation']);
+            Route::put('/edit-mot',[DeliveryPlanController::class,'editMot']);
+            Route::post('/fifo',[ProspectContainerController::class,'fifo']);
+            Route::get('/fifo/{id}',[ProspectContainerController::class,'show']);
+        });
+
         Route::group(['prefix' => 'shipping-instruction'],function (){
             Route::get('/',[DeliveryPlanController::class,'shippingInstruction']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
@@ -103,13 +110,7 @@ Route::prefix('v1/regular')
       // order entry pc
     Route::group(['prefix' => 'prospect-container'],function (){
         Route::get('/',[ProspectContainerController::class,'index']);
-        Route::post('/creation',[ProspectContainerController::class,'creation']);
         Route::post('/booking',[ProspectContainerController::class,'booking']);
-        Route::put('/edit-mot',[DeliveryPlanController::class,'editMot']);
-
-        Route::post('/fifo',[ProspectContainerController::class,'fifo']);
-        Route::get('/fifo/{id}',[ProspectContainerController::class,'show']);
-
     });
 
 });

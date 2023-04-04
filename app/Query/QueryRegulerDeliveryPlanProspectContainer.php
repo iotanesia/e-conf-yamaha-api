@@ -17,7 +17,17 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     const cast = 'regular-delivery-plan-prospect-container-container';
 
     public static function getAll($params) {
-        $data = Model::paginate($params->limit ?? null);
+        $data = Model::where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            if($category) {
+                $query->where($category, 'ilike', $params->kueri);
+            }
+
+            $filterdate = Helper::filterDate($params);
+            if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
+
+
+        })->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
         $data->map(function ($item){
@@ -38,9 +48,15 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     public static function byIdProspectContainer($params,$id)
     {
         $data = RegularDeliveryPlan::where('id_prospect_container_creation',$id)
-        // ->whereHas('refRegularDeliveryPlanProspectContainer', function ($query){
+        ->where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            if($category) {
+                 $query->where($category, 'ilike', $params->kueri);
+            }
 
-        // })
+            $filterdate = Helper::filterDate($params);
+            if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
+        })
         ->paginate($params->limit ?? null);
 
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
@@ -211,7 +227,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
 
-            
+
 
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
