@@ -191,7 +191,6 @@ class DeliveryPlanController extends Controller
     {
         try {
             $data = QueryRegularDeliveryPlan::downloadDoc($request,$id);
-            dd($data);
             $filename = 'shipping-instruction-'.$id.'.pdf';
             $pathToFile =  storage_path().'/app/shipping_instruction/'.$filename;
             return ResponseInterface::responseViewFile($pathToFile,$filename);
