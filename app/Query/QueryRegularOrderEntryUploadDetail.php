@@ -102,8 +102,8 @@ class QueryRegularOrderEntryUploadDetail extends Model {
     }
 
     public static function getCustName($code_consignee){
-        $data = MstConsignee::where('code', $code_consignee)->first()->nick_name;
-        return $data;
+        $data = MstConsignee::where('code', $code_consignee)->first();
+        return $data->nick_name ?? null;
     }
 
     public static function getPart($id_part){
