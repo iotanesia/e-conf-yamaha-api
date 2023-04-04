@@ -442,4 +442,18 @@ class ApiHelper {
     }
 
 
+    public static function filterDate($params)
+    {
+
+        $date_start = Carbon::now()->format('Ymd');
+        $date_finish = Carbon::now()->format('Ymd');
+        if($params->date_start) $date_start = Carbon::parse($params->date_start)->format('Ymd');
+        if($params->date_finish) $date_finish = Carbon::parse($params->date_finish)->format('Ymd');
+
+        return [
+            $date_start,
+            $date_finish,
+        ];
+    }
+
 }

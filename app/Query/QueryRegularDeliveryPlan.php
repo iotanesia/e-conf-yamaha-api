@@ -156,6 +156,9 @@ class QueryRegularDeliveryPlan extends Model {
             if($category) {
                 $query->where($category, 'ilike', $params->kueri);
             }
+
+            $filterdate = Helper::filterDate($params);
+            if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
         })
         ->where('is_inquiry',0)
         ->paginate($params->limit ?? null);
