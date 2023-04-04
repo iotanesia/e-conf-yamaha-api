@@ -29,5 +29,7 @@ class Constant
         'qr' => '/app/qrcode/label'
     ];
 
+
+   
 }
 

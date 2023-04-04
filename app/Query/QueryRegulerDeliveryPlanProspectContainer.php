@@ -206,4 +206,18 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
     }
 
+    public static function fifoProcess($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            
+
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
 }

@@ -38,8 +38,10 @@ class QueryRegularDeliveryPlan extends Model {
             $query = self::select(
                 'id_regular_order_entry'
             )->where(function ($query) use ($params){
-               if($params->search)
-                    $query->where('code_consignee', 'like', "'%$params->search%'")
+
+
+
+               if($params->search) $query->where('code_consignee', 'like', "'%$params->search%'")
                             ->orWhere('model', 'like', "'%$params->search%'")
                             ->orWhere('item_no', 'like', "'%$params->search%'")
                             ->orWhere('disburse', 'like', "'%$params->search%'")
@@ -49,9 +51,14 @@ class QueryRegularDeliveryPlan extends Model {
                             ->orWhere('order_no', 'like', "'%$params->search%'")
                             ->orWhere('cust_item_no', 'like', "'%$params->search%'");
 
+
+
             })
             ->whereHas('refRegularOrderEntry',function ($query) use ($params){
-                if($params->datasource) $query->where('datasource',$params->datasource);
+                $category = $params->category ?? null;
+                if($category) {
+                    $query->where($category, 'ilike', $params->kueri);
+                }
             });
 
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -109,6 +116,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             });
 
+
             if($params->withTrashed == 'true')
                 $query->withTrashed();
 
@@ -143,6 +151,12 @@ class QueryRegularDeliveryPlan extends Model {
     public static function detail($params,$id_regular_order_entry)
     {
         $data = self::where('id_regular_order_entry',$id_regular_order_entry)
+        ->where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            if($category) {
+                $query->where($category, 'ilike', $params->kueri);
+            }
+        })
         ->where('is_inquiry',0)
         ->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
