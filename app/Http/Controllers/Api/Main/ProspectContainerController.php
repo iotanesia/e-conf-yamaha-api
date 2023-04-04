@@ -51,7 +51,7 @@ class ProspectContainerController extends Controller
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularProspectContainer::fifoProcess($request)
+                QueryRegulerDeliveryPlanProspectContainer::fifoProcess($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -71,16 +71,5 @@ class ProspectContainerController extends Controller
         }
     }
 
-    public static function fifo(Request $request)
-    {
-        try {
 
-            return ResponseInterface::responseData(
-                QueryRegulerDeliveryPlanProspectContainer::fifoProcess($request)
-            );
-
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
 }
