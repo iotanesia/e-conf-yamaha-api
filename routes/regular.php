@@ -87,9 +87,11 @@ Route::prefix('v1/regular')
         Route::group(['prefix' => 'shipping-instruction'],function (){
             Route::get('/',[DeliveryPlanController::class,'shippingInstruction']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
+            Route::get('/list-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionListDraft']);
             Route::post('/',[DeliveryPlanController::class,'shippingInstructionStore']);
             Route::post('/update-status',[DeliveryPlanController::class,'shippingInstructionUpdate']);
             Route::post('/download-dok/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDoc']);
+            Route::post('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
         });
 
         Route::group(['prefix' => 'booking'],function(){

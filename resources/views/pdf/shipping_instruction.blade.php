@@ -97,18 +97,80 @@
                 </td>
                 <td><u>Notify Party:</u> <br> {{$data->notify_part}}</td>
             </tr>
+        </table>
+        <br>
+        <table>
             <tr>
-                <td>SHIPMENT INFORMATION</td>
-                <td></td>
+                <td class="no-bo"><b><i><u>SHIPMENT INFORMATION</u></i></b></td>
+                <td class="no-bo"></td>
             </tr>
-            <tr>
-                <td>BL Information</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>CASE MARKS</td>
-                <td></td>
-            </tr>
+            <table>
+                <tr>
+                    <td width="80" class="no-bo">Stuffing Date </td>
+                    <td class="no-bo" colspan="2"> : {{$data->etd_wh}}</td>
+                </tr>
+                <tr>
+                    <td class="no-bo">Shipped By </td>
+                    <td class="no-bo" colspan="2"> : {{$data->shipped_by}}</td>
+                </tr>
+                <tr>
+                    <td class="no-bo">CONTAINER </td>
+                    <td class="no-bo"> : {{$data->container}}</td>
+                    <td width="80" class="no-bo">DO No</td>
+                    <td class="no-bo"> : {{$data->do_no}}</td>
+                </tr>
+                </br>
+                <tr>
+                    <td class="no-bo">Port of Loading </td>
+                    <td class="no-bo"> : {{$data->pol}}</td>
+                    <td class="no-bo">Feeder Vessel</td>
+                    <td class="no-bo"> : {{$data->feeder_vessel}}</td>
+                </tr>
+                <tr>
+                    <td class="no-bo">Via </td>
+                    <td class="no-bo"> : {{$data->via}}</td>
+                    <td class="no-bo">Connecting Vessel</td>
+                    <td class="no-bo"> : {{$data->connecting_vessel}}</td>
+                </tr>
+                <tr>
+                    <td class="no-bo">Port of Destination </td>
+                    <td class="no-bo"> : {{$data->pod}}</td>
+                    <td class="no-bo"></td>
+                    <td class="no-bo"></td>
+                </tr>
+                <tr>
+                    <td class="no-bo"></td>
+                    <td class="no-bo"></td>
+                    <td class="no-bo">ETD Jakarta</td>
+                    <td class="no-bo"> : {{$data->etd_jkt}}</td>
+                </tr>
+                <tr>
+                    <td class="no-bo">Freight Charge</td>
+                    <td class="no-bo"> : {{$data->freight_charge}}</td>
+                    <td class="no-bo"></td>
+                    <td class="no-bo"></td>
+                </tr>
+                <tr>
+                    <td class="no-bo">Incoterm</td>
+                    <td class="no-bo"> : {{$data->incoterm}}</td>
+                    <td class="no-bo">ETA Destination</td>
+                    <td class="no-bo"> : {{$data->eta_destination}}</td>
+                </tr>
+
+            </table>
+            </br>
+            <table>
+                <tr>
+                    <td colspan="2"><i><b><u>BL Information</u></b></i></td>
+                </tr>
+                <tr>
+                    <td colspan="2">Description of Goods :</td>
+                </tr>
+                <tr>
+                    <td>CASE MARKS</td>
+                    <td></td>
+                </tr>
+            </table>
         </table>
         <br>
         <p>Sincerelly Yours</p>

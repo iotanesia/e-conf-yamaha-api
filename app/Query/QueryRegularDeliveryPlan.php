@@ -586,6 +586,10 @@ class QueryRegularDeliveryPlan extends Model {
     {
         try {
             $data = RegularDeliveryPlanShippingInsructionCreation::find($id);
+            $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
+            $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
+            $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
+            $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
             $filename = 'shipping-instruction-'.$id.'.pdf';
             $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
             Pdf::loadView('pdf.shipping_instruction',[
@@ -597,5 +601,37 @@ class QueryRegularDeliveryPlan extends Model {
           } catch (\Throwable $th) {
               return Helper::setErrorResponse($th);
           }
+    }
+
+    public static function downloadDocDraft($params,$id)
+    {
+        try {
+            $data = RegularDeliveryPlanShippingInsructionCreation::find($id);
+            $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
+            $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
+            $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
+            $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
+            $filename = 'shipping-instruction-draft'.$id.'.pdf';
+            $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
+            Pdf::loadView('pdf.shipping_instruction',[
+              'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
+    }
+
+    public static function shippingDraftDok($params,$id)
+    {
+        $data = RegularDeliveryPlanShippingInsructionCreationDraft::where('id_regular_delivery_plan_shipping_instruction_creation',$id)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
     }
 }
