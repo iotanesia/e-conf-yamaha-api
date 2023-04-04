@@ -577,7 +577,7 @@ class QueryRegularDeliveryPlan extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
-            'items' => $data->first(),
+            'items' => [$data->first()],
             'last_page' => $data->lastPage()
         ];
     }
