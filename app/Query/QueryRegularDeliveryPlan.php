@@ -537,10 +537,12 @@ class QueryRegularDeliveryPlan extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            $update = RegularDeliveryPlanShippingInsructionCreation::find($request->id);
+            $update = RegularDeliveryPlanShippingInsructionCreation::find($request->id_shipping_instruction_creation);
             if(!$update) throw new \Exception("Data not found", 400);
             $update->status = Constant::FINISH;
             $update->save();
+            $prospectContainer = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction_creation',$request->id_shipping_instruction_creation)->get()->pluck('id');
+            RegularDeliveryPlan::whereIn('id_prospect_container_creation',$prospectContainer)->update(['status_bml'=>1]);
             if($is_transaction) DB::commit();
             return ['items'=>$update];
             Cache::flush([self::cast]); //delete cache
@@ -645,7 +647,16 @@ class QueryRegularDeliveryPlan extends Model {
     {
         $data = RegularDeliveryPlanShippingInsructionCreationDraft::where('id_regular_delivery_plan_shipping_instruction_creation',$id)->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
+    }
 
+    public static function bml($params)
+    {
+        $data = Model::where('status_bml',1)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->items(),
             'last_page' => $data->lastPage()

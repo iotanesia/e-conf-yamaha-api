@@ -100,6 +100,10 @@ Route::prefix('v1/regular')
             Route::post('/generate-no-booking',[DeliveryPlanController::class,'generateNobooking']);
             Route::post('/save-booking',[DeliveryPlanController::class,'savebooking']);
         });
+        
+        Route::group(['prefix' => 'bml'],function(){
+            Route::get('/',[DeliveryPlanController::class,'getBml']);
+        });
 
         Route::get('/{id}',[DeliveryPlanController::class,'show']);
       });
