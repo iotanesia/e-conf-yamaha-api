@@ -20,6 +20,7 @@ use App\Models\RegularProspectContainer;
 use App\Models\RegularProspectContainerCreation;
 use App\Models\RegularProspectContainerDetail;
 use App\Models\RegularProspectContainerDetailBox;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -37,8 +38,10 @@ class QueryRegularDeliveryPlan extends Model {
             $query = self::select(
                 'id_regular_order_entry'
             )->where(function ($query) use ($params){
-               if($params->search)
-                    $query->where('code_consignee', 'like', "'%$params->search%'")
+
+
+
+               if($params->search) $query->where('code_consignee', 'like', "'%$params->search%'")
                             ->orWhere('model', 'like', "'%$params->search%'")
                             ->orWhere('item_no', 'like', "'%$params->search%'")
                             ->orWhere('disburse', 'like', "'%$params->search%'")
@@ -48,9 +51,14 @@ class QueryRegularDeliveryPlan extends Model {
                             ->orWhere('order_no', 'like', "'%$params->search%'")
                             ->orWhere('cust_item_no', 'like', "'%$params->search%'");
 
+
+
             })
             ->whereHas('refRegularOrderEntry',function ($query) use ($params){
-                if($params->datasource) $query->where('datasource',$params->datasource);
+                $category = $params->category ?? null;
+                if($category) {
+                    $query->where($category, 'ilike', $params->kueri);
+                }
             });
 
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -108,6 +116,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             });
 
+
             if($params->withTrashed == 'true')
                 $query->withTrashed();
 
@@ -142,6 +151,15 @@ class QueryRegularDeliveryPlan extends Model {
     public static function detail($params,$id_regular_order_entry)
     {
         $data = self::where('id_regular_order_entry',$id_regular_order_entry)
+        ->where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            if($category) {
+                $query->where($category, 'ilike', $params->kueri);
+            }
+
+            $filterdate = Helper::filterDate($params);
+            if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
+        })
         ->where('is_inquiry',0)
         ->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
@@ -314,7 +332,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
                 'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
                 'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
-                'qty' => $qty,
+                'qty_pcs_box' => $qty,
                 'namebox' => $no. " ".$qty. " pcs" ,
             ];
         });
@@ -435,7 +453,7 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function shippingDetail($params,$id)
     {
-        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation'
+        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port'
         ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS count')
         ,DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging")
         ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
@@ -456,7 +474,7 @@ class QueryRegularDeliveryPlan extends Model {
         ->join('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
         ->join('mst_container as f','regular_delivery_plan_prospect_container_creation.id_container','f.id')
         ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation','g.id')
-        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation')
+        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port')
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
@@ -515,7 +533,7 @@ class QueryRegularDeliveryPlan extends Model {
         }
     }
 
-    public static function shippingUpdate($request,$is_transaction = true) 
+    public static function shippingUpdate($request,$is_transaction = true)
     {
         if($is_transaction) DB::beginTransaction();
         try {
@@ -527,7 +545,7 @@ class QueryRegularDeliveryPlan extends Model {
             return ['items'=>$update];
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
-            if($is_transaction) DB::rollBack(); 
+            if($is_transaction) DB::rollBack();
             throw $th;
         }
     }
@@ -569,10 +587,63 @@ class QueryRegularDeliveryPlan extends Model {
             throw $th;
         }
     }
-    
+
     public static function detailById($params)
     {
         $data = RegularProspectContainerCreation::whereIn('id_prospect_container',$params->id)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+
+        return [
+            'items' => [$data->first()],
+            'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function downloadDoc($params,$id)
+    {
+        try {
+            $data = RegularDeliveryPlanShippingInsructionCreation::find($id);
+            $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
+            $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
+            $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
+            $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
+            $filename = 'shipping-instruction-'.$id.'.pdf';
+            $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
+            Pdf::loadView('pdf.shipping_instruction',[
+              'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
+    }
+
+    public static function downloadDocDraft($params,$id)
+    {
+        try {
+            $data = RegularDeliveryPlanShippingInsructionCreation::find($id);
+            $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
+            $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
+            $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
+            $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
+            $filename = 'shipping-instruction-draft'.$id.'.pdf';
+            $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
+            Pdf::loadView('pdf.shipping_instruction',[
+              'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
+    }
+
+    public static function shippingDraftDok($params,$id)
+    {
+        $data = RegularDeliveryPlanShippingInsructionCreationDraft::where('id_regular_delivery_plan_shipping_instruction_creation',$id)->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [

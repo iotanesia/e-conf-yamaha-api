@@ -79,14 +79,18 @@ Route::prefix('v1/regular')
         Route::group(['prefix' => 'prospect-container'],function (){
             Route::post('/creation',[ProspectContainerController::class,'creation']);
             Route::put('/edit-mot',[DeliveryPlanController::class,'editMot']);
+            Route::post('/fifo',[ProspectContainerController::class,'fifo']);
             Route::get('/fifo/{id}',[ProspectContainerController::class,'show']);
         });
 
         Route::group(['prefix' => 'shipping-instruction'],function (){
             Route::get('/',[DeliveryPlanController::class,'shippingInstruction']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
+            Route::get('/list-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionListDraft']);
             Route::post('/',[DeliveryPlanController::class,'shippingInstructionStore']);
             Route::post('/update-status',[DeliveryPlanController::class,'shippingInstructionUpdate']);
+            Route::post('/download-dok/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDoc']);
+            Route::post('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
         });
 
         Route::group(['prefix' => 'booking'],function(){
@@ -107,7 +111,6 @@ Route::prefix('v1/regular')
     Route::group(['prefix' => 'prospect-container'],function (){
         Route::get('/',[ProspectContainerController::class,'index']);
         Route::post('/booking',[ProspectContainerController::class,'booking']);
-        Route::post('/fifo',[ProspectContainerController::class,'fifo']);
     });
 
 });
