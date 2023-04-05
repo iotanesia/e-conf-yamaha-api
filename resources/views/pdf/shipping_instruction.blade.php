@@ -161,11 +161,52 @@
             </br>
             <table>
                 <tr>
-                    <td colspan="2"><i><b><u>BL Information</u></b></i></td>
+                    <td class="no-bo" colspan="4"><i><b><u>BL Information</u></b></i></td>
                 </tr>
                 <tr>
-                    <td colspan="2">Description of Goods :</td>
+                    <td class="no-bo" colspan="4">Description of Goods :</td>
                 </tr>
+                <tr>
+                    <td class="no-bo" colspan="2">CARTON BOXES</td>
+                    <td class="no-bo" colspan="2">OF PRODUCTION PARTS FOR YAMAHA OUTBOARD MOTORS</td>
+                </tr>
+                <tr>
+                    <td class="no-bo">Carton Box Qty</td>
+                    <td class="no-bo"> : {{$data->carton_box_qty}}</td>
+                    <td class="no-bo" width="80">Carton Boxes</td>
+                    <td class="no-bo"></td>
+                    <td class="no-bo"></td>
+                </tr>
+                <tr>
+                    <td class="no-bo">Net Weight</td>
+                    <td class="no-bo"> : {{$data->net_weight}}</td>
+                    <td class="no-bo">Kgs</td>
+                    <td class="no-bo">PEB No.</td>
+                    <td class="no-bo"> : {{$data->peb}}</td>
+                </tr>
+                <tr>
+                    <td class="no-bo">Gross Weight </td>
+                    <td class="no-bo"> : {{$data->gross_weight}}</td>
+                    <td class="no-bo">Kgs</td>
+                    <td class="no-bo">NOPEN</td>
+                    <td class="no-bo"> : {{$data->no_open}}</td>
+                </tr>
+                <tr>
+                    <td class="no-bo">Measurement </td>
+                    <td class="no-bo"> : {{$data->measurement}}</td>
+                    <td class="no-bo">Kgs</td>
+                    <td class="no-bo">Container//Seal No.//Qty//GW//M3</td>
+                    <td class="no-bo"> : {{$data->container}}</td>
+                </tr>
+                <tr>
+                    <td class="no-bo">B/L </td>
+                    <td class="no-bo" colspan="2"> : {{$data->bl}}</td>
+                    <td class="no-bo">HS CODE</td>
+                    <td class="no-bo"> : {{$data->hs_code}}</td>
+                </tr>
+            </table>
+            </br>
+            <table>
                 <tr>
                     <td>CASE MARKS</td>
                     <td></td>
