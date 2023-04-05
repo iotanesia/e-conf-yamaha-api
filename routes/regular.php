@@ -45,8 +45,6 @@ Route::prefix('v1/regular')
         Route::post('/revision',[OrderEntryUploadController::class,'sendRevision']);
         Route::post('/rejected',[OrderEntryUploadController::class,'sendRejected']);
         Route::get('/detail',[OrderEntryUploadDetailController::class,'index']);
-
-
     });
 
      // order-entry-upload
