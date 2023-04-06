@@ -20,6 +20,7 @@ use App\Models\RegularProspectContainer;
 use App\Models\RegularProspectContainerCreation;
 use App\Models\RegularProspectContainerDetail;
 use App\Models\RegularProspectContainerDetailBox;
+use App\Models\RegularStokConfirmation;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -544,9 +545,8 @@ class QueryRegularDeliveryPlan extends Model {
             $prospectContainer = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction_creation',$request->id_shipping_instruction_creation)->get()->pluck('id');
             RegularDeliveryPlan::whereIn('id_prospect_container_creation',$prospectContainer)->update(['status_bml'=>1]);
             $regStok = RegularDeliveryPlan::whereIn('id_prospect_container_creation',$prospectContainer)->get();
-            dd($regStok);
             $regStok->map(function($item){
-                dd($item);
+                RegularStokConfirmation::create(self::paramStok($item));
             });
             if($is_transaction) DB::commit();
             return ['items'=>$update];
@@ -556,6 +556,20 @@ class QueryRegularDeliveryPlan extends Model {
             throw $th;
         }
     }
+
+    public static function paramStok($params) { 
+        $sum = 0;
+        foreach ($params->manyDeliveryPlanBox as $value) {
+            $sum += $value->refBox->qty;
+        }
+        return [
+            "id_regular_delivery_plan" => $params->id,
+            "count_box" => $sum,
+            "in_dc" => Constant::IS_NOL,
+            "in_wh" => Constant::IS_NOL,
+            "status" => Constant::STS_STOK,
+        ];
+    } 
 
     public static function genNoBook($request,$is_transaction = true) {
         Helper::requireParams(['id']);
@@ -601,21 +615,7 @@ class QueryRegularDeliveryPlan extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
-            'items' => [$data->map(function ($item){
-                $item->cust_name = $item->refMstConsignee->nick_name;
-                $item->type_container = $item->refMstContainer->container_type;
-                $item->net_weight = $item->refMstContainer->net_weight;
-                $item->gross_weight = $item->refMstContainer->gross_weight;
-                $item->lsp = $item->refMstLsp->name;
-
-                unset(
-                    $item->refMstConsignee,
-                    $item->refMstContainer,
-                    $item->refMstLsp,
-                );
-
-                return $item;
-            })[0]],
+            'items' => [$data->first()],
             'last_page' => $data->lastPage()
         ];
     }

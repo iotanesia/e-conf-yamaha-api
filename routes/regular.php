@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Main\OrderEntryDcManagerController;
 use App\Http\Controllers\Api\Main\OrderEntryPcController;
 use App\Http\Controllers\Api\Main\ProspectContainerController;
 use App\Http\Controllers\Api\Main\PlanController;
+use App\Http\Controllers\Api\Main\StockConfirmationController;
 
 //with middleware
 Route::prefix('v1/regular')
@@ -117,4 +118,13 @@ Route::prefix('v1/regular')
         Route::post('/booking',[ProspectContainerController::class,'booking']);
     });
 
+    // stock confirmation
+    Route::group(['prefix'=>'stock-confirmation'],function(){
+        Route::group(['prefix'=>'instock'],function(){
+            Route::post('/delete/{id}',[StockConfirmationController::class,'deleteInStock']);
+        });
+        Route::group(['prefix'=>'outstock'],function(){
+            Route::post('/delete/{id}',[StockConfirmationController::class,'deleteOutStock']);
+        });
+    });
 });
