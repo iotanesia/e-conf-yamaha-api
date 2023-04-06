@@ -543,6 +543,11 @@ class QueryRegularDeliveryPlan extends Model {
             $update->save();
             $prospectContainer = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction_creation',$request->id_shipping_instruction_creation)->get()->pluck('id');
             RegularDeliveryPlan::whereIn('id_prospect_container_creation',$prospectContainer)->update(['status_bml'=>1]);
+            $regStok = RegularDeliveryPlan::whereIn('id_prospect_container_creation',$prospectContainer)->get();
+            dd($regStok);
+            $regStok->map(function($item){
+                dd($item);
+            });
             if($is_transaction) DB::commit();
             return ['items'=>$update];
             Cache::flush([self::cast]); //delete cache
