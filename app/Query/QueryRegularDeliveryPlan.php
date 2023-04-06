@@ -601,7 +601,21 @@ class QueryRegularDeliveryPlan extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
-            'items' => [$data->first()],
+            'items' => [$data->map(function ($item){
+                $item->cust_name = $item->refMstConsignee->nick_name;
+                $item->type_container = $item->refMstContainer->container_type;
+                $item->net_weight = $item->refMstContainer->net_weight;
+                $item->gross_weight = $item->refMstContainer->gross_weight;
+                $item->lsp = $item->refMstLsp->name;
+
+                unset(
+                    $item->refMstConsignee,
+                    $item->refMstContainer,
+                    $item->refMstLsp,
+                );
+
+                return $item;
+            })[0]],
             'last_page' => $data->lastPage()
         ];
     }

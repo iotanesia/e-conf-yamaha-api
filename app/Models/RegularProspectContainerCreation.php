@@ -58,4 +58,9 @@ class RegularProspectContainerCreation extends Model
     {
         return $this->belongsTo(MstContainer::class,'id_container','id');
     }
+
+    public function refMstConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
 }
