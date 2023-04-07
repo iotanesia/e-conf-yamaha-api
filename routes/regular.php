@@ -102,6 +102,7 @@ Route::prefix('v1/regular')
         
         Route::group(['prefix' => 'bml'],function(){
             Route::get('/',[DeliveryPlanController::class,'getBml']);
+            Route::get('/{id}',[DeliveryPlanController::class,'bmlDetail']);
         });
 
         Route::get('/{id}',[DeliveryPlanController::class,'show']);
@@ -121,10 +122,17 @@ Route::prefix('v1/regular')
     // stock confirmation
     Route::group(['prefix'=>'stock-confirmation'],function(){
         Route::group(['prefix'=>'instock'],function(){
+            Route::get('/',[StockConfirmationController::class,'getInStock']);
             Route::post('/delete/{id}',[StockConfirmationController::class,'deleteInStock']);
         });
         Route::group(['prefix'=>'outstock'],function(){
+            Route::get('/',[StockConfirmationController::class,'getOutStock']);
             Route::post('/delete/{id}',[StockConfirmationController::class,'deleteOutStock']);
         });
+    });
+
+      // tracking
+      Route::group(['prefix' => 'tracking'],function (){
+        Route::get('/',[StockConfirmationController::class,'tracking']);
     });
 });

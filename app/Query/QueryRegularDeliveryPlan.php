@@ -681,4 +681,27 @@ class QueryRegularDeliveryPlan extends Model {
             'last_page' => $data->lastPage()
         ];
     }
+
+    public static function bmlDetail($params)
+    {
+        $data = Model::where('id', $params->id)->where('status_bml',1)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
+                unset($item->manyDeliveryPlanBox);
+                foreach($item->regular_delivery_plan_box as $box){
+                    $box->box = $box->refBox;
+                    unset($box->refBox);
+                }
+                return $item;
+            }),
+            'attributes' => [
+                'total' => $data->total(),
+                'current_page' => $data->currentPage(),
+                'from' => $data->currentPage(),
+                'per_page' => (int) $data->perPage(),
+            ]
+        ];
+    }
 }
