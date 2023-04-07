@@ -52,9 +52,32 @@ class QueryStockConfirmationHistory extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
-                $item->regular_delivery_plan = $item->refRegularDeliveryPlan;
+                $item->id_regular_delivery_plan = $item->refRegularDeliveryPlan->id;
+                $item->id_regular_order_entry = $item->refRegularDeliveryPlan->id_regular_order_entry;
+                $item->code_consignee = $item->refRegularDeliveryPlan->code_consignee;
+                $item->model = $item->refRegularDeliveryPlan->model;
+                $item->item_no = $item->refRegularDeliveryPlan->item_no;
+                $item->disburse = $item->refRegularDeliveryPlan->disburse;
+                $item->delivery = $item->refRegularDeliveryPlan->delivery;
+                $item->qty = $item->refRegularDeliveryPlan->qty;
+                $item->status_regular_delivery_plan = $item->refRegularDeliveryPlan->status_regular_delivery_plan;
+                $item->order_no = $item->refRegularDeliveryPlan->order_no;
+                $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
+                $item->created_at = $item->refRegularDeliveryPlan->created_at;
+                $item->created_by = $item->refRegularDeliveryPlan->created_by;
+                $item->updated_at = $item->refRegularDeliveryPlan->updated_at;
+                $item->updated_by = $item->refRegularDeliveryPlan->updated_by;
+                $item->deleted_at = $item->refRegularDeliveryPlan->deleted_at;
+                $item->uuid = $item->refRegularDeliveryPlan->uuid;
+                $item->etd_ypmi = $item->refRegularDeliveryPlan->etd_ypmi;
+                $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh;
+                $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt;
+                $item->is_inquiry = $item->refRegularDeliveryPlan->is_inquiry;
+                $item->id_prospect_container = $item->refRegularDeliveryPlan->id_prospect_container;
+                $item->id_prospect_container_creation = $item->refRegularDeliveryPlan->id_prospect_container_creation;
+                $item->status_bml = $item->refRegularDeliveryPlan->status_bml;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
-                $item->status_instock = 'default';
+                $item->status_desc = 'Instock';
                 unset(
                     $item->id,
                     $item->id_regular_delivery_plan,
@@ -65,8 +88,7 @@ class QueryStockConfirmationHistory extends Model {
                     $item->updated_at,
                     $item->updated_by,
                     $item->deleted_at,
-                    $item->refRegularDeliveryPlan,
-                    $item->regular_delivery_plan->refConsignee
+                    $item->refRegularDeliveryPlan
                 );
 
                 return $item;
@@ -81,9 +103,32 @@ class QueryStockConfirmationHistory extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
-                $item->regular_delivery_plan = $item->refRegularDeliveryPlan;
+                $item->id_regular_delivery_plan = $item->refRegularDeliveryPlan->id;
+                $item->id_regular_order_entry = $item->refRegularDeliveryPlan->id_regular_order_entry;
+                $item->code_consignee = $item->refRegularDeliveryPlan->code_consignee;
+                $item->model = $item->refRegularDeliveryPlan->model;
+                $item->item_no = $item->refRegularDeliveryPlan->item_no;
+                $item->disburse = $item->refRegularDeliveryPlan->disburse;
+                $item->delivery = $item->refRegularDeliveryPlan->delivery;
+                $item->qty = $item->refRegularDeliveryPlan->qty;
+                $item->status_regular_delivery_plan = $item->refRegularDeliveryPlan->status_regular_delivery_plan;
+                $item->order_no = $item->refRegularDeliveryPlan->order_no;
+                $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
+                $item->created_at = $item->refRegularDeliveryPlan->created_at;
+                $item->created_by = $item->refRegularDeliveryPlan->created_by;
+                $item->updated_at = $item->refRegularDeliveryPlan->updated_at;
+                $item->updated_by = $item->refRegularDeliveryPlan->updated_by;
+                $item->deleted_at = $item->refRegularDeliveryPlan->deleted_at;
+                $item->uuid = $item->refRegularDeliveryPlan->uuid;
+                $item->etd_ypmi = $item->refRegularDeliveryPlan->etd_ypmi;
+                $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh;
+                $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt;
+                $item->is_inquiry = $item->refRegularDeliveryPlan->is_inquiry;
+                $item->id_prospect_container = $item->refRegularDeliveryPlan->id_prospect_container;
+                $item->id_prospect_container_creation = $item->refRegularDeliveryPlan->id_prospect_container_creation;
+                $item->status_bml = $item->refRegularDeliveryPlan->status_bml;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
-                $item->status_instock = 'default';
+                $item->status_desc = 'Outstock';
                 unset(
                     $item->id,
                     $item->id_regular_delivery_plan,
@@ -95,7 +140,6 @@ class QueryStockConfirmationHistory extends Model {
                     $item->updated_by,
                     $item->deleted_at,
                     $item->refRegularDeliveryPlan,
-                    $item->regular_delivery_plan->refConsignee
                 );
 
                 return $item;
