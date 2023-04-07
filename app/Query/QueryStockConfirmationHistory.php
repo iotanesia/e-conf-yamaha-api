@@ -52,6 +52,7 @@ class QueryStockConfirmationHistory extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item){
                 $item->regular_delivery_plan = $item->refRegularDeliveryPlan;
+                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->status_instock = 'default';
                 unset(
                     $item->id,
@@ -63,7 +64,8 @@ class QueryStockConfirmationHistory extends Model {
                     $item->updated_at,
                     $item->updated_by,
                     $item->deleted_at,
-                    $item->refRegularDeliveryPlan
+                    $item->refRegularDeliveryPlan,
+                    $item->regular_delivery_plan->refConsignee
                 );
 
                 return $item;
@@ -79,6 +81,7 @@ class QueryStockConfirmationHistory extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item){
                 $item->regular_delivery_plan = $item->refRegularDeliveryPlan;
+                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->status_instock = 'default';
                 unset(
                     $item->id,
@@ -90,7 +93,8 @@ class QueryStockConfirmationHistory extends Model {
                     $item->updated_at,
                     $item->updated_by,
                     $item->deleted_at,
-                    $item->refRegularDeliveryPlan
+                    $item->refRegularDeliveryPlan,
+                    $item->regular_delivery_plan->refConsignee
                 );
 
                 return $item;
