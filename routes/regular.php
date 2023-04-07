@@ -120,6 +120,11 @@ Route::prefix('v1/regular')
         Route::post('/booking',[ProspectContainerController::class,'booking']);
     });
 
+    // tracking ss
+    Route::group(['prefix' => 'tracking'],function (){
+        Route::get('/',[StockConfirmationController::class,'tracking']);
+    });
+
     // stock confirmation
     Route::group(['prefix'=>'stock-confirmation'],function(){
         Route::group(['prefix'=>'instock'],function(){
@@ -136,8 +141,5 @@ Route::prefix('v1/regular')
         });
     });
 
-      // tracking ss
-      Route::group(['prefix' => 'tracking'],function (){
-        Route::get('/',[StockConfirmationController::class,'tracking']);
-    });
+
 });
