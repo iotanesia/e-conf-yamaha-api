@@ -557,7 +557,7 @@ class QueryRegularDeliveryPlan extends Model {
         }
     }
 
-    public static function paramStok($params) { 
+    public static function paramStok($params) {
         $sum = 0;
         foreach ($params->manyDeliveryPlanBox as $value) {
             $sum += $value->refBox->qty;
@@ -569,7 +569,7 @@ class QueryRegularDeliveryPlan extends Model {
             "in_wh" => Constant::IS_NOL,
             "status" => Constant::STS_STOK,
         ];
-    } 
+    }
 
     public static function genNoBook($request,$is_transaction = true) {
         Helper::requireParams(['id']);

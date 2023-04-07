@@ -9,6 +9,7 @@ use App\Query\QueryStockConfirmationHistory;
 
 class StockConfirmationController extends Controller
 {
+
     public function getInStock(Request $request)
     {
         try {
@@ -20,11 +21,45 @@ class StockConfirmationController extends Controller
         }
     }
 
+    public function instockInquiry(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryStockConfirmationHistory::instockInquiryProcess($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+
     public function getOutStock(Request $request)
     {
         try {
             return ResponseInterface::responseData(
                 QueryStockConfirmationHistory::getOutStock($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function outstockInquiry(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryStockConfirmationHistory::outstockInquiryProcess($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function instockInquiryScan(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryStockConfirmationHistory::instockScanProcess($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
