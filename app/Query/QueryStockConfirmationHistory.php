@@ -12,7 +12,8 @@ use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
 use Illuminate\Support\Facades\DB;
-
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Str;
 class QueryStockConfirmationHistory extends Model {
 
     const cast = 'regular-stock-confirmation-history';
@@ -123,21 +124,62 @@ class QueryStockConfirmationHistory extends Model {
         ];
     }
 
-    public static function instockScanProcess($params)
+    public static function instockScanProcess($params, $is_transaction =  true)
     {
+        if($is_transaction) DB::beginTransaction();
         try {
 
-
-            $qr_code = $params->file('qr_code')->getRealPath();
-
-            // $content = file_get_contents($qr_code);
-
+            Helper::requireParams([
+                'qr_code'
+            ]);
 
 
+            $key = explode('|',$params->qr_code);
 
-            // dd($qr_code);
+            $id = str_replace(' ','',$key[0]);
 
-            // dd('zzz');
+            $delivery_plan_box = RegularDeliveryPlanBox::find($id);
+            if(!$delivery_plan_box) throw new \Exception("data not found", 400);
+            $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+            if(!$stock_confirmation) throw new \Exception("stock has not arrived", 400);
+            $data = RegularDeliveryPlanBox::where('id',$id)->paginate($params->limit ?? null);
+            $data->transform(function ($item)
+            {
+                $no = $item->refBox->no_box ?? null;
+                $qty = $item->refBox->qty ?? null;
+
+                $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
+
+                $qr_name = (string) Str::uuid().'.png';
+                $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
+                QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
+
+                $item->qrcode = $qr_name;
+                $item->save();
+
+                return [
+                    'id' => $item->id,
+                    'item_name' => $item->refRegularDeliveryPlan->refPart->description ?? null,
+                    'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
+                    'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
+                    'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
+                    'qty_pcs_box' => $item->qty_pcs_box,
+                    'namebox' => $no. " ".$qty. " pcs" ,
+                    'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
+                    'lot_packing' => $item->lot_packing,
+                    'packing_date' => $item->packing_date,
+                    'no_box' => $item->refBox->no_box ?? null,
+                ];
+            });
+
+
+
+            return [
+                'items' => $data[0],
+                'last_page' => null
+            ];
+
+
 
         } catch (\Throwable $th) {
             throw $th;
@@ -217,5 +259,68 @@ class QueryStockConfirmationHistory extends Model {
             throw $th;
         }
 
+    }
+
+
+    public static function outstockScanProcess($params, $is_transaction =  true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'qr_code'
+            ]);
+
+
+            $key = explode('|',$params->qr_code);
+
+            $id = str_replace(' ','',$key[0]);
+
+            $delivery_plan_box = RegularDeliveryPlanBox::find($id);
+            if(!$delivery_plan_box) throw new \Exception("data not found", 400);
+            $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+            if(!$stock_confirmation) throw new \Exception("stock has not arrived", 400);
+            $data = RegularDeliveryPlanBox::where('id',$id)->paginate($params->limit ?? null);
+            $data->transform(function ($item)
+            {
+                $no = $item->refBox->no_box ?? null;
+                $qty = $item->refBox->qty ?? null;
+
+                $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
+
+                $qr_name = (string) Str::uuid().'.png';
+                $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
+                QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
+
+                $item->qrcode = $qr_name;
+                $item->save();
+
+                return [
+                    'id' => $item->id,
+                    'item_name' => $item->refRegularDeliveryPlan->refPart->description ?? null,
+                    'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
+                    'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
+                    'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
+                    'qty_pcs_box' => $item->qty_pcs_box,
+                    'namebox' => $no. " ".$qty. " pcs" ,
+                    'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
+                    'lot_packing' => $item->lot_packing,
+                    'packing_date' => $item->packing_date,
+                    'no_box' => $item->refBox->no_box ?? null,
+                ];
+            });
+
+
+
+            return [
+                'items' => $data[0],
+                'last_page' => null
+            ];
+
+
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

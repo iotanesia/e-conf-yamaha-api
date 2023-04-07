@@ -66,6 +66,17 @@ class StockConfirmationController extends Controller
         }
     }
 
+    public function outstockInquiryScan(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryStockConfirmationHistory::outstockScanProcess($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function deleteInStock(Request $request,$id)
     {
         try {
