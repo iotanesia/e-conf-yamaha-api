@@ -59,10 +59,10 @@ Route::prefix('v1/regular')
      // order-entry-uplaod-detail
      Route::group(['prefix' => 'order-entry-upload-detail'],function (){
          Route::get('/',[OrderEntryUploadDetailController::class,'index']);
-         Route::get('/{id}',[OrderEntryUploadDetailController::class,'show']);
          Route::put('/',[OrderEntryUploadDetailController::class,'update']);
          Route::post('/edit-pivot',[OrderEntryUploadDetailController::class,'editPivot']);
          Route::get('/box-pivot',[OrderEntryUploadDetailController::class,'editPivot']);
+         Route::get('/{id}',[OrderEntryUploadDetailController::class,'show']);
       });
 
       // delivery-plan
@@ -86,12 +86,13 @@ Route::prefix('v1/regular')
 
         Route::group(['prefix' => 'shipping-instruction'],function (){
             Route::get('/',[DeliveryPlanController::class,'shippingInstruction']);
-            Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
-            Route::get('/list-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionListDraft']);
             Route::post('/',[DeliveryPlanController::class,'shippingInstructionStore']);
             Route::post('/update-status',[DeliveryPlanController::class,'shippingInstructionUpdate']);
+            Route::get('/list-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionListDraft']);
             Route::post('/download-dok/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDoc']);
             Route::post('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
+            Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
+
         });
 
         Route::group(['prefix' => 'booking'],function(){
@@ -119,10 +120,14 @@ Route::prefix('v1/regular')
         Route::post('/booking',[ProspectContainerController::class,'booking']);
     });
 
+    // tracking ss
+    Route::group(['prefix' => 'tracking'],function (){
+        Route::get('/',[StockConfirmationController::class,'tracking']);
+    });
+
     // stock confirmation
     Route::group(['prefix'=>'stock-confirmation'],function(){
         Route::group(['prefix'=>'instock'],function(){
-
             Route::get('/',[StockConfirmationController::class,'getInStock']);
             Route::post('/inquiry',[StockConfirmationController::class,'instockInquiry']);
             Route::post('/inquiry-scan',[StockConfirmationController::class,'instockInquiryScan']);
@@ -136,8 +141,5 @@ Route::prefix('v1/regular')
         });
     });
 
-      // tracking
-      Route::group(['prefix' => 'tracking'],function (){
-        Route::get('/',[StockConfirmationController::class,'tracking']);
-    });
+
 });
