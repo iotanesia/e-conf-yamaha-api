@@ -86,12 +86,13 @@ Route::prefix('v1/regular')
 
         Route::group(['prefix' => 'shipping-instruction'],function (){
             Route::get('/',[DeliveryPlanController::class,'shippingInstruction']);
-            Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
-            Route::get('/list-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionListDraft']);
             Route::post('/',[DeliveryPlanController::class,'shippingInstructionStore']);
             Route::post('/update-status',[DeliveryPlanController::class,'shippingInstructionUpdate']);
+            Route::get('/list-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionListDraft']);
             Route::post('/download-dok/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDoc']);
             Route::post('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
+            Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
+
         });
 
         Route::group(['prefix' => 'booking'],function(){
@@ -122,7 +123,6 @@ Route::prefix('v1/regular')
     // stock confirmation
     Route::group(['prefix'=>'stock-confirmation'],function(){
         Route::group(['prefix'=>'instock'],function(){
-
             Route::get('/',[StockConfirmationController::class,'getInStock']);
             Route::post('/inquiry',[StockConfirmationController::class,'instockInquiry']);
             Route::post('/inquiry-scan',[StockConfirmationController::class,'instockInquiryScan']);
