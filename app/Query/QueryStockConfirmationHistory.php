@@ -102,8 +102,18 @@ class QueryStockConfirmationHistory extends Model {
     {
         $data = RegularStokConfirmation::paginate($request->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
+
         return [
-            'items' => $data->items(),
+            'items' => $data->getCollection()->transform(function($item){
+
+                if ($item->status == 1) $status = 'in process';
+                if ($item->status == 2 && $item->in_dc > 0 && $item->in_wh == 0) $status = 'in stock';
+                if ($item->status == 2 && $item->in_dc > 0 && $item->in_wh > 0) $status = 'out stock';
+                if ($item->status == 3) $status = 'finish production';
+
+                $item->status_tracking = $status;
+                return $item;
+            }),
             'last_page' => $data->lastPage()
         ];
     }
