@@ -99,7 +99,7 @@ Route::prefix('v1/regular')
             Route::post('/generate-no-booking',[DeliveryPlanController::class,'generateNobooking']);
             Route::post('/save-booking',[DeliveryPlanController::class,'savebooking']);
         });
-        
+
         Route::group(['prefix' => 'bml'],function(){
             Route::get('/',[DeliveryPlanController::class,'getBml']);
             Route::get('/{id}',[DeliveryPlanController::class,'bmlDetail']);
@@ -122,12 +122,22 @@ Route::prefix('v1/regular')
     // stock confirmation
     Route::group(['prefix'=>'stock-confirmation'],function(){
         Route::group(['prefix'=>'instock'],function(){
+<<<<<<< HEAD
             Route::get('/',[StockConfirmationController::class,'getInStock']);
             Route::post('/delete/{id}',[StockConfirmationController::class,'deleteInStock']);
         });
         Route::group(['prefix'=>'outstock'],function(){
             Route::get('/',[StockConfirmationController::class,'getOutStock']);
+=======
+            Route::post('/inquiry',[StockConfirmationController::class,'instockInquiry']);
+            Route::post('/inquiry-scan',[StockConfirmationController::class,'instockInquiryScan']);
+            Route::post('/delete/{id}',[StockConfirmationController::class,'deleteInStock']);
+        });
+        Route::group(['prefix'=>'outstock'],function(){
+            Route::post('/inquiry',[StockConfirmationController::class,'outstockInquiry']);
+>>>>>>> 8a84fb1 (fix : update)
             Route::post('/delete/{id}',[StockConfirmationController::class,'deleteOutStock']);
+
         });
     });
 

@@ -23,7 +23,7 @@ class QueryStockConfirmationHistory extends Model {
         try {
             Model::where('id_regular_delivery_plan',$id)->where('type',Constant::INSTOCK)->delete();
             RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_dc'=>Constant::IS_NOL]);
-            
+
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
@@ -36,13 +36,14 @@ class QueryStockConfirmationHistory extends Model {
         try {
             Model::where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->delete();
             RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_wh'=>Constant::IS_NOL]);
-            
+
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
         }
     }
+
 
     public static function getInStock($request)
     {
@@ -106,5 +107,101 @@ class QueryStockConfirmationHistory extends Model {
             'items' => $data->items(),
             'last_page' => $data->lastPage()
         ];
+    }
+
+    public static function instockScanProcess($params)
+    {
+        try {
+
+
+            $qr_code = $params->file('qr_code')->getRealPath();
+
+            // $content = file_get_contents($qr_code);
+
+
+
+
+            // dd($qr_code);
+
+            // dd('zzz');
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public static function instockInquiryProcess($params, $is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'id'
+            ]);
+
+            $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
+            if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
+            $qty = $delivery_plan_box->refBox->qty;
+            $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+            $status = $stock_confirmation->status;
+            $in_stock_dc = $stock_confirmation->in_dc;
+            $in_dc_total = $in_stock_dc + $qty;
+
+            $stock_confirmation->in_dc = $in_dc_total;
+            $stock_confirmation->status = $status == Constant::IS_ACTIVE ? 2 : 2;
+            $stock_confirmation->save();
+
+            self::create([
+                'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
+                'id_regular_delivery_plan_box' => $delivery_plan_box->id,
+                'id_stock_confirmation' => $stock_confirmation->id,
+                'id_box' => $delivery_plan_box->id_box,
+                'type' => 'INSTOCK',
+                'qty_pcs_perbox' => $qty,
+            ]);
+
+        if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function outstockInquiryProcess($params, $is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'id'
+            ]);
+
+            $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
+            if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
+            $qty = $delivery_plan_box->refBox->qty;
+            $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+            $status = $stock_confirmation->status;
+            $in_stock_dc = $stock_confirmation->in_dc;
+            $in_dc_total = $in_stock_dc + $qty;
+
+            $stock_confirmation->in_dc = $in_dc_total;
+            $stock_confirmation->status = $status == Constant::IS_ACTIVE ? 2 : 2;
+            $stock_confirmation->save();
+
+            self::create([
+                'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
+                'id_regular_delivery_plan_box' => $delivery_plan_box->id,
+                'id_stock_confirmation' => $stock_confirmation->id,
+                'id_box' => $delivery_plan_box->id_box,
+                'type' => 'OUTSTOCK',
+                'qty_pcs_perbox' => $qty,
+            ]);
+
+        if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+
     }
 }

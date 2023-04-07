@@ -72,4 +72,9 @@ class RegularDeliveryPlan extends Model
     {
         return $this->hasOne(RegularDeliveryPlanProspectContainer::class,'id','id_prosepect_container');
     }
+
+    public function refRegularStockConfirmation()
+    {
+        return $this->hasOne(RegularStokConfirmation::class,'id_regular_delivery_plan','id');
+    }
 }
