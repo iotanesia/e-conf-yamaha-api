@@ -136,7 +136,7 @@ Route::prefix('v1/regular')
         });
     });
 
-      // tracking
+      // tracking ss
       Route::group(['prefix' => 'tracking'],function (){
         Route::get('/',[StockConfirmationController::class,'tracking']);
     });
