@@ -59,10 +59,10 @@ Route::prefix('v1/regular')
      // order-entry-uplaod-detail
      Route::group(['prefix' => 'order-entry-upload-detail'],function (){
          Route::get('/',[OrderEntryUploadDetailController::class,'index']);
-         Route::get('/{id}',[OrderEntryUploadDetailController::class,'show']);
          Route::put('/',[OrderEntryUploadDetailController::class,'update']);
          Route::post('/edit-pivot',[OrderEntryUploadDetailController::class,'editPivot']);
          Route::get('/box-pivot',[OrderEntryUploadDetailController::class,'editPivot']);
+         Route::get('/{id}',[OrderEntryUploadDetailController::class,'show']);
       });
 
       // delivery-plan
