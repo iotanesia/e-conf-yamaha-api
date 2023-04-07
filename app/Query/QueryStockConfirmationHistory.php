@@ -78,9 +78,10 @@ class QueryStockConfirmationHistory extends Model {
                 $item->status_bml = $item->refRegularDeliveryPlan->status_bml;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->status_desc = 'Instock';
+                $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
+                
                 unset(
                     $item->id,
-                    $item->id_regular_delivery_plan,
                     $item->count_box,
                     $item->in_wh,
                     $item->created_at,
@@ -88,8 +89,14 @@ class QueryStockConfirmationHistory extends Model {
                     $item->updated_at,
                     $item->updated_by,
                     $item->deleted_at,
-                    $item->refRegularDeliveryPlan
+                    $item->refRegularDeliveryPlan,
+                    $item->manyDeliveryPlanBox
                 );
+
+                foreach($item->regular_delivery_plan_box as $box){
+                    $box->box = $box->refBox;
+                    unset($box->refBox);
+                }
 
                 return $item;
             }),
@@ -129,6 +136,8 @@ class QueryStockConfirmationHistory extends Model {
                 $item->status_bml = $item->refRegularDeliveryPlan->status_bml;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->status_desc = 'Outstock';
+                $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
+
                 unset(
                     $item->id,
                     $item->id_regular_delivery_plan,
@@ -140,7 +149,13 @@ class QueryStockConfirmationHistory extends Model {
                     $item->updated_by,
                     $item->deleted_at,
                     $item->refRegularDeliveryPlan,
+                    $item->manyDeliveryPlanBox
                 );
+
+                foreach($item->regular_delivery_plan_box as $box){
+                    $box->box = $box->refBox;
+                    unset($box->refBox);
+                }
 
                 return $item;
             }),

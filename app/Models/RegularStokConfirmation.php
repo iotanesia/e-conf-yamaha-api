@@ -27,4 +27,9 @@ class RegularStokConfirmation extends Model
     {
         return $this->belongsTo(RegularDeliveryPlan::class,'id_regular_delivery_plan','id');
     }
+
+    public function manyDeliveryPlanBox()
+    {
+        return $this->hasMany(RegularDeliveryPlanBox::class,'id_regular_delivery_plan','id_regular_delivery_plan')->orderBy('id','asc');
+    }
 }
