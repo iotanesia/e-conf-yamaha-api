@@ -22,7 +22,7 @@ class QueryStockConfirmationHistory extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             Model::where('id_regular_delivery_plan',$id)->where('type',Constant::INSTOCK)->delete();
-            RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_dc'=>Constant::IS_NOL]);
+            RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_dc'=>Constant::IS_NOL,'status'=>Constant::STS_STOK]);
             
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
@@ -35,7 +35,7 @@ class QueryStockConfirmationHistory extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             Model::where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->delete();
-            RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_wh'=>Constant::IS_NOL]);
+            RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_wh'=>Constant::IS_NOL,'status'=>Constant::STS_STOK]);
             
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
