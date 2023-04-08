@@ -612,11 +612,15 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function detailById($params)
     {
-        $data = RegularProspectContainerCreation::whereIn('id_prospect_container',$params->id)->paginate($params->limit ?? null);
+        $data = RegularProspectContainerCreation::select('etd_jkt','code_consignee',DB::raw('count(etd_jkt) as total'))
+        ->whereIn('id_shipping_instruction',$params->id)
+        ->groupBy('etd_jkt','code_consignee')
+        ->paginate($params->limit ?? null);
+
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
-            'items' => [$data->first()],
+            'items' => $data->items(),
             'last_page' => $data->lastPage()
         ];
     }
