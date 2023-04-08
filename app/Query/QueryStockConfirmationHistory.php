@@ -82,7 +82,6 @@ class QueryStockConfirmationHistory extends Model {
 
                 unset(
                     $item->count_box,
-                    $item->in_wh,
                     $item->created_at,
                     $item->created_by,
                     $item->updated_at,
@@ -140,7 +139,6 @@ class QueryStockConfirmationHistory extends Model {
                 unset(
                     $item->id_regular_delivery_plan,
                     $item->count_box,
-                    $item->in_wh,
                     $item->created_at,
                     $item->created_by,
                     $item->updated_at,
