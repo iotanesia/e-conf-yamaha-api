@@ -71,6 +71,19 @@ class ProspectContainerController extends Controller
         }
     }
 
+    public static function detail(Request $request)
+    {
+        try {
+
+            return ResponseInterface::responseData(
+                QueryRegulerDeliveryPlanProspectContainer::detail($request)
+            );
+
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public static function simulation(Request $request)
     {
         try {

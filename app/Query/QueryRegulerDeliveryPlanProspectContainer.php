@@ -229,6 +229,35 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
     }
 
+    public static function detail($params)
+    {
+        $data = RegularDeliveryPlanProspectContainerCreation::where('id_prospect_container',$params->id)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                $item->cust_name = $item->refRegularDeliveryPlanPropspectContainer->refConsignee->nick_name;
+                $item->type_delivery = $item->refMstTypeDelivery->name;
+                $item->id_type_delivery = $item->refMstTypeDelivery->id;
+                $item->lsp = $item->refMstLsp->name;
+                $item->id_mot = $item->refMstMot->id;
+                $item->net_weight = $item->refMstContainer->net_weight;
+                $item->gross_weight = $item->refMstContainer->gross_weight;
+
+                unset(
+                    $item->refRegularDeliveryPlanPropspectContainer,
+                    $item->refMstTypeDelivery,
+                    $item->refMstLsp,
+                    $item->refMstMot,
+                    $item->refMstContainer,
+                );
+
+                return $item;
+            }),
+            'last_page' => $data->lastPage()
+        ];
+
+    }
+
 
     static function array_flatten($array) {
         $return = array();
