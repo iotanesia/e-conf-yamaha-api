@@ -81,7 +81,7 @@ Route::prefix('v1/regular')
             Route::post('/creation',[ProspectContainerController::class,'creation']);
             Route::put('/edit-mot',[DeliveryPlanController::class,'editMot']);
             Route::post('/fifo',[ProspectContainerController::class,'fifo']);
-            Route::post('/simulation',[ProspectContainerController::class,'simulation']);
+            Route::get('/simulation',[ProspectContainerController::class,'simulation']);
             Route::get('/fifo/{id}',[ProspectContainerController::class,'show']);
         });
 

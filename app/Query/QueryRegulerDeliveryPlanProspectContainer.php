@@ -241,7 +241,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
 
         $container = MstContainer::find(3); // 40HC
-        $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',$params->id)->get()
+        $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',[
+            3530,
+            3571,
+            3568
+        ])->get()
         ->map(function ($item){
             return [
                 'label' => $item->refBox->no_box,
