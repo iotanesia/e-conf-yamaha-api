@@ -309,10 +309,10 @@ class QueryStockConfirmationHistory extends Model {
             $qty = $delivery_plan_box->refBox->qty;
             $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
             $status = $stock_confirmation->status;
-            $in_stock_dc = $stock_confirmation->in_dc;
-            $in_dc_total = $in_stock_dc + $qty;
+            $in_stock_wh = $stock_confirmation->in_wh;
+            $in_wh_total = $in_stock_wh + $qty;
 
-            $stock_confirmation->in_dc = $in_dc_total;
+            $stock_confirmation->in_wh = $in_wh_total;
             $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
             $stock_confirmation->save();
 
