@@ -81,7 +81,7 @@ Route::prefix('v1/regular')
             Route::post('/creation',[ProspectContainerController::class,'creation']);
             Route::put('/edit-mot',[DeliveryPlanController::class,'editMot']);
             Route::post('/fifo',[ProspectContainerController::class,'fifo']);
-            Route::post('/simulation',[ProspectContainerController::class,'simulation']);
+            Route::get('/simulation',[ProspectContainerController::class,'simulation']);
             Route::get('/fifo/{id}',[ProspectContainerController::class,'show']);
         });
 
@@ -130,12 +130,14 @@ Route::prefix('v1/regular')
     Route::group(['prefix'=>'stock-confirmation'],function(){
         Route::group(['prefix'=>'instock'],function(){
             Route::get('/',[StockConfirmationController::class,'getInStock']);
+            Route::post('/submit',[StockConfirmationController::class,'instockSubmit']);
             Route::post('/inquiry',[StockConfirmationController::class,'instockInquiry']);
             Route::post('/inquiry-scan',[StockConfirmationController::class,'instockInquiryScan']);
             Route::post('/delete/{id}',[StockConfirmationController::class,'deleteInStock']);
         });
         Route::group(['prefix'=>'outstock'],function(){
             Route::get('/',[StockConfirmationController::class,'getOutStock']);
+            Route::post('/submit',[StockConfirmationController::class,'outstockSubmit']);
             Route::post('/inquiry',[StockConfirmationController::class,'outstocoutquiry']);
             Route::post('/inquiry-scan',[StockConfirmationController::class,'outstockInquiryScan']);
             Route::post('/delete/{id}',[StockConfirmationController::class,'deleteInStock']);

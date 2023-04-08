@@ -567,7 +567,8 @@ class QueryRegularDeliveryPlan extends Model {
             "count_box" => $sum,
             "in_dc" => Constant::IS_NOL,
             "in_wh" => Constant::IS_NOL,
-            "status" => Constant::STS_STOK,
+            "status_instock" => Constant::STS_STOK,
+            "status_outstock" => Constant::STS_STOK,
         ];
     }
 
