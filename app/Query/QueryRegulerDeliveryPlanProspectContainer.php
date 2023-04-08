@@ -192,8 +192,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             ->where('id_type_delivery',2)
             ->first();
 
-            for ($i=0; $i < count($containers) ; $i++) {
-                $summary_box = count($containers[$i]);
+            foreach ($containers as $summary_box) {
                 array_push($creation,[
                     'id_type_delivery' => 2,
                     'id_mot' => 1,
@@ -265,7 +264,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         // Add the last container to the array of containers
         $containers[] = $currentContainer;
         $containerCount++;
-        return $containers;
+
+        return array_map(function ($item){
+            return count($item);
+        },$containers);
     }
 
     public static function fifoProcess($request,$is_transaction = true)
