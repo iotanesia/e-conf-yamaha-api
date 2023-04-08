@@ -236,4 +236,59 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
     }
 
+    public static function simulation($params)
+    {
+
+
+        $container = MstContainer::find(3); // 40HC
+        $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',$params->id)->get()
+        ->map(function ($item){
+            return [
+                'label' => $item->refBox->no_box,
+                'w' =>  $item->refBox->width/1000,
+                'h' => $item->refBox->height/1000,
+                'l' => $item->refBox->length/1000,
+                'q' => $item->refBox->qty,
+                'priority' => 1,
+                'stackingCapacity' => '-1',
+                'rotations' => [
+                    'base'
+                ]
+            ];
+
+        });
+
+        return [
+            'items' => [
+                'container' => [
+                    'w' => $container->long ?? null,
+                    'h' => $container->height ?? null,
+                    'l' => $container->net_weight ?? null
+                ],
+                'routes' => [
+                    [
+                        'id' => 1,
+                        'from' => 'Casa',
+                        'to' => 'Rabat',
+                        'type' => 'dechargement'
+                    ],
+                    [
+                        'id' => 2,
+                        'from' => 'Rabat',
+                        'to' => 'Kenitra',
+                        'type' => 'dechargement'
+                    ],
+                    [
+                        'id' => 3,
+                        'from' => 'Kenitra',
+                        'to' => 'Tanger',
+                        'type' => 'dechargement'
+                    ]
+                ],
+                'colis' => $delivery_plan_box
+            ]
+        ];
+
+    }
+
 }
