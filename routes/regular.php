@@ -81,6 +81,7 @@ Route::prefix('v1/regular')
             Route::post('/creation',[ProspectContainerController::class,'creation']);
             Route::put('/edit-mot',[DeliveryPlanController::class,'editMot']);
             Route::post('/fifo',[ProspectContainerController::class,'fifo']);
+            Route::post('/simulation',[ProspectContainerController::class,'simulation']);
             Route::get('/fifo/{id}',[ProspectContainerController::class,'show']);
         });
 
@@ -118,7 +119,6 @@ Route::prefix('v1/regular')
     Route::group(['prefix' => 'prospect-container'],function (){
         Route::get('/',[ProspectContainerController::class,'index']);
         Route::post('/booking',[ProspectContainerController::class,'booking']);
-        Route::post('/simulation',[ProspectContainerController::class,'simulation']);
     });
 
     // tracking ss
