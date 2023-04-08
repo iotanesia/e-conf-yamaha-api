@@ -245,9 +245,9 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         ->map(function ($item){
             return [
                 'label' => $item->refBox->no_box,
-                'w' => $item->refBox->width/1000,
-                'h' => $item->refBox->height/1000,
-                'l' => $item->refBox->length/1000,
+                'w' =>  floatval($item->refBox->width/1000),
+                'h' => floatval($item->refBox->height/1000),
+                'l' => floatval($item->refBox->length/1000),
                 'q' => $item->refBox->qty,
                 'priority' => 1,
                 'stackingCapacity' => '-1',
@@ -261,9 +261,9 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         return [
             'items' => [
                 'container' => [
-                    'w' => $container->long ?? null,
-                    'h' => $container->height ?? null,
-                    'l' => $container->net_weight ?? null
+                    'w' => floatval($container->long) ?? null,
+                    'h' => floatval($container->height) ?? null,
+                    'l' => floatval($container->wide) ?? null
                 ],
                 'routes' => [
                     [
