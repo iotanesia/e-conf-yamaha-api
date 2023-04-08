@@ -48,7 +48,7 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function getInStock($request)
     {
-        $data = RegularStokConfirmation::where('status','>',1)->paginate($request->limit ?? null);
+        $data = RegularStokConfirmation::where('status_instock','=',2)->where('in_dc','>',0)->paginate($request->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
@@ -81,7 +81,6 @@ class QueryStockConfirmationHistory extends Model {
                 $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
                 
                 unset(
-                    $item->id,
                     $item->count_box,
                     $item->in_wh,
                     $item->created_at,
@@ -106,7 +105,7 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function getOutStock($request)
     {
-        $data = RegularStokConfirmation::where('status','<',1)->paginate($request->limit ?? null);
+        $data = RegularStokConfirmation::where('status_outstock','=',2)->where('in_wh','>',0)->paginate($request->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
@@ -139,7 +138,6 @@ class QueryStockConfirmationHistory extends Model {
                 $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
 
                 unset(
-                    $item->id,
                     $item->id_regular_delivery_plan,
                     $item->count_box,
                     $item->in_wh,
@@ -176,7 +174,22 @@ class QueryStockConfirmationHistory extends Model {
                 if ($item->status == 2 && $item->in_dc > 0 && $item->in_wh > 0) $status = 'out stock';
                 if ($item->status == 3) $status = 'finish production';
 
-                $item->status_tracking = $status;
+                $item->status_tracking = $status ?? null;
+                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+                $item->item_no = $item->refRegularDeliveryPlan->item_no;
+                $item->item_name = $item->refRegularDeliveryPlan->refPart->description;
+                $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
+                $item->cust_order_no = $item->refRegularDeliveryPlan->order_no;
+                $item->qty = $item->refRegularDeliveryPlan->qty;
+                $item->etd_ypmi = $item->refRegularDeliveryPlan->etd_ypmi;
+                $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh;
+                $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt;
+                $item->production = ($item->qty) - ($item->in_dc);
+
+                unset(
+                    $item->refRegularDeliveryPlan,
+                );
+
                 return $item;
             }),
             'last_page' => $data->lastPage()
