@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\ApiHelper as ResponseInterface;
 use App\Query\QueryStockConfirmationHistory;
+use App\Query\QueryStockConfirmationOutstockNote;
 
 class StockConfirmationController extends Controller
 {
@@ -125,6 +126,17 @@ class StockConfirmationController extends Controller
         try {
             return ResponseInterface::responseData(
                 QueryStockConfirmationHistory::outstockSubmit($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function saveOutStockNote(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryStockConfirmationOutstockNote::storeOutStockNote($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
