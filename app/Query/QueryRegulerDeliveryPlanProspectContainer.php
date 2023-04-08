@@ -263,7 +263,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 'container' => [
                     'w' => floatval(round($container->long,2)) ?? null,
                     'h' => floatval(round($container->height),2) ?? null,
-                    'l' => floatval(round($container->wide),2) ?? null
+                    'l' => floatval(round($container->wide,2)) ?? null
                 ],
                 'routes' => [
                     [
