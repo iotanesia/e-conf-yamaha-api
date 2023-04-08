@@ -68,6 +68,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                     $set["model"] = $item->model;
                     $set["item_name"] = $itemname;
                     $set["item_no"] = $item->item_no;
+                    $set["item_serial"] = $item->refMstPart->item_serial;
                     $set["disburse"] = $item->disburse;
                     $set["delivery"] = $item->delivery;
                     $set["qty"] = $item->qty;
