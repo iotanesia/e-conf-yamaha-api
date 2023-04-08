@@ -254,7 +254,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 'l' => floatval($item->refBox->length/1000),
                 'q' => $item->refBox->qty,
                 'priority' => 1,
-                'stackingCapacity' => '-1',
+                'stackingCapacity' => 1,
                 'rotations' => [
                     'base'
                 ]
