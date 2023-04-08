@@ -138,7 +138,7 @@ Route::prefix('v1/regular')
         Route::group(['prefix'=>'outstock'],function(){
             Route::get('/',[StockConfirmationController::class,'getOutStock']);
             Route::post('/submit',[StockConfirmationController::class,'outstockSubmit']);
-            Route::post('/inquiry',[StockConfirmationController::class,'outstocoutquiry']);
+            Route::post('/inquiry',[StockConfirmationController::class,'outstockInquiry']);
             Route::post('/inquiry-scan',[StockConfirmationController::class,'outstockInquiryScan']);
             Route::post('/delete/{id}',[StockConfirmationController::class,'deleteInStock']);
         });

@@ -24,7 +24,7 @@ class QueryStockConfirmationHistory extends Model {
         try {
             Model::where('id_regular_delivery_plan',$id)->where('type',Constant::INSTOCK)->delete();
             RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_dc'=>Constant::IS_NOL,'status_instock'=>Constant::STS_STOK]);
-            
+
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
@@ -37,7 +37,7 @@ class QueryStockConfirmationHistory extends Model {
         try {
             Model::where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->delete();
             RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_wh'=>Constant::IS_NOL,'status_outstock'=>Constant::STS_STOK]);
-            
+
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
@@ -82,7 +82,6 @@ class QueryStockConfirmationHistory extends Model {
 
                 unset(
                     $item->count_box,
-                    $item->in_wh,
                     $item->created_at,
                     $item->created_by,
                     $item->updated_at,
@@ -140,7 +139,6 @@ class QueryStockConfirmationHistory extends Model {
                 unset(
                     $item->id_regular_delivery_plan,
                     $item->count_box,
-                    $item->in_wh,
                     $item->created_at,
                     $item->created_by,
                     $item->updated_at,
@@ -269,7 +267,7 @@ class QueryStockConfirmationHistory extends Model {
 
             $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
             if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
-            $qty = $delivery_plan_box->refBox->qty;
+            $qty = $delivery_plan_box->qty_pcs_box;
             $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
             $status = $stock_confirmation->status;
             $in_stock_dc = $stock_confirmation->in_dc;
@@ -306,13 +304,13 @@ class QueryStockConfirmationHistory extends Model {
 
             $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
             if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
-            $qty = $delivery_plan_box->refBox->qty;
+            $qty = $delivery_plan_box->qty_pcs_box;
             $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
             $status = $stock_confirmation->status;
-            $in_stock_dc = $stock_confirmation->in_dc;
-            $in_dc_total = $in_stock_dc + $qty;
+            $in_stock_wh = $stock_confirmation->in_wh;
+            $in_wh_total = $in_stock_wh + $qty;
 
-            $stock_confirmation->in_dc = $in_dc_total;
+            $stock_confirmation->in_wh = $in_wh_total;
             $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
             $stock_confirmation->save();
 
@@ -405,7 +403,7 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            $data = RegularStokConfirmation::whereIn('id',$params->id)->map(function ($item){
+            $data = RegularStokConfirmation::whereIn('id',$params->id)->get()->map(function ($item){
                     $item->status_instock = 3;
                     $item->save();
                     return $item;
@@ -427,7 +425,7 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            $data = RegularStokConfirmation::whereIn('id',$params->id)->map(function ($item){
+            $data = RegularStokConfirmation::whereIn('id',$params->id)->get()->map(function ($item){
                     $item->status_outstock = 3;
                     $item->save();
                     return $item;
