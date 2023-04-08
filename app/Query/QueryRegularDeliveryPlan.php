@@ -454,59 +454,72 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function shippingDetail($params,$id)
     {
-        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port'
-        ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS count')
-        ,DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging")
-        ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
-        ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
-        ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
-        ,DB::raw("string_agg(DISTINCT e.name::character varying, ',') as type_delivery")
-        ,DB::raw("string_agg(DISTINCT f.container_type::character varying, ',') as container_type")
-        ,DB::raw("string_agg(DISTINCT f.container_value::character varying, ',') as container_value")
-        ,DB::raw("SUM(f.net_weight) as net_weight")
-        ,DB::raw("SUM(f.gross_weight) as gross_weight")
-        ,DB::raw("SUM(f.measurement) as measurement")
-        ,DB::raw("SUM(regular_delivery_plan_prospect_container_creation.summary_box) as summary_box_sum"))
-        ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction',$id)
-        ->join('regular_delivery_plan_prospect_container as a','regular_delivery_plan_prospect_container_creation.id_prospect_container','a.id')
-        ->join('mst_part as b','regular_delivery_plan_prospect_container_creation.item_no','b.item_no')
-        ->join('mst_mot as c','regular_delivery_plan_prospect_container_creation.id_mot','c.id')
-        ->join('mst_port_of_discharge as d','regular_delivery_plan_prospect_container_creation.code_consignee','d.code_consignee')
-        ->join('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
-        ->join('mst_container as f','regular_delivery_plan_prospect_container_creation.id_container','f.id')
-        ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation','g.id')
-        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port')
+        // dd('aa');
+        // $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port'
+        // ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS count')
+        // ,DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging")
+        // ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
+        // ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
+        // ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
+        // ,DB::raw("string_agg(DISTINCT e.name::character varying, ',') as type_delivery")
+        // ,DB::raw("string_agg(DISTINCT f.container_type::character varying, ',') as container_type")
+        // ,DB::raw("string_agg(DISTINCT f.container_value::character varying, ',') as container_value")
+        // ,DB::raw("SUM(f.net_weight) as net_weight")
+        // ,DB::raw("SUM(f.gross_weight) as gross_weight")
+        // ,DB::raw("SUM(f.measurement) as measurement")
+        // ,DB::raw("SUM(regular_delivery_plan_prospect_container_creation.summary_box) as summary_box_sum"))
+        // ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction',$id)
+        // ->join('regular_delivery_plan_prospect_container as a','regular_delivery_plan_prospect_container_creation.id_prospect_container','a.id')
+        // ->join('mst_part as b','regular_delivery_plan_prospect_container_creation.item_no','b.item_no')
+        // ->join('mst_mot as c','regular_delivery_plan_prospect_container_creation.id_mot','c.id')
+        // ->join('mst_port_of_discharge as d','regular_delivery_plan_prospect_container_creation.code_consignee','d.code_consignee')
+        // ->join('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
+        // ->join('mst_container as f','regular_delivery_plan_prospect_container_creation.id_container','f.id')
+        // ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation','g.id')
+        // ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port')
+        // ->paginate($params->limit ?? null);
+
+        $data = RegularProspectContainerCreation::select('etd_jkt','code_consignee',DB::raw('count(etd_jkt) as total'))
+        ->where('id_shipping_instruction',$id)
+        ->groupBy('etd_jkt','code_consignee')
         ->paginate($params->limit ?? null);
+
         if(!$data) throw new \Exception("Data not found", 400);
 
-        $data->transform(function ($item) {
-            return [
-                'code_consignee' => $item->code_consignee,
-                'etd_jkt' => $item->etd_jkt,
-                'count' => $item->count,
-                'no_packaging' => $item->no_packaging,
-                'hs_code' => $item->hs_code,
-                'via' => $item->mot,
-                'freight_chart' => 'COLLECT',
-                'incoterm' => 'FOB',
-                'shipped_by' => 'YPMI',
-                'container_value' => $item->container_type,
-                'container_type' => $item->container_value,
-                'net_weight' => $item->net_weight,
-                'gross_weight' => $item->gross_weight,
-                'measurement' => $item->measurement,
-                'port' => $item->port,
-                'type_delivery' => $item->type_delivery,
-                'summary_box' => $item->summary_box_sum,
-                'to' => $item->refMstLsp->name ?? null,
-                'status' => $item->status ?? null,
-                'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
-                'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null
-            ];
-        });
+        // $data->transform(function ($item) {
+        //     return [
+        //         'code_consignee' => $item->code_consignee,
+        //         'etd_jkt' => $item->etd_jkt,
+        //         'count' => $item->count,
+        //         'no_packaging' => $item->no_packaging,
+        //         'hs_code' => $item->hs_code,
+        //         'via' => $item->mot,
+        //         'freight_chart' => 'COLLECT',
+        //         'incoterm' => 'FOB',
+        //         'shipped_by' => 'YPMI',
+        //         'container_value' => $item->container_type,
+        //         'container_type' => $item->container_value,
+        //         'net_weight' => $item->net_weight,
+        //         'gross_weight' => $item->gross_weight,
+        //         'measurement' => $item->measurement,
+        //         'port' => $item->port,
+        //         'type_delivery' => $item->type_delivery,
+        //         'summary_box' => $item->summary_box_sum,
+        //         'to' => $item->refMstLsp->name ?? null,
+        //         'status' => $item->status ?? null,
+        //         'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
+        //         'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null
+        //     ];
+        // });
 
         return [
-            'items' => $data->items(),
+            'items' => $data->transform(function ($item){
+                $item->name_consignee = $item->refMstConsignee->nick_name ?? null;
+                unset(
+                    $item->refMstConsignee
+                );
+                return $item;
+            }),
             'last_page' => $data->lastPage()
         ];
     }
@@ -612,15 +625,13 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function detailById($params)
     {
-        $data = RegularProspectContainerCreation::select('etd_jkt','code_consignee',DB::raw('count(etd_jkt) as total'))
-        ->whereIn('id_shipping_instruction',$params->id)
-        ->groupBy('etd_jkt','code_consignee')
-        ->paginate($params->limit ?? null);
+        $data = RegularProspectContainerCreation::whereIn('id_prospect_container',$params->id)->paginate($params->limit ?? null);
+
 
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
-            'items' => $data->items(),
+            'items' => [$data->first()],
             'last_page' => $data->lastPage()
         ];
     }
