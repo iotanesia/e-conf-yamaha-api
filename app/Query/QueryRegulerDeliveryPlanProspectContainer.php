@@ -203,6 +203,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $item->id_mot = $item->refMstMot->id;
                 $item->net_weight = $item->refMstContainer->net_weight;
                 $item->gross_weight = $item->refMstContainer->gross_weight;
+                $item->container_type = $item->refMstContainer->container_type;
 
                 unset(
                     $item->refRegularDeliveryPlanPropspectContainer,
