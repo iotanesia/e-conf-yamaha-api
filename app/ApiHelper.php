@@ -121,6 +121,10 @@ class ApiHelper {
         return response()->json($response, 200);
     }
 
+    static function responseDataTest($data = false){
+        return response()->json($data['items'], 200);
+    }
+
     static function responseDataPivot($data = false){
         $response = [
             "meta" => [

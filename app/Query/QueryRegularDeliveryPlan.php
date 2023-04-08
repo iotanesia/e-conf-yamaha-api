@@ -557,7 +557,7 @@ class QueryRegularDeliveryPlan extends Model {
         }
     }
 
-    public static function paramStok($params) { 
+    public static function paramStok($params) {
         $sum = 0;
         foreach ($params->manyDeliveryPlanBox as $value) {
             $sum += $value->refBox->qty;
@@ -569,7 +569,7 @@ class QueryRegularDeliveryPlan extends Model {
             "in_wh" => Constant::IS_NOL,
             "status" => Constant::STS_STOK,
         ];
-    } 
+    }
 
     public static function genNoBook($request,$is_transaction = true) {
         Helper::requireParams(['id']);
@@ -679,6 +679,29 @@ class QueryRegularDeliveryPlan extends Model {
         return [
             'items' => $data->items(),
             'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function bmlDetail($params)
+    {
+        $data = Model::where('id', $params->id)->where('status_bml',1)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
+                unset($item->manyDeliveryPlanBox);
+                foreach($item->regular_delivery_plan_box as $box){
+                    $box->box = $box->refBox;
+                    unset($box->refBox);
+                }
+                return $item;
+            }),
+            'attributes' => [
+                'total' => $data->total(),
+                'current_page' => $data->currentPage(),
+                'from' => $data->currentPage(),
+                'per_page' => (int) $data->perPage(),
+            ]
         ];
     }
 }

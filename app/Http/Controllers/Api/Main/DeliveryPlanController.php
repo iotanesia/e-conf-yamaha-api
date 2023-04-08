@@ -232,4 +232,14 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function bmlDetail(Request $request) {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::bmlDetail($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
 }

@@ -503,33 +503,6 @@ class QueryRegularOrderEntryUpload extends Model {
         }
     }
 
-    public static function getBox()
-    {
-        return DB::select(DB::raw("SELECT
-            d.id_box,
-            d.id
-            FROM
-            regular_order_entry a,
-            regular_order_entry_upload b,
-            regular_order_entry_upload_detail c,
-            regular_order_entry_upload_detail_box d
-            where a.id = b.id_regular_order_entry and
-            b.id = c.id_regular_order_entry_upload and
-            c.status = 'fixed' and c.is_delivery_plan = 0 and
-            b.id = 203 and
-            a.id = 207
-            EXCEPT
-            SELECT
-                d.id_box,
-                d.id_order_entry_upload_detail_box
-            FROM
-            regular_delivery_plan c,
-            regular_delivery_plan_box d
-            WHERE
-            c.id = d.id_regular_delivery_plan and
-            c.id_regular_order_entry = 207"));
-    }
-
     public static function getDifferentPart($id,$id_regular_order_entry_upload){
 
         return DB::select(DB::raw("SELECT
