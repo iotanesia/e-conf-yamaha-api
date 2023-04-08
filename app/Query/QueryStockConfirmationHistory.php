@@ -79,7 +79,7 @@ class QueryStockConfirmationHistory extends Model {
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->status_desc = 'Instock';
                 $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
-                
+
                 unset(
                     $item->id,
                     $item->count_box,
@@ -263,7 +263,7 @@ class QueryStockConfirmationHistory extends Model {
             $in_dc_total = $in_stock_dc + $qty;
 
             $stock_confirmation->in_dc = $in_dc_total;
-            $stock_confirmation->status = $status == Constant::IS_ACTIVE ? 2 : 2;
+            $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
             $stock_confirmation->save();
 
             self::create([
@@ -300,7 +300,7 @@ class QueryStockConfirmationHistory extends Model {
             $in_dc_total = $in_stock_dc + $qty;
 
             $stock_confirmation->in_dc = $in_dc_total;
-            $stock_confirmation->status = $status == Constant::IS_ACTIVE ? 2 : 2;
+            $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
             $stock_confirmation->save();
 
             self::create([
@@ -379,6 +379,50 @@ class QueryStockConfirmationHistory extends Model {
 
 
         } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public static function instockSubmit($params,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'id'
+            ]);
+
+            $data = RegularStokConfirmation::whereIn('id',$params->id)->map(function ($item){
+                    $item->status_instock = 3;
+                    $item->save();
+                    return $item;
+            });
+
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function outstockSubmit($params,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'id'
+            ]);
+
+            $data = RegularStokConfirmation::whereIn('id',$params->id)->map(function ($item){
+                    $item->status_outstock = 3;
+                    $item->save();
+                    return $item;
+            });
+
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
             throw $th;
         }
     }

@@ -109,4 +109,25 @@ class StockConfirmationController extends Controller
         }
     }
 
+    public function instockSubmit(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryStockConfirmationHistory::instockSubmit($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function outstockSubmit(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryStockConfirmationHistory::outstockSubmit($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }
