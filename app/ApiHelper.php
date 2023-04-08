@@ -460,4 +460,17 @@ class ApiHelper {
         ];
     }
 
+    public static function generateCodeLetter($lastData) {
+        $date = Carbon::now(); 
+        $letterCode = $date->format('y').'/'.$date->format('M').'/940E/Export/'.$date->format('d').'/001';
+        if($lastData) {
+            $code = explode('/',$lastData->no_letters);
+            if($code[1] == Carbon::now()->format('M')) {
+                $lastIncrement = $code[5] + 1;
+                $incCode = str_pad((int) $lastIncrement, 3 ,"0",STR_PAD_LEFT);
+                $letterCode = $date->format('y').'/'.$date->format('M').'/940E/Export/'.$date->format('d').'/'.$incCode;
+            }
+        }
+        return $letterCode;
+    }
 }
