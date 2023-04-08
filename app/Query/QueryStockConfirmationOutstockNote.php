@@ -30,7 +30,6 @@ class QueryStockConfirmationOutstockNote extends Model {
             ->join('mst_lsp as c','c.id','a.id_lsp')
             ->get();
             $deliveryPlanDetail = RegularDeliveryPlan::whereIn('regular_delivery_plan.id',$idDeliveryPlan)->get();
-            dd($deliveryPlanDetail);
             $dataSend =  $deliveryPlan->transform(function($item) use($lastData){
                 return [
                     'shipper'=>MstShipment::where('is_active',Constant::IS_ACTIVE)->first()->shipment ?? null,
