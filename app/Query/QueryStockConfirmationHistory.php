@@ -24,7 +24,7 @@ class QueryStockConfirmationHistory extends Model {
         try {
             Model::where('id_regular_delivery_plan',$id)->where('type',Constant::INSTOCK)->delete();
             RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_dc'=>Constant::IS_NOL,'status_instock'=>Constant::STS_STOK]);
-            
+
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
@@ -37,7 +37,7 @@ class QueryStockConfirmationHistory extends Model {
         try {
             Model::where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->delete();
             RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_wh'=>Constant::IS_NOL,'status_outstock'=>Constant::STS_STOK]);
-            
+
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
@@ -405,7 +405,7 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            $data = RegularStokConfirmation::whereIn('id',$params->id)->map(function ($item){
+            $data = RegularStokConfirmation::whereIn('id',$params->id)->get()->map(function ($item){
                     $item->status_instock = 3;
                     $item->save();
                     return $item;
@@ -427,7 +427,7 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            $data = RegularStokConfirmation::whereIn('id',$params->id)->map(function ($item){
+            $data = RegularStokConfirmation::whereIn('id',$params->id)->get()->map(function ($item){
                     $item->status_outstock = 3;
                     $item->save();
                     return $item;

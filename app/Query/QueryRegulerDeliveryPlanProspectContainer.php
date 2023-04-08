@@ -113,25 +113,25 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
          $check = RegularDeliveryPlanProspectContainerCreation::where('id_prospect_container',$params->id)
          ->count('id_prospect_container');
 
-        //  if($check) throw new \Exception("Data already exist in table creation", 400);
+        // //  if($check) throw new \Exception("Data already exist in table creation", 400);
 
-        if ($check) {
-            $creation = RegularDeliveryPlanProspectContainerCreation::where('id_prospect_container',$params->id)
-                        ->get()
-                        ->map(function ($item){
-                            $item->nama_lsp = $item->refMstLsp->name ?? null;
-                            $item->nama_mot = $item->refMstMot->name ?? null;
-                            $item->nama_type_delivery = $item->refMstTypeDelivery->name ?? null;
+        // if ($check) {
+        //     $creation = RegularDeliveryPlanProspectContainerCreation::where('id_prospect_container',$params->id)
+        //                 ->get()
+        //                 ->map(function ($item){
+        //                     $item->nama_lsp = $item->refMstLsp->name ?? null;
+        //                     $item->nama_mot = $item->refMstMot->name ?? null;
+        //                     $item->nama_type_delivery = $item->refMstTypeDelivery->name ?? null;
 
-                            unset(
-                                $item->refMstLsp,
-                                $item->refMstMot,
-                                $item->refMstTypeDelivery,
-                            );
-                            return $item;
-                        })->toArray();
-            return ['items' => $creation];
-        }
+        //                     unset(
+        //                         $item->refMstLsp,
+        //                         $item->refMstMot,
+        //                         $item->refMstTypeDelivery,
+        //                     );
+        //                     return $item;
+        //                 })->toArray();
+        //     return ['items' => $creation];
+        // }
 
          $item_no = RegularDeliveryPlan::select('item_no')
          ->whereIn('id_prospect_container',$params->id)
@@ -167,6 +167,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         $arr =  [];
         foreach ($summary as $key => $item) {
             $arr[$item['item_no']][$key] = $item;
+
         }
 
         $summary_result = [];
@@ -174,36 +175,43 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         $qty = 0;
 
         foreach ($arr as $key =>  $item) {
+
             foreach ($item as $val) {
                 $qty += $val['qty_box'];
             }
 
             $summary_result[$key] = $qty;
-            $container = MstContainer::find(2);
+            $mst_container = MstContainer::find(3);
+
+            $capacity = $mst_container->capacity;
+
+            $boxSizes = array_fill(0,2400,1); // Create an array of 2400 boxes with size 1
+            $containers = self::packBoxesIntoContainers($boxSizes,$capacity);
 
             $lsp = MstLsp::where('code_consignee',$val['code_consignee'])
             ->where('id_type_delivery',2)
             ->first();
 
-            $creation[] = [
-                'id_type_delivery' => 2,
-                'id_mot' => 1,
-                'id_container' => 2, //
-                'id_lsp' => $lsp->id ?? 2, // ini cari table mst lsp by code cogsingne
-                'summary_box' => $qty,
-                'code_consignee' => $val['code_consignee'],
-                'etd_jkt' => $val['etd_jkt'],
-                'etd_ypmi' => $val['etd_ypmi'],
-                'etd_wh' => $val['etd_wh'],
-                'measurement' => $container->measurement ?? null,
-                'id_prospect_container' => $val['id_prospect_container'],
-                'item_no' => $key
-            ];
-
+            for ($i=0; $i < count($containers) ; $i++) {
+                $summary_box = count($containers[$i]);
+                array_push($creation,[
+                    'id_type_delivery' => 2,
+                    'id_mot' => 1,
+                    'id_container' => 2, //
+                    'id_lsp' => $lsp->id ?? 2, // ini cari table mst lsp by code cogsingne
+                    'summary_box' => $summary_box,
+                    'code_consignee' => $val['code_consignee'],
+                    'etd_jkt' => $val['etd_jkt'],
+                    'etd_ypmi' => $val['etd_ypmi'],
+                    'etd_wh' => $val['etd_wh'],
+                    'measurement' => $mst_container->measurement ?? null,
+                    'id_prospect_container' => $val['id_prospect_container'],
+                    'item_no' => $key
+                ]);
+            }
         }
 
-
-         foreach ($creation as $item) {
+        foreach ($creation as $item) {
              $store = RegularDeliveryPlanProspectContainerCreation::create($item);
              RegularDeliveryPlan::where([
                  'item_no' => $item['item_no'],
@@ -220,6 +228,44 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
              if($is_transaction) DB::rollBack();
              throw $th;
         }
+    }
+
+
+    static function array_flatten($array) {
+        $return = array();
+        foreach ($array as $key => $value) {
+            if (is_array($value)){
+                $return = array_merge($return, self::array_flatten($value));
+            } else {
+                $return[$key] = $value;
+            }
+        }
+
+        return $return;
+    }
+
+    static function packBoxesIntoContainers($boxSizes, $containerCapacity) {
+        sort($boxSizes); // Sort box sizes in ascending order
+        $containers = array(); // Initialize array of containers
+        $containerCount = 0; // Initialize container count
+        $currentContainer = array(); // Initialize current container
+
+        foreach ($boxSizes as $boxSize) {
+            if (array_sum($currentContainer) + $boxSize <= $containerCapacity) {
+                // Add box to current container
+                $currentContainer[] = $boxSize;
+            } else {
+                // Close current container, add to array of containers, and create new container
+                $containers[] = $currentContainer;
+                $containerCount++;
+                $currentContainer = array($boxSize);
+            }
+        }
+
+        // Add the last container to the array of containers
+        $containers[] = $currentContainer;
+        $containerCount++;
+        return $containers;
     }
 
     public static function fifoProcess($request,$is_transaction = true)
