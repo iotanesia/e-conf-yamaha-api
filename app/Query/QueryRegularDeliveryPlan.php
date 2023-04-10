@@ -166,6 +166,7 @@ class QueryRegularDeliveryPlan extends Model {
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
         $data->transform(function ($item){
+            $item->item_no = $item->refPart->item_serial;
             $item->item_name = $item->refPart->description ?? null;
             $item->cust_name = $item->refConsignee->nick_name ?? null;
             $regularOrderEntry = $item->refRegularOrderEntry;
