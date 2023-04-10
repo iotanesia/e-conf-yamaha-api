@@ -400,6 +400,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
                     'lot_packing' => $item->lot_packing,
                     'packing_date' => $item->packing_date,
+                    'qr_key' => $item->id,
                     'no_box' => $item->refBox->no_box ?? null,
                 ];
             });
