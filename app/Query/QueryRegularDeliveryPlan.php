@@ -270,16 +270,15 @@ class QueryRegularDeliveryPlan extends Model {
 
             if(count($check) > 1) throw new \Exception("etd jkt & code consignee not same", 400);
 
-            $data = RegularDeliveryPlan::select(DB::raw('count(cust_item_no) as total'),'cust_item_no')->whereIn('id',$params->id)
-            ->groupBy('cust_item_no')
+            $data = RegularDeliveryPlan::select(DB::raw('count(order_no) as total'),'order_no')->whereIn('id',$params->id)
+            ->groupBy('order_no')
             ->orderBy('total','desc')
             ->get()
-
             ->toArray();
 
             if(count($data) == 0) throw new \Exception("Data not found", 400);
 
-            $no_packaging = $data[0]['cust_item_no'].substr(mt_rand(),0,5);
+            $no_packaging = $data[0]['order_no'].substr(mt_rand(),0,5);
             $tanggal = $check[0]['etd_jkt'];
             $code_consignee = $check[0]['code_consignee'];
 
