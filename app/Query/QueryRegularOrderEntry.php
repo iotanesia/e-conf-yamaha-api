@@ -116,7 +116,7 @@ class QueryRegularOrderEntry extends Model {
                 $store->save();
             }
             $request->id_regular_order_entry = $store->id;
-            QueryRegularOrderEntryUpload::saveFile($request,false);
+            QueryRegularOrderEntryUpload::saveFile($store,$request,false);
 
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache

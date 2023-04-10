@@ -92,6 +92,7 @@ class QueryRegularOrderEntryUpload extends Model {
         $data->transform(function ($item){
             $regularOrderEntry = $item->refRegularOrderEntry;
             if($regularOrderEntry){
+                $item->filename = $item->filename.'.xlsx';
                 $item->regular_order_entry_period = $regularOrderEntry->period;
                 $item->regular_order_entry_month = $regularOrderEntry->month;
                 $item->regular_order_entry_year = $regularOrderEntry->year;
@@ -109,13 +110,14 @@ class QueryRegularOrderEntryUpload extends Model {
         ];
     }
 
-    public static function saveFile($request,$is_transaction = true)
+    public static function saveFile($store,$request,$is_transaction = true)
     {
         if($is_transaction) DB::beginTransaction();
         try {
 
             $file = $request->file('file');
-            $filename = $file->getClientOriginalName();
+            // $filename = $file->getClientOriginalName();
+            $filename = 'OE-'.$request->month.$request->year.'-'.$store->datasource.'-batch(0'.$request->iteration.')';
             $ext = $file->getClientOriginalExtension();
             if(!in_array($ext,['xlx','xlsx','xlsb'])) throw new \Exception("file format error", 400);
             $savedname = (string) Str::uuid().'.'.$ext;
