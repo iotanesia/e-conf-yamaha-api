@@ -468,12 +468,12 @@ class QueryRegularDeliveryPlan extends Model {
         ,DB::raw("SUM(f.measurement) as measurement")
         ,DB::raw("SUM(regular_delivery_plan_prospect_container_creation.summary_box) as summary_box_sum"))
         ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction',$id)
-        ->join('regular_delivery_plan_prospect_container as a','regular_delivery_plan_prospect_container_creation.id_prospect_container','a.id')
-        ->join('mst_part as b','regular_delivery_plan_prospect_container_creation.item_no','b.item_no')
-        ->join('mst_mot as c','regular_delivery_plan_prospect_container_creation.id_mot','c.id')
-        ->join('mst_port_of_discharge as d','regular_delivery_plan_prospect_container_creation.code_consignee','d.code_consignee')
-        ->join('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
-        ->join('mst_container as f','regular_delivery_plan_prospect_container_creation.id_container','f.id')
+        ->leftJoin('regular_delivery_plan_prospect_container as a','regular_delivery_plan_prospect_container_creation.id_prospect_container','a.id')
+        ->leftJoin('mst_part as b','regular_delivery_plan_prospect_container_creation.item_no','b.item_no')
+        ->leftJoin('mst_mot as c','regular_delivery_plan_prospect_container_creation.id_mot','c.id')
+        ->leftJoin('mst_port_of_discharge as d','regular_delivery_plan_prospect_container_creation.code_consignee','d.code_consignee')
+        ->leftJoin('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
+        ->leftJoin('mst_container as f','regular_delivery_plan_prospect_container_creation.id_container','f.id')
         ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation','g.id')
         ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port')
         ->paginate($params->limit ?? null);
@@ -613,6 +613,8 @@ class QueryRegularDeliveryPlan extends Model {
     public static function detailById($params)
     {
         $data = RegularProspectContainerCreation::whereIn('id_prospect_container',$params->id)->paginate($params->limit ?? null);
+
+
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [

@@ -109,89 +109,41 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
              'id'
          ]);
 
-
-         $check = RegularDeliveryPlanProspectContainerCreation::where('id_prospect_container',$params->id)
-         ->count('id_prospect_container');
-
-        // //  if($check) throw new \Exception("Data already exist in table creation", 400);
-
-        // if ($check) {
-        //     $creation = RegularDeliveryPlanProspectContainerCreation::where('id_prospect_container',$params->id)
-        //                 ->get()
-        //                 ->map(function ($item){
-        //                     $item->nama_lsp = $item->refMstLsp->name ?? null;
-        //                     $item->nama_mot = $item->refMstMot->name ?? null;
-        //                     $item->nama_type_delivery = $item->refMstTypeDelivery->name ?? null;
-
-        //                     unset(
-        //                         $item->refMstLsp,
-        //                         $item->refMstMot,
-        //                         $item->refMstTypeDelivery,
-        //                     );
-        //                     return $item;
-        //                 })->toArray();
-        //     return ['items' => $creation];
-        // }
-
-         $item_no = RegularDeliveryPlan::select('item_no')
-         ->whereIn('id_prospect_container',$params->id)
-         ->groupBy('item_no','id_prospect_container')
-         ->get()
-         ->toArray();
+        $delivery_plan = RegularDeliveryPlan::select('id_prospect_container')->whereIn('id_prospect_container',$params->id)->groupBy('id_prospect_container')->get()
+        ->transform(function ($delivery){
 
 
-        $summary = RegularDeliveryPlanBox::select('id_regular_delivery_plan','id_box')->whereIn('id_regular_delivery_plan',function ($query) use ($params,$item_no)
-        {
-            $query->select('id')
-            ->from(with(new RegularDeliveryPlan())->getTable())
-            ->whereIn('id_prospect_container',$params->id)
-            ->whereIn('item_no',$item_no);
-        })
-        ->get()
-        ->map(function ($item){
-            $item->item_no = $item->refRegularDeliveryPlan->item_no ?? null;
-            $item->id_prospect_container = $item->refRegularDeliveryPlan->id_prospect_container ?? null;
-            $item->code_consignee = $item->refRegularDeliveryPlan->code_consignee ?? null;
-            $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt ?? null;
-            $item->etd_ypmi = $item->refRegularDeliveryPlan->etd_ypmi ?? null;
-            $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh ?? null;
-            $item->qty_box = $item->refBox->qty ?? 0;
+            $id_prospect_container = $delivery->id_prospect_container;
+            $data = RegularDeliveryPlan::where('id_prospect_container',$id_prospect_container)->get()->map(function ($item){
+                $qty = 0;
+                foreach ($item->manyDeliveryPlanBox as $box) {
+                    $qty += $box->refBox->qty;
+                }
+                $item->total_qty = $qty;
+                unset(
+                    $item->manyDeliveryPlanBox
+                );
+                return $item;
+            })->toArray();
 
-            unset(
-                $item->refRegularDeliveryPlan,
-                $item->refBox,
-            );
-            return $item;
-        })->toArray();
 
-        $arr =  [];
-        foreach ($summary as $key => $item) {
-            $arr[$item['item_no']][$key] = $item;
-
-        }
-
-        $summary_result = [];
-        $creation = [];
-        $qty = 0;
-
-        foreach ($arr as $key =>  $item) {
-
-            foreach ($item as $val) {
-                $qty += $val['qty_box'];
-            }
-
-            $summary_result[$key] = $qty;
-            $mst_container = MstContainer::find(3);
-
-            $capacity = $mst_container->capacity;
-
-            $boxSizes = array_fill(0,2400,1); // Create an array of 2400 boxes with size 1
-            $containers = self::packBoxesIntoContainers($boxSizes,$capacity);
-
-            $lsp = MstLsp::where('code_consignee',$val['code_consignee'])
+            $lsp = MstLsp::where('code_consignee',$data[0]['code_consignee'])
             ->where('id_type_delivery',2)
             ->first();
 
+
+            $boxSize = 0;
+            foreach ($data as $key => $item) {
+                $boxSize += $item['total_qty'];
+            }
+
+
+            $mst_container = MstContainer::find(3);
+            $capacity = $mst_container->capacity;
+            $boxSizes = array_fill(0,$boxSize,1); // Create an array of 2400 boxes with size 1
+            $containers = self::packBoxesIntoContainers($boxSizes,$capacity);
+            // dd($containers);
+            $creation = [];
             foreach ($containers as $summary_box) {
                 array_push($creation,[
                     'id_type_delivery' => 2,
@@ -199,30 +151,39 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'id_container' => 2, //
                     'id_lsp' => $lsp->id ?? 2, // ini cari table mst lsp by code cogsingne
                     'summary_box' => $summary_box,
-                    'code_consignee' => $val['code_consignee'],
-                    'etd_jkt' => $val['etd_jkt'],
-                    'etd_ypmi' => $val['etd_ypmi'],
-                    'etd_wh' => $val['etd_wh'],
+                    'code_consignee' => $data[0]['code_consignee'],
+                    'etd_jkt' => $data[0]['etd_jkt'],
+                    'etd_ypmi' => $data[0]['etd_ypmi'],
+                    'etd_wh' => $data[0]['etd_wh'],
                     'measurement' => $mst_container->measurement ?? null,
-                    'id_prospect_container' => $val['id_prospect_container'],
-                    'item_no' => $key
+                    'id_prospect_container' => $data[0]['id_prospect_container'],
                 ]);
+            }
+
+            return $creation;
+        })->toArray();
+
+
+
+        $id_prospect_container_creation = [];
+        foreach ($delivery_plan as $creations) {
+            foreach ($creations as $item) {
+                $store = RegularDeliveryPlanProspectContainerCreation::create($item);
+                $id_prospect_container_creation[] = $store->id;
+
             }
         }
 
-        foreach ($creation as $item) {
-             $store = RegularDeliveryPlanProspectContainerCreation::create($item);
-             RegularDeliveryPlan::where([
-                 'item_no' => $item['item_no'],
-                 'id_prospect_container' => $item['id_prospect_container'],
-             ])->get()->transform(function ($item) use ($store){
-                 $item->id_prospect_container_creation = $store->id;
-                 $item->save();
-             });
-         }
+        $test = RegularDeliveryPlan::whereIn('id_prospect_container',$params->id)->get();
+        foreach ($test as $key => $value) {
+            foreach ($id_prospect_container_creation as  $id) {
+                $value->id_prospect_container_creation = $id;
+                $value->save();
+            }
+        }
+
 
         if($is_transaction) DB::commit();
-        return $creation;
         } catch (\Throwable $th) {
              if($is_transaction) DB::rollBack();
              throw $th;
@@ -242,6 +203,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $item->id_mot = $item->refMstMot->id;
                 $item->net_weight = $item->refMstContainer->net_weight;
                 $item->gross_weight = $item->refMstContainer->gross_weight;
+                $item->container_type = $item->refMstContainer->container_type;
 
                 unset(
                     $item->refRegularDeliveryPlanPropspectContainer,
