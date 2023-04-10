@@ -155,7 +155,11 @@ class QueryRegularDeliveryPlan extends Model {
         ->where(function ($query) use ($params){
             $category = $params->category ?? null;
             if($category) {
-                $query->where($category, 'ilike', $params->kueri);
+                if($category == 'cust_name'){
+                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+                } else {
+                    $query->where($category, 'ilike', $params->value);
+                }
             }
 
             // $filterdate = Helper::filterDate($params);
