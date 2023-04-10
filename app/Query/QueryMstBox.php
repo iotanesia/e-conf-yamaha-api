@@ -120,7 +120,18 @@ class QueryMstBox extends Model {
 
     public static function byItemNoCdConsignee($itemNo,$consingee)
     {
-        return self::where('item_no',$itemNo)->where('code_consignee',$consingee)->first();
+        // echo 'item no : '.$itemNo." consignee : ".$consingee;
+        // die();
+        $tes = self::where('item_no',$itemNo)->where('code_consignee',$consingee)->first();
+
+        DB::table('box_temporary')->insert([
+            'item_no' => $itemNo,
+            'consignee' => $consingee,
+            'status' => $tes ? 1 : 0,
+            'id_box' => $tes->id,
+            'qty' => $tes->qty
+        ]);
+        // return self::where('item_no',$itemNo)->where('code_consignee',$consingee)->first();
     }
 
 
