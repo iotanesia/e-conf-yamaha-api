@@ -463,7 +463,7 @@ class QueryRegularOrderEntryUpload extends Model {
                        "id_regular_order_entry" => $upload->id_regular_order_entry,
                        "created_at" => now(),
                        "is_inquiry" => 0,
-                       'datasource' => $items->datasource,
+                       'datasource' => $item->datasource,
                     //    "id_regular_order_entry_upload_detail" => $item->id,
                        "uuid" => (string) Str::uuid()
                    ]);
@@ -509,6 +509,7 @@ class QueryRegularOrderEntryUpload extends Model {
     public static function getDifferentPart($id,$id_regular_order_entry_upload){
 
         return DB::select(DB::raw("SELECT
+                    a.datasource,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
@@ -528,6 +529,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     a.id = ? and b.id = ?
                     EXCEPT
                     SELECT
+                    a.datasource,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
