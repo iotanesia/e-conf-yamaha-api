@@ -529,7 +529,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     a.id = ? and b.id = ?
                     EXCEPT
                     SELECT
-                    a.datasource,
+                    c.datasource,
                     c.code_consignee,
                     c.model, c.item_no,
                     c.disburse,
