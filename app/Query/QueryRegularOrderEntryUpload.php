@@ -463,6 +463,7 @@ class QueryRegularOrderEntryUpload extends Model {
                        "id_regular_order_entry" => $upload->id_regular_order_entry,
                        "created_at" => now(),
                        "is_inquiry" => 0,
+                       'datasource' => $items->datasource,
                     //    "id_regular_order_entry_upload_detail" => $item->id,
                        "uuid" => (string) Str::uuid()
                    ]);
@@ -483,7 +484,6 @@ class QueryRegularOrderEntryUpload extends Model {
                        return [
                            'id_box' => $item_box->id_box,
                            'id_regular_delivery_plan' => $store->id,
-                           'datasource' => $store->refRegularOrderEntry->datasource,
                            'created_at' => now()
                        ];
                    })->toArray();
