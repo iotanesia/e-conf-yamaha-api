@@ -131,7 +131,7 @@ class QueryMstBox extends Model {
             'id_box' => $tes->id,
             'qty' => $tes->qty
         ]);
-        // return self::where('item_no',$itemNo)->where('code_consignee',$consingee)->first();
+        return self::where('item_no',$itemNo)->where('code_consignee',$consingee)->first();
     }
 
 
