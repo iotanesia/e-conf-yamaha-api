@@ -115,17 +115,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
             $id_prospect_container = $delivery->id_prospect_container;
             $data = RegularDeliveryPlan::where('id_prospect_container',$id_prospect_container)->get()->map(function ($item){
-                $qty = 0;
-                foreach ($item->manyDeliveryPlanBox as $box) {
-                    $qty += $box->refBox->qty;
-                }
+                $qty = $item->manyDeliveryPlanBox->count();
                 $item->total_qty = $qty;
                 unset(
                     $item->manyDeliveryPlanBox
                 );
                 return $item;
             })->toArray();
-
 
             $lsp = MstLsp::where('code_consignee',$data[0]['code_consignee'])
             ->where('id_type_delivery',2)
@@ -280,18 +276,21 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
 
         $container = MstContainer::find(3); // 40HC
-        $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',[
-            3530,
-            3571,
-            3568
-        ])->get()
+        $delivery_plan_box = RegularDeliveryPlanBox::select('id_box', DB::raw('count(id_box) as count_box'))
+        ->whereIn('id_regular_delivery_plan',[
+            4659,
+            4663,
+            4670,
+            4674,
+        ])->groupBy('id_box')
+        ->get()
         ->map(function ($item){
             return [
                 'label' => $item->refBox->no_box,
                 'w' =>  floatval($item->refBox->width/1000),
                 'h' => floatval($item->refBox->height/1000),
                 'l' => floatval($item->refBox->length/1000),
-                'q' => $item->refBox->qty,
+                'q' => $item->count_box,
                 'priority' => 1,
                 'stackingCapacity' => 1,
                 'rotations' => [
