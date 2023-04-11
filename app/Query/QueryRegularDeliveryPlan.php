@@ -278,7 +278,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             if(count($data) == 0) throw new \Exception("Data not found", 400);
 
-            $no_packaging = $data[0]['order_no'].substr(mt_rand(),0,5);
+            $no_packaging = $data[0]['order_no'].'-'.substr(mt_rand(),0,5);
             $tanggal = $check[0]['etd_jkt'];
             $code_consignee = $check[0]['code_consignee'];
 
