@@ -488,7 +488,7 @@ class QueryRegularDeliveryPlan extends Model {
 
         $data->transform(function ($item) {
             return [
-                'code_consignee' => $item->code_consignee,
+                'code_consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2,
                 'customer_name' => $item->refMstConsignee->nick_name,
                 'etd_jkt' => $item->etd_jkt,
                 'etd_wh' => $item->etd_wh,
@@ -498,7 +498,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'via' => $item->mot,
                 'freight_chart' => 'COLLECT',
                 'incoterm' => 'FOB',
-                'shipped_by' => 'YPMI',
+                'shipped_by' => $item->refMstMot->name,
                 'container_value' => $item->container_type,
                 'container_type' => $item->container_value,
                 'net_weight' => $item->net_weight,
