@@ -585,6 +585,8 @@ class QueryRegularDeliveryPlan extends Model {
             "etd_wh" => $params->etd_wh,
             "etd_jkt" => $params->etd_jkt,
             "code_consignee" => $params->code_consignee,
+            "datasource" => $params->datasource,
+            "is_actual" => 0
         ];
     }
 
