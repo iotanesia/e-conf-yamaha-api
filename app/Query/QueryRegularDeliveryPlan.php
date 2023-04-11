@@ -507,7 +507,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'measurement' => $item->measurement,
                 'port' => $item->port,
                 'type_delivery' => $item->type_delivery,
-                'count' => $item->summary_box_sum,
+                'count' => $item->summary_container,
                 'to' => $item->refMstLsp->name ?? null,
                 'status' => $item->status ?? null,
                 'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
