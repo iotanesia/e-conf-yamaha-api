@@ -549,7 +549,7 @@ class QueryRegularDeliveryPlan extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            $update = RegularDeliveryPlanShippingInsructionCreation::find($request->id_shipping_instruction_creation);
+            $update = RegularDeliveryPlanShippingInsructionCreation::find($request->id);
             if(!$update) throw new \Exception("Data not found", 400);
             $update->status = Constant::FINISH;
             $update->save();
