@@ -90,7 +90,8 @@ Route::prefix('v1/regular')
             Route::get('/',[DeliveryPlanController::class,'shippingInstruction']);
             Route::post('/',[DeliveryPlanController::class,'shippingInstructionStore']);
             Route::post('/update-status',[DeliveryPlanController::class,'shippingInstructionUpdate']);
-            Route::get('/list-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionListDraft']);
+            Route::get('/draft/{id}',[DeliveryPlanController::class,'shippingInstructionListDraft']);
+            Route::get('/draft/detail/{id}',[DeliveryPlanController::class,'shippingInstructionListDraftDetail']);
             Route::post('/download-dok/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDoc']);
             Route::post('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);

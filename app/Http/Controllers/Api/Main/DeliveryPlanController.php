@@ -222,6 +222,17 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function shippingInstructionListDraftDetail(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::shippingDraftDokDetail($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function getBml(Request $request) {
         try {
             return ResponseInterface::responseData(

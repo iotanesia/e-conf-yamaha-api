@@ -689,6 +689,16 @@ class QueryRegularDeliveryPlan extends Model {
         ];
     }
 
+    public static function shippingDraftDokDetail($params,$id)
+    {
+        $data = RegularDeliveryPlanShippingInsructionCreationDraft::where('id',$id)->first();
+
+        if(!$data) throw new \Exception("Data not found", 400);
+        return [
+            'items' => $data
+        ];
+    }
+
     public static function bml($params)
     {
         $data = Model::where('status_bml',1)->paginate($params->limit ?? null);
