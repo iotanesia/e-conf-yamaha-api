@@ -20,7 +20,9 @@ class RegularStokConfirmation extends Model
         "created_by",
         "updated_at",
         "updated_by",
-        "deleted_at"
+        "deleted_at",
+        "status_instock",
+        "status_outstock"
     ];
 
     public function refRegularDeliveryPlan()
