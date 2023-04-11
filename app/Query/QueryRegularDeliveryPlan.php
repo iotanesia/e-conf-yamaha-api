@@ -167,7 +167,6 @@ class QueryRegularDeliveryPlan extends Model {
             $date_to = str_replace('-','',$params->date_to);
             if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
         })
-        ->where('is_inquiry',0)
         ->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
