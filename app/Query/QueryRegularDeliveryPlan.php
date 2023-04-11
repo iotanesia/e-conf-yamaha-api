@@ -553,10 +553,10 @@ class QueryRegularDeliveryPlan extends Model {
             if(!$update) throw new \Exception("Data not found", 400);
             $update->status = Constant::FINISH;
             $update->save();
-            $prospectContainer = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction_creation',$request->id_shipping_instruction_creation)->get()->pluck('id');
+            $prospectContainer = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction_creation',$request->id)->get()->pluck('id');
             RegularDeliveryPlan::whereIn('id_prospect_container_creation',$prospectContainer)->update(['status_bml'=>1]);
             $regStok = RegularDeliveryPlan::whereIn('id_prospect_container_creation',$prospectContainer)->get();
-            $update_status_bml = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction_creation',$request->id_shipping_instruction_creation)->first();
+            $update_status_bml = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction_creation',$request->id)->first();
             $update_status_bml->status_bml = 1;
             $update_status_bml->save();
             $regStok->map(function($item){
