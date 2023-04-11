@@ -25,7 +25,11 @@ class RegularStokConfirmation extends Model
         "updated_by",
         "deleted_at",
         "status_instock",
-        "status_outstock"
+        "status_outstock",
+        "code_consignee",
+        "datasource",
+        "production",
+        "is_actual"
     ];
 
     public function refRegularDeliveryPlan()
