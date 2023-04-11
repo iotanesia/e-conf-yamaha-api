@@ -572,11 +572,13 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function paramStok($params) {
         $sum = 0;
-        $qty = $params->manyDeliveryPlanBox->count() ?? 0 ;
+        foreach ($params->manyDeliveryPlanBox as $value) {
+            $sum += $value->refBox->qty;
+        }
         return [
             "id_regular_delivery_plan" => $params->id,
-            "count_box" => $qty,
-            "production" => $qty,
+            "count_box" => $params->manyDeliveryPlanBox->count() ?? 0,
+            "production" => $sum,
             "in_dc" => Constant::IS_NOL,
             "in_wh" => Constant::IS_NOL,
             "status_instock" => Constant::STS_STOK,
@@ -585,7 +587,6 @@ class QueryRegularDeliveryPlan extends Model {
             "etd_wh" => $params->etd_wh,
             "etd_jkt" => $params->etd_jkt,
             "code_consignee" => $params->code_consignee,
-            "datasource" => $params->datasource,
             "is_actual" => 0
         ];
     }
