@@ -197,6 +197,43 @@ class QueryStockConfirmationHistory extends Model {
         ];
     }
 
+    public static function fixedQuantity($request)
+    {
+        $data = RegularStokConfirmation::where('is_actual',Constant::IS_NOL)->paginate($request->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+
+                if (Carbon::now() <= Carbon::parse($item->refRegularDeliveryPlan->etd_ypmi)) {
+                    if ($item->status_instock == 1 || $item->status_instock == 2 && $item->status_outstock == 1 || $item->status_outstock == 2 && $item->in_dc = 0 && $item->in_wh == 0) $status = 'In Process';
+                    if ($item->status_instock == 3 && $item->status_outstock == 3) $status = 'Finish Production';
+                } else {
+                    $status = 'Out Of Date';
+                }
+
+                $item->status_tracking = $status ?? null;
+                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+                $item->item_no = $item->refRegularDeliveryPlan->refPart->item_serial;
+                $item->item_name = $item->refRegularDeliveryPlan->refPart->description;
+                $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
+                $item->cust_order_no = $item->refRegularDeliveryPlan->order_no;
+                $item->qty = $item->refRegularDeliveryPlan->qty;
+                $item->etd_ypmi = $item->refRegularDeliveryPlan->etd_ypmi;
+                $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh;
+                $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt;
+                $item->production = ($item->qty) - ($item->in_dc);
+
+                unset(
+                    $item->refRegularDeliveryPlan,
+                );
+
+                return $item;
+            }),
+            'last_page' => $data->lastPage()
+        ];
+    }
+
     public static function instockScanProcess($params, $is_transaction =  true)
     {
         if($is_transaction) DB::beginTransaction();
