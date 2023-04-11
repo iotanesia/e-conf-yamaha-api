@@ -583,6 +583,9 @@ class QueryRegularDeliveryPlan extends Model {
             "in_wh" => Constant::IS_NOL,
             "status_instock" => Constant::STS_STOK,
             "status_outstock" => Constant::STS_STOK,
+            "etd_ypmi" => $params->etd_ypmi,
+            "etd_wh" => $params->etd_wh,
+            "etd_jkt" => $params->etd_jkt
         ];
     }
 
