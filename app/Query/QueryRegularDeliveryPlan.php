@@ -488,7 +488,8 @@ class QueryRegularDeliveryPlan extends Model {
 
         $data->transform(function ($item) {
             return [
-                'code_consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2,
+                'code_consignee' => $item->code_consignee,
+                'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2,
                 'customer_name' => $item->refMstConsignee->nick_name,
                 'etd_jkt' => $item->etd_jkt,
                 'etd_wh' => $item->etd_wh,
