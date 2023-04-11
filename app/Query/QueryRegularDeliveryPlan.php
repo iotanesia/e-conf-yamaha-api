@@ -678,7 +678,10 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function shippingDraftDok($params,$id)
     {
-        $data = RegularDeliveryPlanShippingInsructionCreationDraft::where('id_regular_delivery_plan_shipping_instruction_creation',$id)->paginate($params->limit ?? null);
+        $data = RegularDeliveryPlanShippingInsructionCreationDraft::select('id','no_draft','created_at')
+            ->where('id_regular_delivery_plan_shipping_instruction_creation',$id)
+            ->paginate($params->limit ?? null);
+
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->items(),
