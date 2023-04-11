@@ -128,7 +128,7 @@ class QueryMstBox extends Model {
 
         DB::table('box_temporary')->insert([
             'item_no' => $itemNo,
-            'consignee' => $consingee,
+            'consignee' => trim($consingee),
             'status' => $tes ? 1 : 0,
             'id_box' => $tes->id,
             'qty' => $tes->qty
