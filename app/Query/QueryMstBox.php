@@ -124,14 +124,12 @@ class QueryMstBox extends Model {
         // die();
         $tes = self::where('item_no',trim($itemNo))
             ->where('code_consignee',trim($consingee))
-            ->first();
+            ->first() ?? null;
 
         DB::table('box_temporary')->insert([
-            'item_no' => $itemNo,
+            'item_no' => trim($itemNo),
             'consignee' => trim($consingee),
-            'status' => $tes ? 1 : 0,
-            'id_box' => $tes->id,
-            'qty' => $tes->qty
+            'status' => $tes ? 1 : 0
         ]);
         return $tes;
     }
