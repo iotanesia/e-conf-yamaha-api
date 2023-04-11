@@ -11,6 +11,7 @@ use App\Models\MstLsp;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Str;
@@ -167,14 +168,16 @@ class QueryStockConfirmationHistory extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item){
 
-                if ($item->status == 1) $status = 'in process';
-                if ($item->status == 2 && $item->in_dc > 0 && $item->in_wh == 0) $status = 'in stock';
-                if ($item->status == 2 && $item->in_dc > 0 && $item->in_wh > 0) $status = 'out stock';
-                if ($item->status == 3) $status = 'finish production';
+                if (Carbon::now() <= Carbon::parse($item->refRegularDeliveryPlan->etd_ypmi)) {
+                    if ($item->status_instock == 1 || $item->status_instock == 2 && $item->status_outstock == 1 || $item->status_outstock == 2 && $item->in_dc = 0 && $item->in_wh == 0) $status = 'In Process';
+                    if ($item->status_instock == 3 && $item->status_outstock == 3) $status = 'Finish Production';
+                } else {
+                    $status = 'Out Of Date';
+                }
 
                 $item->status_tracking = $status ?? null;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
-                $item->item_no = $item->refRegularDeliveryPlan->item_no;
+                $item->item_no = $item->refRegularDeliveryPlan->refPart->item_serial;
                 $item->item_name = $item->refRegularDeliveryPlan->refPart->description;
                 $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
                 $item->cust_order_no = $item->refRegularDeliveryPlan->order_no;
