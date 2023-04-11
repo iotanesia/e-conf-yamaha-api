@@ -149,5 +149,10 @@ Route::prefix('v1/regular')
 
     });
 
+    // tracking ss
+    Route::group(['prefix' => 'fixed-quantity'],function (){
+        Route::get('/',[StockConfirmationController::class,'fixedQuantity']);
+    });
+
 
 });

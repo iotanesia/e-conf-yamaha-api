@@ -110,6 +110,17 @@ class StockConfirmationController extends Controller
         }
     }
 
+    public function fixedQuantity(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryStockConfirmationHistory::fixedQuantity($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function instockSubmit(Request $request)
     {
         try {
