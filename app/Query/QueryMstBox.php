@@ -122,7 +122,9 @@ class QueryMstBox extends Model {
     {
         // echo 'item no : '.$itemNo." consignee : ".$consingee;
         // die();
-        $tes = self::where('item_no',$itemNo)->where('code_consignee',$consingee)->first();
+        $tes = self::where('item_no',trim($itemNo))
+            ->where('code_consignee',trim($consingee))
+            ->first();
 
         DB::table('box_temporary')->insert([
             'item_no' => $itemNo,
