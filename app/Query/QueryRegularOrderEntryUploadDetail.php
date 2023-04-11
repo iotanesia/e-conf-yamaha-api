@@ -57,7 +57,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
             return [
                 'items' => $data->map(function ($item){
-                    $box = self::getDetailBox($item->uuid);
+                    $box = self::getDetailBox($item->id);
                     $custname = self::getCustName($item->code_consignee);
                     $itemname = self::getPart($item->item_no);
 
@@ -100,9 +100,9 @@ class QueryRegularOrderEntryUploadDetail extends Model {
         });
     }
 
-    public static function getDetailBox($uuid){
+    public static function getDetailBox($id){
         $data = RegularOrderEntryUploadDetailBox::select('mst_box.qty','mst_box.length','mst_box.width','mst_box.height')
-                ->where('uuid_regular_order_entry_upload_detail', $uuid)
+                ->where('id_regular_order_entry_upload_detail', $id)
                 ->join('mst_box','mst_box.id','regular_order_entry_upload_detail_box.id_box')
                 ->get();
 
