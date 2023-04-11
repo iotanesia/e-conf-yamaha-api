@@ -498,7 +498,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'via' => $item->mot,
                 'freight_chart' => 'COLLECT',
                 'incoterm' => 'FOB',
-                'shipped_by' => $item->refMstMot->name,
+                'shipped_by' => $item->refMstMot->name ?? null,
                 'container_value' => $item->container_type,
                 'container_type' => $item->container_value,
                 'net_weight' => $item->net_weight,
