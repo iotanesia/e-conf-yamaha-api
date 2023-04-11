@@ -134,7 +134,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             }
 
 
-            $mst_container = MstContainer::find(3);
+            $mst_container = MstContainer::find(2);
             $capacity = $mst_container->capacity;
             $boxSizes = array_fill(0,$boxSize,1); // Create an array of 2400 boxes with size 1
             $containers = self::packBoxesIntoContainers($boxSizes,$capacity);
@@ -199,6 +199,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $item->id_mot = $item->refMstMot->id;
                 $item->net_weight = $item->refMstContainer->net_weight;
                 $item->gross_weight = $item->refMstContainer->gross_weight;
+                $item->measurement = $item->refMstContainer->measurement;
                 $item->container_type = $item->refMstContainer->container_type;
 
                 unset(
