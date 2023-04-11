@@ -706,9 +706,20 @@ class QueryRegularDeliveryPlan extends Model {
     {
         $data = Model::where('status_bml',1)->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
+
         return [
-            'items' => $data->items(),
-            'last_page' => $data->lastPage()
+            'items' => $data->getCollection()->transform(function($item){
+                $item->item_no = $item->refPart->item_serial;
+                unset($item->refPart);
+
+                return $item;
+            }),
+            'attributes' => [
+                'total' => $data->total(),
+                'current_page' => $data->currentPage(),
+                'from' => $data->currentPage(),
+                'per_page' => (int) $data->perPage(),
+            ]
         ];
     }
 
