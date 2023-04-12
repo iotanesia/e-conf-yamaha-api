@@ -346,8 +346,8 @@ class QueryStockConfirmationHistory extends Model {
 
             $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
             if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
-            $qty = $delivery_plan_box->qty;
             $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+            $qty = $stock_confirmation->qty;
             $status = $stock_confirmation->status;
             $in_stock_wh = $stock_confirmation->in_wh;
             $in_wh_total = $in_stock_wh + $qty;
