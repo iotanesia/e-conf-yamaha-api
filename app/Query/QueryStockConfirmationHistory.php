@@ -314,6 +314,7 @@ class QueryStockConfirmationHistory extends Model {
             $in_dc_total = $in_stock_dc + $qty;
 
             $stock_confirmation->in_dc = $in_dc_total;
+            $stock_confirmation->production = $stock_confirmation->production - $in_dc_total;
             $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
             $stock_confirmation->save();
 
