@@ -29,5 +29,6 @@ class Constant
     const PATHFILE = [
         'qr' => '/app/qrcode/label'
     ];
+    const TRACKING = [2,3];
 }
 
