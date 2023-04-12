@@ -308,16 +308,18 @@ class QueryStockConfirmationHistory extends Model {
             ]);
 
             $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
+            // dd($delivery_plan_box);
             if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
             $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
             $qty = $stock_confirmation->qty;
             $status = $stock_confirmation->status;
             $in_stock_dc = $stock_confirmation->in_dc;
-            $in_dc_total = $in_stock_dc + $qty;
+            $in_dc_total = $in_stock_dc + $delivery_plan_box->qty_pcs_box;
 
             $stock_confirmation->in_dc = $in_dc_total;
-            $stock_confirmation->production = $stock_confirmation->production - $in_dc_total;
+            $stock_confirmation->production = $qty - $in_dc_total;
             $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
+            dd($stock_confirmation);
             $stock_confirmation->save();
 
             self::create([
