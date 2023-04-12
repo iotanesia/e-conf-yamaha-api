@@ -201,7 +201,7 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function fixedQuantity($request)
     {
-        $data = RegularStokConfirmation::where('is_actual',Constant::IS_NOL)->paginate($request->limit ?? null);
+        $data = RegularStokConfirmation::where('is_actual',Constant::IS_NOL)->where('status_instock', 2)->paginate($request->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
