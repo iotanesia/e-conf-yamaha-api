@@ -11,6 +11,8 @@ use App\Models\MstLsp;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
+use App\Models\RegularFixedQuantityConfirmation;
+use App\Models\RegularFixedQuantityConfirmationBox;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -201,37 +203,11 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function fixedQuantity($request)
     {
-        $data = RegularStokConfirmation::where('is_actual',Constant::IS_NOL)->where('status_instock', 2)->paginate($request->limit ?? null);
+        $data = RegularFixedQuantityConfirmation::where('is_actual',Constant::IS_NOL)->paginate($request->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
-            'items' => $data->getCollection()->transform(function($item){
-
-                if (Carbon::now() <= Carbon::parse($item->refRegularDeliveryPlan->etd_ypmi)) {
-                    if ($item->status_instock == 1 || $item->status_instock == 2 && $item->status_outstock == 1 || $item->status_outstock == 2 && $item->in_dc = 0 && $item->in_wh == 0) $status = 'In Process';
-                    if ($item->status_instock == 3 && $item->status_outstock == 3) $status = 'Finish Production';
-                } else {
-                    $status = 'Out Of Date';
-                }
-
-                $item->status_tracking = $status ?? null;
-                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
-                $item->item_no = $item->refRegularDeliveryPlan->refPart->item_serial;
-                $item->item_name = $item->refRegularDeliveryPlan->refPart->description;
-                $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
-                $item->cust_order_no = $item->refRegularDeliveryPlan->order_no;
-                $item->qty = $item->refRegularDeliveryPlan->qty;
-                $item->etd_ypmi = $item->refRegularDeliveryPlan->etd_ypmi;
-                $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh;
-                $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt;
-                $item->production = ($item->qty) - ($item->in_dc);
-
-                unset(
-                    $item->refRegularDeliveryPlan,
-                );
-
-                return $item;
-            }),
+            'items' => $data->items(),
             'last_page' => $data->lastPage()
         ];
     }
@@ -357,6 +333,47 @@ class QueryStockConfirmationHistory extends Model {
             $stock_confirmation->in_dc = $in_dc_total;
             $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
             $stock_confirmation->save();
+
+            if ($stock_confirmation->in_dc == 0 && $stock_confirmation->in_wh == $stock_confirmation->qty && $stock_confirmation->production == 0) {
+                $stock_confirmation->status_instock = 3;
+                $stock_confirmation->status_outstock = 3;
+                $stock_confirmation->save();
+
+                $fixed_quantity_confirmation = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan',$stock_confirmation->id_regular_delivery_plan)->first();
+                $fixed_quantity_confirmation->id_regular_delivery_plan = $stock_confirmation->id_regular_delivery_plan;
+                $fixed_quantity_confirmation->datasource = $fixed_quantity_confirmation->refRegularDeliveryPlan->datasource;
+                $fixed_quantity_confirmation->code_consignee = $fixed_quantity_confirmation->refRegularDeliveryPlan->code_consignee;
+                $fixed_quantity_confirmation->model = $fixed_quantity_confirmation->refRegularDeliveryPlan->model;
+                $fixed_quantity_confirmation->item_no = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no;
+                $fixed_quantity_confirmation->item_serial = $fixed_quantity_confirmation->refRegularDeliveryPlan->refPart->item_serial;
+                $fixed_quantity_confirmation->disburse = $fixed_quantity_confirmation->refRegularDeliveryPlan->disburse;
+                $fixed_quantity_confirmation->delivery = $fixed_quantity_confirmation->refRegularDeliveryPlan->delivery;
+                $fixed_quantity_confirmation->qty = $fixed_quantity_confirmation->refRegularDeliveryPlan->qty;
+                $fixed_quantity_confirmation->order_no = $fixed_quantity_confirmation->refRegularDeliveryPlan->order_no;
+                $fixed_quantity_confirmation->cust_item_no = $fixed_quantity_confirmation->refRegularDeliveryPlan->cust_item_no;
+                $fixed_quantity_confirmation->etd_ypmi = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_ypmi;
+                $fixed_quantity_confirmation->etd_wh = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_wh;
+                $fixed_quantity_confirmation->etd_jkt = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_jkt;
+                $fixed_quantity_confirmation->is_actual = 0;
+                $fixed_quantity_confirmation->status = 1;
+                $fixed_quantity_confirmation->save();
+
+                foreach ($fixed_quantity_confirmation->refRegularDeliveryPlan->manyDeliveryPlanBox as $item_box) {
+                    $fixed_quantity_confirmation_box = new RegularFixedQuantityConfirmationBox;
+                    $fixed_quantity_confirmation_box->id_fixed_quantity_confirmation = $fixed_quantity_confirmation->id;
+                    $fixed_quantity_confirmation_box->id_regular_delivery_plan = $fixed_quantity_confirmation->id_regular_delivery_plan;
+                    $fixed_quantity_confirmation_box->id_regular_delivery_plan_box = $item_box->id;
+                    $fixed_quantity_confirmation_box->id_box = $item_box->id_box;
+                    $fixed_quantity_confirmation_box->id_proc = $item_box->id_proc;
+                    $fixed_quantity_confirmation_box->qty_pcs_box = $item_box->qty_pcs_box;
+                    $fixed_quantity_confirmation_box->lot_packing = $item_box->lot_packing;
+                    $fixed_quantity_confirmation_box->packing_date = $item_box->packing_date;
+                    $fixed_quantity_confirmation_box->qrcode = $item_box->qrcode;
+                    $fixed_quantity_confirmation_box->is_labeling = $item_box->is_labeling;
+                    $fixed_quantity_confirmation_box->save();
+                }
+
+             }
 
             self::create([
                 'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
