@@ -579,6 +579,7 @@ class QueryRegularDeliveryPlan extends Model {
             "id_regular_delivery_plan" => $params->id,
             "count_box" => $params->manyDeliveryPlanBox->count() ?? 0,
             "production" => $params->qty,
+            "qty" => $params->qty,
             "in_dc" => Constant::IS_NOL,
             "in_wh" => Constant::IS_NOL,
             "status_instock" => Constant::STS_STOK,

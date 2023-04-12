@@ -29,7 +29,8 @@ class RegularStokConfirmation extends Model
         "code_consignee",
         "datasource",
         "production",
-        "is_actual"
+        "is_actual",
+        "qty"
     ];
 
     public function refRegularDeliveryPlan()
