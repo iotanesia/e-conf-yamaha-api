@@ -705,8 +705,10 @@ class QueryRegularDeliveryPlan extends Model {
     public static function shippingDraftDokDetail($params,$id)
     {
         $data = RegularDeliveryPlanShippingInsructionCreationDraft::where('id',$id)->first();
-
         if(!$data) throw new \Exception("Data not found", 400);
+
+        $data->container_type = $data->container;
+        $data->container_value = $data->container_count;
         return [
             'items' => $data
         ];

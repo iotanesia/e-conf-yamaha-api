@@ -43,6 +43,8 @@ class RegularDeliveryPlanShippingInsructionCreationDraft extends Model
         "net_weight",
         "measurement",
         "peb",
+        "count_container",
+        'count',
         "other",
         "created_at",
         "created_by" ,
