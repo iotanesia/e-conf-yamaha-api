@@ -449,9 +449,12 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function shipping($params)
     {
-        $data = RegularDeliveryPlanShippingInsruction::paginate($params->limit ?? null);
+        $data = RegularDeliveryPlanShippingInsruction::
+        where(function($query) use ($params){
+            if($params->datasource) $query->where('datasource',$params->datasource);
+        })
+        ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
-
         return [
             'items' => $data->items(),
             'last_page' => $data->lastPage()
