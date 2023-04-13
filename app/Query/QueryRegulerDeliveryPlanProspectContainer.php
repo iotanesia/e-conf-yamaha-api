@@ -111,8 +111,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
         $delivery_plan = RegularDeliveryPlan::select('id_prospect_container')->whereIn('id_prospect_container',$params->id)->groupBy('id_prospect_container')->get()
         ->transform(function ($delivery){
-
-
             $id_prospect_container = $delivery->id_prospect_container;
             $data = RegularDeliveryPlan::where('id_prospect_container',$id_prospect_container)->get()->map(function ($item){
                 $qty = $item->manyDeliveryPlanBox->count();
@@ -159,25 +157,21 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             return $creation;
         })->toArray();
 
-
-
-        $id_prospect_container_creation = [];
+        $prospect_container_creation = [];
         foreach ($delivery_plan as $creations) {
             foreach ($creations as $item) {
                 $store = RegularDeliveryPlanProspectContainerCreation::create($item);
-                $id_prospect_container_creation[] = $store->id;
+                $prospect_container_creation[] = $store;
 
             }
         }
 
-        $test = RegularDeliveryPlan::whereIn('id_prospect_container',$params->id)->get();
-        foreach ($test as $key => $value) {
-            foreach ($id_prospect_container_creation as  $id) {
-                $value->id_prospect_container_creation = $id;
-                $value->save();
-            }
+        foreach ($prospect_container_creation as $val) {
+            RegularDeliveryPlan::where('id_prospect_container',$val->id_prospect_container)
+            ->update([
+                'id_prospect_container_creation' => $val->id
+            ]);
         }
-
 
         if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
