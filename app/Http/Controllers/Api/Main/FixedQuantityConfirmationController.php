@@ -64,6 +64,17 @@ class FixedQuantityConfirmationController extends Controller
         }
     }
 
+    public function simulation(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedQuantityConfirmation::simulation($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function creation(Request $request)
     {
         try {

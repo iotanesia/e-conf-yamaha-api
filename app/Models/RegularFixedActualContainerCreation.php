@@ -56,7 +56,7 @@ class RegularFixedActualContainerCreation extends Model
         return $this->belongsTo(MstContainer::class,'id_container','id');
     }
 
-    public function refConsignee()
+    public function refMstConsignee()
     {
         return $this->belongsTo(MstConsignee::class,'code_consignee','code');
     }

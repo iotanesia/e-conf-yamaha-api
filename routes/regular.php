@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Main\OrderEntryUploadController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadDetailController;
 use App\Http\Controllers\Api\Main\DeliveryPlanController;
 use App\Http\Controllers\Api\Main\FixedQuantityConfirmationController;
+use App\Http\Controllers\Api\Main\FixedShippingInstructionController;
 use App\Http\Controllers\Api\Main\OrderEntryDcManagerController;
 use App\Http\Controllers\Api\Main\OrderEntryPcController;
 use App\Http\Controllers\Api\Main\ProspectContainerController;
@@ -166,6 +167,7 @@ Route::prefix('v1/regular')
 
         Route::group(['prefix' => 'actual-container'],function (){
             Route::get('/',[FixedQuantityConfirmationController::class,'getActualContainer']);
+            Route::get('/simulation',[FixedQuantityConfirmationController::class,'simulation']);
             Route::post('/creation',[FixedQuantityConfirmationController::class,'creation']);
             Route::post('/creation/detail',[FixedQuantityConfirmationController::class,'creationDetail']);
         });
@@ -173,6 +175,17 @@ Route::prefix('v1/regular')
         Route::group(['prefix' => 'booking'],function (){
             Route::post('/',[FixedQuantityConfirmationController::class,'generateNobooking']);
             Route::post('/detail',[FixedQuantityConfirmationController::class,'detailById']);
+        });
+
+        Route::group(['prefix' => 'shipping-instruction'],function (){
+            Route::get('/',[FixedShippingInstructionController::class,'shippingInstruction']);
+            Route::post('/',[FixedShippingInstructionController::class,'shippingInstructionStore']);
+            Route::post('/update-status',[FixedShippingInstructionController::class,'shippingInstructionUpdate']);
+            Route::get('/draft/{id}',[FixedShippingInstructionController::class,'shippingInstructionListDraft']);
+            Route::get('/draft/detail/{id}',[FixedShippingInstructionController::class,'shippingInstructionListDraftDetail']);
+            Route::post('/download-dok/{id}',[FixedShippingInstructionController::class,'shippingInstructionDownloadDoc']);
+            Route::post('/download-dok-draft/{id}',[FixedShippingInstructionController::class,'shippingInstructionDownloadDocDraft']);
+            Route::get('/{id}',[FixedShippingInstructionController::class,'shippingInstructionDetail']);
         });
     });
 
