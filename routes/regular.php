@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Main\OrderEntryController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadDetailController;
 use App\Http\Controllers\Api\Main\DeliveryPlanController;
+use App\Http\Controllers\Api\Main\FixedQuantityConfirmationController;
 use App\Http\Controllers\Api\Main\OrderEntryDcManagerController;
 use App\Http\Controllers\Api\Main\OrderEntryPcController;
 use App\Http\Controllers\Api\Main\ProspectContainerController;
@@ -154,5 +155,25 @@ Route::prefix('v1/regular')
         Route::get('/',[StockConfirmationController::class,'fixedQuantity']);
     });
 
+    //fixed
+    Route::group(['prefix' => 'fixed'],function (){
+        Route::group(['prefix' => 'quantity-confirmation'],function (){
+            Route::get('/',[FixedQuantityConfirmationController::class,'getFixedQuantity']);
+            Route::post('/no-packaging',[FixedQuantityConfirmationController::class,'noPackaging']);
+            Route::post('/inquiry',[FixedQuantityConfirmationController::class,'inquiryProcess']);
+            Route::post('/edit',[FixedQuantityConfirmationController::class,'update']);
+        });
+
+        Route::group(['prefix' => 'actual-container'],function (){
+            Route::get('/',[FixedQuantityConfirmationController::class,'getActualContainer']);
+            Route::post('/creation',[FixedQuantityConfirmationController::class,'creation']);
+            Route::post('/creation/detail',[FixedQuantityConfirmationController::class,'creationDetail']);
+        });
+
+        Route::group(['prefix' => 'booking'],function (){
+            Route::post('/',[FixedQuantityConfirmationController::class,'generateNobooking']);
+            Route::post('/detail',[FixedQuantityConfirmationController::class,'detailById']);
+        });
+    });
 
 });
