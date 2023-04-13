@@ -452,6 +452,7 @@ class QueryRegularDeliveryPlan extends Model {
         $data = RegularDeliveryPlanShippingInsruction::
         where(function($query) use ($params){
             if($params->datasource) $query->where('datasource',$params->datasource);
+            if($params->no_booking) $query->where('no_booking',$params->no_booking);
         })
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
