@@ -21,8 +21,8 @@ use App\Models\RegularProspectContainerCreation;
 use App\Models\RegularProspectContainerDetail;
 use App\Models\RegularProspectContainerDetailBox;
 use App\Models\RegularStokConfirmation;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -684,6 +684,12 @@ class QueryRegularDeliveryPlan extends Model {
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
+
+            return [
+                'items' => [
+                    'url' => url()->current().'/'.$pathToFile,
+                ],
+            ];
           } catch (\Throwable $th) {
               return Helper::setErrorResponse($th);
           }
