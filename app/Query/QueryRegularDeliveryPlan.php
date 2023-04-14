@@ -683,7 +683,7 @@ class QueryRegularDeliveryPlan extends Model {
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
-            ->download($filename);
+            ->download($filename); 
 
             return [
                 'items' => [
