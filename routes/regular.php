@@ -95,7 +95,7 @@ Route::prefix('v1/regular')
             Route::get('/draft/{id}',[DeliveryPlanController::class,'shippingInstructionListDraft']);
             Route::get('/draft/detail/{id}',[DeliveryPlanController::class,'shippingInstructionListDraftDetail']);
             Route::post('/download-dok/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDoc']);
-            Route::post('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
+            Route::get('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
         });
 
