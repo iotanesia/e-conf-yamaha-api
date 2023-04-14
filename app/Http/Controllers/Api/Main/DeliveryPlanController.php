@@ -202,6 +202,8 @@ class DeliveryPlanController extends Controller
     public function shippingInstructionDownloadDocDraft(Request $request,$id)
     {
         try {
+
+            // dd('zzz');
             $data = QueryRegularDeliveryPlan::downloadDocDraft($request,$id);
             $filename = 'shipping-instruction-draft'.$id.'.pdf';
             $pathToFile =  storage_path().'/app/shipping_instruction/'.$filename;
