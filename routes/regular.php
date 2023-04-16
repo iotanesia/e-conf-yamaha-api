@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Main\OrderEntryController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadDetailController;
 use App\Http\Controllers\Api\Main\DeliveryPlanController;
+use App\Http\Controllers\Api\Main\FixedPackingCreationController;
 use App\Http\Controllers\Api\Main\FixedQuantityConfirmationController;
 use App\Http\Controllers\Api\Main\FixedShippingInstructionController;
 use App\Http\Controllers\Api\Main\OrderEntryDcManagerController;
@@ -187,6 +188,13 @@ Route::prefix('v1/regular')
             Route::post('/download-dok-draft/{id}',[FixedShippingInstructionController::class,'shippingInstructionDownloadDocDraft']);
             Route::get('/{id}',[FixedShippingInstructionController::class,'shippingInstructionDetail']);
         });
-    });
 
+        Route::group(['prefix' => 'packing-creation'],function(){
+            Route::get('/',[FixedPackingCreationController::class,'getData']);
+            Route::post('/',[FixedPackingCreationController::class,'create']);
+            Route::post('/{id}',[FixedPackingCreationController::class,'update']);
+            Route::delete('/{id}',[FixedPackingCreationController::class,'delete']);
+            Route::get('/{id}',[FixedPackingCreationController::class,'detail']);
+        });
+    });
 });
