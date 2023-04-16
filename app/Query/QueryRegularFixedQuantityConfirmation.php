@@ -36,7 +36,29 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             $data = $query->paginate($params->limit ?? null);
             return [
-                'items' => $data->items(),
+                'items' => $data->getCollection()->transform(function($item){
+
+                    if (Carbon::now() <= Carbon::parse($item->refRegularDeliveryPlan->etd_ypmi)) {
+                        if ($item->refRegularDeliveryPlan->refRegularStockConfirmation->status_instock == 1 || $item->refRegularDeliveryPlan->refRegularStockConfirmation->status_instock == 2 && $item->refRegularDeliveryPlan->refRegularStockConfirmation->status_outstock == 1 || $item->refRegularDeliveryPlan->refRegularStockConfirmation->status_outstock == 2 && $item->refRegularDeliveryPlan->refRegularStockConfirmation->in_dc = 0 && $item->refRegularDeliveryPlan->refRegularStockConfirmation->in_wh == 0) $status = 'In Process';
+                        if ($item->refRegularDeliveryPlan->refRegularStockConfirmation->status_instock == 3 && $item->refRegularDeliveryPlan->refRegularStockConfirmation->status_outstock == 3) $status = 'Finish Production';
+                    } else {
+                        $status = 'Out Of Date';
+                    }
+
+                    $item->status_desc = $status ?? null;
+                    $item->customer_name = $item->refConsignee->nick_name;
+                    $item->item_name = $item->refRegularDeliveryPlan->refPart->description;
+                    $item->production = $item->refRegularDeliveryPlan->refRegularStockConfirmation->production ?? null;
+                    $item->in_dc = $item->refRegularDeliveryPlan->refRegularStockConfirmation->in_dc ?? null;
+                    $item->in_wh = $item->refRegularDeliveryPlan->refRegularStockConfirmation->in_wh ?? null;
+    
+                    unset(
+                        $item->refConsignee,
+                        $item->refRegularDeliveryPlan,
+                    );
+    
+                    return $item;
+                }),
                 'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
