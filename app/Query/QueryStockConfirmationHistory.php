@@ -339,7 +339,7 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->status_outstock = 3;
                 $stock_confirmation->save();
 
-                $fixed_quantity_confirmation = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan',$stock_confirmation->id_regular_delivery_plan)->first();
+                $fixed_quantity_confirmation = new RegularFixedQuantityConfirmation;
                 $fixed_quantity_confirmation->id_regular_delivery_plan = $stock_confirmation->id_regular_delivery_plan;
                 $fixed_quantity_confirmation->datasource = $fixed_quantity_confirmation->refRegularDeliveryPlan->datasource;
                 $fixed_quantity_confirmation->code_consignee = $fixed_quantity_confirmation->refRegularDeliveryPlan->code_consignee;
