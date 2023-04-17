@@ -210,6 +210,18 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function shippingInstructionDownloadDocDraftSave(Request $request,$id,$filename)
+    {
+        try {
+            $filename = 'shipping-instruction-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/shipping_instruction/'.$filename;
+            $data = QueryRegularDeliveryPlan::downloadDocDraftSave($request,$id,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function shippingInstructionListDraft(Request $request,$id)
     {
         try {

@@ -712,9 +712,29 @@ class QueryRegularDeliveryPlan extends Model {
 
             return [
                 'items' => [
-                    'url' => url()->current().'/'.$pathToFile,
+                    'url' => url('api/v1/regular/delivery-plan/shipping-instruction/download-dok-draft/'.$id.'/'.$filename),
                 ],
             ];
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
+    }
+
+    public static function downloadDocDraftSave($params,$id,$filename)
+    {
+        try {
+            $data = RegularDeliveryPlanShippingInsructionCreation::find($id);
+            $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
+            $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
+            $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
+            $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
+            $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
+            Pdf::loadView('pdf.shipping_instruction',[
+              'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename); 
           } catch (\Throwable $th) {
               return Helper::setErrorResponse($th);
           }

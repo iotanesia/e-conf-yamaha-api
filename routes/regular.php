@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Main\OrderEntryDcManagerController;
 use App\Http\Controllers\Api\Main\OrderEntryPcController;
 use App\Http\Controllers\Api\Main\ProspectContainerController;
 use App\Http\Controllers\Api\Main\PlanController;
+use App\Http\Controllers\APi\Main\ShippingInstructionController;
 use App\Http\Controllers\Api\Main\StockConfirmationController;
 
 //with middleware
@@ -97,6 +98,7 @@ Route::prefix('v1/regular')
             Route::get('/draft/detail/{id}',[DeliveryPlanController::class,'shippingInstructionListDraftDetail']);
             Route::get('/download-dok/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDoc']);
             Route::get('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
+            Route::get('/download-dok-draft/{id}/{filename}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraftSave']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
         });
 
@@ -104,6 +106,7 @@ Route::prefix('v1/regular')
             Route::post('/detail',[DeliveryPlanController::class,'detailById']);
             Route::post('/generate-no-booking',[DeliveryPlanController::class,'generateNobooking']);
             Route::post('/save-booking',[DeliveryPlanController::class,'savebooking']);
+            Route::get('/download/{id}',[ShippingInstructionController::class,'downloadDoc']);
         });
 
         Route::group(['prefix' => 'bml'],function(){
