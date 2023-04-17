@@ -456,15 +456,32 @@ class QueryRegularDeliveryPlan extends Model {
         })
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
+
+        $id_shipping_instruction = [];
+        foreach ($data as $value) {
+            $id_shipping_instruction[] = $value->id;
+        }
+        
+        $crontainer_creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id_shipping_instruction', $id_shipping_instruction)->get();
+
+        $no_packaging = [];
+        foreach ($crontainer_creation as $value) {
+            $no_packaging[] = $value->refRegularDeliveryPlanPropspectContainer->no_packaging;
+        }
+        
         return [
-            'items' => $data->items(),
+            'items' => $data->getCollection()->transform(function($item) use ($no_packaging){
+                $item->no_packaging = $no_packaging ?? null;
+
+                return $item;
+            }),
             'last_page' => $data->lastPage()
         ];
     }
 
     public static function shippingDetail($params,$id)
     {
-        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.etd_wh','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port'
+        $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.status_bml','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.etd_wh','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port'
         ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS summary_container')
         ,DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging")
         ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
@@ -485,11 +502,18 @@ class QueryRegularDeliveryPlan extends Model {
         ->leftJoin('mst_port_of_loading as e','regular_delivery_plan_prospect_container_creation.id_type_delivery','e.id_type_delivery')
         ->leftJoin('mst_container as f','regular_delivery_plan_prospect_container_creation.id_container','f.id')
         ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation','g.id')
-        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.etd_wh','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port')
+        ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.status_bml','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.etd_wh','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port')
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
         $data->transform(function ($item) {
+            
+            if ($item->status_bml == 1) {
+                $status_desc = 'BML Confirmed';
+            } else {
+                $status_desc = 'BML Inconfirmed';
+            }
+
             return [
                 'code_consignee' => $item->code_consignee,
                 'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2,
@@ -516,6 +540,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'status' => $item->status ?? null,
                 'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
                 'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null,
+                'status_desc' => $status_desc
             ];
         });
 

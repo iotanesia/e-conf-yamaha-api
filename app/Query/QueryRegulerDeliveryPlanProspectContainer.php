@@ -30,6 +30,22 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         })->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
+        $id_container = [];
+        foreach ($data as $value) {
+            $id_container[] = $value->id;
+        }
+        
+        $creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id_prospect_container', $id_container)->get();
+        
+        $id_creation = [];
+        foreach ($creation as $value) {
+            $id_creation[] = $value->id;
+        }
+        
+        $delivery_plan = RegularDeliveryPlan::whereIn('id_prospect_container_creation',$id_creation)->get();
+
+        if(count($delivery_plan) > 0) throw new \Exception("Data tidak ditemukan.", 400);
+
         $data->map(function ($item){
             $item->cust_name = $item->refConsignee->nick_name ?? null;
 
