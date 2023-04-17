@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Master\LspController;
 use App\Http\Controllers\Api\Master\MotController;
 use App\Http\Controllers\Api\Master\ShipmentController;
 use App\Http\Controllers\Api\Master\TypeDeliveryController;
+use App\Http\Controllers\Api\Master\SignatureController;
 use App\Query\QueryRegularOrderEntryUploadDetail;
 
 //with middleware
@@ -70,7 +71,7 @@ Route::prefix('v1/master')
         Route::get('/{id}',[BoxController::class,'show']);
         Route::delete('/{id}',[BoxController::class,'destroy']);
     });
-    
+
     // port of discharge
     Route::group(['prefix' => 'port-of-discharge'],function (){
         Route::get('/',[PortOfDischargeController::class,'index']);
@@ -156,7 +157,7 @@ Route::prefix('v1/master')
         Route::get('/{id}',[TypeDeliveryController::class,'show']);
         Route::delete('/{id}',[TypeDeliveryController::class,'destroy']);
     });
-    
+
     // shipment
     Route::group(['prefix' => 'shipment'],function (){
         Route::get('/',[ShipmentController::class,'index']);
@@ -165,5 +166,14 @@ Route::prefix('v1/master')
         Route::get('/{id}',[ShipmentController::class,'show']);
         Route::delete('/{id}',[ShipmentController::class,'destroy']);
         Route::get('/active/shipment-active',[ShipmentController::class,'isActive']);
+    });
+
+    // signature
+    Route::group(['prefix' => 'signature'],function (){
+        Route::get('/',[SignatureController::class,'index']);
+        Route::post('/',[SignatureController::class,'store']);
+        Route::put('/',[SignatureController::class,'update']);
+        Route::get('/{id}',[SignatureController::class,'show']);
+        Route::delete('/{id}',[SignatureController::class,'destroy']);
     });
 });
