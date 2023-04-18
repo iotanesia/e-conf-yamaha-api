@@ -9,6 +9,9 @@ class RegularStokConfirmationOutstockNote extends Model
 {
     use HasFactory;
     protected $table = 'regular_stock_confirmation_outstock_note';
+    protected $casts = [
+        'id_stock_confirmation' => 'json',
+    ];
     public $fillable = [
         "id",
         "shipper",
@@ -18,6 +21,7 @@ class RegularStokConfirmationOutstockNote extends Model
         "delivery_date",
         "truck_type",
         "truck_no",
+        "id_stock_confirmation",
         "created_at",
         "created_by",
         "updated_at",
@@ -27,6 +31,6 @@ class RegularStokConfirmationOutstockNote extends Model
    
     public function manyRegularStockConfirmationOutstockNoteDetail()
     {
-        return $this->hasMany(manyRegularStockConfirmationOutstockNoteDetail::class,'id_stock_confirmation_outstock_note','id');
+        return $this->hasMany(RegularStokConfirmationOutstockNoteDetail::class,'id_stock_confirmation_outstock_note','id');
     }
 }

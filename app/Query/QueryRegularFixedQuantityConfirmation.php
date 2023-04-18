@@ -191,6 +191,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $data->map(function ($item){
             $item->cust_name = $item->refConsignee->nick_name ?? null;
+            $item->status_desc = 'Confirmed';
 
             unset(
                 $item->refConsignee

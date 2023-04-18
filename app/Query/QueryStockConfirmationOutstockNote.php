@@ -23,31 +23,35 @@ class QueryStockConfirmationOutstockNote extends Model {
             Helper::generateCodeLetter($lastData);
             $stokConfirmation = RegularStokConfirmation::whereIn('id',$request->id)->get();
             $idDeliveryPlan = $stokConfirmation->pluck('id_regular_delivery_plan')->toArray();
-            $deliveryPlan = RegularDeliveryPlan::select(DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as code_consignee"),DB::raw("string_agg(DISTINCT c.name::character varying, ',') as lsp"))
+            $deliveryPlan = RegularDeliveryPlan::select(DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as code_consignee"),DB::raw("string_agg(DISTINCT c.name::character varying, ',') as lsp"),DB::raw("string_agg(DISTINCT d.name::character varying, ',') as truck_type"))
             ->whereIn('regular_delivery_plan.id',$idDeliveryPlan)
             ->join('regular_delivery_plan_prospect_container_creation as a','a.id','regular_delivery_plan.id_prospect_container_creation')
             ->join('mst_consignee as b','b.code','regular_delivery_plan.code_consignee')
             ->join('mst_lsp as c','c.id','a.id_lsp')
+            ->join('mst_type_delivery as d','d.id','a.id_type_delivery')
             ->get();
-            $deliveryPlanDetail = RegularDeliveryPlan::whereIn('regular_delivery_plan.id',$idDeliveryPlan)->get();
-            $dataSend =  $deliveryPlan->transform(function($item) use($lastData){
+
+            $dataSend =  $deliveryPlan->transform(function($item) use($lastData,$request){
                 return [
                     'shipper'=>MstShipment::where('is_active',Constant::IS_ACTIVE)->first()->shipment ?? null,
                     'yth'=>$item->lsp,
                     'consignee'=>$item->code_consignee,
                     'no_letters'=>Helper::generateCodeLetter($lastData),
-                    'delivery_date'=>Carbon::now()->format('d-m-Y'),
-                    'truck_type'=>'LCL'
+                    'delivery_date'=>Carbon::now()->format('Y-m-d'),
+                    'truck_type'=>$item->truck_type,
+                    'truck_no' => null,
+                    'id_stock_confirmation' =>$request->id
                 ];
             });
-            $dataSendDetail = $deliveryPlanDetail->transform(function($item){
-                return [
-                    'item_no' => $item->item_no,
-                    'order_no' => $item->order_no,
-                    'qty' => $item->refRegularStockConfirmation->count_box ?? null,
-                    'no_packing' => $item->refRegularDeliveryPlanProspectContainer->no_packing ?? null,
-                ];
-            });
+
+            $dataSendDetail = RegularStokConfirmation::select(DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as qty"),DB::raw("string_agg(DISTINCT b.no_packaging::character varying, ',') as no_packing"))
+                        ->whereIn('regular_stock_confirmation.id',$request->id)
+                        ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
+                        ->join('regular_delivery_plan_prospect_container as b','b.id','a.id_prospect_container')
+                        ->join('mst_part as c','c.item_no','a.item_no')
+                        ->groupBy('a.id')
+                        ->get();
+
             if(isset($dataSend[0])) {
                 $insert = Model::create($dataSend[0]);
                 $insert->manyRegularStockConfirmationOutstockNoteDetail()->createMany(self::getParamDetail($dataSendDetail,$insert));
@@ -60,14 +64,17 @@ class QueryStockConfirmationOutstockNote extends Model {
         }
     }
     public static function getParamDetail($params,$data) {
+        $res = [];
         foreach ($params as $value) {
             $res[] = [
                 'item_no' => $value->item_no,
                 'order_no' => $value->order_no,
                 'qty' => $value->qty,
                 'no_packing' => $value->no_packing,
-                'id_regular_delivery_plan' => $data->id
+                'id_stock_confirmation_outstock_note' => $data->id,
+                'id_stock_confirmation' => $value->id_stock_confirmation
             ];
         }
+        return $res;
     }
 }

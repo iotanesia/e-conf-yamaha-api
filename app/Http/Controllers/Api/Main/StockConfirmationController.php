@@ -143,6 +143,17 @@ class StockConfirmationController extends Controller
         }
     }
 
+    public function outstockDeliveryNote(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryStockConfirmationHistory::outstockDeliveryNote($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function saveOutStockNote(Request $request)
     {
         try {

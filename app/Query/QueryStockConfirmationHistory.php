@@ -8,11 +8,13 @@ use App\Models\RegularStokConfirmation;
 use App\ApiHelper as Helper;
 use App\Models\MstContainer;
 use App\Models\MstLsp;
+use App\Models\MstShipment;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
 use App\Models\RegularFixedQuantityConfirmation;
 use App\Models\RegularFixedQuantityConfirmationBox;
+use App\Models\RegularStokConfirmationOutstockNote;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -497,5 +499,40 @@ class QueryStockConfirmationHistory extends Model {
             if($is_transaction) DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function outstockDeliveryNote($request)
+    {
+        $data = RegularStokConfirmation::select(DB::raw("string_agg(DISTINCT c.name::character varying, ',') as yth"),DB::raw("string_agg(DISTINCT d.nick_name::character varying, ',') as username"),DB::raw("string_agg(DISTINCT e.name::character varying, ',') as jenis_truck"))
+                        ->whereIn('regular_stock_confirmation.id',$request->id_stock_confirmation)
+                        ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
+                        ->join('regular_delivery_plan_prospect_container_creation as b','b.id','a.id_prospect_container_creation')
+                        ->join('mst_lsp as c','c.id','b.id_lsp')
+                        ->join('mst_consignee as d','d.code','b.code_consignee')
+                        ->join('mst_type_delivery as e','e.id','b.id_type_delivery')
+                        ->paginate($request->limit ?? null);
+
+        if(!$data) throw new \Exception("Data not found", 400);
+
+        $items = RegularStokConfirmation::select(DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_number"),DB::raw("string_agg(DISTINCT c.description::character varying, ',') as item_name"),DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as quantity"),DB::raw("string_agg(DISTINCT b.no_packaging::character varying, ',') as no_packing_list"))
+                        ->whereIn('regular_stock_confirmation.id',$request->id_stock_confirmation)
+                        ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
+                        ->join('regular_delivery_plan_prospect_container as b','b.id','a.id_prospect_container')
+                        ->join('mst_part as c','c.item_no','a.item_no')
+                        ->groupBy('a.id')
+                        ->get();
+
+        return [
+            'items' => $data->transform(function($item) use ($items){
+                $item->shipment = MstShipment::where('is_active',Constant::IS_ACTIVE)->first()->shipment ?? null;
+                $item->truck_no = null;
+                $item->surat_jalan = Helper::generateCodeLetter(RegularStokConfirmationOutstockNote::latest()->first()) ?? null;
+                $item->delivery_date = Carbon::now()->format('Y-m-d');
+                $item->items = $items;
+
+                return $item;
+            }),
+            'last_page' => $data->lastPage()
+        ];
     }
 }
