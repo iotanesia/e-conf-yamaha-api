@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Main;
 
 use App\Http\Controllers\Controller;
+use App\Query\QueryRegularOrderEntryUploadDetailBox;
 use Illuminate\Http\Request;
 use App\ApiHelper as ResponseInterface;
 use App\Query\QueryRegularOrderEntryUploadDetail;
@@ -50,6 +51,28 @@ class OrderEntryUploadDetailController extends Controller
             //     "column" => QueryRegularOrderEntryUploadDetail::getColumn()
             // ]);
             return ResponseInterface::responseDataPivotNew(QueryRegularOrderEntryUploadDetail::getPivotDetail($request));
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function boxPivot($id){
+
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularOrderEntryUploadDetailBox::getBoxPivot($id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function boxPivotEdit($id, Request $request){
+
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularOrderEntryUploadDetailBox::editBoxPivot($id, $request)
+            );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }

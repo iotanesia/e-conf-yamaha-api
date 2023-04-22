@@ -65,7 +65,8 @@ Route::prefix('v1/regular')
          Route::get('/',[OrderEntryUploadDetailController::class,'index']);
          Route::put('/',[OrderEntryUploadDetailController::class,'update']);
          Route::post('/edit-pivot',[OrderEntryUploadDetailController::class,'editPivot']);
-         Route::get('/box-pivot',[OrderEntryUploadDetailController::class,'editPivot']);
+         Route::get('/box-pivot/{id}',[OrderEntryUploadDetailController::class,'boxPivot']);
+         Route::post('/box-pivot/{id}',[OrderEntryUploadDetailController::class,'boxPivotEdit']);
          Route::get('/{id}',[OrderEntryUploadDetailController::class,'show']);
       });
 

@@ -13,6 +13,7 @@ class RegularOrderEntryUploadDetailBox extends Model
     public $fillable = [
         "id",
         "uuid_regular_order_entry_upload_detail",
+        "id_regular_order_entry_upload_detail",
         "id_box",
         "created_at",
         "created_by",
