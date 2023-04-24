@@ -25,7 +25,8 @@ class RegularDeliveryPlanProspectContainer extends Model
         "updated_at",
         "updated_by",
         "deleted_at",
-        "uuid"
+        "uuid",
+        "is_prospect"
     ];
 
     public static function boot()

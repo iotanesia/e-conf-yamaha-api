@@ -31,33 +31,35 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             if($params->date_start || $params->date_finish)
                 $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
 
-        })->paginate($params->limit ?? null);
+        })->where('is_prospect', $params->is_prospect ?? 0)
+            ->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
-        $id_container = [];
-        foreach ($data as $value) {
-            $id_container[] = $value->id;
-        }
+//        $id_container = [];
+//        foreach ($data as $value) {
+//            $id_container[] = $value->id;
+//        }
+//
+//        $creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id_prospect_container', $id_container)->get();
+//
+//        $id_creation = [];
+//        foreach ($creation as $value) {
+//            $id_creation[] = $value->id;
+//        }
+//
+//        $delivery_plan = RegularDeliveryPlan::whereIn('id_prospect_container_creation',$id_creation)->get();
+//
+//        if(count($delivery_plan) == 0) throw new \Exception("Data tidak ditemukan.", 400);
+//
+//        $data->map(function ($item){
+//            $item->cust_name = $item->refConsignee->nick_name ?? null;
+//
+//            unset(
+//                $item->refConsignee
+//            );
+//            return $item;
+//        })->toArray();
 
-        $creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id_prospect_container', $id_container)->get();
-
-        $id_creation = [];
-        foreach ($creation as $value) {
-            $id_creation[] = $value->id;
-        }
-
-        $delivery_plan = RegularDeliveryPlan::whereIn('id_prospect_container_creation',$id_creation)->get();
-
-        if(count($delivery_plan) > 0) throw new \Exception("Data tidak ditemukan.", 400);
-
-        $data->map(function ($item){
-            $item->cust_name = $item->refConsignee->nick_name ?? null;
-
-            unset(
-                $item->refConsignee
-            );
-            return $item;
-        })->toArray();
 
         return [
             'items' => $data->items(),
@@ -156,7 +158,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $capacity = $mst_container->capacity;
             $boxSizes = array_fill(0,$boxSize,1); // Create an array of 2400 boxes with size 1
             $containers = self::packBoxesIntoContainers($boxSizes,$capacity);
-            // dd($containers);
             $creation = [];
             foreach ($containers as $summary_box) {
                 array_push($creation,[
@@ -192,6 +193,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 'id_prospect_container_creation' => $val->id
             ]);
         }
+
+        Model::whereIn('id', $params->id)->update(['is_prospect' => 1]);
 
         if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
@@ -270,6 +273,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         return array_map(function ($item){
             return count($item);
         },$containers);
+    }
+
+    public static function loadCalculationPacking(){
+        return null;
     }
 
     public static function fifoProcess($request,$is_transaction = true)
