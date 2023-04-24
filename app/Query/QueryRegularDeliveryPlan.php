@@ -263,8 +263,8 @@ class QueryRegularDeliveryPlan extends Model {
             ]);
 
 
-            $check = RegularDeliveryPlan::select('etd_jkt','code_consignee')->whereIn('id',$params->id)
-            ->groupBy('etd_jkt','code_consignee')
+            $check = RegularDeliveryPlan::select('etd_jkt','code_consignee','datasource')->whereIn('id',$params->id)
+            ->groupBy('etd_jkt','code_consignee','datasource')
             ->get()
             ->toArray();
 
@@ -281,6 +281,7 @@ class QueryRegularDeliveryPlan extends Model {
             $no_packaging = $data[0]['order_no'].substr(mt_rand(),0,5);
             $tanggal = $check[0]['etd_jkt'];
             $code_consignee = $check[0]['code_consignee'];
+            $datasource = $check[0]['datasource'];
 
             return [
                 "items" => [
@@ -288,6 +289,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'no_packaging' => $no_packaging,
                     'etd_jkt' => $tanggal,
                     'code_consignee' => $code_consignee,
+                    'datasource' => $datasource
                 ]
             ];
 

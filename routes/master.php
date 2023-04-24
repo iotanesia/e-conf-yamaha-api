@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Master\MotController;
 use App\Http\Controllers\Api\Master\ShipmentController;
 use App\Http\Controllers\Api\Master\TypeDeliveryController;
 use App\Http\Controllers\Api\Master\SignatureController;
+use App\Http\Controllers\Api\Master\CategoryFilterController;
 use App\Query\QueryRegularOrderEntryUploadDetail;
 
 //with middleware
@@ -130,6 +131,15 @@ Route::prefix('v1/master')
     Route::group(['prefix' => 'category-pivot'],function (){
         Route::get('/',[OrderEntryUploadDetailController::class,'categoryPivot']);
     });
+
+    Route::group(['prefix' => 'filter'],function (){
+        Route::group(['prefix' => 'plan'],function (){
+            Route::get('/prospect-container',[CategoryFilterController::class,'getProspectContainer']);
+            Route::get('/part',[CategoryFilterController::class,'getPart']);
+            Route::get('/inquiry',[CategoryFilterController::class,'getInquiry']);
+        });
+    });
+
 
     // mot
     Route::group(['prefix' => 'mot'],function (){
