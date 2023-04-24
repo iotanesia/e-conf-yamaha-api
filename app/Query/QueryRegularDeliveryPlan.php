@@ -117,7 +117,6 @@ class QueryRegularDeliveryPlan extends Model {
 
             });
 
-
             if($params->withTrashed == 'true')
                 $query->withTrashed();
 
@@ -167,6 +166,7 @@ class QueryRegularDeliveryPlan extends Model {
             $date_to = str_replace('-','',$params->date_to);
             if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
         })
+        ->where('is_inquiry', 0)
         ->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
@@ -228,6 +228,7 @@ class QueryRegularDeliveryPlan extends Model {
                         "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
                         "etd_jkt" => $params->etd_jkt,
                         "no_packaging" => $params->no_packaging,
+                        "datasource" => $params->datasource,
                         "created_at" => now(),
             ]);
 
@@ -267,7 +268,7 @@ class QueryRegularDeliveryPlan extends Model {
             ->get()
             ->toArray();
 
-            if(count($check) > 1) throw new \Exception("etd jkt & code consignee not same", 400);
+            if(count($check) > 1) throw new \Exception("ETD JKT and Customer name not same", 400);
 
             $data = RegularDeliveryPlan::select(DB::raw('count(order_no) as total'),'order_no')->whereIn('id',$params->id)
             ->groupBy('order_no')
@@ -461,14 +462,14 @@ class QueryRegularDeliveryPlan extends Model {
         foreach ($data as $value) {
             $id_shipping_instruction[] = $value->id;
         }
-        
+
         $crontainer_creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id_shipping_instruction', $id_shipping_instruction)->get();
 
         $no_packaging = [];
         foreach ($crontainer_creation as $value) {
             $no_packaging[] = $value->refRegularDeliveryPlanPropspectContainer->no_packaging;
         }
-        
+
         return [
             'items' => $data->getCollection()->transform(function($item) use ($no_packaging){
                 $item->no_packaging = $no_packaging ?? null;
@@ -507,7 +508,7 @@ class QueryRegularDeliveryPlan extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
 
         $data->transform(function ($item) {
-            
+
             if ($item->status_bml == 1) {
                 $status_desc = 'BML Confirmed';
             } else {
@@ -708,7 +709,7 @@ class QueryRegularDeliveryPlan extends Model {
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
-            ->download($filename); 
+            ->download($filename);
 
             return [
                 'items' => [
@@ -734,7 +735,7 @@ class QueryRegularDeliveryPlan extends Model {
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
-            ->download($filename); 
+            ->download($filename);
           } catch (\Throwable $th) {
               return Helper::setErrorResponse($th);
           }
