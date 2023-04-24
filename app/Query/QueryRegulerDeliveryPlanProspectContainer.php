@@ -20,12 +20,16 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         $data = Model::where(function ($query) use ($params){
             $category = $params->category ?? null;
             if($category) {
-                $query->where($category, 'ilike', $params->kueri);
+                if($category == 'cust_name'){
+                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+                } else {
+                    $query->where($category, 'ilike', $params->value);
+                }
             }
 
-            $filterdate = Helper::filterDate($params);
-            if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
-
+            //$filterdate = Helper::filterDate($params);
+            if($params->date_start || $params->date_finish)
+                $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
 
         })->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
@@ -34,14 +38,14 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         foreach ($data as $value) {
             $id_container[] = $value->id;
         }
-        
+
         $creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id_prospect_container', $id_container)->get();
-        
+
         $id_creation = [];
         foreach ($creation as $value) {
             $id_creation[] = $value->id;
         }
-        
+
         $delivery_plan = RegularDeliveryPlan::whereIn('id_prospect_container_creation',$id_creation)->get();
 
         if(count($delivery_plan) > 0) throw new \Exception("Data tidak ditemukan.", 400);
