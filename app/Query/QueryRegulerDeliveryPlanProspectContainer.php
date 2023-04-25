@@ -143,10 +143,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 return $item;
             })->toArray();
 
-            $lsp = MstLsp::where('code_consignee',$data[0]['code_consignee'])
-            ->where('id_type_delivery',2)
-            ->first();
-
+            $lsp = MstLsp::where('code_consignee',$data[0]['code_consignee'])->first();
 
             $boxSize = 0;
             foreach ($data as $key => $item) {
@@ -156,15 +153,15 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
             $mst_container = MstContainer::find(2);
             $capacity = $mst_container->capacity;
-            $boxSizes = array_fill(0,$boxSize,1); // Create an array of 2400 boxes with size 1
+            $boxSizes = array_fill(0,$boxSize,1);
             $containers = self::packBoxesIntoContainers($boxSizes,$capacity);
             $creation = [];
             foreach ($containers as $summary_box) {
                 array_push($creation,[
-                    'id_type_delivery' => 2,
-                    'id_mot' => 1,
+                    'id_type_delivery' => $lsp->id_type_delivery,
+                    'id_mot' => $lsp->refTypeDelivery->id_mot,
                     'id_container' => 2, //
-                    'id_lsp' => $lsp->id ?? 2, // ini cari table mst lsp by code cogsingne
+                    'id_lsp' => $lsp->id, // ini cari table mst lsp by code cogsingne
                     'summary_box' => $summary_box,
                     'code_consignee' => $data[0]['code_consignee'],
                     'etd_jkt' => $data[0]['etd_jkt'],

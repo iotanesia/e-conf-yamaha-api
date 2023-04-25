@@ -22,4 +22,9 @@ class MstLsp extends Model
         'updated_by',
         'deleted_at'
     ];
+
+    public function refTypeDelivery()
+    {
+        return $this->belongsTo(MstTypeDelivery::class,'id_type_delivery','id');
+    }
 }

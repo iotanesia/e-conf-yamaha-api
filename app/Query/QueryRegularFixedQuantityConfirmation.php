@@ -51,12 +51,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $item->production = $item->refRegularDeliveryPlan->refRegularStockConfirmation->production ?? null;
                     $item->in_dc = $item->refRegularDeliveryPlan->refRegularStockConfirmation->in_dc ?? null;
                     $item->in_wh = $item->refRegularDeliveryPlan->refRegularStockConfirmation->in_wh ?? null;
-    
+
                     unset(
                         $item->refConsignee,
                         $item->refRegularDeliveryPlan,
                     );
-    
+
                     return $item;
                 }),
                 'attributes' => [
@@ -292,7 +292,6 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->where('id_type_delivery',2)
             ->first();
 
-
             $boxSize = 0;
             foreach ($data as $key => $item) {
                 $boxSize += $item['total_qty'];
@@ -302,7 +301,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $capacity = $mst_container->capacity;
             $boxSizes = array_fill(0,$boxSize,1); // Create an array of 2400 boxes with size 1
             $containers = self::packBoxesIntoContainers($boxSizes,$capacity);
-            
+
             $creation = [];
             foreach ($containers as $summary_box) {
                 array_push($creation,[
