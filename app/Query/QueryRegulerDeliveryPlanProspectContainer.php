@@ -51,14 +51,14 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 //
 //        if(count($delivery_plan) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 //
-//        $data->map(function ($item){
-//            $item->cust_name = $item->refConsignee->nick_name ?? null;
-//
-//            unset(
-//                $item->refConsignee
-//            );
-//            return $item;
-//        })->toArray();
+        $data->map(function ($item){
+            $item->cust_name = $item->refConsignee->nick_name ?? null;
+
+            unset(
+                $item->refConsignee
+            );
+            return $item;
+        })->toArray();
 
 
         return [
