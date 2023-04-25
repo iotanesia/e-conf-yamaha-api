@@ -31,7 +31,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             if($params->date_start || $params->date_finish)
                 $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
 
-        })->where('is_prospect', $params->is_prospect ?? 0)
+        })->where('is_prospect', $params->is_prospect ?? 1)
             ->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
@@ -297,7 +297,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     {
 
 
-        $container = MstContainer::find(3); // 40HC
+        $container = MstContainer::find(2); // 40HC
         $delivery_plan_box = RegularDeliveryPlanBox::select('id_box', DB::raw('count(id_box) as count_box'))
         ->whereIn('id_regular_delivery_plan',[
             4659,
