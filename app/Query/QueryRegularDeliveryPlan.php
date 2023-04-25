@@ -3,6 +3,7 @@
 namespace App\Query;
 
 use App\Constants\Constant;
+use App\Models\MstLsp;
 use App\Models\RegularDeliveryPlan AS Model;
 use Illuminate\Support\Facades\DB;
 use App\ApiHelper as Helper;
@@ -434,13 +435,21 @@ class QueryRegularDeliveryPlan extends Model {
             Helper::requireParams([
                 'id',
                 'id_mot',
-                'id_type_delivery'
+                'id_type_delivery',
+                'code_consignee'
             ]);
 
             $update = RegularProspectContainerCreation::find($params['id']);
             if(!$update) throw new \Exception("id tidak ditemukan", 400);
 
+            $check = MstLsp::where('code_consignee', $params['code_consignee'])
+                ->where('id_type_delivery', $params['id_type_delivery'])
+                ->first();
+
+            if(!$check) throw new \Exception("LSP not found", 400);
+
             $update->fill($params);
+            $update->id_lsp = $check->id;
             $update->save();
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
