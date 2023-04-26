@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Main\OrderEntryController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadController;
 use App\Http\Controllers\Api\Main\OrderEntryUploadDetailController;
 use App\Http\Controllers\Api\Main\DeliveryPlanController;
+use App\Http\Controllers\Api\Main\DocumentController;
 use App\Http\Controllers\Api\Main\FixedPackingCreationController;
 use App\Http\Controllers\Api\Main\FixedQuantityConfirmationController;
 use App\Http\Controllers\Api\Main\FixedShippingInstructionController;
@@ -199,5 +200,9 @@ Route::prefix('v1/regular')
             Route::delete('/{id}',[FixedPackingCreationController::class,'delete']);
             Route::get('/{id}',[FixedPackingCreationController::class,'detail']);
         });
+    });
+
+    Route::group(['prefix' => 'document'],function (){
+        Route::get('/',[DocumentController::class,'index']);
     });
 });
