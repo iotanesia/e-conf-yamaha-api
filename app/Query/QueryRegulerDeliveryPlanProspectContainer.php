@@ -34,7 +34,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
         })->where('is_prospect', $params->is_prospect ?? 1)
             ->paginate($params->limit ?? null);
-        if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
+        //if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
 //        $id_container = [];
 //        foreach ($data as $value) {
