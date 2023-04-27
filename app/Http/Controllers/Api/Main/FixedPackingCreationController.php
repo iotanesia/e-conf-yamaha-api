@@ -59,4 +59,24 @@ class FixedPackingCreationController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+    public function packingCreationDeliveryNote(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedPackingCreation::packingCreationDeliveryNote($id,$request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+    public function packingCreationDeliveryNoteSave(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedPackingCreation::packingCreationDeliveryNoteSave($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }
