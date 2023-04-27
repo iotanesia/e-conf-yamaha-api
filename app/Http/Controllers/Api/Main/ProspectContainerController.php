@@ -71,6 +71,19 @@ class ProspectContainerController extends Controller
         }
     }
 
+    public static function creationMove(Request $request)
+    {
+        try {
+
+            return ResponseInterface::responseData(
+                QueryRegulerDeliveryPlanProspectContainer::createionMoveProcess($request)
+            );
+
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public static function detail(Request $request)
     {
         try {
