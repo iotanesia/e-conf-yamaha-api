@@ -638,7 +638,9 @@ class QueryRegularDeliveryPlan extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             $data = $request->all();
+            $check = RegularDeliveryPlanProspectContainerCreation::whereIn('id',$request->id)->whereNotNull('id_shipping_instruction')->count();
             $etdJkt = RegularDeliveryPlanProspectContainerCreation::select('etd_jkt','datasource')->whereIn('id',$request->id)->groupBy('etd_jkt','datasource')->get();
+            if($check > 0) throw new \Exception("Prospect has been booked", 400);
             if(!count($etdJkt)) throw new \Exception("Data not found", 400);
             if(count($etdJkt) > 1)  throw new \Exception("Invalid ETD JKT", 400);
             $data['no_booking'] = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').mt_rand(10000,99999);
@@ -646,6 +648,10 @@ class QueryRegularDeliveryPlan extends Model {
             $data['booking_date'] = Carbon::now()->format('Y-m-d');
             $insert = RegularDeliveryPlanShippingInsruction::create($data);
             RegularDeliveryPlanProspectContainerCreation::select('etd_jkt','datasource')->whereIn('id',$request->id)->update(['id_shipping_instruction'=>$insert->id]);
+            $datapros = RegularDeliveryPlanProspectContainerCreation::whereIn('id',$request->id)->get();
+            foreach ($datapros as $value)
+                RegularDeliveryPlanProspectContainer::where('id',$value['id_prospect_container'])->update(['is_prospect' => 2]);
+
             if($is_transaction) DB::commit();
             return [
                 'items' => ['id'=>$insert->id,'no_booking'=>$data['no_booking'],'etd_jkt'=>$etdJkt[0]->etd_jkt]
