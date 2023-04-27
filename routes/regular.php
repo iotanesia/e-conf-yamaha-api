@@ -199,6 +199,8 @@ Route::prefix('v1/regular')
             Route::post('/{id}',[FixedPackingCreationController::class,'update']);
             Route::delete('/{id}',[FixedPackingCreationController::class,'delete']);
             Route::get('/{id}',[FixedPackingCreationController::class,'detail']);
+            Route::get('/delivery-note/{id}',[FixedPackingCreationController::class,'packingCreationDeliveryNote']);
+            Route::post('/delivery-note/save',[FixedPackingCreationController::class,'packingCreationDeliveryNoteSave']);
         });
     });
 
