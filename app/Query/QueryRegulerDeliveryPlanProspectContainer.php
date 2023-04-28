@@ -10,6 +10,7 @@ use App\Models\MstLsp;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class QueryRegulerDeliveryPlanProspectContainer extends Model {
@@ -33,7 +34,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
         })->where('is_prospect', $params->is_prospect ?? 1)
             ->paginate($params->limit ?? null);
-        if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
+        //if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
 //        $id_container = [];
 //        foreach ($data as $value) {
@@ -168,6 +169,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'etd_ypmi' => $data[0]['etd_ypmi'],
                     'etd_wh' => $data[0]['etd_wh'],
                     'measurement' => $mst_container->measurement ?? null,
+                    'iteration' => 1,
                     'id_prospect_container' => $data[0]['id_prospect_container'],
                 ]);
             }
@@ -197,6 +199,51 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         } catch (\Throwable $th) {
              if($is_transaction) DB::rollBack();
              throw $th;
+        }
+    }
+
+    public static function createionMoveProcess($params,$is_transaction = true){
+
+        if($is_transaction) DB::beginTransaction();
+        try {
+            Helper::requireParams([
+                'id'
+            ]);
+            $check = RegularDeliveryPlan::select('id_prospect_container_creation')
+                ->with('manyDeliveryPlanBox')
+                ->whereIn('id', $params->id)
+                ->groupBy('id_prospect_container_creation')
+                ->get();
+            if(count($check) > 1) throw new \Exception("Code consignee, ETD JKT and datasource not same", 400);
+            $drp = $check[0];
+            $prospect = RegularDeliveryPlanProspectContainerCreation::find($drp->id_prospect_container_creation);
+            $nextprospect = RegularDeliveryPlanProspectContainerCreation::where(function ($query) use ($prospect){
+               $query->where('code_consignee',$prospect->code_consignee);
+               $query->where('datasource',$prospect->datasource);
+               $query->where('iteration', $prospect->iteration+1);
+               $query->where('etd_jkt',Carbon::parse($prospect->etd_jkt)->format('Y-m-d'));
+            })->first();
+            if(!$nextprospect){
+                $creation['id_type_delivery'] = $prospect->id_type_delivery;
+                $creation['id_mot'] = $prospect->id_mot;
+                $creation['id_container'] = $prospect->id_container;
+                $creation['id_lsp'] =  $prospect->id_lsp;
+                $creation['summary_box'] = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',$params->id)->count() ?? 0;
+                $creation['code_consignee'] = $prospect->code_consignee;
+                $creation['etd_jkt'] = $prospect->etd_jkt;
+                $creation['etd_ypmi'] = $prospect->etd_ypmi;
+                $creation['etd_wh'] = $prospect->etd_wh;
+                $creation['measurement'] = $prospect->measurement;
+                $creation['iteration'] = $prospect->iteration+1;
+                $creation['id_prospect_container'] = $prospect->id_prospect_container;
+                $ins = RegularDeliveryPlanProspectContainerCreation::create($creation);
+                RegularDeliveryPlan::whereIn('id',$params->id)->update(['id_prospect_container_creation'=>$ins->id]);
+            }else
+                RegularDeliveryPlan::whereIn('id',$params->id)->update(['id_prospect_container_creation'=>$nextprospect->id]);
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
         }
     }
 
