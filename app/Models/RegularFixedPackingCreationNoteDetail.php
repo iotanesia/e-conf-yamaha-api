@@ -23,4 +23,9 @@ class RegularFixedPackingCreationNoteDetail extends Model
         "updated_by",
         "deleted_at"
     ];
+
+    public function refPart()
+    {
+        return $this->belongsTo(MstPart::class,'item_no','item_no');
+    }
 }

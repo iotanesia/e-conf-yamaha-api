@@ -33,4 +33,9 @@ class RegularFixedPackingCreationNote extends Model
     {
         return $this->hasMany(RegularFixedPackingCreationNoteDetail::class,'id_fixed_packing_creation_note','id');
     }
+
+    public function refConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'consignee','code');
+    }
 }

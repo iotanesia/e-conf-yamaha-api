@@ -152,6 +152,7 @@ Route::prefix('v1/regular')
             Route::post('/delete/{id}',[StockConfirmationController::class,'deleteInStock']);
             Route::post('/delivery-note',[StockConfirmationController::class,'outstockDeliveryNote']);
             Route::post('/delivery-note/save',[StockConfirmationController::class,'saveOutStockNote']);
+            Route::post('/delivery-note/print',[StockConfirmationController::class,'printOutStockNote']);
         });
 
     });
@@ -201,6 +202,7 @@ Route::prefix('v1/regular')
             Route::get('/{id}',[FixedPackingCreationController::class,'detail']);
             Route::get('/delivery-note/{id}',[FixedPackingCreationController::class,'packingCreationDeliveryNote']);
             Route::post('/delivery-note/save',[FixedPackingCreationController::class,'packingCreationDeliveryNoteSave']);
+            Route::get('/delivery-note/print/{id}',[FixedPackingCreationController::class,'packingCreationDeliveryNotePrint']);
         });
     });
 

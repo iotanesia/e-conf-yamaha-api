@@ -24,4 +24,9 @@ class RegularStokConfirmationOutstockNoteDetail extends Model
         "updated_by",
         "deleted_at"
     ];
+
+    public function refMstPart()
+    {
+        return $this->belongsTo(MstPart::class, 'item_no', 'item_no');
+    }
 }

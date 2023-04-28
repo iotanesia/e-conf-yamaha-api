@@ -13,6 +13,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class QueryStockConfirmationOutstockNote extends Model {
     const cast = 'regular-stock-confirmation-outstock-note';
     public static function storeOutStockNote($request,$is_transaction = true)
@@ -76,5 +78,21 @@ class QueryStockConfirmationOutstockNote extends Model {
             ];
         }
         return $res;
+    }
+
+    public static function downloadOutStockNote($request,$pathToFile,$filename)
+    {
+        try {
+            $data = Model::whereJsonContains('id_stock_confirmation',$request->id)->first();
+
+            Pdf::loadView('pdf.stock-confirmation.outstock.delivery_note',[
+              'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 }

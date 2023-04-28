@@ -13,6 +13,7 @@ use App\Models\RegularFixedPackingCreationNote;
 use App\Models\RegularFixedPackingCreationNoteDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class QueryRegularFixedPackingCreation extends Model {
     
@@ -214,5 +215,21 @@ class QueryRegularFixedPackingCreation extends Model {
             ];
         }
         return $res;
+    }
+
+    public static function downloadpackingCreationDeliveryNote($id,$pathToFile,$filename)
+    {
+        try {
+            $data = RegularFixedPackingCreationNote::where('id_fixed_packing_creation',$id)->first();
+
+            Pdf::loadView('pdf.packing-creation.delivery_note',[
+              'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 }

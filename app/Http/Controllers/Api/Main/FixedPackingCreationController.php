@@ -79,4 +79,16 @@ class FixedPackingCreationController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function packingCreationDeliveryNotePrint(Request $request, $id)
+    {
+        try {
+            $filename = 'packing_creation_delivery_note-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/packing-creation-delivery-note/'.$filename;
+            $data = QueryRegularFixedPackingCreation::downloadpackingCreationDeliveryNote($id,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

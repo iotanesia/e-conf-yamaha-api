@@ -164,4 +164,16 @@ class StockConfirmationController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function printOutStockNote(Request $request)
+    {
+        try {
+            $filename = 'outstock_delivery_note-'.$request->id[0].'.pdf';
+            $pathToFile =  storage_path().'/app/outstock-delivery-note/'.$filename;
+            $data = QueryStockConfirmationOutstockNote::downloadOutStockNote($request,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }
