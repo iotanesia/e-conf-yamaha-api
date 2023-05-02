@@ -642,7 +642,6 @@ class QueryRegularDeliveryPlan extends Model {
             $etdJkt = RegularDeliveryPlanProspectContainerCreation::select('etd_jkt','datasource')->whereIn('id',$request->id)->groupBy('etd_jkt','datasource')->get();
             if($check > 0) throw new \Exception("Prospect has been booked", 400);
             if(!count($etdJkt)) throw new \Exception("Data not found", 400);
-            if(count($etdJkt) > 1)  throw new \Exception("Invalid ETD JKT", 400);
             $data['no_booking'] = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').mt_rand(10000,99999);
             $data['datasource'] = $etdJkt[0]->datasource;
             $data['booking_date'] = Carbon::now()->format('Y-m-d');
