@@ -118,5 +118,5 @@ class FixedQuantityConfirmationController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
-    
+
 }

@@ -75,27 +75,35 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             Helper::requireParams([
                 'id',
-
             ]);
 
-            $check = RegularFixedActualContainer::select('etd_jkt','code_consignee')->whereIn('id',$params->id)
-            ->groupBy('etd_jkt','code_consignee')
-            ->get()
-            ->toArray();
+            $check = Model::select('etd_jkt','code_consignee','datasource')->whereIn('id',$params->id)
+                ->groupBy('etd_jkt','code_consignee','datasource')
+                ->get()
+                ->toArray();
 
-            if(count($check) > 1) throw new \Exception("etd jkt & code consignee not same", 400);
+            if(count($check) > 1) throw new \Exception("ETD JKT and Customer name not same", 400);
 
-            $data = RegularFixedActualContainer::whereIn('id',$params->id)->get()->toArray();
+            $data = Model::select(DB::raw('count(order_no) as total'),'order_no')->whereIn('id',$params->id)
+                ->groupBy('order_no')
+                ->orderBy('total','desc')
+                ->get()
+                ->toArray();
+
             if(count($data) == 0) throw new \Exception("Data not found", 400);
 
+            $no_packaging = $data[0]['order_no'].substr(mt_rand(),0,5);
             $tanggal = $check[0]['etd_jkt'];
             $code_consignee = $check[0]['code_consignee'];
+            $datasource = $check[0]['datasource'];
 
             return [
                 "items" => [
                     'id' => $params->id,
+                    'no_packaging' => $no_packaging,
                     'etd_jkt' => $tanggal,
                     'code_consignee' => $code_consignee,
+                    'datasource' => $datasource
                 ]
             ];
 

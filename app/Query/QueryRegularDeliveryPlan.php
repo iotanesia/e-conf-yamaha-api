@@ -263,7 +263,6 @@ class QueryRegularDeliveryPlan extends Model {
 
             ]);
 
-
             $check = RegularDeliveryPlan::select('etd_jkt','code_consignee','datasource')->whereIn('id',$params->id)
             ->groupBy('etd_jkt','code_consignee','datasource')
             ->get()
