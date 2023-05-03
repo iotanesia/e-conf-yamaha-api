@@ -22,6 +22,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     public static function getFixedQuantity($params)
     {
+
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query){
@@ -140,6 +141,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                    $query->whereIn('id',$params->id);
                    $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',$params->etd_jkt);
+                   $query->where('datasource',$params->datasource);
            })
            ->chunk(1000,function ($data) use ($params,$store){
                 foreach ($data as $key => $item) {

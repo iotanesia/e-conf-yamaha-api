@@ -216,6 +216,7 @@ class QueryRegularDeliveryPlan extends Model {
             'no_packaging',
             'etd_jkt',
             'code_consignee',
+            'datasource'
         ]);
 
         if($is_trasaction) DB::beginTransaction();
@@ -238,6 +239,7 @@ class QueryRegularDeliveryPlan extends Model {
                    $query->whereIn('id',$params->id);
                    $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',$params->etd_jkt);
+                   $query->where('datasource',$params->datasource);
            })
            ->chunk(1000,function ($data) use ($params,$store){
                 foreach ($data as $key => $item) {
