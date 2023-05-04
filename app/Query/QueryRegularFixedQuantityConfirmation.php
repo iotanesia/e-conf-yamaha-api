@@ -10,6 +10,7 @@ use App\Models\MstLsp;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularFixedActualContainer;
 use App\Models\RegularFixedActualContainerCreation;
+use App\Models\RegularFixedQuantityConfirmation;
 use App\Models\RegularFixedQuantityConfirmationBox;
 use App\Models\RegularFixedShippingInstruction;
 use Carbon\Carbon;
@@ -25,8 +26,26 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
-            $query = self::where(function ($query){
+            $query = self::where(function ($query) use ($params){
+    
                 $query->where('is_actual',Constant::IS_NOL);
+                if($params->search) {
+                    $query->where('code_consignee', 'like', "'%$params->search%'")
+                                ->orWhere('model', 'like', "'%$params->search%'")
+                                ->orWhere('item_no', 'like', "'%$params->search%'")
+                                ->orWhere('disburse', 'like', "'%$params->search%'")
+                                ->orWhere('delivery', 'like', "'%$params->search%'")
+                                ->orWhere('qty', 'like', "'%$params->search%'")
+                                ->orWhere('status', 'like', "'%$params->search%'")
+                                ->orWhere('order_no', 'like', "'%$params->search%'")
+                                ->orWhere('cust_item_no', 'like', "'%$params->search%'");
+                } 
+    
+            })->whereHas('refRegularDeliveryPlan',function ($query) use ($params){
+                $category = $params->category ?? null;
+                if($category) {
+                    $query->where($category, 'ilike', $params->kueri);
+                }
             });
 
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -189,15 +208,19 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         $data = RegularFixedActualContainer::where(function ($query) use ($params){
             $category = $params->category ?? null;
             if($category) {
-                $query->where($category, 'ilike', $params->kueri);
+                if($category == 'cust_name'){
+                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+                } else {
+                    $query->where($category, 'ilike', $params->value);
+                }
             }
 
-            $filterdate = Helper::filterDate($params);
-            if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
+            if($params->date_start || $params->date_finish)
+                $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
 
 
         })->paginate($params->limit ?? null);
-        if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
+        // if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
         $data->map(function ($item){
             $item->cust_name = $item->refConsignee->nick_name ?? null;
@@ -284,13 +307,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
              'id'
          ]);
 
-        $delivery_plan = RegularDeliveryPlan::select('id_prospect_container')->whereIn('id_prospect_container',$params->id)->groupBy('id_prospect_container')->get()
+        
+        $fixed_quantity_confirmation = RegularFixedQuantityConfirmation::select('id_fixed_actual_container')->whereIn('id_fixed_actual_container',$params->id)->groupBy('id_fixed_actual_container')->get()
         ->transform(function ($delivery){
 
 
-            $id_prospect_container = $delivery->id_prospect_container;
-            $data = RegularDeliveryPlan::where('id_prospect_container',$id_prospect_container)->get()->map(function ($item){
-                $qty = $item->manyDeliveryPlanBox->count();
+            $id_fixed_actual_container = $delivery->id_fixed_actual_container;
+            $data = RegularFixedQuantityConfirmation::where('id_fixed_actual_container',$id_fixed_actual_container)->get()->map(function ($item){
+                $qty = $item->refRegularDeliveryPlan->manyDeliveryPlanBox->count();
                 $item->total_qty = $qty;
                 unset(
                     $item->manyDeliveryPlanBox
@@ -334,7 +358,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             return $creation;
         })->toArray();
 
-        foreach ($delivery_plan as $creations) {
+        foreach ($fixed_quantity_confirmation as $creations) {
             foreach ($creations as $item) {
                 RegularFixedActualContainerCreation::create($item);
             }
@@ -380,7 +404,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
-                $item->cust_name = $item->refConsignee->nick_name;
+                $item->cust_name = $item->refMstConsignee->nick_name;
                 $item->type_delivery = $item->refMstTypeDelivery->name;
                 $item->lsp = $item->refMstLsp->name;
                 $item->net_weight = $item->refMstContainer->net_weight;
@@ -388,7 +412,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $item->container_type = $item->refMstContainer->container_type;
 
                 unset(
-                    $item->refConsignee,
+                    $item->refMstConsignee,
                     $item->refMstTypeDelivery,
                     $item->refMstLsp,
                     $item->refMstMot,
@@ -402,7 +426,30 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     }
 
-    public static function generateNobooking($request,$is_transaction = true) {
+    public static function getCreationMove($params, $id)
+    {
+        $data = RegularFixedQuantityConfirmation::where('id_fixed_actual_container_creation',$id)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                $item->container_type = $item->refFixedActualContainerCreation->refMstContainer->container_type;
+                $item->container_capacity = $item->refFixedActualContainerCreation->refMstContainer->capacity;
+                $item->actual_container = $item->refFixedActualContainerCreation->refMstContainer->capacity;
+                $item->container_number = $item->refFixedActualContainerCreation->iteration;
+
+                unset(
+                    $item->refFixedActualContainerCreation,
+                );
+
+                return $item;
+            }),
+            'last_page' => $data->lastPage()
+        ];
+
+    }
+
+    public static function generateNobooking($request,$is_transaction = true) 
+    {
         Helper::requireParams(['id']);
         if($is_transaction) DB::beginTransaction();
         try {

@@ -97,6 +97,17 @@ class FixedQuantityConfirmationController extends Controller
         }
     }
 
+    public function getCreationMove(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedQuantityConfirmation::getCreationMove($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function generateNobooking(Request $request)
     {
         try {

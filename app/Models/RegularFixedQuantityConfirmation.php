@@ -41,9 +41,19 @@ class RegularFixedQuantityConfirmation extends Model
     {
         return $this->belongsTo(RegularDeliveryPlan::class,'id_regular_delivery_plan','id');
     }
+
+    public function refFixedActualContainerCreation()
+    {
+        return $this->belongsTo(RegularFixedActualContainerCreation::class,'id_fixed_actual_container_creation','id');
+    }
     
     public function refConsignee()
     {
         return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
+
+    public function manyFixedQuantityConfirmationBox()
+    {
+        return $this->hasMany(RegularFixedQuantityConfirmationBox::class,'id_fixed_quantity_confirmation','id')->orderBy('id','asc');
     }
 }
