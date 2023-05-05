@@ -178,11 +178,13 @@ Route::prefix('v1/regular')
             Route::post('/creation',[FixedQuantityConfirmationController::class,'creation']);
             Route::post('/creation/detail',[FixedQuantityConfirmationController::class,'creationDetail']);
             Route::get('/creation/move/{id}',[FixedQuantityConfirmationController::class,'getCreationMove']);
+            Route::post('/creation/move',[FixedQuantityConfirmationController::class,'creationMove']);
         });
 
         Route::group(['prefix' => 'booking'],function (){
             Route::post('/generate-no-booking',[FixedQuantityConfirmationController::class,'generateNobooking']);
             Route::post('/detail',[FixedQuantityConfirmationController::class,'detailById']);
+            Route::post('/save-booking',[FixedQuantityConfirmationController::class,'savebooking']);
         });
 
         Route::group(['prefix' => 'shipping-instruction'],function (){

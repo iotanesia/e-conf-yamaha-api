@@ -107,6 +107,17 @@ class FixedQuantityConfirmationController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+    
+    public function creationMove(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedQuantityConfirmation::creationMove($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 
     public function generateNobooking(Request $request)
     {
@@ -124,6 +135,17 @@ class FixedQuantityConfirmationController extends Controller
         try {
             return ResponseInterface::responseData(
                 QueryRegularFixedQuantityConfirmation::detailById($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function savebooking(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedQuantityConfirmation::savebooking($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

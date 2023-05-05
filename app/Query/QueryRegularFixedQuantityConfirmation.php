@@ -448,6 +448,51 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     }
 
+    public static function creationMove($params, $is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            Helper::requireParams([
+                'id'
+            ]);
+            $check = RegularFixedQuantityConfirmation::select('id_fixed_actual_container_creation')
+                ->with('manyFixedQuantityConfirmationBox')
+                ->whereIn('id', $params->id)
+                ->groupBy('id_fixed_actual_container_creation')
+                ->get();
+            if(count($check) > 1) throw new \Exception("Code consignee, ETD JKT and datasource not same", 400);
+            $drp = $check[0];
+            $prospect = RegularFixedActualContainerCreation::find($drp->id_fixed_actual_container_creation);
+            $nextprospect = RegularFixedActualContainerCreation::where(function ($query) use ($prospect){
+                $query->where('code_consignee',$prospect->code_consignee);
+                $query->where('datasource',$prospect->datasource);
+                $query->where('iteration', $prospect->iteration+1);
+                $query->where('etd_jkt',Carbon::parse($prospect->etd_jkt)->format('Y-m-d'));
+            })->first();
+            if(!$nextprospect){
+                $creation['id_type_delivery'] = $prospect->id_type_delivery;
+                $creation['id_mot'] = $prospect->id_mot;
+                $creation['id_container'] = $prospect->id_container;
+                $creation['id_lsp'] =  $prospect->id_lsp;
+                $creation['summary_box'] = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation',$params->id)->count() ?? 0;
+                $creation['code_consignee'] = $prospect->code_consignee;
+                $creation['etd_jkt'] = $prospect->etd_jkt;
+                $creation['etd_ypmi'] = $prospect->etd_ypmi;
+                $creation['etd_wh'] = $prospect->etd_wh;
+                $creation['measurement'] = $prospect->measurement;
+                $creation['iteration'] = $prospect->iteration+1;
+                $creation['id_fixed_actual_container'] = $prospect->id_fixed_actual_container;
+                $ins = RegularFixedActualContainerCreation::create($creation);
+                RegularFixedQuantityConfirmation::whereIn('id',$params->id)->update(['id_fixed_actual_container_creation'=>$ins->id]);
+            }else
+                RegularFixedQuantityConfirmation::whereIn('id',$params->id)->update(['id_fixed_actual_container_creation'=>$nextprospect->id]);
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
     public static function generateNobooking($request,$is_transaction = true) 
     {
         Helper::requireParams(['id']);
@@ -483,6 +528,21 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             'items' => [$data->first()],
             'last_page' => $data->lastPage()
         ];
+    }
+
+    public static function savebooking($request,$is_transaction = true) {
+        Helper::requireParams(['id']);
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $res = RegularFixedShippingInstruction::find($request->id);
+            $res->status = Constant::STS_BOOK_FINISH;
+            $res->save();
+            if($is_transaction) DB::commit();
+            return ['items'=>$res];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
     }
 
 }
