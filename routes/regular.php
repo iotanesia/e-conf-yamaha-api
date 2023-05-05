@@ -198,7 +198,7 @@ Route::prefix('v1/regular')
             Route::get('/{id}',[FixedShippingInstructionController::class,'shippingInstructionDetail']);
         });
 
-        Route::group(['prefix' => 'packing-creation'],function(){
+        Route::group(['prefix' => 'packing'],function(){
             Route::get('/',[FixedPackingCreationController::class,'getData']);
             Route::post('/',[FixedPackingCreationController::class,'create']);
             Route::post('/{id}',[FixedPackingCreationController::class,'update']);
@@ -207,6 +207,7 @@ Route::prefix('v1/regular')
             Route::get('/delivery-note/{id}',[FixedPackingCreationController::class,'packingCreationDeliveryNote']);
             Route::post('/delivery-note/save',[FixedPackingCreationController::class,'packingCreationDeliveryNoteSave']);
             Route::get('/delivery-note/print/{id}',[FixedPackingCreationController::class,'packingCreationDeliveryNotePrint']);
+            Route::get('/download/{id}',[FixedQuantityConfirmationController::class,'printPackaging']);
         });
 
         Route::group(['prefix' => 'casemarks'],function(){
@@ -214,9 +215,6 @@ Route::prefix('v1/regular')
             Route::get('/{id}',[FixedQuantityConfirmationController::class,'printCasemarks']);
         });
 
-        Route::group(['prefix' => 'packaging'],function(){
-            Route::get('/download/{id}',[FixedQuantityConfirmationController::class,'printPackaging']);
-        });
     });
 
     Route::group(['prefix' => 'document'],function (){
