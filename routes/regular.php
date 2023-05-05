@@ -208,6 +208,15 @@ Route::prefix('v1/regular')
             Route::post('/delivery-note/save',[FixedPackingCreationController::class,'packingCreationDeliveryNoteSave']);
             Route::get('/delivery-note/print/{id}',[FixedPackingCreationController::class,'packingCreationDeliveryNotePrint']);
         });
+
+        Route::group(['prefix' => 'casemarks'],function(){
+            Route::get('/',[FixedQuantityConfirmationController::class,'getCasemarks']);
+            Route::get('/{id}',[FixedQuantityConfirmationController::class,'printCasemarks']);
+        });
+
+        Route::group(['prefix' => 'packaging'],function(){
+            Route::get('/download/{id}',[FixedQuantityConfirmationController::class,'printPackaging']);
+        });
     });
 
     Route::group(['prefix' => 'document'],function (){

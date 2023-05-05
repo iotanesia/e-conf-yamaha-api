@@ -20,6 +20,21 @@ use App\Http\Controllers\Api\Master\ShipmentController;
 use App\Http\Controllers\Api\Master\TypeDeliveryController;
 use App\Http\Controllers\Api\Master\SignatureController;
 use App\Http\Controllers\Api\Master\CategoryFilterController;
+use App\Http\Controllers\Api\Master\ComoditiesController;
+use App\Http\Controllers\Api\Master\ConsumableController;
+use App\Http\Controllers\Api\Master\DocController;
+use App\Http\Controllers\Api\Master\DocTypeController;
+use App\Http\Controllers\Api\Master\DutyTaxController;
+use App\Http\Controllers\Api\Master\FreightChargeController;
+use App\Http\Controllers\Api\Master\GoodConditionController;
+use App\Http\Controllers\Api\Master\GoodCriteriaController;
+use App\Http\Controllers\Api\Master\GoodPaymentController;
+use App\Http\Controllers\Api\Master\GoodStatusController;
+use App\Http\Controllers\Api\Master\IncotermsController;
+use App\Http\Controllers\Api\Master\InlandCostController;
+use App\Http\Controllers\Api\Master\InsuranceController;
+use App\Http\Controllers\Api\Master\ShippedByController;
+use App\Http\Controllers\Api\Master\TypeTransactionController;
 use App\Query\QueryRegularOrderEntryUploadDetail;
 
 //with middleware
@@ -185,5 +200,140 @@ Route::prefix('v1/master')
         Route::put('/',[SignatureController::class,'update']);
         Route::get('/{id}',[SignatureController::class,'show']);
         Route::delete('/{id}',[SignatureController::class,'destroy']);
+    });
+
+    // type transaction
+    Route::group(['prefix' => 'type-transaction'],function (){
+        Route::get('/',[TypeTransactionController::class,'index']);
+        Route::post('/',[TypeTransactionController::class,'store']);
+        Route::put('/',[TypeTransactionController::class,'update']);
+        Route::get('/{id}',[TypeTransactionController::class,'show']);
+        Route::delete('/{id}',[TypeTransactionController::class,'destroy']);
+    });
+
+    // comodities
+    Route::group(['prefix' => 'comodities'],function (){
+        Route::get('/',[ComoditiesController::class,'index']);
+        Route::post('/',[ComoditiesController::class,'store']);
+        Route::put('/',[ComoditiesController::class,'update']);
+        Route::get('/{id}',[ComoditiesController::class,'show']);
+        Route::delete('/{id}',[ComoditiesController::class,'destroy']);
+    });
+
+    // consumable
+    Route::group(['prefix' => 'consumable'],function (){
+        Route::get('/',[ConsumableController::class,'index']);
+        Route::post('/',[ConsumableController::class,'store']);
+        Route::put('/',[ConsumableController::class,'update']);
+        Route::get('/{id}',[ConsumableController::class,'show']);
+        Route::delete('/{id}',[ConsumableController::class,'destroy']);
+    });
+
+    // good condition
+    Route::group(['prefix' => 'good-condition'],function (){
+        Route::get('/',[GoodConditionController::class,'index']);
+        Route::post('/',[GoodConditionController::class,'store']);
+        Route::put('/',[GoodConditionController::class,'update']);
+        Route::get('/{id}',[GoodConditionController::class,'show']);
+        Route::delete('/{id}',[GoodConditionController::class,'destroy']);
+    });
+
+    // good status
+    Route::group(['prefix' => 'good-status'],function (){
+        Route::get('/',[GoodStatusController::class,'index']);
+        Route::post('/',[GoodStatusController::class,'store']);
+        Route::put('/',[GoodStatusController::class,'update']);
+        Route::get('/{id}',[GoodStatusController::class,'show']);
+        Route::delete('/{id}',[GoodStatusController::class,'destroy']);
+    });
+
+    // good payment
+    Route::group(['prefix' => 'good-payment'],function (){
+        Route::get('/',[GoodPaymentController::class,'index']);
+        Route::post('/',[GoodPaymentController::class,'store']);
+        Route::put('/',[GoodPaymentController::class,'update']);
+        Route::get('/{id}',[GoodPaymentController::class,'show']);
+        Route::delete('/{id}',[GoodPaymentController::class,'destroy']);
+    });
+
+    // freight charge
+    Route::group(['prefix' => 'freight-charge'],function (){
+        Route::get('/',[FreightChargeController::class,'index']);
+        Route::post('/',[FreightChargeController::class,'store']);
+        Route::put('/',[FreightChargeController::class,'update']);
+        Route::get('/{id}',[FreightChargeController::class,'show']);
+        Route::delete('/{id}',[FreightChargeController::class,'destroy']);
+    });
+
+    // insurance
+    Route::group(['prefix' => 'insurance'],function (){
+        Route::get('/',[InsuranceController::class,'index']);
+        Route::post('/',[InsuranceController::class,'store']);
+        Route::put('/',[InsuranceController::class,'update']);
+        Route::get('/{id}',[InsuranceController::class,'show']);
+        Route::delete('/{id}',[InsuranceController::class,'destroy']);
+    });
+
+    // duty tax
+    Route::group(['prefix' => 'duty-tax'],function (){
+        Route::get('/',[DutyTaxController::class,'index']);
+        Route::post('/',[DutyTaxController::class,'store']);
+        Route::put('/',[DutyTaxController::class,'update']);
+        Route::get('/{id}',[DutyTaxController::class,'show']);
+        Route::delete('/{id}',[DutyTaxController::class,'destroy']);
+    });
+
+    // inland cost
+    Route::group(['prefix' => 'inland-cost'],function (){
+        Route::get('/',[InlandCostController::class,'index']);
+        Route::post('/',[InlandCostController::class,'store']);
+        Route::put('/',[InlandCostController::class,'update']);
+        Route::get('/{id}',[InlandCostController::class,'show']);
+        Route::delete('/{id}',[InlandCostController::class,'destroy']);
+    });
+
+    // shipped by
+    Route::group(['prefix' => 'shipped-by'],function (){
+        Route::get('/',[ShippedByController::class,'index']);
+        Route::post('/',[ShippedByController::class,'store']);
+        Route::put('/',[ShippedByController::class,'update']);
+        Route::get('/{id}',[ShippedByController::class,'show']);
+        Route::delete('/{id}',[ShippedByController::class,'destroy']);
+    });
+
+    // incoterms
+    Route::group(['prefix' => 'incoterms'],function (){
+        Route::get('/',[IncotermsController::class,'index']);
+        Route::post('/',[IncotermsController::class,'store']);
+        Route::put('/',[IncotermsController::class,'update']);
+        Route::get('/{id}',[IncotermsController::class,'show']);
+        Route::delete('/{id}',[IncotermsController::class,'destroy']);
+    });
+
+    // good criteria
+    Route::group(['prefix' => 'good-criteria'],function (){
+        Route::get('/',[GoodCriteriaController::class,'index']);
+        Route::post('/',[GoodCriteriaController::class,'store']);
+        Route::put('/',[GoodCriteriaController::class,'update']);
+        Route::get('/{id}',[GoodCriteriaController::class,'show']);
+        Route::delete('/{id}',[GoodCriteriaController::class,'destroy']);
+    });
+
+    // doc
+    Route::group(['prefix' => 'doc'],function (){
+        Route::get('/',[DocController::class,'index']);
+        Route::post('/',[DocController::class,'store']);
+        Route::put('/',[DocController::class,'update']);
+        Route::get('/{id}',[DocController::class,'show']);
+        Route::delete('/{id}',[DocController::class,'destroy']);
+    });
+
+    // doc type
+    Route::group(['prefix' => 'doc-type'],function (){
+        Route::get('/',[DocTypeController::class,'index']);
+        Route::post('/',[DocTypeController::class,'store']);
+        Route::put('/',[DocTypeController::class,'update']);
+        Route::get('/{id}',[DocTypeController::class,'show']);
+        Route::delete('/{id}',[DocTypeController::class,'destroy']);
     });
 });

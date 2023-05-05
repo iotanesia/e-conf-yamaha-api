@@ -42,6 +42,11 @@ class RegularFixedQuantityConfirmation extends Model
         return $this->belongsTo(RegularDeliveryPlan::class,'id_regular_delivery_plan','id');
     }
 
+    public function refFixedActualContainer()
+    {
+        return $this->belongsTo(RegularFixedActualContainer::class,'id_fixed_actual_container','id');
+    }
+
     public function refFixedActualContainerCreation()
     {
         return $this->belongsTo(RegularFixedActualContainerCreation::class,'id_fixed_actual_container_creation','id');

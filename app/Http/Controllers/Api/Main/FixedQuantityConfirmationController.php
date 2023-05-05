@@ -152,4 +152,39 @@ class FixedQuantityConfirmationController extends Controller
         }
     }
 
+    public function getCasemarks(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedQuantityConfirmation::getCasemarks($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function printCasemarks(Request $request, $id)
+    {
+        try {
+            $filename = 'casemarks-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/casemarks/'.$filename;
+            $data = QueryRegularFixedQuantityConfirmation::printCasemarks($request,$id,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function printPackaging(Request $request, $id)
+    {
+        try {
+            $filename = 'casemarks-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/casemarks/'.$filename;
+            $data = QueryRegularFixedQuantityConfirmation::printPackaging($request,$id,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
 }

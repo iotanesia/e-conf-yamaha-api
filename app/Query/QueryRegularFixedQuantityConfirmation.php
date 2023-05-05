@@ -15,6 +15,7 @@ use App\Models\RegularFixedQuantityConfirmationBox;
 use App\Models\RegularFixedShippingInstruction;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class QueryRegularFixedQuantityConfirmation extends Model {
 
@@ -543,6 +544,76 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             if($is_transaction) DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function getCasemarks($params) 
+    {
+        $data = RegularFixedActualContainer::where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            if($category) {
+                if($category == 'cust_name'){
+                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+                } else {
+                    $query->where($category, 'ilike', $params->value);
+                }
+            }
+
+            if($params->date_start || $params->date_finish)
+                $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
+
+
+        })->paginate($params->limit ?? null);
+
+        $data->map(function ($item){
+            $item->cust_name = $item->refConsignee->nick_name ?? null;
+            $item->status_desc = 'Case Marks Finished';
+            $item->invoice_no = $item->no_packaging;
+
+            unset(
+                $item->refConsignee,
+                $item->manyFixedPackingCreation,
+            );
+            return $item;
+        })->toArray();
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function printCasemarks($request,$id,$pathToFile,$filename)
+    {
+        try {
+            $data = RegularFixedQuantityConfirmation::where('id_fixed_actual_container',$id)->get();
+
+            Pdf::loadView('pdf.casemarks.casemarks_doc',[
+              'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+            
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
+    }
+
+    public static function printPackaging($request,$id,$pathToFile,$filename)
+    {
+        try {
+            $data = RegularFixedActualContainer::find($id);
+
+            Pdf::loadView('pdf.packaging.packaging_doc',[
+              'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 
 }

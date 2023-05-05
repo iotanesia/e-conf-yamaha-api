@@ -33,4 +33,9 @@ class RegularFixedQuantityConfirmationBox extends Model
     {
         return $this->belongsTo(RegularDeliveryPlan::class,'id_regular_delivery_plan','id');
     }
+
+    public function refMstBox()
+    {
+        return $this->belongsTo(MstBox::class,'id_box','id');
+    }
 }

@@ -29,4 +29,14 @@ class RegularFixedActualContainer extends Model
     {
         return $this->belongsTo(MstConsignee::class,'code_consignee','code');
     }
+
+    public function manyFixedPackingCreation()
+    {
+        return $this->hasMany(RegularFixedPackingCreation::class,'id_fixed_actual_container','id')->orderBy('id','asc');
+    }
+
+    public function manyFixedQuantityConfirmation()
+    {
+        return $this->hasMany(RegularFixedQuantityConfirmation::class,'id_fixed_actual_container','id')->orderBy('id','asc');
+    }
 }
