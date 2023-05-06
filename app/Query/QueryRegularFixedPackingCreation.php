@@ -4,6 +4,7 @@ namespace App\Query;
 
 use App\Constants\Constant;
 use App\Models\RegularFixedPackingCreation AS Model;
+use App\Models\RegularFixedQuantityConfirmation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
@@ -111,49 +112,54 @@ class QueryRegularFixedPackingCreation extends Model {
 
     public static function packingCreationDeliveryNote($id,$request)
     {
-        $data = self::find($id);
+        $data = RegularFixedActualContainer::find($id);
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
 
-        $fixed_packing_creation = Model::select(DB::raw("string_agg(DISTINCT d.name::character varying, ',') as yth"),DB::raw("string_agg(DISTINCT e.nick_name::character varying, ',') as username"),DB::raw("string_agg(DISTINCT e.name::character varying, ',') as jenis_truck"))
-                        ->where('regular_fixed_packing_creation.id',$id)
-                        ->join('regular_fixed_actual_container as a','a.id','regular_fixed_packing_creation.id_fixed_actual_container')
-                        ->join('regular_fixed_quantity_confirmation as b','b.id_fixed_actual_container','a.id')
-                        ->join('regular_fixed_actual_container_creation as c','c.id_fixed_packing_container','regular_fixed_packing_creation.id')
-                        ->join('mst_lsp as d','d.id','c.id_lsp')
-                        ->join('mst_consignee as e','e.code','c.code_consignee')
-                        ->join('mst_type_delivery as f','f.id','c.id_type_delivery')
-                        ->paginate($request->limit ?? null);
+        $fixed_packing_creation = RegularFixedActualContainer::
+                        select(DB::raw("string_agg(DISTINCT d.name::character varying, ',') as yth"),
+                                 DB::raw("string_agg(DISTINCT e.nick_name::character varying, ',') as username"),
+                                 DB::raw("string_agg(DISTINCT g.container_type::character varying, ',') as jenis_truck")
+                        )->where('regular_fixed_actual_container.id',$id)
+                            ->join('regular_fixed_quantity_confirmation as b','b.id_fixed_actual_container','regular_fixed_actual_container.id')
+                            ->join('regular_fixed_actual_container_creation as c','regular_fixed_actual_container.id','c.id_fixed_actual_container')
+                            ->join('mst_lsp as d','d.id','c.id_lsp')
+                            ->join('mst_consignee as e','e.code','c.code_consignee')
+                            ->join('mst_type_delivery as f','f.id','c.id_type_delivery')
+                            ->join('mst_container as g','g.id','c.id_container')
+                            ->first();
 
-        $items = Model::select(DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_number"),DB::raw("string_agg(DISTINCT c.description::character varying, ',') as item_name"),DB::raw("string_agg(DISTINCT b.order_no::character varying, ',') as order_no"),DB::raw("string_agg(DISTINCT b.qty::character varying, ',') as quantity"),DB::raw("string_agg(DISTINCT e.no_packaging::character varying, ',') as no_packing_list"))
-                        ->where('regular_fixed_packing_creation.id',$id)
-                        ->join('regular_fixed_actual_container as a','a.id','regular_fixed_packing_creation.id_fixed_actual_container')
-                        ->join('regular_fixed_quantity_confirmation as b','b.id_fixed_actual_container','a.id')
-                        ->join('mst_part as c','c.item_no','b.item_no')
-                        ->join('regular_delivery_plan as d','d.id','b.id_regular_delivery_plan')
-                        ->join('regular_delivery_plan_prospect_container as e','e.id','d.id_prospect_container')
-                        ->get();
-
-        $packing_creation_note = RegularFixedPackingCreationNote::where('id_fixed_packing_creation', $id)->get();
-        $packing_creation_note->transform(function($item){
-            $item->packing_creation_note_detail = RegularFixedPackingCreationNoteDetail::where('id_fixed_packing_creation_note', $item->id)->get();
-            return $item->toArray();
-        });
+        $ret['yth'] = $fixed_packing_creation->yth;
+        $ret['username'] = $fixed_packing_creation->username;
+        $ret['jenis_truck'] = $fixed_packing_creation->jenis_truck." HC";
+        $ret['surat_jalan'] = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first());
+        $ret['delivery_date'] = date('d-m-Y');
+        $ret['shipped'] = MstShipment::Where('is_active', 1)->first()->shipment ?? null;
 
         return [
-            'items' => $fixed_packing_creation->transform(function($item) use ($items,$packing_creation_note){
-                $item->shipment = MstShipment::where('is_active',Constant::IS_ACTIVE)->first()->shipment ?? null;
-                $item->truck_no = null;
-                $item->surat_jalan = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first()) ?? null;
-                $item->delivery_date = Carbon::now()->format('Y-m-d');
-                $item->items = $items;
+            'items' => $ret,
+            'last_page' => 0
+        ];
+    }
 
-                if (count($packing_creation_note) > 0) {
-                    $item->packing_creation_note = $packing_creation_note;
-                }
+    public static function packingCreationDeliveryNotePart($id,$request)
+    {
+        $data = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $id)
+            ->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("data tidak ditemukan", 400);
+
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                $item->item_name = trim($item->refRegularDeliveryPlan->refPart->description);
+                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+                $item->no_invoice = $item->refFixedActualContainer->no_packaging;
+                unset(
+                    $item->refRegularDeliveryPlan,
+                    $item->refFixedActualContainer
+                );
 
                 return $item;
             }),
-            'last_page' => $fixed_packing_creation->lastPage()
+            'last_page' => $data->lastPage()
         ];
     }
 

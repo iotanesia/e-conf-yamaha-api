@@ -220,12 +220,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
 
 
-        })->paginate($params->limit ?? null);
-        // if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
+        })->where('is_actual', $params->is_actual ?? 1)
+            ->paginate($params->limit ?? null);
 
         $data->map(function ($item){
             $item->cust_name = $item->refConsignee->nick_name ?? null;
-            $item->status_desc = 'Confirmed';
+            //$item->status_desc = 'Confirmed';
 
             unset(
                 $item->refConsignee
