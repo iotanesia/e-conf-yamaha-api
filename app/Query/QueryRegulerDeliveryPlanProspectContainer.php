@@ -182,7 +182,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             foreach ($creations as $item) {
                 $store = RegularDeliveryPlanProspectContainerCreation::create($item);
                 $prospect_container_creation[] = $store;
-
             }
         }
 

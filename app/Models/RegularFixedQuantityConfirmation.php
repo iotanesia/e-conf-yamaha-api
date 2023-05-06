@@ -29,6 +29,9 @@ class RegularFixedQuantityConfirmation extends Model
         "is_actual",
         "id_fixed_actual_container",
         "id_fixed_actual_container_creation",
+        "in_dc",
+        "in_wh",
+        "production",
         "status",
         "created_at",
         "created_by",
@@ -51,7 +54,7 @@ class RegularFixedQuantityConfirmation extends Model
     {
         return $this->belongsTo(RegularFixedActualContainerCreation::class,'id_fixed_actual_container_creation','id');
     }
-    
+
     public function refConsignee()
     {
         return $this->belongsTo(MstConsignee::class,'code_consignee','code');

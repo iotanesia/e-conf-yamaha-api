@@ -12,7 +12,7 @@ class RegularFixedActualContainerCreation extends Model
     protected $table = 'regular_fixed_actual_container_creation';
     public $fillable = [
         "id",
-        "id_fixed_packing_container",
+        "id_fixed_actual_container",
         "id_fixed_shipping_instruction",
         "id_fixed_shipping_instruction_creation",
         "id_type_delivery",

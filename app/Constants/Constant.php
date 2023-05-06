@@ -30,5 +30,7 @@ class Constant
         'qr' => '/app/qrcode/label'
     ];
     const TRACKING = [2,3];
+
+    const IS_ACTUAL = 1;
 }
 

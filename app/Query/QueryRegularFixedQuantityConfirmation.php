@@ -28,7 +28,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-    
+
                 $query->where('is_actual',Constant::IS_NOL);
                 if($params->search) {
                     $query->where('code_consignee', 'like', "'%$params->search%'")
@@ -40,8 +40,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                 ->orWhere('status', 'like', "'%$params->search%'")
                                 ->orWhere('order_no', 'like', "'%$params->search%'")
                                 ->orWhere('cust_item_no', 'like', "'%$params->search%'");
-                } 
-    
+                }
+
             })->whereHas('refRegularDeliveryPlan',function ($query) use ($params){
                 $category = $params->category ?? null;
                 if($category) {
@@ -303,16 +303,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-
          Helper::requireParams([
              'id'
          ]);
 
-        
         $fixed_quantity_confirmation = RegularFixedQuantityConfirmation::select('id_fixed_actual_container')->whereIn('id_fixed_actual_container',$params->id)->groupBy('id_fixed_actual_container')->get()
         ->transform(function ($delivery){
-
-
             $id_fixed_actual_container = $delivery->id_fixed_actual_container;
             $data = RegularFixedQuantityConfirmation::where('id_fixed_actual_container',$id_fixed_actual_container)->get()->map(function ($item){
                 $qty = $item->refRegularDeliveryPlan->manyDeliveryPlanBox->count();
@@ -353,17 +349,29 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     'status' => $data[0]['status'],
                     'datasource' => $data[0]['datasource'],
                     'item_no' => $data[0]['item_no'],
+                    'id_fixed_actual_container' => $data[0]['id_fixed_actual_container'],
                 ]);
             }
 
             return $creation;
         })->toArray();
 
+        $actual_container_creation = [];
         foreach ($fixed_quantity_confirmation as $creations) {
             foreach ($creations as $item) {
-                RegularFixedActualContainerCreation::create($item);
+                $store= RegularFixedActualContainerCreation::create($item);
+                $actual_container_creation[] = $store;
             }
         }
+
+        foreach ($actual_container_creation as $val) {
+            Model::where('id_fixed_actual_container',$val->id_fixed_actual_container)
+                ->update([
+                    'id_fixed_actual_container_creation' => $val->id
+                ]);
+        }
+
+        Model::whereIn('id', $params->id)->update(['is_actual' => Constant::IS_ACTUAL]);
 
         if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
@@ -433,18 +441,26 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
-                $item->container_type = $item->refFixedActualContainerCreation->refMstContainer->container_type;
-                $item->container_capacity = $item->refFixedActualContainerCreation->refMstContainer->capacity;
-                $item->actual_container = $item->refFixedActualContainerCreation->refMstContainer->capacity;
-                $item->container_number = $item->refFixedActualContainerCreation->iteration;
-
-                unset(
-                    $item->refFixedActualContainerCreation,
-                );
-
                 return $item;
             }),
             'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function getCreationMoveContainer($params, $id)
+    {
+        $data = RegularFixedActualContainerCreation::with('refMstContainer')
+            ->find($id)
+            ->first();
+
+        if(!$data) throw new \Exception("Data not found", 400);
+        $ret["container_type"] = $data->refMstContainer->container_type." ".$data->refMstContainer->container_value;
+        $ret["container_capacity"] = $data->refMstContainer->capacity;
+        $ret["actual_capacity"] = $data->refMstContainer->capacity;
+        $ret["container_number"] = ($data->iteration < 10) ? "0".strval($data->iteration) : $data->iteration;
+        return [
+            'items' => $ret,
+            'last_page' => 0
         ];
 
     }
@@ -494,7 +510,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         }
     }
 
-    public static function generateNobooking($request,$is_transaction = true) 
+    public static function generateNobooking($request,$is_transaction = true)
     {
         Helper::requireParams(['id']);
         if($is_transaction) DB::beginTransaction();
@@ -546,7 +562,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         }
     }
 
-    public static function getCasemarks($params) 
+    public static function getCasemarks($params)
     {
         $data = RegularFixedActualContainer::where(function ($query) use ($params){
             $category = $params->category ?? null;
@@ -593,7 +609,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
-            
+
           } catch (\Throwable $th) {
               return Helper::setErrorResponse($th);
           }

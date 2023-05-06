@@ -178,6 +178,7 @@ Route::prefix('v1/regular')
             Route::post('/creation',[FixedQuantityConfirmationController::class,'creation']);
             Route::post('/creation/detail',[FixedQuantityConfirmationController::class,'creationDetail']);
             Route::get('/creation/move/{id}',[FixedQuantityConfirmationController::class,'getCreationMove']);
+            Route::get('/creation/move/container/{id}',[FixedQuantityConfirmationController::class,'getCreationMoveContainer']);
             Route::post('/creation/move',[FixedQuantityConfirmationController::class,'creationMove']);
         });
 

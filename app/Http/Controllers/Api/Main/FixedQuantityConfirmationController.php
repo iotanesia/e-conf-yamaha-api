@@ -107,7 +107,18 @@ class FixedQuantityConfirmationController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
-    
+
+    public function getCreationMoveContainer(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedQuantityConfirmation::getCreationMoveContainer($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function creationMove(Request $request)
     {
         try {
