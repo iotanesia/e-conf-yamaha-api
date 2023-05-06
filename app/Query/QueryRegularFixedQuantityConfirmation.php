@@ -441,6 +441,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
+                $item->item_name = trim($item->refRegularDeliveryPlan->refPart->description);
+                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+
+                unset(
+                    $item->refRegularDeliveryPlan
+                );
+
                 return $item;
             }),
             'last_page' => $data->lastPage()

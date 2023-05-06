@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class QueryRegularFixedPackingCreation extends Model {
-    
+
     const cast = 'regular-fixed-packing-creation';
 
     public static function getAll($params)
@@ -24,11 +24,11 @@ class QueryRegularFixedPackingCreation extends Model {
         try {
             $key = self::cast.json_encode($params->query());
             if($params->dropdown == Constant::IS_ACTIVE) $params->limit = Model::count();
-            
+
             $query = self::where(function ($query) use ($params){
                 if($params->search) $query->where('name',"like", "%$params->search%")
                                             ->orWHere('nickname',"like", "%$params->search%");
- 
+
              });
              if($params->withTrashed == 'true') $query->withTrashed();
              $data = $query
@@ -123,7 +123,7 @@ class QueryRegularFixedPackingCreation extends Model {
                         ->join('mst_consignee as e','e.code','c.code_consignee')
                         ->join('mst_type_delivery as f','f.id','c.id_type_delivery')
                         ->paginate($request->limit ?? null);
-                        
+
         $items = Model::select(DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_number"),DB::raw("string_agg(DISTINCT c.description::character varying, ',') as item_name"),DB::raw("string_agg(DISTINCT b.order_no::character varying, ',') as order_no"),DB::raw("string_agg(DISTINCT b.qty::character varying, ',') as quantity"),DB::raw("string_agg(DISTINCT e.no_packaging::character varying, ',') as no_packing_list"))
                         ->where('regular_fixed_packing_creation.id',$id)
                         ->join('regular_fixed_actual_container as a','a.id','regular_fixed_packing_creation.id_fixed_actual_container')
@@ -202,7 +202,7 @@ class QueryRegularFixedPackingCreation extends Model {
             throw $th;
         }
     }
-    
+
     public static function getParamDetail($params,$data) {
         $res = [];
         foreach ($params as $value) {

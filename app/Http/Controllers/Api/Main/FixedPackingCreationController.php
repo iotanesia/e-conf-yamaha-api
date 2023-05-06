@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Main;
 
 use App\Http\Controllers\Controller;
+use App\Query\QueryRegularFixedQuantityConfirmation;
 use Illuminate\Http\Request;
 use App\ApiHelper as ResponseInterface;
 use App\Query\QueryRegularFixedPackingCreation;
@@ -13,7 +14,7 @@ class FixedPackingCreationController extends Controller
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularFixedPackingCreation::getAll($request)
+                QueryRegularFixedQuantityConfirmation::getActualContainer($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
