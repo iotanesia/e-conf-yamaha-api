@@ -206,6 +206,7 @@ Route::prefix('v1/regular')
             Route::delete('/{id}',[FixedPackingCreationController::class,'delete']);
             Route::get('/{id}',[FixedPackingCreationController::class,'detail']);
             Route::get('/delivery-note/{id}',[FixedPackingCreationController::class,'packingCreationDeliveryNote']);
+            Route::get('/delivery-note/part/{id}',[FixedPackingCreationController::class,'packingCreationDeliveryNotePart']);
             Route::post('/delivery-note/save',[FixedPackingCreationController::class,'packingCreationDeliveryNoteSave']);
             Route::get('/delivery-note/print/{id}',[FixedPackingCreationController::class,'packingCreationDeliveryNotePrint']);
             Route::get('/download/{id}',[FixedQuantityConfirmationController::class,'printPackaging']);
