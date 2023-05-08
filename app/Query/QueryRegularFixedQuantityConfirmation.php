@@ -122,7 +122,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 "items" => [
                     'id' => $params->id,
                     'no_packaging' => $no_packaging,
-                    'etd_jkt' => $tanggal,
+                    'etd_jkt' => date('Y-m-d', strtotime($tanggal)),
                     'code_consignee' => $code_consignee,
                     'datasource' => $datasource
                 ]
