@@ -356,6 +356,9 @@ class QueryStockConfirmationHistory extends Model {
                 $fixed_quantity_confirmation->etd_ypmi = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_ypmi;
                 $fixed_quantity_confirmation->etd_wh = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_wh;
                 $fixed_quantity_confirmation->etd_jkt = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_jkt;
+                $fixed_quantity_confirmation->in_dc = $stock_confirmation->in_dc;
+                $fixed_quantity_confirmation->in_wh = $stock_confirmation->in_wh;
+                $fixed_quantity_confirmation->production = $stock_confirmation->production;
                 $fixed_quantity_confirmation->is_actual = 0;
                 $fixed_quantity_confirmation->status = 1;
                 $fixed_quantity_confirmation->save();
