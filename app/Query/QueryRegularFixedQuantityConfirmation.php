@@ -161,7 +161,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                    $query->whereIn('id',$params->id);
                    $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',$params->etd_jkt);
-                   $query->where('datasource',$params->datasource);
+                   $query->where('datasource','PYMAC');
            })
            ->chunk(1000,function ($data) use ($params,$store){
                 foreach ($data as $key => $item) {
@@ -220,7 +220,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
 
 
-        })->where('is_actual', $params->is_actual ?? 1)
+        })->where('is_actual', $params->is_actual ?? 0)
             ->paginate($params->limit ?? null);
 
         $data->map(function ($item){
