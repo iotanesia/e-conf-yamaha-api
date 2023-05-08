@@ -160,7 +160,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
            self::where(function ($query) use ($params){
                    $query->whereIn('id',$params->id);
                    $query->where('code_consignee',$params->code_consignee);
-                   $query->where('etd_jkt',$params->etd_jkt);
+                   $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
                    $query->where('datasource','PYMAC');
            })
            ->chunk(1000,function ($data) use ($params,$store){
