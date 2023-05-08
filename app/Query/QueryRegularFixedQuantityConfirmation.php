@@ -409,7 +409,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     public static function creationDetail($params)
     {
-        $data = RegularFixedActualContainerCreation::whereIn('id',$params->id)->paginate($params->limit ?? null);
+        $data = RegularFixedActualContainerCreation::whereIn('id_fixed_actual_container',$params->id)->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
