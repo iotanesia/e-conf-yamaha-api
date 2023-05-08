@@ -436,8 +436,7 @@ class QueryRegularDeliveryPlan extends Model {
             Helper::requireParams([
                 'id',
                 'id_mot',
-                'id_type_delivery',
-                'code_consignee'
+                'id_type_delivery'
             ]);
 
             $update = RegularProspectContainerCreation::find($params['id']);
