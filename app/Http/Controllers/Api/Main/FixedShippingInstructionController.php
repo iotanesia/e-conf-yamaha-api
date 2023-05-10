@@ -98,4 +98,70 @@ class FixedShippingInstructionController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function shippingInstructionDetailSI(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::shippingDetailSI($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function sendccoff(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::sendccoff($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function sendccman(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::sendccman($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function approve(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::approve($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function revisi(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::revisi($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function reject(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::reject($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

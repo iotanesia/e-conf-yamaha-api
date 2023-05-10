@@ -8,6 +8,7 @@ use App\Models\MstConsignee;
 use App\Models\MstShipment;
 use App\Models\RegularFixedActualContainerCreation;
 use App\Models\RegularFixedShippingInstruction AS Model;
+use App\Models\RegularFixedShippingInstruction;
 use App\Models\RegularFixedShippingInstructionCreation;
 use App\Models\RegularFixedShippingInstructionCreationDraft;
 use Carbon\Carbon;
@@ -21,11 +22,29 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function shipping($params)
     {
-        $data = self::paginate($params->limit ?? null);
+        $data = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $params->id)->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
-            'items' => $data->items(),
+            'items' => $data->getCollection()->transform(function($item){
+
+                if($item->status == 1) $status = 'Confirm Booked';
+                if($item->status == 2) $status = 'SI Created';
+                if($item->status == 3) $status = 'Send To CC Spv';
+                if($item->status == 4) $status = 'Send To CC Manager';
+                if($item->status == 5) $status = 'Approve';
+                if($item->status == 6) $status = 'Correction';
+                if($item->status == 7) $status = 'Rejection';
+
+                $item->no_packaging = $item->refFixedActualContainer->no_packaging ?? null;
+                $item->status = $status;
+
+                unset(
+                    $item->refFixedActualContainer,
+                );
+
+                return $item;
+            }),
             'last_page' => $data->lastPage()
         ];
     }
@@ -41,10 +60,20 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'to',
                 'cc',
             ]);
-            $insert = RegularFixedShippingInstructionCreation::create($params);
-            RegularFixedActualContainerCreation::where('code_consignee',$request->code_consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_fixed_shipping_instruction_creation'=>$insert->id]);
-            $params['id_fixed_shipping_instruction_creation'] = $insert->id;
-            RegularFixedShippingInstructionCreationDraft::create($params);
+
+            $fixed_shipping_instruction_creation = RegularFixedShippingInstructionCreation::where('id', $request->id_fixed_shipping_instruction_creation)->first();
+
+            if ($fixed_shipping_instruction_creation == null) {
+                $insert = RegularFixedShippingInstructionCreation::create($params);
+                RegularFixedActualContainerCreation::where('code_consignee',$request->code_consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_fixed_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
+                $params['id_fixed_shipping_instruction_creation'] = $insert->id;
+                RegularFixedShippingInstructionCreationDraft::create($params);
+            } else {
+                $fixed_shipping_instruction_creation->update($params);
+                $params['id_fixed_shipping_instruction_creation'] = $fixed_shipping_instruction_creation->id;
+                RegularFixedShippingInstructionCreationDraft::create($params);
+            }
+
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
@@ -73,13 +102,25 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function shippingDraftDok($params,$id)
     {
-        $data = RegularFixedShippingInstructionCreationDraft::select('id','no_draft','created_at')
+        $data = RegularFixedShippingInstructionCreationDraft::select('id','consignee','no_draft','created_at')
             ->where('id_fixed_shipping_instruction_creation',$id)
             ->paginate($params->limit ?? null);
 
         if(!$data) throw new \Exception("Data not found", 400);
         return [
-            'items' => $data->items(),
+            'items' => $data->getCollection()->transform(function($item){
+
+                $item->title = 'SI Draft '.json_decode($item->consignee)->nick_name;
+                $item->date = $item->created_at;
+
+                unset(
+                    $item->refFixedShippingInstructionCreation,
+                    $item->consignee,
+                    $item->created_at,
+                );
+
+                return $item;
+            }),
             'last_page' => $data->lastPage()
         ];
     }
@@ -138,6 +179,33 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function shippingDetail($params,$id)
     {
+        $data = RegularFixedActualContainerCreation::select('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt'
+        ,DB::raw('COUNT(regular_fixed_actual_container_creation.etd_jkt) AS summary_container')
+        ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_wh::character varying, ',') as etd_wh")
+        ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_ypmi::character varying, ',') as etd_ypmi"))
+        ->where('regular_fixed_actual_container_creation.id_fixed_shipping_instruction',$id)
+        ->groupBy('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt')
+        ->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+
+        $data->transform(function ($item) {
+            return [
+                'cust_name' => $item->refMstConsignee->nick_name,
+                'etd_jkt' => $item->etd_jkt,
+                'etd_wh' => $item->etd_wh,
+                'etd_ypmi' => $item->etd_ypmi,
+                'summary_container' => $item->summary_container
+            ];
+        });
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function shippingDetailSI($params,$id)
+    {
         $data = RegularFixedActualContainerCreation::select('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt','regular_fixed_actual_container_creation.etd_wh','regular_fixed_actual_container_creation.id_lsp','g.status','id_fixed_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','d.port'
         ,DB::raw('COUNT(regular_fixed_actual_container_creation.etd_jkt) AS summary_container')
         ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
@@ -158,7 +226,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ->leftJoin('mst_container as f','regular_fixed_actual_container_creation.id_container','f.id')
         ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_fixed_actual_container_creation.id_fixed_shipping_instruction_creation','g.id')
         ->groupBy('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt','regular_fixed_actual_container_creation.etd_wh','regular_fixed_actual_container_creation.id_lsp','g.status','id_fixed_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','d.port')
-        ->paginate($params->limit ?? null);
+        ->paginate(1);
         if(!$data) throw new \Exception("Data not found", 400);
 
         $data->transform(function ($item) {
@@ -194,6 +262,116 @@ class QueryRegularFixedShippingInstruction extends Model {
             'items' => $data->items(),
             'last_page' => $data->lastPage()
         ];
+    }
+
+    public static function sendccoff($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            Helper::requireParams([
+                'id'
+            ]);
+
+            $data = RegularFixedShippingInstruction::whereIn('id', $request->id)->get();
+            foreach ($data as $value) {
+                $value->update(['status' => 3]);
+            }
+
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+            return ['items' => $data];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function sendccman($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            Helper::requireParams([
+                'id'
+            ]);
+
+            $data = RegularFixedShippingInstruction::whereIn('id', $request->id)->get();
+            foreach ($data as $value) {
+                $value->update(['status' => 4]);
+            }
+
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+            return ['items' => $data];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function approve($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            Helper::requireParams([
+                'id'
+            ]);
+
+            $data = RegularFixedShippingInstruction::whereIn('id', $request->id)->get();
+            foreach ($data as $value) {
+                $value->update(['status' => 5]);
+            }
+
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+            return ['items' => $data];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function revisi($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            Helper::requireParams([
+                'id'
+            ]);
+
+            $data = RegularFixedShippingInstruction::whereIn('id', $request->id)->get();
+            foreach ($data as $value) {
+                $value->update(['status' => 6]);
+            }
+
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+            return ['items' => $data];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function reject($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            Helper::requireParams([
+                'id'
+            ]);
+
+            $data = RegularFixedShippingInstruction::whereIn('id', $request->id)->get();
+            foreach ($data as $value) {
+                $value->update(['status' => 7]);
+            }
+
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+            return ['items' => $data];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
     }
 
 }
