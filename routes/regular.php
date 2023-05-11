@@ -192,12 +192,12 @@ Route::prefix('v1/regular')
             Route::get('/',[FixedShippingInstructionController::class,'shippingInstruction']);
             Route::post('/',[FixedShippingInstructionController::class,'shippingInstructionStore']);
             Route::post('/update-status',[FixedShippingInstructionController::class,'shippingInstructionUpdate']);
-            Route::get('/draft/{id}',[FixedShippingInstructionController::class,'shippingInstructionListDraft']);
+            Route::post('/draft',[FixedShippingInstructionController::class,'shippingInstructionListDraft']);
             Route::get('/draft/detail/{id}',[FixedShippingInstructionController::class,'shippingInstructionListDraftDetail']);
             Route::post('/download-dok/{id}',[FixedShippingInstructionController::class,'shippingInstructionDownloadDoc']);
             Route::post('/download-dok-draft/{id}',[FixedShippingInstructionController::class,'shippingInstructionDownloadDocDraft']);
             Route::get('/{id}',[FixedShippingInstructionController::class,'shippingInstructionDetail']);
-            Route::get('/detail/{id}',[FixedShippingInstructionController::class,'shippingInstructionDetailSI']);
+            Route::post('/detail',[FixedShippingInstructionController::class,'shippingInstructionDetailSI']);
             Route::post('/send-ccoff', [FixedShippingInstructionController::class,'sendccoff']);
             Route::post('/send-ccman', [FixedShippingInstructionController::class,'sendccman']);
             Route::post('/approve', [FixedShippingInstructionController::class,'approve']);

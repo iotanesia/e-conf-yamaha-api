@@ -36,7 +36,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 if($item->status == 6) $status = 'Correction';
                 if($item->status == 7) $status = 'Rejection';
 
-                $item->no_packaging = $item->refFixedActualContainer->no_packaging ?? null;
+                $item->no_packaging = [$item->refFixedActualContainer->no_packaging] ?? null;
                 $item->status = $status;
 
                 unset(
@@ -100,17 +100,21 @@ class QueryRegularFixedShippingInstruction extends Model {
         }
     }
 
-    public static function shippingDraftDok($params,$id)
+    public static function shippingDraftDok($params)
     {
-        $data = RegularFixedShippingInstructionCreationDraft::select('id','consignee','no_draft','created_at')
-            ->where('id_fixed_shipping_instruction_creation',$id)
+        $fixed_actual_container_creation = RegularFixedActualContainerCreation::where('code_consignee', $params->code_consignee)->where('etd_jkt', $params->etd_jkt)->where('datasource', $params->datasource)->first();
+        
+        if($fixed_actual_container_creation->id_fixed_shipping_instruction_creation == null) return ['items' => []];
+
+        $data = RegularFixedShippingInstructionCreationDraft::select('id','consignee','created_at')
+            ->where('id_fixed_shipping_instruction_creation', $fixed_actual_container_creation->id_fixed_shipping_instruction_creation)
             ->paginate($params->limit ?? null);
 
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
 
-                $item->title = 'SI Draft '.json_decode($item->consignee)->nick_name;
+                $item->title = 'SI Draft '.$item->consignee;
                 $item->date = $item->created_at;
 
                 unset(
@@ -181,6 +185,8 @@ class QueryRegularFixedShippingInstruction extends Model {
     {
         $data = RegularFixedActualContainerCreation::select('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt'
         ,DB::raw('COUNT(regular_fixed_actual_container_creation.etd_jkt) AS summary_container')
+        ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.code_consignee::character varying, ',') as code_consignee")
+        ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.datasource::character varying, ',') as datasource")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_wh::character varying, ',') as etd_wh")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_ypmi::character varying, ',') as etd_ypmi"))
         ->where('regular_fixed_actual_container_creation.id_fixed_shipping_instruction',$id)
@@ -194,7 +200,9 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'etd_jkt' => $item->etd_jkt,
                 'etd_wh' => $item->etd_wh,
                 'etd_ypmi' => $item->etd_ypmi,
-                'summary_container' => $item->summary_container
+                'summary_container' => $item->summary_container,
+                'code_consignee' => $item->code_consignee,
+                'datasource' => $item->datasource,
             ];
         });
 
@@ -204,10 +212,11 @@ class QueryRegularFixedShippingInstruction extends Model {
         ];
     }
 
-    public static function shippingDetailSI($params,$id)
+    public static function shippingDetailSI($params)
     {
         $data = RegularFixedActualContainerCreation::select('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt','regular_fixed_actual_container_creation.etd_wh','regular_fixed_actual_container_creation.id_lsp','g.status','id_fixed_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','d.port'
         ,DB::raw('COUNT(regular_fixed_actual_container_creation.etd_jkt) AS summary_container')
+        ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.id_fixed_shipping_instruction_creation::character varying, ',') as id_fixed_shipping_instruction_creation")
         ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
         ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
         ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
@@ -218,7 +227,9 @@ class QueryRegularFixedShippingInstruction extends Model {
         ,DB::raw("SUM(f.gross_weight) as gross_weight")
         ,DB::raw("SUM(f.measurement) as measurement")
         ,DB::raw("SUM(regular_fixed_actual_container_creation.summary_box) as summary_box_sum"))
-        ->where('regular_fixed_actual_container_creation.id_fixed_shipping_instruction',$id)
+        ->where('regular_fixed_actual_container_creation.code_consignee', $params->code_consignee)
+        ->where('regular_fixed_actual_container_creation.etd_jkt', $params->etd_jkt)
+        ->where('regular_fixed_actual_container_creation.datasource', $params->datasource)
         ->leftJoin('mst_part as b','regular_fixed_actual_container_creation.item_no','b.item_no')
         ->leftJoin('mst_mot as c','regular_fixed_actual_container_creation.id_mot','c.id')
         ->leftJoin('mst_port_of_discharge as d','regular_fixed_actual_container_creation.code_consignee','d.code_consignee')
@@ -230,32 +241,37 @@ class QueryRegularFixedShippingInstruction extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
 
         $data->transform(function ($item) {
-            return [
-                'code_consignee' => $item->code_consignee,
-                'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2,
-                'customer_name' => $item->refMstConsignee->nick_name,
-                'etd_jkt' => $item->etd_jkt,
-                'etd_wh' => $item->etd_wh,
-                'summary_container' => $item->summary_container,
-                'hs_code' => $item->hs_code,
-                'via' => $item->mot,
-                'freight_chart' => 'COLLECT',
-                'incoterm' => 'FOB',
-                'shipped_by' => $item->mot,
-                'container_value' => intval($item->container_type),
-                'container_type' => $item->container_value,
-                'net_weight' => $item->net_weight,
-                'gross_weight' => $item->gross_weight,
-                'measurement' => $item->measurement,
-                'port' => $item->port,
-                'type_delivery' => $item->type_delivery,
-                'count' => $item->summary_container,
-                'summary_box' => $item->summary_box_sum,
-                'to' => $item->refMstLsp->name ?? null,
-                'status' => $item->status ?? null,
-                'id_fixed_shipping_instruction_creation' => $item->id_fixed_shipping_instruction_creation ?? null,
-                'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null,
-            ];
+            if ($item->id_fixed_shipping_instruction_creation) {
+                $data = RegularFixedShippingInstructionCreation::find($item->id_fixed_shipping_instruction_creation);
+                return $data->toArray();
+            } else {
+                return [
+                    'code_consignee' => $item->code_consignee,
+                    'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2,
+                    'customer_name' => $item->refMstConsignee->nick_name,
+                    'etd_jkt' => $item->etd_jkt,
+                    'etd_wh' => $item->etd_wh,
+                    'summary_container' => $item->summary_container,
+                    'hs_code' => $item->hs_code,
+                    'via' => $item->mot,
+                    'freight_chart' => 'COLLECT',
+                    'incoterm' => 'FOB',
+                    'shipped_by' => $item->mot,
+                    'container_value' => intval($item->container_type),
+                    'container_type' => $item->container_value,
+                    'net_weight' => $item->net_weight,
+                    'gross_weight' => $item->gross_weight,
+                    'measurement' => $item->measurement,
+                    'port' => $item->port,
+                    'type_delivery' => $item->type_delivery,
+                    'count' => $item->summary_container,
+                    'summary_box' => $item->summary_box_sum,
+                    'to' => $item->refMstLsp->name ?? null,
+                    'status' => $item->status ?? null,
+                    'id_fixed_shipping_instruction_creation' => $item->id_fixed_shipping_instruction_creation ?? null,
+                    'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null,
+                ];   
+            }
         });
 
         return [

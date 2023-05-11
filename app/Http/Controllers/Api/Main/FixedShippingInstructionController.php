@@ -42,11 +42,11 @@ class FixedShippingInstructionController extends Controller
         }
     }
 
-    public function shippingInstructionListDraft(Request $request,$id)
+    public function shippingInstructionListDraft(Request $request)
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularFixedShippingInstruction::shippingDraftDok($request,$id)
+                QueryRegularFixedShippingInstruction::shippingDraftDok($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -99,11 +99,11 @@ class FixedShippingInstructionController extends Controller
         }
     }
 
-    public function shippingInstructionDetailSI(Request $request,$id)
+    public function shippingInstructionDetailSI(Request $request)
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularFixedShippingInstruction::shippingDetailSI($request,$id)
+                QueryRegularFixedShippingInstruction::shippingDetailSI($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
