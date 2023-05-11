@@ -6,6 +6,7 @@ use App\Constants\Constant;
 use App\ApiHelper as Helper;
 use App\Models\MstConsignee;
 use App\Models\MstShipment;
+use App\Models\MstSignature;
 use App\Models\RegularFixedActualContainerCreation;
 use App\Models\RegularFixedShippingInstruction AS Model;
 use App\Models\RegularFixedShippingInstruction;
@@ -53,8 +54,8 @@ class QueryRegularFixedShippingInstruction extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            $consignee = MstConsignee::where('code',$request->code_consignee)->first();
-            $request->merge(['consignee'=>json_encode($consignee),'status'=>Constant::DRAFT]);
+            $consignee = MstConsignee::where('nick_name',$request->consignee)->first();
+            // $request->merge(['consignee'=>json_encode($consignee),'status'=>Constant::DRAFT]);
             $params = $request->all();
             Helper::requireParams([
                 'to',
@@ -139,7 +140,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ];
     }
 
-    public static function downloadDoc($params,$id)
+    public static function downloadDoc($request,$id,$filename,$pathToFile)
     {
         try {
             $data = RegularFixedShippingInstructionCreation::find($id);
@@ -147,8 +148,10 @@ class QueryRegularFixedShippingInstruction extends Model {
             $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
             $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
             $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
-            $filename = 'shipping-instruction-'.$id.'.pdf';
-            $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
+            $data->approved = MstSignature::where('type', 'APPROVED')->first()->name;
+            $data->checked = MstSignature::where('type', 'CHECKED')->first()->name;
+            $data->issued = MstSignature::where('type', 'ISSUED')->first()->name;
+            
             Pdf::loadView('pdf.shipping_instruction',[
               'data' => $data
             ])
@@ -160,7 +163,7 @@ class QueryRegularFixedShippingInstruction extends Model {
           }
     }
 
-    public static function downloadDocDraft($params,$id)
+    public static function downloadDocDraft($request,$id,$filename,$pathToFile)
     {
         try {
             $data = RegularFixedShippingInstructionCreation::find($id);
@@ -168,8 +171,10 @@ class QueryRegularFixedShippingInstruction extends Model {
             $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
             $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
             $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
-            $filename = 'shipping-instruction-draft'.$id.'.pdf';
-            $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
+            $data->approved = MstSignature::where('type', 'APPROVED')->first()->name;
+            $data->checked = MstSignature::where('type', 'CHECKED')->first()->name;
+            $data->issued = MstSignature::where('type', 'ISSUED')->first()->name;
+
             Pdf::loadView('pdf.shipping_instruction',[
               'data' => $data
             ])
@@ -275,7 +280,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         });
 
         return [
-            'items' => $data->items(),
+            'items' => $data->items()[0],
             'last_page' => $data->lastPage()
         ];
     }

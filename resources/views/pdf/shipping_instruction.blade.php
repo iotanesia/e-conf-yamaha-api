@@ -91,9 +91,7 @@
             </tr>
             <tr>
                 <td><u>Consignee:</u> 
-                    <br> {{json_decode($data->consignee)->name}} 
-                    <br> {{json_decode($data->consignee)->address1}} 
-                    <br> {{json_decode($data->consignee)->address2}}
+                    <br> {{ $data->consignee }} 
                 </td>
                 <td><u>Notify Party:</u> <br> {{$data->notify_part}}</td>
             </tr>
@@ -179,21 +177,21 @@
                 </tr>
                 <tr>
                     <td class="no-bo">Net Weight</td>
-                    <td class="no-bo"> : {{$data->net_weight}}</td>
+                    <td class="no-bo"> : {{round($data->net_weight,2)}}</td>
                     <td class="no-bo">Kgs</td>
                     <td class="no-bo">PEB No.</td>
                     <td class="no-bo"> : {{$data->peb}}</td>
                 </tr>
                 <tr>
                     <td class="no-bo">Gross Weight </td>
-                    <td class="no-bo"> : {{$data->gross_weight}}</td>
+                    <td class="no-bo"> : {{round($data->gross_weight,2)}}</td>
                     <td class="no-bo">Kgs</td>
                     <td class="no-bo">NOPEN</td>
                     <td class="no-bo"> : {{$data->no_open}}</td>
                 </tr>
                 <tr>
                     <td class="no-bo">Measurement </td>
-                    <td class="no-bo"> : {{$data->measurement}}</td>
+                    <td class="no-bo"> : {{round($data->measurement,2)}}</td>
                     <td class="no-bo">Kgs</td>
                     <td class="no-bo">Container//Seal No.//Qty//GW//M3</td>
                     <td class="no-bo"> : {{$data->container}}</td>
@@ -227,9 +225,9 @@
                 <td></td>
             </tr>
             <tr>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td class="text-center">{{ $data->issued }}</td>
+                <td class="text-center">{{ $data->checked }}</td>
+                <td class="text-center">{{ $data->approved }}</td>
             </tr>
         </table>
     </body>

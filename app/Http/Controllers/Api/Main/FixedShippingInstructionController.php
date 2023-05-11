@@ -67,9 +67,9 @@ class FixedShippingInstructionController extends Controller
     public function shippingInstructionDownloadDoc(Request $request,$id)
     {
         try {
-            $data = QueryRegularFixedShippingInstruction::downloadDoc($request,$id);
             $filename = 'shipping-instruction-'.$id.'.pdf';
             $pathToFile =  storage_path().'/app/shipping_instruction/'.$filename;
+            $data = QueryRegularFixedShippingInstruction::downloadDoc($request,$id,$filename,$pathToFile);
             return ResponseInterface::responseViewFile($pathToFile,$filename);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -79,9 +79,9 @@ class FixedShippingInstructionController extends Controller
     public function shippingInstructionDownloadDocDraft(Request $request,$id)
     {
         try {
-            $data = QueryRegularFixedShippingInstruction::downloadDocDraft($request,$id);
-            $filename = 'shipping-instruction-draft'.$id.'.pdf';
+            $filename = 'shipping-instruction-draft-'.$id.'.pdf';
             $pathToFile =  storage_path().'/app/shipping_instruction/'.$filename;
+            $data = QueryRegularFixedShippingInstruction::downloadDocDraft($request,$id,$filename,$pathToFile);
             return ResponseInterface::responseViewFile($pathToFile,$filename);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
