@@ -222,6 +222,11 @@ Route::prefix('v1/regular')
             Route::get('/',[FixedQuantityConfirmationController::class,'getCasemarks']);
             Route::get('/{id}',[FixedQuantityConfirmationController::class,'printCasemarks']);
         });
+
+        Route::group(['prefix' => 'ccspv'],function(){
+            Route::get('/',[FixedShippingInstructionController::class,'getccspv']);
+        });
+
     });
 
     Route::group(['prefix' => 'document'],function (){

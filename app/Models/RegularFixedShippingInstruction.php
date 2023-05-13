@@ -24,4 +24,10 @@ class RegularFixedShippingInstruction extends Model
         "updated_by",
         "deleted_at"
     ];
+
+    public function refFixedActualContainerCreation()
+    {
+        return $this->hasMany(RegularFixedActualContainerCreation::class,'id_fixed_shipping_instruction','id');
+    }
+
 }

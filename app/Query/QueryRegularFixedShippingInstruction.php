@@ -7,6 +7,7 @@ use App\ApiHelper as Helper;
 use App\Models\MstConsignee;
 use App\Models\MstShipment;
 use App\Models\MstSignature;
+use App\Models\RegularFixedActualContainer;
 use App\Models\RegularFixedActualContainerCreation;
 use App\Models\RegularFixedShippingInstruction AS Model;
 use App\Models\RegularFixedShippingInstruction;
@@ -18,12 +19,12 @@ use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class QueryRegularFixedShippingInstruction extends Model {
-    
+
     const cast = 'regular-fixed-shipping-instruction';
 
     public static function shipping($params)
     {
-        $data = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $params->id)->paginate($params->limit ?? null);
+        $data = Model::where('status', '!=', 8)->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
@@ -37,17 +38,24 @@ class QueryRegularFixedShippingInstruction extends Model {
                 if($item->status == 6) $status = 'Correction';
                 if($item->status == 7) $status = 'Rejection';
 
-                $item->no_packaging = [$item->refFixedActualContainer->no_packaging] ?? null;
+                foreach($item->refFixedActualContainerCreation as $value){
+                        $item->packaging = [$value->refFixedActualContainer->no_packaging ?? null] ;
+                }
+
                 $item->status = $status;
 
                 unset(
-                    $item->refFixedActualContainer,
+                    $item->refFixedActualContainerCreation,
                 );
 
                 return $item;
             }),
             'last_page' => $data->lastPage()
         ];
+    }
+
+    public static function getNoPackaging($id){
+        return RegularFixedActualContainer::find($id);
     }
 
     public static function shippingStore($request,$is_transaction = true)
@@ -104,7 +112,7 @@ class QueryRegularFixedShippingInstruction extends Model {
     public static function shippingDraftDok($params)
     {
         $fixed_actual_container_creation = RegularFixedActualContainerCreation::where('code_consignee', $params->code_consignee)->where('etd_jkt', $params->etd_jkt)->where('datasource', $params->datasource)->first();
-        
+
         if($fixed_actual_container_creation->id_fixed_shipping_instruction_creation == null) return ['items' => []];
 
         $data = RegularFixedShippingInstructionCreationDraft::select('id','consignee','created_at')
@@ -151,7 +159,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             $data->approved = MstSignature::where('type', 'APPROVED')->first()->name;
             $data->checked = MstSignature::where('type', 'CHECKED')->first()->name;
             $data->issued = MstSignature::where('type', 'ISSUED')->first()->name;
-            
+
             Pdf::loadView('pdf.shipping_instruction',[
               'data' => $data
             ])
@@ -275,7 +283,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'status' => $item->status ?? null,
                     'id_fixed_shipping_instruction_creation' => $item->id_fixed_shipping_instruction_creation ?? null,
                     'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null,
-                ];   
+                ];
             }
         });
 
@@ -394,5 +402,4 @@ class QueryRegularFixedShippingInstruction extends Model {
             throw $th;
         }
     }
-
 }
