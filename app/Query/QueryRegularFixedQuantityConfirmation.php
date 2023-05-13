@@ -67,7 +67,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                             $status = 'Out Of Date';
                         }
                     }
-                    
+
                     $item->status_desc = $status ?? null;
                     $item->customer_name = $item->refConsignee->nick_name;
                     $item->item_name = $item->refRegularDeliveryPlan->refPart->description ?? null;
@@ -421,6 +421,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $item->net_weight = $item->refMstContainer->net_weight;
                 $item->gross_weight = $item->refMstContainer->gross_weight;
                 $item->container_type = $item->refMstContainer->container_type;
+                $item->load_extension_length = $item->refMstContainer->long;
+                $item->load_extension_width = $item->refMstContainer->wide;
+                $item->load_extension_height = $item->refMstContainer->height;
+                $item->load_qty = "100";
 
                 unset(
                     $item->refMstConsignee,
