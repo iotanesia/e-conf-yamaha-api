@@ -24,7 +24,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function shipping($params)
     {
-        $data = Model::where('status', '!=', 8)->paginate($params->limit ?? null);
+        $data = Model::where('status', '!=', 5)->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
@@ -40,8 +40,8 @@ class QueryRegularFixedShippingInstruction extends Model {
 
                 foreach($item->refFixedActualContainerCreation as $value){
                         $item->packaging = [$value->refFixedActualContainer->no_packaging ?? null] ;
+                        $item->cust_name = [$value->refMstConsignee->nick_name ?? null] ;
                 }
-
                 $item->status = $status;
 
                 unset(
