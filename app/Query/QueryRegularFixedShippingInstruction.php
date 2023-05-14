@@ -10,6 +10,7 @@ use App\Models\MstSignature;
 use App\Models\RegularFixedActualContainer;
 use App\Models\RegularFixedActualContainerCreation;
 use App\Models\RegularFixedPackingCreationNote;
+use App\Models\RegularFixedQuantityConfirmation;
 use App\Models\RegularFixedShippingInstruction AS Model;
 use App\Models\RegularFixedShippingInstruction;
 use App\Models\RegularFixedShippingInstructionCreation;
@@ -545,6 +546,30 @@ class QueryRegularFixedShippingInstruction extends Model {
         return [
             'items' => $ret,
             'last_page' => 0
+        ];
+    }
+
+    public static function packingCreationDeliveryNotePart($request,$id)
+    {
+        $cek = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->get();
+        foreach ($cek  as $value) {
+            $data = RegularFixedQuantityConfirmation::whereIn('id_fixed_actual_container', [$value->id_fixed_actual_container])
+                ->paginate($params->limit ?? null);
+        }
+        if(!$data) throw new \Exception("data tidak ditemukan", 400);
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                $item->item_name = trim($item->refRegularDeliveryPlan->refPart->description);
+                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+                $item->no_invoice = $item->refFixedActualContainer->no_packaging;
+                unset(
+                    $item->refRegularDeliveryPlan,
+                    $item->refFixedActualContainer
+                );
+
+                return $item;
+            }),
+            'last_page' => $data->lastPage()
         ];
     }
 }

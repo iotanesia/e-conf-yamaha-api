@@ -208,6 +208,7 @@ Route::prefix('v1/regular')
             Route::get('/container/{id}',[FixedShippingInstructionController::class,'shippingInstructionContainer']);
             Route::get('/packing/{id}',[FixedShippingInstructionController::class,'shippingInstructionPacking']);
             Route::get('/deliverynote/head/{id}',[FixedShippingInstructionController::class,'shippingInstructionDeliveryNoteHead']);
+            Route::get('/deliverynote/part/{id}',[FixedShippingInstructionController::class,'shippingInstructionDeliveryNotePart']);
         });
 
         Route::group(['prefix' => 'packing'],function(){
