@@ -205,6 +205,8 @@ Route::prefix('v1/regular')
             Route::post('/reject', [FixedShippingInstructionController::class,'reject']);
             Route::get('/ccspv',[FixedShippingInstructionController::class,'shippingInstructionCcspv']);
             Route::get('/ccman',[FixedShippingInstructionController::class,'shippingInstructionCcman']);
+            Route::get('/container/{id}',[FixedShippingInstructionController::class,'shippingInstructionContainer']);
+            Route::get('/packing/{id}',[FixedShippingInstructionController::class,'shippingInstructionPacking']);
         });
 
         Route::group(['prefix' => 'packing'],function(){

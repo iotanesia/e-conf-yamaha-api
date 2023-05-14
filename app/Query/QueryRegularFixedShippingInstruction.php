@@ -95,6 +95,58 @@ class QueryRegularFixedShippingInstruction extends Model {
         ];
     }
 
+    public static function shippingContainer($params,$id)
+    {
+        $data = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction',$id)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                $item->cust_name = $item->refMstConsignee->nick_name;
+                $item->type_delivery = $item->refMstTypeDelivery->name;
+                $item->lsp = $item->refMstLsp->name;
+                $item->net_weight = $item->refMstContainer->net_weight;
+                $item->gross_weight = $item->refMstContainer->gross_weight;
+                $item->container_type = $item->refMstContainer->container_type;
+                $item->load_extension_length = $item->refMstContainer->long;
+                $item->load_extension_width = $item->refMstContainer->wide;
+                $item->load_extension_height = $item->refMstContainer->height;
+                $item->load_qty = "100";
+                $item->container_name = $item->refMstContainer->container_type." ".$item->refMstContainer->container_value;
+
+                unset(
+                    $item->refMstConsignee,
+                    $item->refMstTypeDelivery,
+                    $item->refMstLsp,
+                    $item->refMstMot,
+                    $item->refMstContainer,
+                );
+
+                return $item;
+            }),
+            'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function shippingPacking($params)
+    {
+        return null;
+    }
+
+    public static function shippingDeliveryNote($params)
+    {
+        return null;
+    }
+
+    public static function shippingCasemarks($params)
+    {
+        return null;
+    }
+
+    public static function shippingActual($params)
+    {
+        return null;
+    }
+
     public static function getNoPackaging($id){
         return RegularFixedActualContainer::find($id);
     }
@@ -439,6 +491,25 @@ class QueryRegularFixedShippingInstruction extends Model {
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
+        }
+    }
+
+    public static function printPackagingShipping($request,$id,$pathToFile,$filename)
+    {
+        try {
+            $cek = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->get();
+            foreach ($cek  as $value) {
+                $data = RegularFixedActualContainer::find($value->id_fixed_actual_container);
+            }
+            Pdf::loadView('pdf.packaging.packaging_doc',[
+                'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
         }
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Main;
 
 use App\Http\Controllers\Controller;
+use App\Query\QueryRegularFixedQuantityConfirmation;
 use Illuminate\Http\Request;
 use App\ApiHelper as ResponseInterface;
 use App\Query\QueryRegularFixedShippingInstruction;
@@ -36,6 +37,17 @@ class FixedShippingInstructionController extends Controller
         try {
             return ResponseInterface::responseData(
                 QueryRegularFixedShippingInstruction::shippingCCman($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function shippingInstructionContainer(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::shippingContainer($request,$id)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -182,6 +194,18 @@ class FixedShippingInstructionController extends Controller
             return ResponseInterface::responseData(
                 QueryRegularFixedShippingInstruction::reject($request)
             );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function shippingInstructionPacking(Request $request, $id)
+    {
+        try {
+            $filename = 'packaging-'.$id.'-'.uniqid().'.pdf';
+            $pathToFile =  storage_path().'/app/casemarks/'.$filename;
+            $data = QueryRegularFixedShippingInstruction::printPackagingShipping($request,$id,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }
