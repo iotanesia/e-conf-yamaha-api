@@ -210,4 +210,15 @@ class FixedShippingInstructionController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function shippingInstructionDeliveryNoteHead(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::packingCreationDeliveryNoteHead($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

@@ -9,6 +9,7 @@ use App\Models\MstShipment;
 use App\Models\MstSignature;
 use App\Models\RegularFixedActualContainer;
 use App\Models\RegularFixedActualContainerCreation;
+use App\Models\RegularFixedPackingCreationNote;
 use App\Models\RegularFixedShippingInstruction AS Model;
 use App\Models\RegularFixedShippingInstruction;
 use App\Models\RegularFixedShippingInstructionCreation;
@@ -511,5 +512,39 @@ class QueryRegularFixedShippingInstruction extends Model {
         } catch (\Throwable $th) {
             return Helper::setErrorResponse($th);
         }
+    }
+
+    public static function packingCreationDeliveryNoteHead($request,$id)
+    {
+        $cek = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->get();
+        foreach ($cek  as $value) {
+            $data = RegularFixedActualContainer::find($value->id_fixed_actual_container);
+        }
+        if(!$data) throw new \Exception("data tidak ditemukan", 400);
+
+        $fixed_packing_creation = RegularFixedActualContainer::
+        select(DB::raw("string_agg(DISTINCT d.name::character varying, ',') as yth"),
+            DB::raw("string_agg(DISTINCT e.nick_name::character varying, ',') as username"),
+            DB::raw("string_agg(DISTINCT g.container_type::character varying, ',') as jenis_truck")
+        )->where('regular_fixed_actual_container.id',$id)
+            ->join('regular_fixed_quantity_confirmation as b','b.id_fixed_actual_container','regular_fixed_actual_container.id')
+            ->join('regular_fixed_actual_container_creation as c','regular_fixed_actual_container.id','c.id_fixed_actual_container')
+            ->join('mst_lsp as d','d.id','c.id_lsp')
+            ->join('mst_consignee as e','e.code','c.code_consignee')
+            ->join('mst_type_delivery as f','f.id','c.id_type_delivery')
+            ->join('mst_container as g','g.id','c.id_container')
+            ->first();
+
+        $ret['yth'] = $fixed_packing_creation->yth;
+        $ret['username'] = $fixed_packing_creation->username;
+        $ret['jenis_truck'] = $fixed_packing_creation->jenis_truck." HC";
+        $ret['surat_jalan'] = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first());
+        $ret['delivery_date'] = date('d-m-Y');
+        $ret['shipped'] = MstShipment::Where('is_active', 1)->first()->shipment ?? null;
+
+        return [
+            'items' => $ret,
+            'last_page' => 0
+        ];
     }
 }

@@ -146,7 +146,6 @@ class QueryRegularFixedPackingCreation extends Model {
         $data = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $id)
             ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
-
         return [
             'items' => $data->getCollection()->transform(function($item){
                 $item->item_name = trim($item->refRegularDeliveryPlan->refPart->description);
