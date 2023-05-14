@@ -233,4 +233,16 @@ class FixedShippingInstructionController extends Controller
         }
     }
 
+    public function shippingInstructionCasemarks(Request $request,$id)
+    {
+        try {
+            $filename = 'casemarks-'.$id.'-'.uniqid().'.pdf';;
+            $pathToFile =  storage_path().'/app/casemarks/'.$filename;
+            $data = QueryRegularFixedShippingInstruction::printCasemarks($request,$id,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
 }

@@ -553,9 +553,10 @@ class QueryRegularFixedShippingInstruction extends Model {
     {
         $cek = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->get();
         foreach ($cek  as $value) {
-            $data = RegularFixedQuantityConfirmation::whereIn('id_fixed_actual_container', [$value->id_fixed_actual_container])
-                ->paginate($params->limit ?? null);
+              $id_fixed_actual_container[] = $value->id_fixed_actual_container;
         }
+        $data = RegularFixedQuantityConfirmation::whereIn('id_fixed_actual_container', $id_fixed_actual_container)
+            ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
@@ -571,5 +572,25 @@ class QueryRegularFixedShippingInstruction extends Model {
             }),
             'last_page' => $data->lastPage()
         ];
+    }
+
+    public static function printCasemarks($request,$id,$pathToFile,$filename)
+    {
+        try {
+            $cek = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->get();
+            foreach ($cek  as $value) {
+                $id_fixed_actual_container[] = $value->id_fixed_actual_container;
+            }
+            $data = RegularFixedQuantityConfirmation::whereIn('id_fixed_actual_container',$id_fixed_actual_container)->get();
+            Pdf::loadView('pdf.casemarks.casemarks_doc',[
+                'data' => $data
+            ])
+                ->save($pathToFile)
+                ->setPaper('A4','potrait')
+                ->download($filename);
+
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
+        }
     }
 }
