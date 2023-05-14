@@ -20,6 +20,28 @@ class FixedShippingInstructionController extends Controller
         }
     }
 
+    public function shippingInstructionCcspv(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::shippingCCspv($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function shippingInstructionCcman(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::shippingCCman($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function shippingInstructionStore(Request $request)
     {
         try {

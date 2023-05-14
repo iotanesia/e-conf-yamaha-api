@@ -196,13 +196,15 @@ Route::prefix('v1/regular')
             Route::get('/draft/detail/{id}',[FixedShippingInstructionController::class,'shippingInstructionListDraftDetail']);
             Route::post('/download-dok/{id}',[FixedShippingInstructionController::class,'shippingInstructionDownloadDoc']);
             Route::post('/download-dok-draft/{id}',[FixedShippingInstructionController::class,'shippingInstructionDownloadDocDraft']);
-            Route::get('/{id}',[FixedShippingInstructionController::class,'shippingInstructionDetail']);
+            Route::get('/creation/{id}',[FixedShippingInstructionController::class,'shippingInstructionDetail']);
             Route::post('/detail',[FixedShippingInstructionController::class,'shippingInstructionDetailSI']);
             Route::post('/send-ccoff', [FixedShippingInstructionController::class,'sendccoff']);
             Route::post('/send-ccman', [FixedShippingInstructionController::class,'sendccman']);
             Route::post('/approve', [FixedShippingInstructionController::class,'approve']);
             Route::post('/revisi', [FixedShippingInstructionController::class,'revisi']);
             Route::post('/reject', [FixedShippingInstructionController::class,'reject']);
+            Route::get('/ccspv',[FixedShippingInstructionController::class,'shippingInstructionCcspv']);
+            Route::get('/ccman',[FixedShippingInstructionController::class,'shippingInstructionCcman']);
         });
 
         Route::group(['prefix' => 'packing'],function(){
@@ -222,11 +224,6 @@ Route::prefix('v1/regular')
             Route::get('/',[FixedQuantityConfirmationController::class,'getCasemarks']);
             Route::get('/{id}',[FixedQuantityConfirmationController::class,'printCasemarks']);
         });
-
-        Route::group(['prefix' => 'ccspv'],function(){
-            Route::get('/',[FixedShippingInstructionController::class,'getccspv']);
-        });
-
     });
 
     Route::group(['prefix' => 'document'],function (){

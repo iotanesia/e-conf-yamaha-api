@@ -13,6 +13,7 @@ use App\Models\RegularFixedShippingInstruction AS Model;
 use App\Models\RegularFixedShippingInstruction;
 use App\Models\RegularFixedShippingInstructionCreation;
 use App\Models\RegularFixedShippingInstructionCreationDraft;
+use App\Models\RegularFixedShippingInstructionRevision;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -37,13 +38,53 @@ class QueryRegularFixedShippingInstruction extends Model {
                 if($item->status == 5) $status = 'Approve';
                 if($item->status == 6) $status = 'Correction';
                 if($item->status == 7) $status = 'Rejection';
-
+                $item->status = $status;
                 foreach($item->refFixedActualContainerCreation as $value){
                         $item->packaging = [$value->refFixedActualContainer->no_packaging ?? null] ;
                         $item->cust_name = [$value->refMstConsignee->nick_name ?? null] ;
                 }
-                $item->status = $status;
+                unset(
+                    $item->refFixedActualContainerCreation,
+                );
 
+                return $item;
+            }),
+            'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function shippingCCspv($params)
+    {
+        $data = Model::where('status', 3)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                foreach($item->refFixedActualContainerCreation as $value){
+                    $item->packaging = [$value->refFixedActualContainer->no_packaging ?? null] ;
+                    $item->cust_name = [$value->refMstConsignee->nick_name ?? null] ;
+                }
+                unset(
+                    $item->refFixedActualContainerCreation,
+                );
+
+                return $item;
+            }),
+            'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function shippingCCman($params)
+    {
+        $data = Model::where('status', 4)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                foreach($item->refFixedActualContainerCreation as $value){
+                    $item->packaging = [$value->refFixedActualContainer->no_packaging ?? null] ;
+                    $item->cust_name = [$value->refMstConsignee->nick_name ?? null] ;
+                }
                 unset(
                     $item->refFixedActualContainerCreation,
                 );
@@ -308,7 +349,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
-            return ['items' => $data];
+
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
@@ -322,15 +363,9 @@ class QueryRegularFixedShippingInstruction extends Model {
             Helper::requireParams([
                 'id'
             ]);
-
-            $data = RegularFixedShippingInstruction::whereIn('id', $request->id)->get();
-            foreach ($data as $value) {
-                $value->update(['status' => 4]);
-            }
-
+            RegularFixedShippingInstruction::where('id', $request->id)->update(['status' => 4]);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
-            return ['items' => $data];
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
@@ -344,15 +379,9 @@ class QueryRegularFixedShippingInstruction extends Model {
             Helper::requireParams([
                 'id'
             ]);
-
-            $data = RegularFixedShippingInstruction::whereIn('id', $request->id)->get();
-            foreach ($data as $value) {
-                $value->update(['status' => 5]);
-            }
-
+            RegularFixedShippingInstruction::where('id', $request->id)->update(['status' => 5]);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
-            return ['items' => $data];
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
@@ -364,17 +393,22 @@ class QueryRegularFixedShippingInstruction extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             Helper::requireParams([
-                'id'
+                'id',
+                'id_user',
+                'note'
             ]);
-
-            $data = RegularFixedShippingInstruction::whereIn('id', $request->id)->get();
-            foreach ($data as $value) {
-                $value->update(['status' => 6]);
-            }
-
+            $data = [
+                'id_fixed_shipping_instruction' => $request->id,
+                'id_user' => $request->id_user,
+                'note' => $request->note,
+                'type' => 'REVISI',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            RegularFixedShippingInstructionRevision::insert($data);
+            RegularFixedShippingInstruction::where('id', $request->id)->update(['status' => 6]);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
-            return ['items' => $data];
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
@@ -386,17 +420,22 @@ class QueryRegularFixedShippingInstruction extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             Helper::requireParams([
-                'id'
+                'id',
+                'id_user',
+                'note'
             ]);
-
-            $data = RegularFixedShippingInstruction::whereIn('id', $request->id)->get();
-            foreach ($data as $value) {
-                $value->update(['status' => 7]);
-            }
-
+            $data = [
+                'id_fixed_shipping_instruction' => $request->id,
+                'id_user' => $request->id_user,
+                'note' => $request->note,
+                'type' => 'REJECT',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            RegularFixedShippingInstructionRevision::insert($data);
+            RegularFixedShippingInstruction::where('id', $request->id)->update(['status' => 7]);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
-            return ['items' => $data];
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;

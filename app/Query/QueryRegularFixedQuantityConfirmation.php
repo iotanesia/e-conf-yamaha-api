@@ -425,6 +425,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $item->load_extension_width = $item->refMstContainer->wide;
                 $item->load_extension_height = $item->refMstContainer->height;
                 $item->load_qty = "100";
+                $item->container_name = $item->refMstContainer->container_type." ".$item->refMstContainer->container_value;
 
                 unset(
                     $item->refMstConsignee,
