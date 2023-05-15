@@ -62,6 +62,14 @@ class QueryRegularFixedShippingInstruction extends Model {
 
         return [
             'items' => $data->getCollection()->transform(function($item){
+                if($item->status == 1) $status = 'Confirm Booked';
+                if($item->status == 2) $status = 'SI Created';
+                if($item->status == 3) $status = 'Send To CC Spv';
+                if($item->status == 4) $status = 'Send To CC Manager';
+                if($item->status == 5) $status = 'Approve';
+                if($item->status == 6) $status = 'Correction';
+                if($item->status == 7) $status = 'Rejection';
+                $item->status = $status;
                 foreach($item->refFixedActualContainerCreation as $value){
                     $item->packaging = [$value->refFixedActualContainer->no_packaging ?? null] ;
                     $item->cust_name = [$value->refMstConsignee->nick_name ?? null] ;
@@ -83,6 +91,14 @@ class QueryRegularFixedShippingInstruction extends Model {
 
         return [
             'items' => $data->getCollection()->transform(function($item){
+                if($item->status == 1) $status = 'Confirm Booked';
+                if($item->status == 2) $status = 'SI Created';
+                if($item->status == 3) $status = 'Send To CC Spv';
+                if($item->status == 4) $status = 'Send To CC Manager';
+                if($item->status == 5) $status = 'Approve';
+                if($item->status == 6) $status = 'Correction';
+                if($item->status == 7) $status = 'Rejection';
+                $item->status = $status;
                 foreach($item->refFixedActualContainerCreation as $value){
                     $item->packaging = [$value->refFixedActualContainer->no_packaging ?? null] ;
                     $item->cust_name = [$value->refMstConsignee->nick_name ?? null] ;
