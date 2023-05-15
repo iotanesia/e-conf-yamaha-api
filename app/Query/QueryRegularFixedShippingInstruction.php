@@ -549,7 +549,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ];
     }
 
-    public static function packingCreationDeliveryNotePart($request,$id)
+    public static function packingCreationDeliveryNotePart($params,$id)
     {
         $cek = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->get();
         foreach ($cek  as $value) {

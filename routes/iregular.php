@@ -12,7 +12,10 @@ Route::prefix('v1/iregular')
     // order-entry
     Route::group(['prefix' => 'order-entry'],function (){
         Route::get('/',[OrderEntryController::class,'index']);
+        Route::post('/',[OrderEntryController::class,'store']);
         Route::get('/form',[OrderEntryController::class,'form']);
+        Route::post('/part/{id}',[OrderEntryController::class,'storePart']);
+        Route::get('/doc/{id}',[OrderEntryController::class,'getDoc']);
      });
 
 });

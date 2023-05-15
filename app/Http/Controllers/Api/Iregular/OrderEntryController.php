@@ -25,11 +25,44 @@ class OrderEntryController extends Controller
         }
     }
 
+    public function store(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularOrderEntry::storeData($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function form(Request $request)
     {
         try {
             return ResponseInterface::responseData(
                 QueryIregularOrderEntry::getForm($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function storePart(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularOrderEntry::storePart($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function getDoc(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularOrderEntry::getDoc($request, $id)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

@@ -5,7 +5,10 @@ namespace App\Query;
 use App\Constants\Constant;
 use App\Models\IregularOrderEntry AS Model;
 use App\ApiHelper as Helper;
+use App\Models\IregularOrderEntryDoc;
+use App\Models\IregularOrderEntryPart;
 use App\Models\MstComodities;
+use App\Models\MstDoc;
 use App\Models\MstDutyTax;
 use App\Models\MstFreight;
 use App\Models\MstFreightCharge;
@@ -18,6 +21,8 @@ use App\Models\MstInlandCost;
 use App\Models\MstInsurance;
 use App\Models\MstShippedBy;
 use App\Models\MstTypeTransaction;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class QueryIregularOrderEntry extends Model {
 
@@ -69,6 +74,60 @@ class QueryIregularOrderEntry extends Model {
         });
     }
 
+    public static function storeData($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $params = $request->all();
+
+            $paramCheckbox = self::getParamCheckbox($params);
+            $insert = Model::create($params);
+            
+            $checkbox = [];
+            foreach ($paramCheckbox as $key => $value) {
+                $checkbox[] = [
+                    'id_iregular_order_entry' => $insert->id,
+                    'id_value' => $value['id'],
+                    'value' => $value['value']
+                ];
+            }
+            $insert->manyOrderEntryCheckbox()->createMany($checkbox);
+
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function getParamCheckbox($params) {
+        $comodities = [];
+        foreach ($params['comodities'] as $value) {
+            $comodities = $value;
+        }
+
+        $good_condition = [];
+        foreach ($params['good_condition'] as $value) {
+            $good_condition = $value;
+        }
+
+        $good_status = [];
+        foreach ($params['good_status'] as $value) {
+            $good_status = $value;
+        }
+
+        $incoterms = [];
+        foreach ($params['incoterms'] as $value) {
+            $incoterms = $value;
+        }
+
+        $res = [
+            $comodities,$good_condition,$good_status,$incoterms
+        ];
+        return $res;
+    }
+
     public static function getForm($request)
     {
         $type_transaction = MstTypeTransaction::select('id','name')->get();
@@ -101,6 +160,64 @@ class QueryIregularOrderEntry extends Model {
                 'freight' => $freight,
                 'good_criteria' => $good_criteria,
             ]
+        ];
+    }
+
+    public static function storePart($request,$id,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $params = $request->all();
+            
+            $data = [];
+            foreach ($params['part'] as $key => $value) {
+                $arr = $value;
+                $id_order_entry = ['id_iregular_order_entry' => $id];
+                $data[] = array_merge($arr,$id_order_entry);
+
+            }
+
+            IregularOrderEntryPart::create($data[0]);
+            $order_entry = Model::find($id);
+            $mst_doc = MstDoc::where('id_good_payment', $order_entry->id_good_payment)->first();
+            IregularOrderEntryDoc::create([
+                'id_iregular_order_entry' => $id,
+                'id_doc' => $mst_doc->id,
+                'is_completed' => 0
+            ]);
+
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function getDoc($params, $id)
+    {
+        $data = IregularOrderEntryDoc::where('id_iregular_order_entry', $id)->paginate($params->limit ?? null);
+
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                
+                $item->name_doc = $item->MstDoc->name;
+                unset(
+                    $item->MstDoc,
+                    $item->id_iregular_order_entry,
+                    $item->id_doc,
+                    $item->path,
+                    $item->extension,
+                    $item->filename,
+                    $item->created_by,
+                    $item->updated_at,
+                    $item->updated_by,
+                    $item->deleted_at,
+                );
+
+                return $item;
+            }),
+            'last_page' => $data->lastPage()
         ];
     }
 

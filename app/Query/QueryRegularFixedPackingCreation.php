@@ -141,7 +141,7 @@ class QueryRegularFixedPackingCreation extends Model {
         ];
     }
 
-    public static function packingCreationDeliveryNotePart($id,$request)
+    public static function packingCreationDeliveryNotePart($id,$params)
     {
         $data = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $id)
             ->paginate($params->limit ?? null);

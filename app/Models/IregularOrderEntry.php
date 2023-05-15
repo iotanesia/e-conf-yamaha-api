@@ -50,4 +50,9 @@ class IregularOrderEntry extends Model
 	    'updated_at',
 	    'deleted_at'
     ];
+
+    public function manyOrderEntryCheckbox()
+    {
+        return $this->hasMany(IregularOrderEntryCheckbox::class,'id_iregular_order_entry','id')->orderBy('id','asc');
+    }
 }
