@@ -245,4 +245,16 @@ class FixedShippingInstructionController extends Controller
         }
     }
 
+    public function shippingInstructionActual(Request $request,$id)
+    {
+        try {
+            $filename = 'shipping-instruction-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/shipping_instruction/'.$filename;
+            $data = QueryRegularFixedShippingInstruction::printShippingActual($request,$id,$filename,$pathToFile);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
 }

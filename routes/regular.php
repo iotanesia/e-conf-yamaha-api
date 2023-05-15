@@ -210,6 +210,7 @@ Route::prefix('v1/regular')
             Route::get('/deliverynote/head/{id}',[FixedShippingInstructionController::class,'shippingInstructionDeliveryNoteHead']);
             Route::get('/deliverynote/part/{id}',[FixedShippingInstructionController::class,'shippingInstructionDeliveryNotePart']);
             Route::get('/casemarks/{id}',[FixedShippingInstructionController::class,'shippingInstructionCasemarks']);
+            Route::get('/sia/{id}',[FixedShippingInstructionController::class,'shippingInstructionActual']);
         });
 
         Route::group(['prefix' => 'packing'],function(){

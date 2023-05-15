@@ -593,4 +593,28 @@ class QueryRegularFixedShippingInstruction extends Model {
             return Helper::setErrorResponse($th);
         }
     }
+
+    public static function printShippingActual($request,$id,$filename,$pathToFile)
+    {
+        try {
+            $data = RegularFixedShippingInstructionCreation::where('id_fixed_shipping_instruction',$id)->first();
+            $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
+            $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
+            $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
+            $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
+            $data->approved = MstSignature::where('type', 'APPROVED')->first()->name;
+            $data->checked = MstSignature::where('type', 'CHECKED')->first()->name;
+            $data->issued = MstSignature::where('type', 'ISSUED')->first()->name;
+
+            Pdf::loadView('pdf.shipping_instruction',[
+                'data' => $data
+            ])
+                ->save($pathToFile)
+                ->setPaper('A4','potrait')
+                ->download($filename);
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
+        }
+    }
+
 }
