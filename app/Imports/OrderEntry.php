@@ -55,7 +55,6 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
             $id_regular_order_entry_upload = $this->id_regular_order_entry_upload;
             $ext = [];
             foreach ($collection->chunk(10000) as $i => $chunk) {
-
                 $filteredData = collect($chunk)->filter(function ($row){
                     $fillter_yearmonth = $this->params['year'].$this->params['month'];
                     $deliver_yearmonth = Carbon::parse(trim($row[14]))->format('Ym'); // etd_jkt

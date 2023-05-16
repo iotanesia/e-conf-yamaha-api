@@ -119,7 +119,7 @@ class QueryRegularOrderEntryUpload extends Model {
             // $filename = $file->getClientOriginalName();
             $filename = 'OE-'.$request->month.$request->year.'-'.$store->datasource.'-0'.$request->iteration;
             $ext = $file->getClientOriginalExtension();
-            if(!in_array($ext,['xlx','xlsx','xlsb'])) throw new \Exception("file format error", 400);
+            if(!in_array($ext,['xls','xlx','xlsx','xlsb'])) throw new \Exception("file format error", 400);
             $savedname = (string) Str::uuid().'.'.$ext;
             $params = [
                 'id_regular_order_entry' => $request->id_regular_order_entry,
