@@ -71,9 +71,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $item->status_desc = $status ?? null;
                     $item->customer_name = $item->refConsignee->nick_name;
                     $item->item_name = $item->refRegularDeliveryPlan->refPart->description ?? null;
-                    $item->production = $item->refRegularDeliveryPlan->refRegularStockConfirmation->production ?? null;
-                    $item->in_dc = $item->refRegularDeliveryPlan->refRegularStockConfirmation->in_dc ?? null;
-                    $item->in_wh = $item->refRegularDeliveryPlan->refRegularStockConfirmation->in_wh ?? null;
+                    $item->production = $item->production ?? null;
+                    $item->in_dc = $item->in_dc ?? null;
+                    $item->in_wh = $item->in_wh ?? null;
 
                     unset(
                         $item->refConsignee,
