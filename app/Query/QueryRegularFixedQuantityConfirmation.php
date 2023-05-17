@@ -363,6 +363,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 ->update([
                     'id_fixed_actual_container_creation' => $val->id
                 ]);
+            
+            RegularFixedActualContainer::where('id', $val->id_fixed_actual_container)
+                ->update([
+                    'is_actual' => 1
+                ]);
         }
 
         Model::whereIn('id', $params->id)->update(['is_actual' => Constant::IS_ACTUAL]);
