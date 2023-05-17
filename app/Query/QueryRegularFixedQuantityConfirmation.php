@@ -30,23 +30,15 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $query = self::where(function ($query) use ($params){
 
                 $query->where('is_actual',Constant::IS_NOL);
-                if($params->search) {
-                    $query->where('code_consignee', 'like', "'%$params->search%'")
-                                ->orWhere('model', 'like', "'%$params->search%'")
-                                ->orWhere('item_no', 'like', "'%$params->search%'")
-                                ->orWhere('disburse', 'like', "'%$params->search%'")
-                                ->orWhere('delivery', 'like', "'%$params->search%'")
-                                ->orWhere('qty', 'like', "'%$params->search%'")
-                                ->orWhere('status', 'like', "'%$params->search%'")
-                                ->orWhere('order_no', 'like', "'%$params->search%'")
-                                ->orWhere('cust_item_no', 'like', "'%$params->search%'");
-                }
-
-            })->whereHas('refRegularDeliveryPlan',function ($query) use ($params){
                 $category = $params->category ?? null;
                 if($category) {
-                    $query->where($category, 'ilike', $params->kueri);
+                    if($category == 'cust_name'){
+                        $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->kueri)->get();
+                    } else {
+                        $query->where($category, 'ilike', $params->kueri);
+                    }
                 }
+
             });
 
             if($params->withTrashed == 'true') $query->withTrashed();
