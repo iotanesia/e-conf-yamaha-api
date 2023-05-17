@@ -39,4 +39,9 @@ class RegularFixedActualContainer extends Model
     {
         return $this->hasMany(RegularFixedQuantityConfirmation::class,'id_fixed_actual_container','id')->orderBy('id','asc');
     }
+
+    public function manyFixedActualContainerCreation()
+    {
+        return $this->hasMany(RegularFixedActualContainerCreation::class,'id_fixed_actual_container','id')->orderBy('id','asc');
+    }
 }

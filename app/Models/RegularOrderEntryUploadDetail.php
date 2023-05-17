@@ -52,4 +52,9 @@ class RegularOrderEntryUploadDetail extends Model
     {
         return $this->belongsTo(MstPart::class, 'item_no', 'item_no');
     }
+
+    public function refConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
 }

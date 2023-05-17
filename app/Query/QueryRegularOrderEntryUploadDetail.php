@@ -25,10 +25,14 @@ class QueryRegularOrderEntryUploadDetail extends Model {
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
 
-               $category = $params->category ?? null;
-               if($category) {
-                    $query->where($category, 'ilike', $params->kueri);
-               }
+              $category = $params->category ?? null;
+                if($category) {
+                    if($category == 'cust_name'){
+                        $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->kueri)->get();
+                    } else {
+                        $query->where($category, 'ilike', $params->kueri);
+                    }
+                }
 
                $filterdate = Helper::filterDate($params);
                if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);

@@ -519,6 +519,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             foreach ($cek  as $value) {
                 $data = RegularFixedActualContainer::find($value->id_fixed_actual_container);
             }
+            
             Pdf::loadView('pdf.packaging.packaging_doc',[
                 'data' => $data
             ])

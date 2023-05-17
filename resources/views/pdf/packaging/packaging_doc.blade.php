@@ -56,142 +56,87 @@
 
 <body>
     <h4 class="text-center">PACKING LIST SHEET</h4>
-    <table>
-        <tr>
-            <td class="no-bo" width='70'>INVOICE NO</td>
-            <td class="no-bo" width='5'>:</td>
-            <td class="no-bo" width='100'>{{ $data->no_packaging }}</td>
-            <td class="no-bo" width='70'></td>
-            <td class="no-bo" width='5'></td>
-            <td class="no-bo" width='100'></td>
-        </tr>
-        <tr>
-            <td class="no-bo">Date</td>
-            <td class="no-bo">:</td>
-            <td class="no-bo">{{ $data->created_at->format('Y-m-d') }}</td>
-            <td class="no-bo">SHIPPED BY</td>
-            <td class="no-bo">:</td>
-            <td class="no-bo">YPMI</td>
-        </tr>
-        <tr>
-            <td class="no-bo">Container No</td>
-            <td class="no-bo">:</td>
-            <td class="no-bo">{{ $data->manyFixedQuantityConfirmation[0]->refFixedActualContainerCreation->iteration ?? null }} + 40HC</td>
-            <td class="no-bo">ETD JAKARTA </td>
-            <td class="no-bo">:</td>
-            <td class="no-bo">{{ $data->etd_jkt }}</td>
-        </tr>
-        <tr>
-            <td class="no-bo">Seal No</td>
-            <td class="no-bo">:</td>
-            <td class="no-bo"></td>
-            <td class="no-bo">ETD {{ $data->manyFixedQuantityConfirmation[0]->refFixedActualContainerCreation->refMstLsp->name ?? null }}</td>
-            <td class="no-bo">:</td>
-            <td class="no-bo"></td>
-        </tr>
-    </table>
-    <hr>
 
-    <table style="margin-top: 10px;">
-        <tr>
-            <td class="no-bt no-bl no-br">Order No.</td>
-            <td class="no-bt no-bl no-br" colspan="6"></td>
-        </tr>
-        <tr>
-            <td class="text-center"> Case Mark and Number</td>
-            <td class="text-center"> Package Number</td>
-            <td class="text-center"> Parts Number</td>
-            <td class="text-center"> Qty <br> (PCS)</td>
-            <td class="text-center"> Nett. W <br> (Kgs)</td>
-            <td class="text-center"> Gross. W <br> (Kgs)</td>
-            <td class="text-center"> Meas. <br> (M3) </td>
-        </tr>
-        <tr>
-            {{-- rowspan mengikuti jumlah baris  --}}
-            <td class="text-center" style="vertical-align: top;" rowspan="5" width="140">
-                Yamaha,
-                BKSD 899001
-                Manaus
-                MADE IN INDONESIA
-                IN. 1292
-                C/No.11
-            </td>
-            {{-- rowspan mengikuti jumlah data  --}}
-            <td class="text-center" rowspan="2">
-                1
-            </td>
-            <td class="text-right">102.47 0</td>
-            <td class="text-right">100</td>
-            <td class="text-right">77</td>
-            <td class="text-right">167.2</td>
-            <td class="text-right">03.211</td>
-        </tr>
-        <tr>
-            <td class="text-right">102.47 0</td>
-            <td class="text-right">100</td>
-            <td class="text-right">77</td>
-            <td class="text-right">167.2</td>
-            <td class="text-right">03.211</td>
-        </tr>
-        <tr>
-            {{-- rowspan mengikuti jumlah data  --}}
-            <td class="text-center" rowspan="3">
-                2
-        </td>
-        <td class="text-right">102.47 0</td>
-        <td class="text-right">100</td>
-        <td class="text-right">77</td>
-        <td class="text-right">167.2</td>
-        <td class="text-right">03.211</td>
-        </tr>
-        <tr>
-            <td class="text-right">102.47 0</td>
-            <td class="text-right">100</td>
-            <td class="text-right">77</td>
-            <td class="text-right">167.2</td>
-            <td class="text-right">03.211</td>
-        </tr>
-        <tr>
-            <td class="text-right">102.47 0</td>
-            <td class="text-right">100</td>
-            <td class="text-right">77</td>
-            <td class="text-right">167.2</td>
-            <td class="text-right">03.211</td>
-        </tr>
+    @foreach ($data as $item)
+        <table>
+            <tr>
+                <td class="no-bo" width='70'>INVOICE NO</td>
+                <td class="no-bo" width='5'>:</td>
+                <td class="no-bo" width='100'>{{ $item->no_packaging }}</td>
+                <td class="no-bo" width='70'></td>
+                <td class="no-bo" width='5'></td>
+                <td class="no-bo" width='100'></td>
+            </tr>
+            <tr>
+                <td class="no-bo">Date</td>
+                <td class="no-bo">:</td>
+                <td class="no-bo">{{ $item->created_at->format('Y-m-d') }}</td>
+                <td class="no-bo">SHIPPED BY</td>
+                <td class="no-bo">:</td>
+                <td class="no-bo">YPMI</td>
+            </tr>
+            <tr>
+                <td class="no-bo">Container No</td>
+                <td class="no-bo">:</td>
+                <td class="no-bo">{{ count($item->manyFixedQuantityConfirmation) }} + {{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer->container_type.''.$item->manyFixedActualContainerCreation[0]->refMstContainer->container_value) : null }}</td>
+                <td class="no-bo">ETD JAKARTA </td>
+                <td class="no-bo">:</td>
+                <td class="no-bo">{{ $item->etd_jkt }}</td>
+            </tr>
+            <tr>
+                <td class="no-bo">Seal No</td>
+                <td class="no-bo">:</td>
+                <td class="no-bo"></td>
+                <td class="no-bo">ETD {{ $item->manyFixedActualContainerCreation[0]->refMstLsp->name ?? null }}</td>
+                <td class="no-bo">:</td>
+                <td class="no-bo">{{ $item->etd_ypmi }}</td>
+            </tr>
+        </table>
+        <hr>
 
-        {{-- total --}}
-        <tr>
-
-            <td colspan="3" class="text-center"> TOTAL</td>
-            <td class="text-right">102.47 0</td>
-            <td class="text-right">100</td>
-            <td class="text-right">77</td>
-            <td class="text-right">167.2</td>
-        </tr>
-    </table>
-
-    <table style="margin-top: 20px;">
-        <tr>
-            <td class="no-bo" colspan="4">Grand Total Number Of Cartons :</td>
-        </tr>
-        <tr>
-            <td class="no-bo" width="140x">Grand Total Qty</td>
-            <td class="no-bo" width="4">:</td>
-            <td width="100" class="text-right no-bo">1991</td>
-            <td class="no-bo">Cartons</td>
-        </tr>
-        <tr>
-            <td class="no-bo" width="140x">Grand Total Nett Weights</td>
-            <td class="no-bo" width="4">:</td>
-            <td width="100" class="text-right no-bo">1991</td>
-            <td class="no-bo">Cartons</td>
-        </tr>
-        <tr>
-            <td class="no-bo" width="140x">Grand Total Gross Weights</td>
-            <td class="no-bo" width="4">:</td>
-            <td width="100" class="text-right no-bo">1991</td>
-            <td class="no-bo">Cartons</td>
-        </tr>
-    </table>
+        <table style="margin-top: 10px;">
+            <tr>
+                <td class="no-bt no-bl no-br">Order No. {{ $item->no_packaging }}</td>
+                <td class="no-bt no-bl no-br" colspan="6"></td>
+            </tr>
+            <tr>
+                <td class="text-center"> Case Mark and Number</td>
+                <td class="text-center"> Package Number</td>
+                <td class="text-center"> Parts Number</td>
+                <td class="text-center"> Qty <br> (PCS)</td>
+                <td class="text-center"> Nett. W <br> (Kgs)</td>
+                <td class="text-center"> Gross. W <br> (Kgs)</td>
+                <td class="text-center"> Meas. <br> (M3) </td>
+            </tr>
+            <tr>
+                {{-- rowspan mengikuti jumlah baris  --}}
+                <td class="text-center" style="vertical-align: top;" rowspan="{{ count($item->manyFixedQuantityConfirmation) }}" width="140">
+                    YAMAHA <br>
+                    {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
+                    9999-99999 <br>
+                    {{ $item->manyFixedQuantityConfirmation[0]->refFixedActualContainerCreation->refMstLsp->name ?? null }} <br>
+                    MADE IN INDONESIA <br>
+                    {{ $item->no_packaging }} <br>
+                    C/NO.20
+                </td>
+                <td style="padding:0px; border-bottom:0px;"></td>
+                <td style="padding:0px; border-bottom:0px;"></td>
+                <td style="padding:0px; border-bottom:0px;"></td>
+                <td style="padding:0px; border-bottom:0px;"></td>
+                <td style="padding:0px; border-bottom:0px;"></td>
+                <td style="padding:0px; border-bottom:0px;"></td>
+            </tr>
+            @foreach ($item->manyFixedQuantityConfirmation as $qty_item)
+                <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td class="text-center">{{ $qty_item->manyFixedQuantityConfirmation[0]->item_serial ?? null }}</td>
+                    <td class="text-center">{{ $qty_item->manyFixedQuantityConfirmation[0]->qty ?? null }}</td>
+                    <td class="text-center">77</td>
+                    <td class="text-center">167.2</td>
+                    <td class="text-center">03.211</td>
+                </tr>
+            @endforeach
+        </table>
+    @endforeach
     
 </body>
