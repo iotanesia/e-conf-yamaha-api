@@ -203,7 +203,13 @@ class QueryRegularFixedShippingInstruction extends Model {
             if ($fixed_shipping_instruction_creation == null) {
                 $insert = RegularFixedShippingInstructionCreation::create($params);
                 $consignee = MstConsignee::where('nick_name', $request->consignee)->first()->code ?? null;
-                RegularFixedActualContainerCreation::where('datasource',$request->datasource)->where('code_consignee',$consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_fixed_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
+                $actual_container_creation = RegularFixedActualContainerCreation::query();
+                $actual_container_creation->where('datasource',$request->datasource)->where('code_consignee',$consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_fixed_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
+                
+                if (count($actual_container_creation->where('id_fixed_shipping_instruction', $params['id_fixed_shipping_instruction'])->get()) == count($actual_container_creation->where('id_fixed_shipping_instruction', $params['id_fixed_shipping_instruction'])->where('status', 2)->get())) {
+                    RegularFixedShippingInstruction::where('id', $params['id_fixed_shipping_instruction'])->update(['status' => 2]);
+                }
+
                 $params['id_fixed_shipping_instruction_creation'] = $insert->id;
                 RegularFixedShippingInstructionCreationDraft::create($params);
             } else {
@@ -369,6 +375,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ,DB::raw("string_agg(DISTINCT h.fax::character varying, ',') as fax_consignee")
         ,DB::raw("string_agg(DISTINCT h.address1::character varying, ',') as consignee_address")
         ,DB::raw("string_agg(DISTINCT i.no_packaging::character varying, ',') as no_packaging")
+        ,DB::raw("string_agg(DISTINCT j.id::character varying, ',') as id_fixed_shipping_instruction")
         ,DB::raw("SUM(f.net_weight) as net_weight")
         ,DB::raw("SUM(f.gross_weight) as gross_weight")
         ,DB::raw("SUM(f.measurement) as measurement")
@@ -384,6 +391,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_fixed_actual_container_creation.id_fixed_shipping_instruction_creation','g.id')
         ->leftJoin('mst_consignee as h','regular_fixed_actual_container_creation.code_consignee','h.code')
         ->leftJoin('regular_fixed_actual_container as i','regular_fixed_actual_container_creation.id_fixed_actual_container','i.id')
+        ->leftJoin('regular_fixed_shipping_instruction as j','regular_fixed_actual_container_creation.id_fixed_shipping_instruction','j.id')
         ->groupBy('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt','regular_fixed_actual_container_creation.etd_wh','regular_fixed_actual_container_creation.id_lsp','g.status','id_fixed_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','d.port')
         ->paginate(1);
         if(!$data) throw new \Exception("Data not found", 400);
@@ -421,6 +429,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'to' => $item->refMstLsp->name ?? null,
                     'status' => $item->status ?? null,
                     'id_fixed_shipping_instruction_creation' => $item->id_fixed_shipping_instruction_creation ?? null,
+                    'id_fixed_shipping_instruction' => $item->id_fixed_shipping_instruction ?? null,
                     'packing_list_no' => [$item->no_packaging],
                     'shipment' => $mst_shipment->shipment ?? null,
                     'tel' => $mst_shipment->telp ?? null,
@@ -655,7 +664,7 @@ class QueryRegularFixedShippingInstruction extends Model {
     public static function printShippingActual($request,$id,$filename,$pathToFile)
     {
         try {
-            $data = RegularFixedShippingInstructionCreation::where('id_fixed_shipping_instruction',$id)->first();
+            $data = RegularFixedShippingInstructionCreation::where('id',$id)->first();
             $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
             $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
             $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
@@ -664,12 +673,12 @@ class QueryRegularFixedShippingInstruction extends Model {
             $data->checked = MstSignature::where('type', 'CHECKED')->first()->name;
             $data->issued = MstSignature::where('type', 'ISSUED')->first()->name;
 
-            Pdf::loadView('pdf.shipping_instruction',[
+            Pdf::loadView('pdf.shipping_actual',[
                 'data' => $data
-            ])
-                ->save($pathToFile)
+            ])->save($pathToFile)
                 ->setPaper('A4','potrait')
                 ->download($filename);
+
         } catch (\Throwable $th) {
             return Helper::setErrorResponse($th);
         }
