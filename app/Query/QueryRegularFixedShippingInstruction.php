@@ -202,7 +202,8 @@ class QueryRegularFixedShippingInstruction extends Model {
 
             if ($fixed_shipping_instruction_creation == null) {
                 $insert = RegularFixedShippingInstructionCreation::create($params);
-                RegularFixedActualContainerCreation::where('code_consignee',$request->code_consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_fixed_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
+                $consignee = MstConsignee::where('nick_name', $request->consignee)->first()->code ?? null;
+                RegularFixedActualContainerCreation::where('datasource',$request->datasource)->where('code_consignee',$consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_fixed_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
                 $params['id_fixed_shipping_instruction_creation'] = $insert->id;
                 RegularFixedShippingInstructionCreationDraft::create($params);
             } else {

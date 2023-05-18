@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class RegularFixedShippingInstructionCreation extends Model
 {
     use HasFactory,SoftDeletes;
-    protected $table = 'regular_fixed_shipping_intruction_creation';
+    protected $table = 'regular_fixed_shipping_instruction_creation';
     public $fillable = [
         "id",
         "to",
@@ -58,6 +58,7 @@ class RegularFixedShippingInstructionCreation extends Model
         "container_type",
         "description_of_goods_1",
         "description_of_goods_2",
+        "datasource",
         "created_at",
         "created_by",
         "updated_at",
