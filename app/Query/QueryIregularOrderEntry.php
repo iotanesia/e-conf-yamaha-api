@@ -95,6 +95,7 @@ class QueryIregularOrderEntry extends Model {
 
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
+            return ['items' => ['id' => $insert->id]];
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;

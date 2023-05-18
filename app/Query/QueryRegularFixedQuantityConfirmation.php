@@ -30,23 +30,15 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $query = self::where(function ($query) use ($params){
 
                 $query->where('is_actual',Constant::IS_NOL);
-                if($params->search) {
-                    $query->where('code_consignee', 'like', "'%$params->search%'")
-                                ->orWhere('model', 'like', "'%$params->search%'")
-                                ->orWhere('item_no', 'like', "'%$params->search%'")
-                                ->orWhere('disburse', 'like', "'%$params->search%'")
-                                ->orWhere('delivery', 'like', "'%$params->search%'")
-                                ->orWhere('qty', 'like', "'%$params->search%'")
-                                ->orWhere('status', 'like', "'%$params->search%'")
-                                ->orWhere('order_no', 'like', "'%$params->search%'")
-                                ->orWhere('cust_item_no', 'like', "'%$params->search%'");
-                }
-
-            })->whereHas('refRegularDeliveryPlan',function ($query) use ($params){
                 $category = $params->category ?? null;
                 if($category) {
-                    $query->where($category, 'ilike', $params->kueri);
+                    if($category == 'cust_name'){
+                        $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->kueri)->get();
+                    } else {
+                        $query->where($category, 'ilike', $params->kueri);
+                    }
                 }
+
             });
 
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -371,6 +363,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 ->update([
                     'id_fixed_actual_container_creation' => $val->id
                 ]);
+            
+            RegularFixedActualContainer::where('id', $val->id_fixed_actual_container)
+                ->update([
+                    'is_actual' => 1
+                ]);
         }
 
         Model::whereIn('id', $params->id)->update(['is_actual' => Constant::IS_ACTUAL]);
@@ -530,14 +527,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             $data = $request->all();
-            $etdJkt = RegularFixedActualContainerCreation::select('etd_jkt','datasource')->whereIn('id',$request->id)->groupBy('etd_jkt','datasource')->get();
+            $etdJkt = RegularFixedActualContainerCreation::select('etd_jkt','datasource')->whereIn('id_fixed_actual_container',$request->id)->groupBy('etd_jkt','datasource')->get();
             if(!count($etdJkt)) throw new \Exception("Data not found", 400);
             if(count($etdJkt) > 1)  throw new \Exception("Invalid ETD JKT", 400);
             $data['no_booking'] = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').mt_rand(10000,99999);
             $data['datasource'] = $etdJkt[0]->datasource;
             $data['booking_date'] = Carbon::now()->format('Y-m-d');
             $insert = RegularFixedShippingInstruction::create($data);
-            RegularFixedActualContainerCreation::select('etd_jkt','datasource')->whereIn('id',$request->id)->update(['id_fixed_shipping_instruction'=>$insert->id]);
+            RegularFixedActualContainerCreation::whereIn('id_fixed_actual_container',$request->id)->update(['id_fixed_shipping_instruction'=>$insert->id]);
             if($is_transaction) DB::commit();
             return [
                 'items' => ['id'=>$insert->id,'no_booking'=>$data['no_booking'],'etd_jkt'=>$etdJkt[0]->etd_jkt]
@@ -568,6 +565,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $res = RegularFixedShippingInstruction::find($request->id);
             $res->status = Constant::STS_BOOK_FINISH;
             $res->save();
+            $actual_creation = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $res->id)->get();
+            foreach ($actual_creation as $key => $value) {
+                RegularFixedActualContainer::where('id', $value->id_fixed_actual_container)->update(['is_actual' => 2]);
+            }
             if($is_transaction) DB::commit();
             return ['items'=>$res];
         } catch (\Throwable $th) {
