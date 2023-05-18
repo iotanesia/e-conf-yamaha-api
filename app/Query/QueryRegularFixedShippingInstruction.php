@@ -519,7 +519,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             foreach ($cek  as $value) {
                 $data = RegularFixedActualContainer::where('id', $value->id_fixed_actual_container)->get();
             }
-            
+
             Pdf::loadView('pdf.packaging.packaging_doc',[
                 'data' => $data
             ])
@@ -614,7 +614,8 @@ class QueryRegularFixedShippingInstruction extends Model {
     public static function printShippingActual($request,$id,$filename,$pathToFile)
     {
         try {
-            $data = RegularFixedShippingInstructionCreation::where('id_fixed_shipping_instruction',$id)->first();
+            $cek = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->first();
+            $data = RegularFixedShippingInstructionCreation::find($cek->id_fixed_shipping_instruction_creation);
             $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
             $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
             $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
