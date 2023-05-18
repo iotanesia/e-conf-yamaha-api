@@ -534,7 +534,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $data['datasource'] = $etdJkt[0]->datasource;
             $data['booking_date'] = Carbon::now()->format('Y-m-d');
             $insert = RegularFixedShippingInstruction::create($data);
-            RegularFixedActualContainerCreation::select('etd_jkt','datasource')->whereIn('id',$request->id)->update(['id_fixed_shipping_instruction'=>$insert->id]);
+            RegularFixedActualContainerCreation::whereIn('id_fixed_actual_container',$request->id)->update(['id_fixed_shipping_instruction'=>$insert->id]);
             if($is_transaction) DB::commit();
             return [
                 'items' => ['id'=>$insert->id,'no_booking'=>$data['no_booking'],'etd_jkt'=>$etdJkt[0]->etd_jkt]
@@ -565,6 +565,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $res = RegularFixedShippingInstruction::find($request->id);
             $res->status = Constant::STS_BOOK_FINISH;
             $res->save();
+            $actual_creation = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $res->id)->get();
+            foreach ($actual_creation as $key => $value) {
+                RegularFixedActualContainer::where('id', $value->id_fixed_actual_container)->update(['is_actual' => 2]);
+            }
             if($is_transaction) DB::commit();
             return ['items'=>$res];
         } catch (\Throwable $th) {
