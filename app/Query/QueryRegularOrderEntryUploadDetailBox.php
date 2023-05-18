@@ -16,36 +16,40 @@ class QueryRegularOrderEntryUploadDetailBox extends Model {
 
     public static function getBoxPivot($id)
     {
-        $data = Model::select('id_box', DB::raw('count(id) as count'))
-            ->where('id_regular_order_entry_upload_detail', $id)
-            ->groupBy('id_box')
-            ->paginate(10);
+        $part = RegularOrderEntryUploadDetail::find($id);
+        $data = MstBox::where('code_consignee', $part->code_consignee)
+            ->where('item_no', $part->item_no)
+            ->get();
 
         return [
-            'items' => $data->map(function ($item){
+            'items' => $data->map(function ($item) use ($id){
 
-                $p = $item->refBox->length == null || $item->refBox->length == 0 ? 0 : round($item->refBox->length/1000,1);
-                $l = $item->refBox->width == null || $item->refBox->width == 0 ? 0 : round($item->refBox->width/1000,1);
-                $t = $item->refBox->height == null || $item->refBox->height == 0 ? 0 : round($item->refBox->height/1000,1);
+                $p = $item->length == null || $item->length == 0 ? 0 : round($item->length/1000,1);
+                $l = $item->width == null || $item->width == 0 ? 0 : round($item->width/1000,1);
+                $t = $item->height == null || $item->height == 0 ? 0 : round($item->height/1000,1);
 
-                $set["id_box"] = $item->id_box;
-                $set["no_box"] = $item->refBox->no_box;
-                $set["name"] = $item->refBox->qty." pcs";
+                $set["id_box"] = $item->id;
+                $set["no_box"] = $item->no_box;
+                $set["name"] = $item->qty." pcs";
                 $set["size"] = $p." x ".$l." x ".$t;
-                $set["count"] = $item->count;
+                $set["count"] = self::getCountBox($id, $item->id);
 
-                unset($item->refBox);
                 return $set;
             }),
-            'last_page' => $data->lastPage(),
             'attributes' => [
-                'total' => $data->total(),
-                'current_page' => $data->currentPage(),
-                'from' => $data->currentPage(),
-                'per_page' => (int) $data->perPage(),
+                'total' => count($data),
+                'current_page' => null,
+                'from' => null,
+                'per_page' => null,
             ],
-            'last_page' => $data->lastPage()
+            'last_page' => null
         ];
+    }
+
+    public static function getCountBox($id,$id_box){
+        return Model::where('id_regular_order_entry_upload_detail', $id)
+            ->where('id_box', $id_box)->count() ?? 0;
+
     }
 
     public static function editBoxPivot($id, $params,$is_transaction = true){
