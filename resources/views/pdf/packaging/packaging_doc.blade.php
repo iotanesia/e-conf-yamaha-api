@@ -78,7 +78,7 @@
             <tr>
                 <td class="no-bo">Container No</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">{{ count($item->manyFixedQuantityConfirmation) }} + {{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer->container_type.''.$item->manyFixedActualContainerCreation[0]->refMstContainer->container_value) : null }}</td>
+                <td class="no-bo">{{ count($data) }} + {{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer->container_type.''.$item->manyFixedActualContainerCreation[0]->refMstContainer->container_value) : null }}</td>
                 <td class="no-bo">ETD JAKARTA </td>
                 <td class="no-bo">:</td>
                 <td class="no-bo">{{ $item->etd_jkt }}</td>
@@ -119,19 +119,19 @@
                     {{ $item->no_packaging }} <br>
                     C/NO.20
                 </td>
-                <td style="padding:0px; border-bottom:0px;"></td>
-                <td style="padding:0px; border-bottom:0px;"></td>
-                <td style="padding:0px; border-bottom:0px;"></td>
-                <td style="padding:0px; border-bottom:0px;"></td>
-                <td style="padding:0px; border-bottom:0px;"></td>
-                <td style="padding:0px; border-bottom:0px;"></td>
+                <td style="padding:0px;"></td>
+                <td style="padding:0px;"></td>
+                <td style="padding:0px;"></td>
+                <td style="padding:0px;"></td>
+                <td style="padding:0px;"></td>
+                <td style="padding:0px;"></td>
             </tr>
             @foreach ($item->manyFixedQuantityConfirmation as $qty_item)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-center">{{ $qty_item->manyFixedQuantityConfirmation[0]->item_serial ?? null }}</td>
-                    <td class="text-center">{{ $qty_item->manyFixedQuantityConfirmation[0]->qty ?? null }}</td>
-                    <td class="text-center">77</td>
+                    <td class="text-center">{{ $qty_item->item_serial ?? null }}</td>
+                    <td class="text-center">{{ number_format($qty_item->qty) ?? null }}</td>
+                    <td class="text-center">{{ count($item->manyFixedQuantityConfirmation) }}</td>
                     <td class="text-center">167.2</td>
                     <td class="text-center">03.211</td>
                 </tr>

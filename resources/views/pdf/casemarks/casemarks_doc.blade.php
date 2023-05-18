@@ -74,7 +74,7 @@
                     {{ $item->refConsignee->nick_name }}
                     <hr>
                     PART NO <br>
-                    {{ $item->item_no }}
+                    {{ $item->item_serial }}
                     <hr>
                     <table>
                         <tr>
