@@ -60,36 +60,36 @@
     @foreach ($data as $item)
         <table>
             <tr>
-                <td class="no-bo" width='70'>INVOICE NO</td>
-                <td class="no-bo" width='5'>:</td>
-                <td class="no-bo" width='100'>{{ $item->no_packaging }}</td>
-                <td class="no-bo" width='70'></td>
-                <td class="no-bo" width='5'></td>
-                <td class="no-bo" width='100'></td>
-            </tr>
-            <tr>
-                <td class="no-bo">Date</td>
+                <td class="no-bo">INVOICE NO</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">{{ $item->created_at->format('Y-m-d') }}</td>
+                <td class="no-bo">{{ $item->no_packaging }}</td>
                 <td class="no-bo">SHIPPED BY</td>
                 <td class="no-bo">:</td>
                 <td class="no-bo">YPMI</td>
             </tr>
             <tr>
-                <td class="no-bo">Container No</td>
+                <td class="no-bo">Date</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">{{ count($data) }} + {{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer->container_type.''.$item->manyFixedActualContainerCreation[0]->refMstContainer->container_value) : null }}</td>
+                <td class="no-bo">{{ $item->created_at->format('d F Y') }}</td>
                 <td class="no-bo">ETD JAKARTA </td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">{{ $item->etd_jkt }}</td>
+                <td class="no-bo">{{ date('d F Y', strtotime($item->etd_jkt)) }}</td>
             </tr>
             <tr>
-                <td class="no-bo">Seal No</td>
+                <td class="no-bo">Container No</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo"></td>
+                <td class="no-bo">({{ count($data) }}) {{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer->container_type.' '.$item->manyFixedActualContainerCreation[0]->refMstContainer->container_value) : null }}</td>
                 <td class="no-bo">ETD {{ $item->manyFixedActualContainerCreation[0]->refMstLsp->name ?? null }}</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">{{ $item->etd_ypmi }}</td>
+                <td class="no-bo">{{ date('d F Y', strtotime($item->etd_ypmi)) }}</td>
+            </tr>
+            <tr>
+                <td class="no-bo" width='70'>Seal No</td>
+                <td class="no-bo" width='5'>:</td>
+                <td class="no-bo" width='100'></td>
+                <td class="no-bo" width='70'></td>
+                <td class="no-bo" width='5'></td>
+                <td class="no-bo" width='100'></td>
             </tr>
         </table>
         <hr>

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class RegularFixedShippingInstructionCreation extends Model
 {
     use HasFactory,SoftDeletes;
-    protected $table = 'regular_fixed_shipping_intruction_creation';
+    protected $table = 'regular_fixed_shipping_instruction_creation';
     public $fillable = [
         "id",
         "to",
@@ -19,9 +19,9 @@ class RegularFixedShippingInstructionCreation extends Model
         "shipper",
         "instruction_date",
         "si_number",
-        "invoice_no",
+        "packing_list_no",
         "consignee",
-        "notify_part",
+        "notify_part_address",
         "information_date",
         "container",
         "via",
@@ -30,8 +30,8 @@ class RegularFixedShippingInstructionCreation extends Model
         "connecting_vessel",
         "eta_destination",
         "shipped_by",
-        "pod",
-        "pol",
+        "port_of_discharge",
+        "port_of_loading",
         "incoterm",
         "feeder_vessel",
         "etd_jkt",
@@ -46,6 +46,19 @@ class RegularFixedShippingInstructionCreation extends Model
         "other",
         "count_container",
         "status",
+        "tel",
+        "fax",
+        "fax_id",
+        "consignee_address",
+        "tel_consignee",
+        "fax_consignee",
+        "tel_notify_part",
+        "seal_no",
+        "container_value",
+        "container_type",
+        "description_of_goods_1",
+        "description_of_goods_2",
+        "datasource",
         "created_at",
         "created_by",
         "updated_at",
