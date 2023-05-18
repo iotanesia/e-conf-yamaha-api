@@ -27,7 +27,24 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function shipping($params)
     {
-        $data = Model::where('status', '!=', 5)->paginate($params->limit ?? null);
+        $data = Model::where('status', '!=', 5)->where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            if($category) {
+                if($category == 'cust_name'){
+                    $consignee = MstConsignee::where('nick_name', $params->value)->first()->code ?? null;
+                    $query->with('refFixedActualContainerCreation')->whereRelation('refFixedActualContainerCreation', 'code_consignee', $consignee)->get();
+                    
+                } else {
+                    $query->where($category, 'ilike', $params->value);
+                }
+            }
+
+            // $filterdate
+            $date_from = str_replace('-','',$params->date_from);
+            $date_to = str_replace('-','',$params->date_to);
+            if($params->date_from || $params->date_to) $query->whereBetween('booking_date',[$date_from, $date_to]);
+        })->paginate($params->limit ?? null);
+        
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
