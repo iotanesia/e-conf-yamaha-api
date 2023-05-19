@@ -33,7 +33,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 if($category == 'cust_name'){
                     $consignee = MstConsignee::where('nick_name', $params->value)->first()->code ?? null;
                     $query->with('refFixedActualContainerCreation')->whereRelation('refFixedActualContainerCreation', 'code_consignee', $consignee)->get();
-                    
+
                 } else {
                     $query->where($category, 'ilike', $params->value);
                 }
@@ -44,7 +44,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             $date_to = str_replace('-','',$params->date_to);
             if($params->date_from || $params->date_to) $query->whereBetween('booking_date',[$date_from, $date_to]);
         })->paginate($params->limit ?? null);
-        
+
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
@@ -205,7 +205,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $consignee = MstConsignee::where('nick_name', $request->consignee)->first()->code ?? null;
                 $actual_container_creation = RegularFixedActualContainerCreation::query();
                 $actual_container_creation->where('datasource',$request->datasource)->where('code_consignee',$consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_fixed_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
-                
+
                 if (count($actual_container_creation->where('id_fixed_shipping_instruction', $params['id_fixed_shipping_instruction'])->get()) == count($actual_container_creation->where('id_fixed_shipping_instruction', $params['id_fixed_shipping_instruction'])->where('status', 2)->get())) {
                     RegularFixedShippingInstruction::where('id', $params['id_fixed_shipping_instruction'])->update(['status' => 2]);
                 }
@@ -569,7 +569,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             foreach ($cek  as $value) {
                 $data = RegularFixedActualContainer::where('id', $value->id_fixed_actual_container)->get();
             }
-            
+
             Pdf::loadView('pdf.packaging.packaging_doc',[
                 'data' => $data
             ])
@@ -664,7 +664,8 @@ class QueryRegularFixedShippingInstruction extends Model {
     public static function printShippingActual($request,$id,$filename,$pathToFile)
     {
         try {
-            $data = RegularFixedShippingInstructionCreation::where('id',$id)->first();
+            $cek = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->first();
+            $data = RegularFixedShippingInstructionCreation::find($cek->id_fixed_shipping_instruction_creation);
             $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
             $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
             $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
