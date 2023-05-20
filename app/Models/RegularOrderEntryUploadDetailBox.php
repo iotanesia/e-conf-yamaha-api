@@ -20,7 +20,8 @@ class RegularOrderEntryUploadDetailBox extends Model
         "updated_at",
         "updated_by",
         "deleted_at",
-        "uuid"
+        "uuid",
+        "qty_pcs_box"
     ];
 
     public function refBox(){
