@@ -329,7 +329,7 @@ class QueryRegularDeliveryPlan extends Model {
     public static function label($params,$id)
     {
 
-        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->get();
+        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->orderBy('id','asc')->get();
         if(!$data) throw new \Exception("Data not found", 400);
 
         $data->transform(function ($item)
@@ -382,7 +382,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             if($is_trasaction) DB::commit();
 
-            $data = RegularDeliveryPlanBox::whereIn('id',$id)->get();
+            $data = RegularDeliveryPlanBox::whereIn('id',$id)->orderBy('id','asc')->get();
             $data->transform(function ($item)
             {
                 $no = $item->refBox->no_box ?? null;
