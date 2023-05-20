@@ -21,87 +21,100 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
     public static function getAll($params)
     {
-        $key = self::cast.json_encode($params->query());
-        return Helper::storageCache($key, function () use ($params){
-            $query = self::where(function ($query) use ($params){
 
-              $category = $params->category ?? null;
-                if($category) {
-                    if($category == 'cust_name'){
-                        $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->kueri)->get();
-                    } else {
-                        $query->where($category, 'ilike', $params->kueri);
-                    }
+        $query = self::where(function ($query) use ($params){
+
+          $category = $params->category ?? null;
+            if($category) {
+                if($category == 'cust_name'){
+                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->kueri)->get();
+                } else {
+                    $query->where($category, 'ilike', $params->kueri);
                 }
-
-               $filterdate = Helper::filterDate($params);
-               if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
-
-               if($params->search) $query->where('code_consignee', 'like', "'%$params->search%'")
-                            ->orWhere('model', 'like', "'%$params->search%'")
-                            ->orWhere('item_no', 'like', "'%$params->search%'")
-                            ->orWhere('disburse', 'like', "'%$params->search%'")
-                            ->orWhere('delivery', 'like', "'%$params->search%'")
-                            ->orWhere('qty', 'like', "'%$params->search%'")
-                            ->orWhere('status', 'like', "'%$params->search%'")
-                            ->orWhere('order_no', 'like', "'%$params->search%'")
-                            ->orWhere('cust_item_no', 'like', "'%$params->search%'");
-                });
-
-            if($params->withTrashed == 'true') $query->withTrashed();
-            if($params->dropdown == Constant::IS_ACTIVE) {
-                $params->limit = null;
-                $params->page = 1;
             }
-            if($params->id_regular_order_entry_upload) $query->where('id_regular_order_entry_upload', $params->id_regular_order_entry_upload);
 
-            $data = $query
-            ->orderBy('id','asc')
-            ->paginate($params->limit ?? null);
+           $filterdate = Helper::filterDate($params);
+           if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
 
-            return [
-                'items' => $data->map(function ($item){
-                    $box = self::getDetailBox($item->id);
-                    $custname = self::getCustName($item->code_consignee);
-                    $itemname = self::getPart($item->item_no);
+           if($params->search) $query->where('code_consignee', 'like', "'%$params->search%'")
+                        ->orWhere('model', 'like', "'%$params->search%'")
+                        ->orWhere('item_no', 'like', "'%$params->search%'")
+                        ->orWhere('disburse', 'like', "'%$params->search%'")
+                        ->orWhere('delivery', 'like', "'%$params->search%'")
+                        ->orWhere('qty', 'like', "'%$params->search%'")
+                        ->orWhere('status', 'like', "'%$params->search%'")
+                        ->orWhere('order_no', 'like', "'%$params->search%'")
+                        ->orWhere('cust_item_no', 'like', "'%$params->search%'");
+            });
 
-                    $set["id"] = $item->id;
-                    $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
-                    $set["code_consignee"] = $item->code_consignee;
-                    $set["cust_name"] = $custname;
-                    $set["model"] = $item->model;
-                    $set["item_name"] = $itemname;
-                    $set["item_no"] = $item->refMstPart->item_serial;
-                    $set["disburse"] = $item->disburse;
-                    $set["delivery"] = $item->delivery;
-                    $set["qty"] = $item->qty;
-                    $set["status"] = $item->status;
-                    $set["order_no"] = $item->order_no;
-                    $set["cust_item_no"] = $item->cust_item_no;
-                    $set["created_at"] = $item->created_at;
-                    $set["created_by"] = $item->created_by;
-                    $set["updated_at"] = $item->updated_at;
-                    $set["updated_by"] = $item->updated_by;
-                    $set["deleted_at"] = $item->deleted_at;
-                    $set["uuid"] = $item->uuid;
-                    $set["etd_jkt"] = $item->etd_jkt;
-                    $set["etd_wh"] = $item->etd_wh;
-                    $set["etd_ypmi"] = $item->etd_ypmi;
-                    $set["box"] = $box;
+        if($params->withTrashed == 'true') $query->withTrashed();
+        if($params->dropdown == Constant::IS_ACTIVE) {
+            $params->limit = null;
+            $params->page = 1;
+        }
+        if($params->id_regular_order_entry_upload) $query->where('id_regular_order_entry_upload', $params->id_regular_order_entry_upload);
 
-                    unset($item->refRegularOrderEntryUpload);
-                    return $set;
-                }),
-                'last_page' => $data->lastPage(),
-                'attributes' => [
-                    'total' => $data->total(),
-                    'current_page' => $data->currentPage(),
-                    'from' => $data->currentPage(),
-                    'per_page' => (int) $data->perPage(),
-                ],
-                'last_page' => $data->lastPage()
-            ];
-        });
+        $data = $query
+        ->orderBy('id','asc')
+        ->paginate($params->limit ?? null);
+
+        return [
+            'items' => $data->map(function ($item){
+                $box = self::getDetailBox($item->id);
+                $custname = self::getCustName($item->code_consignee);
+                $itemname = self::getPart($item->item_no);
+
+                $set["id"] = $item->id;
+                $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
+                $set["code_consignee"] = $item->code_consignee;
+                $set["cust_name"] = $custname;
+                $set["model"] = $item->model;
+                $set["item_name"] = $itemname;
+                $set["item_no"] = $item->refMstPart->item_serial;
+                $set["disburse"] = $item->disburse;
+                $set["delivery"] = $item->delivery;
+                $set["qty"] = $item->qty;
+                $set["status"] = $item->status;
+                $set["order_no"] = $item->order_no;
+                $set["cust_item_no"] = $item->cust_item_no;
+                $set["created_at"] = $item->created_at;
+                $set["created_by"] = $item->created_by;
+                $set["updated_at"] = $item->updated_at;
+                $set["updated_by"] = $item->updated_by;
+                $set["deleted_at"] = $item->deleted_at;
+                $set["uuid"] = $item->uuid;
+                $set["etd_jkt"] = $item->etd_jkt;
+                $set["etd_wh"] = $item->etd_wh;
+                $set["etd_ypmi"] = $item->etd_ypmi;
+                $set["box"] = self::getCountBox($item->id);
+
+                unset($item->refRegularOrderEntryUpload);
+                return $set;
+            }),
+            'last_page' => $data->lastPage(),
+            'attributes' => [
+                'total' => $data->total(),
+                'current_page' => $data->currentPage(),
+                'from' => $data->currentPage(),
+                'per_page' => (int) $data->perPage(),
+            ],
+            'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function getCountBox($id){
+        $data = RegularOrderEntryUploadDetailBox::select('id_box', DB::raw('count(*) as jml'))
+                ->where('id_regular_order_entry_upload_detail', $id)
+                ->groupBy('id_box')
+                ->get();
+        return
+            $data->map(function ($item){
+                  $set['qty'] =  $item->refBox->qty." x ".$item->jml." pcs";
+                  $set['length'] =  "";
+                  $set['width'] =  "";
+                  $set['height'] =  "";
+                  return $set;
+            });
     }
 
     public static function getDetailBox($id){
