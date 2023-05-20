@@ -332,7 +332,6 @@ class QueryRegularDeliveryPlan extends Model {
         $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->get();
         if(!$data) throw new \Exception("Data not found", 400);
 
-
         $data->transform(function ($item)
         {
             $no = $item->refBox->no_box ?? null;
@@ -383,7 +382,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             if($is_trasaction) DB::commit();
 
-            $data = RegularDeliveryPlanBox::whereIn('id',$id)->paginate($params->limit ?? null);
+            $data = RegularDeliveryPlanBox::whereIn('id',$id)->get();
             $data->transform(function ($item)
             {
                 $no = $item->refBox->no_box ?? null;
@@ -415,10 +414,9 @@ class QueryRegularDeliveryPlan extends Model {
             });
 
 
-
             return [
-                'items' => $data->items(),
-                'last_page' => $data->lastPage()
+                'items' => $data,
+                'last_page' => 0
             ];
 
         } catch (\Throwable $th) {
