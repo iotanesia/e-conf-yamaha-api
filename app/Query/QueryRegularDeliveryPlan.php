@@ -329,7 +329,7 @@ class QueryRegularDeliveryPlan extends Model {
     public static function label($params,$id)
     {
 
-        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->paginate($params->limit ?? null);
+        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->get();
         if(!$data) throw new \Exception("Data not found", 400);
 
 
@@ -350,8 +350,8 @@ class QueryRegularDeliveryPlan extends Model {
 
 
         return [
-            'items' => $data->items(),
-            'last_page' => $data->lastPage()
+            'items' => $data,
+            'last_page' => 0
         ];
 
 
