@@ -362,7 +362,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function shippingDetailSI($params)
     {
-        $data = RegularFixedActualContainerCreation::select('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt','regular_fixed_actual_container_creation.etd_wh','regular_fixed_actual_container_creation.id_lsp','g.status','id_fixed_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','d.port'
+        $data = RegularFixedActualContainerCreation::select('regular_fixed_actual_container_creation.id_fixed_shipping_instruction','regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt','regular_fixed_actual_container_creation.etd_wh','regular_fixed_actual_container_creation.id_lsp','g.status','id_fixed_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','d.port'
         ,DB::raw('COUNT(regular_fixed_actual_container_creation.etd_jkt) AS summary_container')
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.id_fixed_shipping_instruction_creation::character varying, ',') as id_fixed_shipping_instruction_creation")
         ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
@@ -392,7 +392,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ->leftJoin('mst_consignee as h','regular_fixed_actual_container_creation.code_consignee','h.code')
         ->leftJoin('regular_fixed_actual_container as i','regular_fixed_actual_container_creation.id_fixed_actual_container','i.id')
         ->leftJoin('regular_fixed_shipping_instruction as j','regular_fixed_actual_container_creation.id_fixed_shipping_instruction','j.id')
-        ->groupBy('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt','regular_fixed_actual_container_creation.etd_wh','regular_fixed_actual_container_creation.id_lsp','g.status','id_fixed_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','d.port')
+        ->groupBy('regular_fixed_actual_container_creation.id_fixed_shipping_instruction','regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt','regular_fixed_actual_container_creation.etd_wh','regular_fixed_actual_container_creation.id_lsp','g.status','id_fixed_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','d.port')
         ->paginate(1);
         if(!$data) throw new \Exception("Data not found", 400);
 

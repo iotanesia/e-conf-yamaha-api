@@ -166,8 +166,7 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function tracking($request)
     {
-        $data = RegularStokConfirmation::whereIn('status_instock',Constant::TRACKING)
-        ->paginate($request->limit ?? null);
+        $data = RegularStokConfirmation::paginate($request->limit ?? null);
 
         if(!$data) throw new \Exception("Data not found", 400);
 
