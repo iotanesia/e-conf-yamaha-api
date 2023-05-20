@@ -167,12 +167,12 @@ class QueryRegularDeliveryPlan extends Model {
             $date_to = str_replace('-','',$params->date_to);
             if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
         })
-        ->where('is_inquiry', 0)
+        // ->where('is_inquiry', 0)
         ->paginate($params->limit ?? null);
         if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
         $data->transform(function ($item){
-            $item->item_no = $item->refPart->item_serial;
+            $item->item_no = $item->refPart->item_serial ?? null;
             $item->item_name = $item->refPart->description ?? null;
             $item->cust_name = $item->refConsignee->nick_name ?? null;
             $regularOrderEntry = $item->refRegularOrderEntry;
