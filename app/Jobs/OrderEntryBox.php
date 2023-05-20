@@ -49,14 +49,12 @@ class OrderEntryBox implements ShouldQueue
                     $box_capacity = $box['qty'];
                     $qty = $request['qty'];
                     $loops = (int) ceil($qty / $box_capacity);
-                    $qty_pcs_box = 0;
                     $ext = [];
                     for ($i=0; $i < $loops ; $i++) {
-                        $sum = $qty - $box_capacity;
-                        if($sum < $qty)
+                        if($qty > $box_capacity)
                             $qty_pcs_box = $box_capacity;
                         else
-                            $qty_pcs_box = $sum;
+                            $qty_pcs_box = $qty;
                         $ext[] = [
                             'uuid' => (string) Str::uuid(),
                             'id_regular_order_entry_upload_detail' => $request['id'],
@@ -66,6 +64,7 @@ class OrderEntryBox implements ShouldQueue
                             'updated_at' => now(),
                             'qty_pcs_box' => $qty_pcs_box
                         ];
+                        $sum = $qty - $box_capacity;
                         $qty = $sum;
                     }
 
