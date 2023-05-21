@@ -179,16 +179,7 @@ class QueryRegularDeliveryPlan extends Model {
             $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
             $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
             $item->regular_order_entry_year = $regularOrderEntry->year ?? null;
-            $item->box = $item->manyDeliveryPlanBox->map(function ($item)
-            {
-                return [
-                    'id' => $item->id,
-                    'id_box' => $item->id_box,
-                    'qty' => $item->refBox->qty ?? null,
-                    'width' => $item->refBox->width ?? null,
-                    'height' => $item->refBox->height ?? null,
-                ];
-            });
+            $item->box = self::getCountBox($item->id) ?? [];
 
             unset(
                 $item->refRegularOrderEntry,
@@ -207,6 +198,23 @@ class QueryRegularDeliveryPlan extends Model {
             'last_page' => $data->lastPage(),
 
         ];
+    }
+
+    public static function getCountBox($id){
+        $data = RegularDeliveryPlanBox::select('id_box', DB::raw('count(*) as jml'))
+                ->where('id_regular_delivery_plan', $id)
+                ->groupBy('id_box')
+                ->get();
+        return
+            $data->map(function ($item){
+                $set['id'] = 0;
+                $set['id_box'] = $item->id_box;
+                $set['qty'] =  $item->refBox->qty." x ".$item->jml." pcs";
+                $set['length'] =  "";
+                $set['width'] =  "";
+                $set['height'] =  "";
+                return $set;
+            });
     }
 
     public static function inquiryProcess($params, $is_trasaction = true)
