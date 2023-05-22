@@ -30,11 +30,13 @@ class QueryStockConfirmationHistory extends Model {
         try {
             $stock = Model::where('id_regular_delivery_plan',$id)->where('type',Constant::INSTOCK)->first();
             $update = RegularStokConfirmation::where('id_regular_delivery_plan',$id)->first();
+            $qty = RegularDeliveryPlanBox::find($stock->id_regular_delivery_plan_box);
 
             $update->update([
                 'in_dc'=>Constant::IS_NOL,
                 'status_instock'=>Constant::STS_STOK,
-                'production' => $update->production + $update->in_dc
+                'production' => $update->production + $update->in_dc,
+                'in_dc' => $update->in_dc - $qty->qty_pcs_box
             ]);
             $stock->delete();
 
@@ -50,11 +52,13 @@ class QueryStockConfirmationHistory extends Model {
         try {
             $stock = Model::where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->first();
             $update = RegularStokConfirmation::where('id_regular_delivery_plan',$id)->first();
+            $qty = RegularDeliveryPlanBox::find($stock->id_regular_delivery_plan_box);
 
             $update->update([
                 'in_wh'=>Constant::IS_NOL,
                 'status_outstock'=>Constant::STS_STOK,
-                'production' => $update->production + $update->in_wh
+                'production' => $update->production + $update->in_wh,
+                'in_wh' => $update->in_wh - $qty->qty_pcs_box
             ]);
             $stock->delete();
 
