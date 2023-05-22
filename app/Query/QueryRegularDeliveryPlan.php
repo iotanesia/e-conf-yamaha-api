@@ -8,6 +8,7 @@ use App\Models\RegularDeliveryPlan AS Model;
 use Illuminate\Support\Facades\DB;
 use App\ApiHelper as Helper;
 use App\ApiHelper;
+use App\Exports\InquiryExport;
 use App\Models\MstConsignee;
 use App\Models\MstShipment;
 use App\Models\RegularDeliveryPlan;
@@ -26,6 +27,7 @@ use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class QueryRegularDeliveryPlan extends Model {
@@ -198,6 +200,11 @@ class QueryRegularDeliveryPlan extends Model {
             'last_page' => $data->lastPage(),
 
         ];
+    }
+
+    public static function exportExcel($request,$id){
+        $data = self::detail($request, $id);
+        return Excel::download(new InquiryExport($data), 'inquiry.xlsx');
     }
 
     public static function getCountBox($id){
