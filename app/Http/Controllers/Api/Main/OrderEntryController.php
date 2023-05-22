@@ -63,6 +63,23 @@ class OrderEntryController extends Controller
         }
     }
 
+     /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function revision(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData([
+                "items" => QueryRegularOrderEntry::revision($request)
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     /**
      * Display the specified resource.
      *

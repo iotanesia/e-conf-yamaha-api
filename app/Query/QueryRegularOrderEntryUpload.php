@@ -210,6 +210,49 @@ class QueryRegularOrderEntryUpload extends Model {
     }
 
 
+    public static function revisionFile($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            $data = self::find($request->id_regular_order_entry_upload);
+            if(!$data) throw new \Exception("data not found", 400);
+
+            DB::table('regular_order_entry_upload_detail_revision')
+            ->where('id_regular_order_entry_upload',$request->id_regular_order_entry_upload)
+            ->delete();
+
+            $file = $request->file('file');
+            // $filename = $file->getClientOriginalName();
+            $filename = 'OE-'.$request->month.$request->year.'-'.$data->refRegularOrderEntry->datasource.'-0'.$request->iteration;
+            $ext = $file->getClientOriginalExtension();
+            if(!in_array($ext,['xls','xlx','xlsx','xlsb'])) throw new \Exception("file format error", 400);
+            $savedname = (string) Str::uuid().'.'.$ext;
+            $params = [
+                'filename' => $filename,
+                'filepath' => '/order-entry/'.$data->refRegularOrderEntry->year.'/'.$data->refRegularOrderEntry->month.'/'.$savedname,
+                'upload_date' => Carbon::now(),
+                'status' => Constant::STS_PROCESSED,
+            ];
+            Storage::putFileAs(str_replace($savedname,'',$params['filepath']),$file,$savedname);
+
+            $data->fill($params);
+            $data->save();
+
+            Excel::queueImport(new OrderEntry($data->id,[
+                'year' => $data->refRegularOrderEntry->year,
+                'month' => $data->refRegularOrderEntry->month,
+            ]),storage_path().'/app/'.$params['filepath']);
+
+
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+
     public static function deletedByIdOrderEntry($id_order_entry,$is_transaction = true)
     {
         if($is_transaction) DB::beginTransaction();
