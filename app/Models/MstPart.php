@@ -22,4 +22,9 @@ class MstPart extends Model
         'updated_by',
         'deleted_at'
     ];
+
+    public function refConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'id_consignee','id');
+    }
 }
