@@ -217,6 +217,7 @@ class QueryStockConfirmationHistory extends Model {
                 $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh;
                 $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt;
                 $item->production = $item->production;
+                $item->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null;
 
                 unset(
                     $item->refRegularDeliveryPlan,
