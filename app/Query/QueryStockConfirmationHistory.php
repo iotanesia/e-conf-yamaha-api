@@ -34,7 +34,7 @@ class QueryStockConfirmationHistory extends Model {
             $update->update([
                 'in_dc'=>Constant::IS_NOL,
                 'status_instock'=>Constant::STS_STOK,
-                'production' => $update->production + $stock->qty_pcs_perbox
+                'production' => $update->production + $update->in_dc
             ]);
             $stock->delete();
 
@@ -54,7 +54,7 @@ class QueryStockConfirmationHistory extends Model {
             $update->update([
                 'in_wh'=>Constant::IS_NOL,
                 'status_outstock'=>Constant::STS_STOK,
-                'production' => $update->production + $stock->qty_pcs_perbox
+                'production' => $update->production + $update->in_wh
             ]);
             $stock->delete();
 
@@ -112,7 +112,7 @@ class QueryStockConfirmationHistory extends Model {
                 );
 
                 foreach($item->regular_delivery_plan_box as $box){
-                    $box->box = $box->refBox;
+                    $box->box = self::getCountBox($box->id_regular_delivery_plan) ?? [];
                     unset($box->refBox);
                 }
 
@@ -169,7 +169,7 @@ class QueryStockConfirmationHistory extends Model {
                 );
 
                 foreach($item->regular_delivery_plan_box as $box){
-                    $box->box = $box->refBox;
+                    $box->box = self::getCountBox($box->id_regular_delivery_plan) ?? [];
                     unset($box->refBox);
                 }
 
@@ -177,6 +177,23 @@ class QueryStockConfirmationHistory extends Model {
             }),
             'last_page' => $data->lastPage()
         ];
+    }
+
+    public static function getCountBox($id){
+        $data = RegularDeliveryPlanBox::select('id_box', DB::raw('count(*) as jml'))
+                ->where('id_regular_delivery_plan', $id)
+                ->groupBy('id_box')
+                ->get();
+        return
+            $data->map(function ($item){
+                $set['id'] = 0;
+                $set['id_box'] = $item->id_box;
+                $set['qty'] =  $item->refBox->qty." x ".$item->jml." pcs";
+                $set['length'] =  "";
+                $set['width'] =  "";
+                $set['height'] =  "";
+                return $set;
+            });
     }
 
     public static function tracking($request)
