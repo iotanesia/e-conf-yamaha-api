@@ -4,6 +4,7 @@ namespace App\Query;
 
 use App\Constants\Constant;
 use App\Models\RegularOrderEntryUpload AS Model;
+use App\Models\RegularOrderEntryUploadDetailRevision;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
@@ -81,6 +82,66 @@ class QueryRegularOrderEntryUpload extends Model {
                 ]
             ];
         });
+    }
+
+    public static function getRetry($params)
+    {
+        $data = RegularOrderEntryUploadDetailRevision::where('id_regular_order_entry_upload', $params->id)
+            ->paginate($params->limit ?? null);
+
+        return [
+            'items' => $data->map(function ($item){
+                $regularOrderEntry = $item->refRegularOrderEntry;
+                if($regularOrderEntry){
+                    $item->regular_order_entry_period = $regularOrderEntry->period;
+                    $item->regular_order_entry_month = $regularOrderEntry->month;
+                    $item->regular_order_entry_year = $regularOrderEntry->year;
+                }
+
+                unset($item->refRegularOrderEntry);
+
+                $item->status_desc = null;
+                if($item->status == 1)
+                    $item->status_desc = "Proses";
+                else if($item->status == 2)
+                    $item->status_desc = "Selesai";
+                else if($item->status == 3)
+                    $item->status_desc = "Send To PC";
+                else if($item->status == 4)
+                    $item->status_desc = "Revisi";
+                else if($item->status == 5)
+                    $item->status_desc = "Approved";
+                else if($item->status == 6)
+                    $item->status_desc = "Error";
+
+                return $item;
+            }),
+            'last_page' => $data->lastPage(),
+            'attributes' => [
+                'total' => $data->total(),
+                'current_page' => $data->currentPage(),
+                'from' => $data->currentPage(),
+                'per_page' => (int) $data->perPage(),
+            ]
+        ];
+    }
+
+    public static function getRetryInfo($params)
+    {
+        $data = Model::find($params->id);
+        $set['datasource'] = $data->refRegularOrderEntry->datasource ?? null;
+        $set['month'] = $data->refRegularOrderEntry->month ?? null;
+        $set['year'] = $data->refRegularOrderEntry->year ?? null;
+        return [
+            'items' => $set,
+            'last_page' => null,
+            'attributes' => [
+                'total' => 0,
+                'current_page' => null,
+                'from' => null,
+                'per_page' => null,
+            ]
+        ];
     }
 
     public static function byId($params,$id)

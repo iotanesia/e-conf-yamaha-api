@@ -120,5 +120,27 @@ class OrderEntryUploadController extends Controller
         }
     }
 
+    public function retry(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularOrderEntryUpload::getRetry($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function retryInfo(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularOrderEntryUpload::getRetryInfo($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
 
 }

@@ -59,6 +59,8 @@ Route::prefix('v1/regular')
          Route::post('/send-pc',[OrderEntryUploadController::class,'sendPc']);
          Route::get('/{id}',[OrderEntryUploadController::class,'show']);
          Route::delete('/{id}',[OrderEntryUploadController::class,'delete']);
+         Route::post('retry/list',[OrderEntryUploadController::class,'retry']);
+         Route::post('retry/info',[OrderEntryUploadController::class,'retryInfo']);
      });
 
      // order-entry-uplaod-detail
