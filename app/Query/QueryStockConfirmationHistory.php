@@ -100,6 +100,7 @@ class QueryStockConfirmationHistory extends Model {
                 $item->status_desc = 'Instock';
                 $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox[0];
                 $item->regular_delivery_plan_box->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null;
+                $item->regular_delivery_plan_box = [$item->manyDeliveryPlanBox[0]];
 
                 unset(
                     $item->count_box,
@@ -152,6 +153,7 @@ class QueryStockConfirmationHistory extends Model {
                 $item->status_desc = 'Outstock';
                 $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox[0];
                 $item->regular_delivery_plan_box->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null;
+                $item->regular_delivery_plan_box = [$item->manyDeliveryPlanBox[0]];
 
                 unset(
                     $item->id_regular_delivery_plan,
