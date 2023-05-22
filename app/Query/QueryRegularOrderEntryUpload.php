@@ -71,6 +71,8 @@ class QueryRegularOrderEntryUpload extends Model {
                         $item->status_desc = "Approved";
                     else if($item->status == 6)
                         $item->status_desc = "Error";
+                    else if($item->status == 10)
+                        $item->status_desc = "Failed Upload";
 
                     return $item;
                 }),
