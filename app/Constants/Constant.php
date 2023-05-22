@@ -15,6 +15,8 @@ class Constant
     const STS_SEND_TO_DC_MANAGER = 7;
     const STS_FINISH = 8;
     const STS_PROCESS_REJECTED = 9;
+    const STS_REVISION_UPLOAD = 10;
+
     const DRAFT = 1;
     const FINISH = 2;
     const STS_BOOK_FINISH = 1;

@@ -7,6 +7,7 @@ use App\Models\MstConsignee AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\MstPortOfLoading;
 use Illuminate\Support\Facades\Cache;
 
 class QueryMstConsignee extends Model {
@@ -28,7 +29,18 @@ class QueryMstConsignee extends Model {
             ->orderBy('id','asc')
             ->paginate($params->limit ?? null);
             return [
-                'items' => $data->items(),
+                'items' => $data->getCollection()->transform(function($item){
+
+                    $pol = MstPortOfLoading::where('id_type_delivery', 1)->first();
+                    
+                    $item->pod = $item->refPortOfDischarge->port ?? null;
+                    $item->pol = $pol->name ?? null;
+
+                    unset(
+                        $item->refPortOfDischarge,
+                    );
+                    return $item;
+                }),
                 'last_page' => $data->lastPage(),
                 'attributes' => [
                     'total' => $data->total(),

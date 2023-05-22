@@ -120,6 +120,7 @@ Route::prefix('v1/regular')
         });
 
         Route::get('/{id}',[DeliveryPlanController::class,'show']);
+        Route::get('/{id}/export',[DeliveryPlanController::class,'exportExcel']);
       });
 
       // delivery-plan-detail

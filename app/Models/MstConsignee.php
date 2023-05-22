@@ -24,4 +24,9 @@ class MstConsignee extends Model
         'updated_by',
         'deleted_at'
     ];
+
+    public function refPortOfDischarge()
+    {
+        return $this->hasOne(MstPortOfDischarge::class,'code_consignee','code');
+    }
 }

@@ -12,8 +12,8 @@ class MstPortOfDischarge extends Model
     protected $table = 'mst_port_of_discharge';
     public $fillable = [
         'id',
-        'id_consignee',
-        'mot',
+        'code_consignee',
+        'id_mot',
         'tipe',
         'id_port',
         'created_at',
@@ -25,11 +25,16 @@ class MstPortOfDischarge extends Model
 
     public function refConsignee()
     {
-        return $this->belongsTo(MstConsignee::class,'id_consignee','id');
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
     }
 
     public function refPort()
     {
         return $this->belongsTo(MstPort::class,'id_port','id');
+    }
+
+    public function refMot()
+    {
+        return $this->belongsTo(MstMot::class,'id_mot','id');
     }
 }

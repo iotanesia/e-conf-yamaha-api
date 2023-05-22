@@ -32,6 +32,15 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function exportExcel(Request $request,$id)
+    {
+        try {
+            return QueryRegularDeliveryPlan::exportExcel($request,$id);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function inquiryProcess(Request $request)
     {
         try {

@@ -7,6 +7,7 @@ use App\Models\MstPortOfDischarge AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\MstPortOfLoading;
 use Illuminate\Support\Facades\Cache;
 
 class QueryMstPortOfDischarge extends Model {
@@ -29,13 +30,30 @@ class QueryMstPortOfDischarge extends Model {
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->getCollection()->transform(function($item){
-                    $item->port_code = $item->refPort->code ?? null;
-                    $item->port_name = $item->refPort->name ?? null;
-                    $item->consignee_code = $item->refConsignee->code ?? null;
-                    $item->consignee_name = $item->refConsignee->name ?? null;
+
+                    $pol = MstPortOfLoading::where('id_type_delivery', $item->tipe)->first();
+
+                    $item->cust_name = $item->refConsignee->nick_name ?? null;
+                    $item->address = $item->refConsignee->address1 ?? null;
+                    $item->via_pod = $item->refMot->name ?? null;
+                    $item->pod = $item->refPort->name ?? null;
+                    $item->via_pol = $pol->id ?? null;
+                    $item->pol = $pol->name ?? null;
+
                     unset(
                         $item->refPort,
-                        $item->refConsignee
+                        $item->refMot,
+                        $item->refConsignee,
+                        $item->code_consignee,
+                        $item->id_mot,
+                        $item->tipe,
+                        $item->id_port,
+                        $item->created_at,
+                        $item->created_by,
+                        $item->updated_at,
+                        $item->updated_by,
+                        $item->deleted_at,
+                        $item->port
                     );
                     return $item;
                 }),
@@ -54,13 +72,22 @@ class QueryMstPortOfDischarge extends Model {
         $data = self::find($id);
 
         if($data){
-            $data->port_code = $data->refPort->code ?? null;
-            $data->port_name = $data->refPort->name ?? null;
-            $data->consignee_code = $data->refConsignee->code ?? null;
-            $data->consignee_name = $data->refConsignee->name ?? null;
+            $pol = MstPortOfLoading::where('id_type_delivery', $data->tipe)->first();
+
+            $data->address = $data->refConsignee->address1 ?? null;
+            $data->port = $data->refPort->name ?? null;
+            $data->id_tipe_delivery = $data->tipe ?? null;
+            $data->pol = $pol->name ?? null;
+
             unset(
                 $data->refPort,
-                $data->refConsignee
+                $data->refConsignee,
+                $data->created_at,
+                $data->created_by,
+                $data->updated_at,
+                $data->updated_by,
+                $data->deleted_at,
+                $data->port
             );
         }
 

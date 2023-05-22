@@ -6,25 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class MstPart extends Model
+class MstPortOfLoading extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'mst_part';
+
+    protected $table = 'mst_port_of_loading';
     public $fillable = [
         'id',
-        'item_no',
-        'description',
-        'id_consignee',
-        'hs_code',
+        'name',
+        'id_type_delivery',
         'created_at',
         'created_by',
         'updated_at',
         'updated_by',
         'deleted_at'
     ];
-
-    public function refConsignee()
-    {
-        return $this->belongsTo(MstConsignee::class,'id_consignee','id');
-    }
 }

@@ -225,10 +225,14 @@ class QueryRegularOrderEntryUpload extends Model {
 
     public static function updateStatusAfterImport($id,$is_transaction = true)
     {
+
         if($is_transaction) DB::beginTransaction();
         try {
+            $check = DB::table('regular_order_entry_upload_detail_revision')
+            ->where('id_regular_order_entry_upload',$id)->count();
+
             $store = self::find($id);
-            $store->status = Constant::STS_PROCESS_FINISHED;
+            $store->status = $check > 0 ? Constant::STS_REVISION_UPLOAD : Constant::STS_PROCESS_FINISHED;
             $store->save();
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
