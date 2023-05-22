@@ -404,9 +404,7 @@ class QueryRegularDeliveryPlan extends Model {
             $data->transform(function ($item)
             {
                 $no = $item->refBox->no_box ?? null;
-                // $qty = $item->refBox->qty ?? null;
-                $refRegularOrderEntryUploadDetailBox = $item->refRegularOrderEntryUploadDetailBox !== null ? $item->refRegularOrderEntryUploadDetailBox->qty_pcs_box : null;
-                $qty = $item->qty_pcs_box == null ? $refRegularOrderEntryUploadDetailBox : $item->qty_pcs_box;
+                $qty = $item->refBox->qty ?? null;
 
                 $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
 
@@ -414,10 +412,8 @@ class QueryRegularDeliveryPlan extends Model {
                 $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
                 QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
 
-                if ($item->qrcode == null) {
-                    $item->qrcode = $qr_name;
-                    $item->save();
-                }
+                $item->qrcode = $qr_name;
+                $item->save();
 
                 return [
                     'id' => $item->id,
@@ -425,7 +421,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
                     'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
                     'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
-                    'qty_pcs_box' => $item->qty_pcs_box,
+                    'qty_pcs_box' => $item->qty_pcs_box ?? null,
                     'namebox' => $no. " ".$qty. " pcs" ,
                     'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
                     'lot_packing' => $item->lot_packing,
