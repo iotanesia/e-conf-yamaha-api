@@ -26,6 +26,7 @@ Route::prefix('v1/regular')
      Route::group(['prefix' => 'order-entry'],function (){
         Route::get('/',[OrderEntryController::class,'index']);
         Route::post('/',[OrderEntryController::class,'store']);
+        Route::post('revision',[OrderEntryController::class,'revision']);
         Route::post('/{id}',[OrderEntryController::class,'update']);
      });
 

@@ -185,4 +185,19 @@ class QueryRegularOrderEntry extends Model {
         return $arr;
     }
 
+    public static function revision($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+
+            QueryRegularOrderEntryUpload::revisionFile($request,false);
+
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
 }
