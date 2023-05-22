@@ -112,7 +112,7 @@ class QueryStockConfirmationHistory extends Model {
                 );
 
                 foreach($item->regular_delivery_plan_box as $box){
-                    $box->box = self::getCountBox($box->id_regular_delivery_plan) ?? [];
+                    $box->box = self::getCountBox($box->id_regular_delivery_plan)[0] ?? [];
                     unset($box->refBox);
                 }
 
@@ -169,7 +169,7 @@ class QueryStockConfirmationHistory extends Model {
                 );
 
                 foreach($item->regular_delivery_plan_box as $box){
-                    $box->box = self::getCountBox($box->id_regular_delivery_plan) ?? [];
+                    $box->box = self::getCountBox($box->id_regular_delivery_plan)[0] ?? [];
                     unset($box->refBox);
                 }
 
