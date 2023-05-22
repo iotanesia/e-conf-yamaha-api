@@ -98,7 +98,8 @@ class QueryStockConfirmationHistory extends Model {
                 $item->status_bml = $item->refRegularDeliveryPlan->status_bml;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->status_desc = 'Instock';
-                $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
+                $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox[0];
+                $item->regular_delivery_plan_box->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null;
 
                 unset(
                     $item->count_box,
@@ -110,11 +111,6 @@ class QueryStockConfirmationHistory extends Model {
                     $item->refRegularDeliveryPlan,
                     $item->manyDeliveryPlanBox
                 );
-
-                foreach($item->regular_delivery_plan_box as $box){
-                    $box->box = self::getCountBox($box->id_regular_delivery_plan)[0] ?? [];
-                    unset($box->refBox);
-                }
 
                 return $item;
             }),
@@ -154,7 +150,8 @@ class QueryStockConfirmationHistory extends Model {
                 $item->status_bml = $item->refRegularDeliveryPlan->status_bml;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->status_desc = 'Outstock';
-                $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
+                $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox[0];
+                $item->regular_delivery_plan_box->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null;
 
                 unset(
                     $item->id_regular_delivery_plan,
@@ -167,11 +164,6 @@ class QueryStockConfirmationHistory extends Model {
                     $item->refRegularDeliveryPlan,
                     $item->manyDeliveryPlanBox
                 );
-
-                foreach($item->regular_delivery_plan_box as $box){
-                    $box->box = self::getCountBox($box->id_regular_delivery_plan)[0] ?? [];
-                    unset($box->refBox);
-                }
 
                 return $item;
             }),
