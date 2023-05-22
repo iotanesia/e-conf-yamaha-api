@@ -28,7 +28,18 @@ class QueryMstPart extends Model {
             ->orderBy('id','asc')
             ->paginate($params->limit ?? null);
             return [
-                'items' => $data->items(),
+                'items' => $data->getCollection()->transform(function($item){
+
+                    $item->cust_name = $item->refConsignee->nick_name ?? null;
+                    $item->group_product = $item->refGrooupProduct->group_product ?? null;
+    
+                    unset(
+                        $item->refConsignee,
+                        $item->refGrooupProduct,
+                    );
+    
+                    return $item;
+                }),
                 'last_page' => $data->lastPage(),
                 'attributes' => [
                     'total' => $data->total(),

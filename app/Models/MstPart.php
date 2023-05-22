@@ -16,6 +16,7 @@ class MstPart extends Model
         'description',
         'id_consignee',
         'hs_code',
+        'id_group_product',
         'created_at',
         'created_by',
         'updated_at',
@@ -26,5 +27,10 @@ class MstPart extends Model
     public function refConsignee()
     {
         return $this->belongsTo(MstConsignee::class,'id_consignee','id');
+    }
+
+    public function refGrooupProduct()
+    {
+        return $this->belongsTo(MstGroupProduct::class,'id_group_product','id');
     }
 }
