@@ -159,6 +159,7 @@ class QueryRegularOrderEntryUpload extends Model {
                 $item->regular_order_entry_period = $regularOrderEntry->period;
                 $item->regular_order_entry_month = $regularOrderEntry->month;
                 $item->regular_order_entry_year = $regularOrderEntry->year;
+                $item->datasource = $regularOrderEntry->datasource;
             }
 
             $item->status_desc = Constant::STS_PROCESS_RG_ENTRY[$item->status];

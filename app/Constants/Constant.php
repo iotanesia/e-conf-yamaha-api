@@ -26,7 +26,16 @@ class Constant
     const IS_NOL = 0;
     const IS_NULL = null;
     const STS_PROCESS_RG_ENTRY = [
-        1 => 'Proses', 2 => 'Done Upload', 3 => 'Send To PC', 4 => 'Revisi', 5 => 'Approved', 6 => 'Error', 7 => 'Send To DC Manager', 8 => 'Finish', 9 => "Reject"
+        1 => 'Proses',
+        2 => 'Done Upload',
+        3 => 'Send To PC',
+        4 => 'Revisi',
+        5 => 'Approved',
+        6 => 'Error',
+        7 => 'Send To DC Manager',
+        8 => 'Finish',
+        9 => "Reject",
+        10 => 'Failed Upload'
     ];
     const PATHFILE = [
         'qr' => '/app/qrcode/label'
