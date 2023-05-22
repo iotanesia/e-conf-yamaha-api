@@ -350,7 +350,10 @@ class QueryRegularDeliveryPlan extends Model {
         $data->transform(function ($item)
         {
             $no = $item->refBox->no_box ?? null;
-            $qty = $item->refBox->qty ?? null;
+            // $qty = $item->refBox->qty ?? null;
+            $refRegularOrderEntryUploadDetailBox = $item->refRegularOrderEntryUploadDetailBox !== null ? $item->refRegularOrderEntryUploadDetailBox->qty_pcs_box : null;
+            $qty = $item->qty_pcs_box == null ? $refRegularOrderEntryUploadDetailBox : $item->qty_pcs_box;
+
             return [
                 'id' => $item->id,
                 'item_name' => $item->refRegularDeliveryPlan->refPart->description ?? null,
@@ -401,7 +404,9 @@ class QueryRegularDeliveryPlan extends Model {
             $data->transform(function ($item)
             {
                 $no = $item->refBox->no_box ?? null;
-                $qty = $item->refBox->qty ?? null;
+                // $qty = $item->refBox->qty ?? null;
+                $refRegularOrderEntryUploadDetailBox = $item->refRegularOrderEntryUploadDetailBox !== null ? $item->refRegularOrderEntryUploadDetailBox->qty_pcs_box : null;
+                $qty = $item->qty_pcs_box == null ? $refRegularOrderEntryUploadDetailBox : $item->qty_pcs_box;
 
                 $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
 
@@ -409,8 +414,10 @@ class QueryRegularDeliveryPlan extends Model {
                 $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
                 QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
 
-                $item->qrcode = $qr_name;
-                $item->save();
+                if ($item->qrcode == null) {
+                    $item->qrcode = $qr_name;
+                    $item->save();
+                }
 
                 return [
                     'id' => $item->id,

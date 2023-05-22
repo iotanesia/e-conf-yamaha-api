@@ -38,4 +38,9 @@ class RegularDeliveryPlanBox extends Model
     {
         return $this->belongsTo(RegularDeliveryPlan::class,'id_regular_delivery_plan','id');
     }
+
+    public function refRegularOrderEntryUploadDetailBox()
+    {
+        return $this->belongsTo(RegularOrderEntryUploadDetailBox::class,'id_regular_order_entry_upload_detail_box','id');
+    }
 }

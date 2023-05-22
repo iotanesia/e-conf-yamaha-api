@@ -27,8 +27,15 @@ class QueryStockConfirmationHistory extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            Model::where('id_regular_delivery_plan',$id)->where('type',Constant::INSTOCK)->delete();
-            RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_dc'=>Constant::IS_NOL,'status_instock'=>Constant::STS_STOK]);
+            $stock = Model::where('id_regular_delivery_plan',$id)->where('type',Constant::INSTOCK)->first();
+            $update = RegularStokConfirmation::where('id_regular_delivery_plan',$id)->first();
+
+            $update->update([
+                'in_dc'=>Constant::IS_NOL,
+                'status_instock'=>Constant::STS_STOK,
+                'production' => $update->production + $stock->qty_pcs_perbox
+            ]);
+            $stock->delete();
 
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
@@ -40,8 +47,15 @@ class QueryStockConfirmationHistory extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            Model::where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->delete();
-            RegularStokConfirmation::where('id_regular_delivery_plan',$id)->update(['in_wh'=>Constant::IS_NOL,'status_outstock'=>Constant::STS_STOK]);
+            $stock = Model::where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->first();
+            $update = RegularStokConfirmation::where('id_regular_delivery_plan',$id)->first();
+
+            $update->update([
+                'in_wh'=>Constant::IS_NOL,
+                'status_outstock'=>Constant::STS_STOK,
+                'production' => $update->production + $stock->qty_pcs_perbox
+            ]);
+            $stock->delete();
 
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
