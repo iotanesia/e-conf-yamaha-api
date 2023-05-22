@@ -14,6 +14,7 @@ use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
 use App\Models\RegularFixedQuantityConfirmation;
 use App\Models\RegularFixedQuantityConfirmationBox;
+use App\Models\RegularStokConfirmationHistory;
 use App\Models\RegularStokConfirmationOutstockNote;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -300,6 +301,10 @@ class QueryStockConfirmationHistory extends Model {
 
             $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
             if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
+
+            $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->where('type',Constant::INSTOCK)->first();
+            if($stock_confirmation_history) throw new \Exception("QR Code Done Scan", 400);
+
             $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
             $qty = $stock_confirmation->qty;
             $status = $stock_confirmation->status;
