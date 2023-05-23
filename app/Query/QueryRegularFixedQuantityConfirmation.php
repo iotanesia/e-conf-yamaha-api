@@ -8,6 +8,7 @@ use App\ApiHelper as Helper;
 use App\Models\MstContainer;
 use App\Models\MstLsp;
 use App\Models\RegularDeliveryPlan;
+use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularFixedActualContainer;
 use App\Models\RegularFixedActualContainerCreation;
 use App\Models\RegularFixedQuantityConfirmation;
@@ -447,15 +448,37 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             'items' => $data->getCollection()->transform(function($item){
                 $item->item_name = trim($item->refRegularDeliveryPlan->refPart->description);
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+                $item->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null;
 
                 unset(
-                    $item->refRegularDeliveryPlan
+                    $item->refRegularDeliveryPlan,
+                    $item->status,
+                    $item->in_dc,
+                    $item->in_wh,
+                    $item->production,
                 );
 
                 return $item;
             }),
             'last_page' => $data->lastPage()
         ];
+    }
+
+    public static function getCountBox($id){
+        $data = RegularDeliveryPlanBox::select('id_box', DB::raw('count(*) as jml'))
+                ->where('id_regular_delivery_plan', $id)
+                ->groupBy('id_box')
+                ->get();
+        return
+            $data->map(function ($item){
+                $set['id'] = 0;
+                $set['id_box'] = $item->id_box;
+                $set['qty'] =  $item->refBox->qty." x ".$item->jml." pcs";
+                $set['length'] =  "";
+                $set['width'] =  "";
+                $set['height'] =  "";
+                return $set;
+            });
     }
 
     public static function getCreationMoveContainer($params, $id)
