@@ -351,8 +351,9 @@ class QueryRegularDeliveryPlan extends Model {
         {
             $no = $item->refBox->no_box ?? null;
             // $qty = $item->refBox->qty ?? null;
-            $refRegularOrderEntryUploadDetailBox = $item->refRegularOrderEntryUploadDetailBox !== null ? $item->refRegularOrderEntryUploadDetailBox->qty_pcs_box : null;
-            $qty = $item->qty_pcs_box == null ? $refRegularOrderEntryUploadDetailBox : $item->qty_pcs_box;
+            // $refRegularOrderEntryUploadDetailBox = $item->refRegularOrderEntryUploadDetailBox !== null ? $item->refRegularOrderEntryUploadDetailBox->qty_pcs_box : null;
+            // $qty = $item->qty_pcs_box == null ? $refRegularOrderEntryUploadDetailBox : $item->qty_pcs_box;
+            $qty = $item->qty_pcs_box;
 
             return [
                 'id' => $item->id,

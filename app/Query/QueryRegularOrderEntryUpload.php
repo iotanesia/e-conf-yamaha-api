@@ -588,7 +588,8 @@ class QueryRegularOrderEntryUpload extends Model {
                        return [
                            'id_box' => $item_box->id_box,
                            'id_regular_delivery_plan' => $store->id,
-                           'created_at' => now()
+                           'created_at' => now(),
+                           'qty_pcs_box' => $item_box->qty_pcs_box
                        ];
                    })->toArray();
 
