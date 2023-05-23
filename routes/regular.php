@@ -26,7 +26,6 @@ Route::prefix('v1/regular')
      Route::group(['prefix' => 'order-entry'],function (){
         Route::get('/',[OrderEntryController::class,'index']);
         Route::post('/',[OrderEntryController::class,'store']);
-        Route::post('revision',[OrderEntryController::class,'revision']);
         Route::post('/{id}',[OrderEntryController::class,'update']);
      });
 
@@ -62,6 +61,7 @@ Route::prefix('v1/regular')
          Route::delete('/{id}',[OrderEntryUploadController::class,'delete']);
          Route::post('retry/list',[OrderEntryUploadController::class,'retry']);
          Route::post('retry/info',[OrderEntryUploadController::class,'retryInfo']);
+         Route::post('revision',[OrderEntryController::class,'revision']);
      });
 
      // order-entry-uplaod-detail
