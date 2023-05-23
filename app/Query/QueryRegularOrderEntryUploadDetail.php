@@ -109,7 +109,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 ->get();
         return
             $data->map(function ($item){
-                  $set['qty'] =  $item->refBox->qty." x ".$item->jml." pcs";
+                  $set['qty'] =  $item->refBox->qty." x ".$item->jml;
                   $set['length'] =  "";
                   $set['width'] =  "";
                   $set['height'] =  "";
