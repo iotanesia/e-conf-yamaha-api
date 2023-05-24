@@ -134,6 +134,7 @@
                     <td class="text-center">{{ count($item->manyFixedQuantityConfirmation) }}</td>
                     <td class="text-center">167.2</td>
                     <td class="text-center">03.211</td>
+                    <td class="text-center">03.211</td>
                 </tr>
             @endforeach
         </table>

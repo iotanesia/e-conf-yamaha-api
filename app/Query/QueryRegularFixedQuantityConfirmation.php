@@ -657,7 +657,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     public static function printPackaging($request,$id,$pathToFile,$filename)
     {
         try {
-            $data = RegularFixedActualContainer::find($id);
+            $data = RegularFixedActualContainer::where('id', $id)->get();
 
             Pdf::loadView('pdf.packaging.packaging_doc',[
               'data' => $data
