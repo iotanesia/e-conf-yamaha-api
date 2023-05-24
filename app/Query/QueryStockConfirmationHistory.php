@@ -50,17 +50,23 @@ class QueryStockConfirmationHistory extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            $stock = Model::where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->first();
+            $stock = Model::query();
+            $stock_out = $stock->where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->get();
             $update = RegularStokConfirmation::where('id_regular_delivery_plan',$id)->first();
             $qty = RegularDeliveryPlanBox::find($stock->id_regular_delivery_plan_box);
+            RegularFixedQuantityConfirmation::where('id_regular_delivery_plan',$id)->delete();
 
             $update->update([
                 'in_wh'=>Constant::IS_NOL,
                 'status_outstock'=>Constant::STS_STOK,
                 'production' => $update->production + $update->in_wh,
-                'in_wh' => $update->in_wh - $qty->qty_pcs_box
+                'in_wh' => $update->in_wh - $update->in_wh
             ]);
-            $stock->delete();
+
+            foreach ($stock_out as $key => $value) {
+                $stock->where('id_regular_delivery_plan_box',$value->id_regular_delivery_plan_box)->where('type',Constant::INSTOCK)->delete();
+                $value->delete();
+            }
 
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
