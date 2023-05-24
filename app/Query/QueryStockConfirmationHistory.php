@@ -53,7 +53,7 @@ class QueryStockConfirmationHistory extends Model {
             $stock = Model::query();
             $stock_out = $stock->where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->get();
             $update = RegularStokConfirmation::where('id_regular_delivery_plan',$id)->first();
-            $qty = RegularDeliveryPlanBox::find($stock->id_regular_delivery_plan_box);
+            // $qty = RegularDeliveryPlanBox::find($stock->id_regular_delivery_plan_box);
             RegularFixedQuantityConfirmation::where('id_regular_delivery_plan',$id)->delete();
 
             $update->update([
