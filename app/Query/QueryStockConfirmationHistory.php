@@ -50,8 +50,7 @@ class QueryStockConfirmationHistory extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            $stock = Model::query();
-            $stock_out = $stock->where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->get();
+            $stock_out = Model::where('id_regular_delivery_plan',$id)->where('type',Constant::OUTSTOCK)->get();
             $update = RegularStokConfirmation::where('id_regular_delivery_plan',$id)->first();
             // $qty = RegularDeliveryPlanBox::find($stock->id_regular_delivery_plan_box);
             RegularFixedQuantityConfirmation::where('id_regular_delivery_plan',$id)->delete();
@@ -64,7 +63,7 @@ class QueryStockConfirmationHistory extends Model {
             ]);
 
             foreach ($stock_out as $key => $value) {
-                $stock->where('id_regular_delivery_plan_box',$value->id_regular_delivery_plan_box)->where('type',Constant::INSTOCK)->delete();
+                Model::where('id_regular_delivery_plan_box',$value->id_regular_delivery_plan_box)->where('type',Constant::INSTOCK)->delete();
                 $value->delete();
             }
 
