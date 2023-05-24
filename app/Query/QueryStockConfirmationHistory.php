@@ -379,7 +379,6 @@ class QueryStockConfirmationHistory extends Model {
 
             if ($stock_confirmation->in_dc == 0 && $stock_confirmation->in_wh == $stock_confirmation->qty && $stock_confirmation->production == 0) {
                 $stock_confirmation->status_instock = 3;
-                $stock_confirmation->status_outstock = 3;
                 $stock_confirmation->save();
 
                 $fixed_quantity_confirmation = new RegularFixedQuantityConfirmation;
