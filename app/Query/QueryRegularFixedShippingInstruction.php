@@ -206,9 +206,9 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $actual_container_creation = RegularFixedActualContainerCreation::query();
                 $actual_container_creation->where('datasource',$request->datasource)->where('code_consignee',$consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_fixed_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
 
-                if (count($actual_container_creation->where('id_fixed_shipping_instruction', $params['id_fixed_shipping_instruction'])->get()) == count($actual_container_creation->where('id_fixed_shipping_instruction', $params['id_fixed_shipping_instruction'])->where('status', 2)->get())) {
-                    RegularFixedShippingInstruction::where('id', $params['id_fixed_shipping_instruction'])->update(['status' => 2]);
-                }
+                // if (count($actual_container_creation->where('id_fixed_shipping_instruction', $params['id_fixed_shipping_instruction'])->get()) == count($actual_container_creation->where('id_fixed_shipping_instruction', $params['id_fixed_shipping_instruction'])->where('status', 2)->get())) {
+                //     RegularFixedShippingInstruction::where('id', $params['id_fixed_shipping_instruction'])->update(['status' => 2]);
+                // }
 
                 $params['id_fixed_shipping_instruction_creation'] = $insert->id;
                 RegularFixedShippingInstructionCreationDraft::create($params);
