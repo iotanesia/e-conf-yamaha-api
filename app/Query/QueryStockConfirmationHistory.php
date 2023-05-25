@@ -562,6 +562,21 @@ class QueryStockConfirmationHistory extends Model {
 
         if(!$data) throw new \Exception("Data not found", 400);
 
+        return [
+            'items' => $data->transform(function($item){
+                $item->shipment = MstShipment::where('is_active',Constant::IS_ACTIVE)->first()->shipment ?? null;
+                $item->truck_no = null;
+                $item->surat_jalan = Helper::generateCodeLetter(RegularStokConfirmationOutstockNote::latest()->first()) ?? null;
+                $item->delivery_date = Carbon::now()->format('Y-m-d');
+
+                return $item;
+            })[0],
+            'last_page' => $data->lastPage()
+        ];
+    }
+
+    public static function outstockDeliveryNoteItems($request)
+    {
         $items = RegularStokConfirmation::select(DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_number"),DB::raw("string_agg(DISTINCT c.description::character varying, ',') as item_name"),DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as quantity"),DB::raw("string_agg(DISTINCT b.no_packaging::character varying, ',') as no_packing_list"))
                         ->whereIn('regular_stock_confirmation.id',$request->id_stock_confirmation)
                         ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
@@ -571,16 +586,7 @@ class QueryStockConfirmationHistory extends Model {
                         ->get();
 
         return [
-            'items' => $data->transform(function($item) use ($items){
-                $item->shipment = MstShipment::where('is_active',Constant::IS_ACTIVE)->first()->shipment ?? null;
-                $item->truck_no = null;
-                $item->surat_jalan = Helper::generateCodeLetter(RegularStokConfirmationOutstockNote::latest()->first()) ?? null;
-                $item->delivery_date = Carbon::now()->format('Y-m-d');
-                $item->items = $items;
-
-                return $item;
-            }),
-            'last_page' => $data->lastPage()
+            'items' => $items ?? []
         ];
     }
 }
