@@ -27,7 +27,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function shipping($params)
     {
-        $data = Model::where('status', '!=', 5)->where(function ($query) use ($params){
+        $data = Model::where(function ($query) use ($params){
             $category = $params->category ?? null;
             if($category) {
                 if($category == 'cust_name'){
