@@ -51,13 +51,16 @@
         .page_break {
             page-break-before: always;
         }
+        tr:nth-child(2) td.first-row{
+            color: red;
+        }
     </style>
 </head>
 
 <body>
     <h4 class="text-center">PACKING LIST SHEET</h4>
 
-    @foreach ($data as $item)
+    @foreach ($data as $key => $item)
         <table>
             <tr>
                 <td class="no-bo">INVOICE NO</td>
@@ -65,7 +68,7 @@
                 <td class="no-bo">{{ $item->no_packaging }}</td>
                 <td class="no-bo">SHIPPED BY</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">YPMI</td>
+                <td class="no-bo">{{ $item->manyFixedActualContainerCreation[0]->refMstLsp->name ?? null }}</td>
             </tr>
             <tr>
                 <td class="no-bo">Date</td>
@@ -78,8 +81,8 @@
             <tr>
                 <td class="no-bo">Container No</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">({{ count($data) }}) {{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer->container_type.' '.$item->manyFixedActualContainerCreation[0]->refMstContainer->container_value) : null }}</td>
-                <td class="no-bo">ETD {{ $item->manyFixedActualContainerCreation[0]->refMstLsp->name ?? null }}</td>
+                <td class="no-bo">{{ count($data) }} ({{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer->container_type) : null }})</td>
+                <td class="no-bo">ETD {{ $item->refPartOfDischarge->port ?? null }}</td>
                 <td class="no-bo">:</td>
                 <td class="no-bo">{{ date('d F Y', strtotime($item->etd_ypmi)) }}</td>
             </tr>
@@ -96,7 +99,7 @@
 
         <table style="margin-top: 10px;">
             <tr>
-                <td class="no-bt no-bl no-br">Order No. {{ $item->no_packaging }}</td>
+                <td class="no-bt no-bl no-br">Order No. {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}</td>
                 <td class="no-bt no-bl no-br" colspan="6"></td>
             </tr>
             <tr>
@@ -108,36 +111,81 @@
                 <td class="text-center"> Gross. W <br> (Kgs)</td>
                 <td class="text-center"> Meas. <br> (M3) </td>
             </tr>
-            <tr>
-                {{-- rowspan mengikuti jumlah baris  --}}
-                <td class="text-center" style="vertical-align: top;" rowspan="{{ count($item->manyFixedQuantityConfirmation) }}" width="140">
-                    YAMAHA <br>
-                    {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
-                    9999-99999 <br>
-                    {{ $item->manyFixedQuantityConfirmation[0]->refFixedActualContainerCreation->refMstLsp->name ?? null }} <br>
-                    MADE IN INDONESIA <br>
-                    {{ $item->no_packaging }} <br>
-                    C/NO.20
-                </td>
-                <td style="padding:0px;"></td>
-                <td style="padding:0px;"></td>
-                <td style="padding:0px;"></td>
-                <td style="padding:0px;"></td>
-                <td style="padding:0px;"></td>
-                <td style="padding:0px;"></td>
-            </tr>
-            @foreach ($item->manyFixedQuantityConfirmation as $qty_item)
+            
                 <tr>
-                    <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-center">{{ $qty_item->item_serial ?? null }}</td>
-                    <td class="text-center">{{ number_format($qty_item->qty) ?? null }}</td>
-                    <td class="text-center">{{ count($item->manyFixedQuantityConfirmation) }}</td>
-                    <td class="text-center">167.2</td>
-                    <td class="text-center">03.211</td>
-                    <td class="text-center">03.211</td>
+                    {{-- rowspan mengikuti jumlah baris  --}}
+                    <td class="text-center" style="vertical-align: top;" rowspan="{{ $count_box + 1 }}" width="140">
+                        YAMAHA <br>
+                        {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
+                        999999-9999 <br>
+                        {{ $item->refPartOfDischarge->port ?? null }} <br>
+                        MADE IN INDONESIA <br>
+                        INV. No. {{ $item->no_packaging }} <br>
+                        C/No. : 1 - {{ $count_box }}
+                    </td>
+                    <td style="padding:0px; border-bottom:0px;"></td>
+                    <td style="padding:0px; border-bottom:0px;"></td>
+                    <td style="padding:0px; border-bottom:0px;"></td>
+                    <td style="padding:0px; border-bottom:0px;"></td>
+                    <td style="padding:0px; border-bottom:0px;"></td>
+                    <td style="padding:0px; border-bottom:0px;"></td>
                 </tr>
+            @foreach ($box as $jml => $box_jml)
+                @foreach ($box[$jml] as $box_item)
+                    <tr>
+                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $loop->iteration }}</td>
+                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $box_item['ref_box']['item_no_series'] }}</td>
+                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'] ?? null }}</td>
+                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['unit_weight_kg'],1) }}</td>
+                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
+                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ round((($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000),3) }}</td>
+                    </tr>
+                @endforeach
             @endforeach
+            
+            {{-- total --}}
+            <tr>
+                <td colspan="3" class="text-center"> TOTAL</td>
+                <td class="text-center">{{ $count_qty }}</td>
+                <td class="text-center">{{ round($count_net_weight,1) }}</td>
+                <td class="text-center">{{ round($count_gross_weight,1) }}</td>
+                <td class="text-center">{{ round($count_meas,3) }}</td>
+            </tr>
         </table>
+
+        <table style="margin-top: 20px;">
+            <tr>
+                <td class="no-bo" width="200px">Grand Total Number Of Cartons</td>
+                <td class="no-bo" width="4">:</td>
+                <td width="50px" class="text-right no-bo">{{ $count_box }}</td>
+                <td class="no-bo">Cartons Boxes</td>
+            </tr>
+            <tr>
+                <td class="no-bo" width="200px">Grand Total Qty</td>
+                <td class="no-bo" width="4">:</td>
+                <td width="50px" class="text-right no-bo">{{ $count_qty }}</td>
+                <td class="no-bo">(PCS)</td>
+            </tr>
+            <tr>
+                <td class="no-bo" width="200px">Grand Total Nett Weights</td>
+                <td class="no-bo" width="4">:</td>
+                <td width="50px" class="text-right no-bo">{{ round($count_net_weight,1) }}</td>
+                <td class="no-bo">Kgs</td>
+            </tr>
+            <tr>
+                <td class="no-bo" width="200px">Grand Total Gross Weights</td>
+                <td class="no-bo" width="4">:</td>
+                <td width="50px" class="text-right no-bo">{{ round($count_gross_weight,1) }}</td>
+                <td class="no-bo">Kgs</td>
+            </tr>
+            <tr>
+                <td class="no-bo" width="200px">Grand Total Measurement</td>
+                <td class="no-bo" width="4">:</td>
+                <td width="50px" class="text-right no-bo">{{ round($count_meas,3) }}</td>
+                <td class="no-bo">M3</td>
+            </tr>
+        </table>
+        <hr>
     @endforeach
     
 </body>
