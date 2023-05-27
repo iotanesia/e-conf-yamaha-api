@@ -170,7 +170,6 @@ class QueryRegularDeliveryPlan extends Model {
             if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
         })->where('is_inquiry', 0)
         ->paginate($params->limit ?? null);
-        if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
         $data->transform(function ($item){
             $item->item_no = $item->refPart->item_serial ?? null;
