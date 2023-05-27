@@ -207,7 +207,47 @@
             <table>
                 <tr>
                     <td>CASE MARKS</td>
-                    <td></td>
+                    @foreach ($actual_container as $key => $item)
+                        @foreach ($box as $jml => $box_jml)
+                            @foreach ($box[$jml] as $box_item)
+                                <table style="margin-top: 30px;">
+                                    <tr>
+                                        <td class="text-center" style="font-size: 30px; font-weight: 500; vertical-align=top;">
+                                            YAMAHA <br>
+                                            {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
+                                            999999-9999 <br>
+                                            {{ $item->refPartOfDischarge->port ?? null }} <br>
+                                            MADE IN INDONESIA <br>
+                                            INV. No. {{ $item->no_packaging }} <br>
+                                            C/No. : {{ $loop->iteration }}
+                                        </td>
+                                        <td class="text-center" style="font-size: 20px; font-weight: 500; vertical-align=top;">
+                                            CUSTOMER : <br>
+                                            {{ $item->refConsignee->nick_name }}
+                                            <hr>
+                                            PART NO <br>
+                                            {{ $box_item['ref_box']['item_no_series'] }}
+                                            <hr>
+                                            <table>
+                                                <tr>
+                                                    <td class="no-bl no-bt text-center">QTY</td>
+                                                    <td class="no-br no-bt text-center">QTY</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="no-bl text-center">{{ $box_item['qty_pcs_box'] ?? null }}</td>
+                                                    <td class="no-br text-center">{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="no-bl no-bb text-center">PCS</td>
+                                                    <td class="no-br no-bb text-center">KG</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            @endforeach
+                        @endforeach
+                    @endforeach 
                 </tr>
             </table>
         </table>

@@ -671,11 +671,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $data = RegularFixedActualContainer::where('id', $id)->get();
 
             foreach ($data as $key => $value) {
-                $tes = $value->manyFixedQuantityConfirmation;
+                $plan_box = $value->manyFixedQuantityConfirmation;
             }
 
             $box = [];
-            foreach ($tes as $key => $item) {
+            foreach ($plan_box as $key => $item) {
                 $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
             }
 

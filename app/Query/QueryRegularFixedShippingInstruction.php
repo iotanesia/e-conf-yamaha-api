@@ -297,8 +297,22 @@ class QueryRegularFixedShippingInstruction extends Model {
             $data->checked = MstSignature::where('type', 'CHECKED')->first()->name;
             $data->issued = MstSignature::where('type', 'ISSUED')->first()->name;
 
+            $actual_container_creation = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction_creation', $id)->first();
+            $actual_container = RegularFixedActualContainer::where('id', $actual_container_creation->id_fixed_actual_container)->get();
+
+            foreach ($actual_container as $key => $value) {
+                $tes = $value->manyFixedQuantityConfirmation;
+            }
+
+            $box = [];
+            foreach ($tes as $key => $item) {
+                $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
+            }
+
             Pdf::loadView('pdf.shipping_instruction',[
-              'data' => $data
+              'data' => $data,
+              'actual_container' => $actual_container,
+              'box' => $box
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
@@ -378,6 +392,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ,DB::raw("string_agg(DISTINCT h.address1::character varying, ',') as consignee_address")
         ,DB::raw("string_agg(DISTINCT i.no_packaging::character varying, ',') as no_packaging")
         ,DB::raw("string_agg(DISTINCT j.id::character varying, ',') as id_fixed_shipping_instruction")
+        ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container")
         ,DB::raw("SUM(f.net_weight) as net_weight")
         ,DB::raw("SUM(f.gross_weight) as gross_weight")
         ,DB::raw("SUM(f.measurement) as measurement")
@@ -406,10 +421,37 @@ class QueryRegularFixedShippingInstruction extends Model {
 
                 $mst_shipment = MstShipment::where('is_active', 1)->first();
 
+                $data = RegularFixedActualContainer::where('id', $item->id_fixed_actual_container)->get();
+
+                foreach ($data as $key => $value) {
+                    $plan_box = $value->manyFixedQuantityConfirmation;
+                }
+
+                $box = [];
+                foreach ($plan_box as $key => $item) {
+                    $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
+                }
+
+                $count_net_weight = 0;
+                $count_gross_weight = 0;
+                $count_meas = 0;
+                foreach ($box as $jml => $box_jml) {
+                    foreach ($box[$jml] as $box_item){
+                        $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
+                        $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
+                        $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
+                    }
+                }
+
+                $count_box = 0;
+                foreach ($box as $jml => $count) {
+                    $count_box += count($box[$jml]);
+                }
+
                 return [
                     'code_consignee' => $item->code_consignee,
-                    'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2,
-                    'customer_name' => $item->refMstConsignee->nick_name,
+                    'consignee' => $item->refMstConsignee == null ? null : ($item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax),
+                    'customer_name' => $item->refMstConsignee->nick_name ?? null,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
                     'summary_container' => $item->summary_container,
@@ -420,9 +462,9 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'shipped_by' => $item->mot,
                     'container_value' => intval($item->container_type),
                     'container_type' => $item->container_value,
-                    'net_weight' => $item->net_weight,
-                    'gross_weight' => $item->gross_weight,
-                    'measurement' => $item->measurement,
+                    'net_weight' => round($count_net_weight,1),
+                    'gross_weight' => round($count_gross_weight,1),
+                    'measurement' => round($count_meas,3),
                     'port_of_discharge' => $item->port,
                     'port_of_loading' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
@@ -446,6 +488,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'description_of_good_1' => '',
                     'description_of_good_2' => '',
                     'seal_no' => '',
+                    'carton_box_qty' => $count_box
                 ];
             }
         });
