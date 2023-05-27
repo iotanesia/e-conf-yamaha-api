@@ -5,6 +5,7 @@ namespace App\Query;
 use App\Constants\Constant;
 use App\Models\RegularFixedQuantityConfirmation AS Model;
 use App\ApiHelper as Helper;
+use App\Models\MstBox;
 use App\Models\MstContainer;
 use App\Models\MstLsp;
 use App\Models\RegularDeliveryPlan;
@@ -639,27 +640,75 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     public static function printCasemarks($request,$id,$pathToFile,$filename)
     {
         try {
-            $data = RegularFixedQuantityConfirmation::where('id_fixed_actual_container',$id)->get();
+            $data = RegularFixedActualContainer::where('id', $id)->get();
+
+            foreach ($data as $key => $value) {
+                $tes = $value->manyFixedQuantityConfirmation;
+            }
+
+            $box = [];
+            foreach ($tes as $key => $item) {
+                $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
+            }
 
             Pdf::loadView('pdf.casemarks.casemarks_doc',[
-              'data' => $data
+              'data' => $data,
+              'box' => $box
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
 
-          } catch (\Throwable $th) {
-              return Helper::setErrorResponse($th);
-          }
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
+        }
     }
 
     public static function printPackaging($request,$id,$pathToFile,$filename)
     {
         try {
-            $data = RegularFixedActualContainer::find($id);
+            $data = RegularFixedActualContainer::where('id', $id)->get();
+
+            foreach ($data as $key => $value) {
+                $tes = $value->manyFixedQuantityConfirmation;
+            }
+
+            $box = [];
+            foreach ($tes as $key => $item) {
+                $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
+            }
+
+            $count_qty = 0;
+            $count_net_weight = 0;
+            $count_gross_weight = 0;
+            $count_meas = 0;
+            foreach ($box as $jml => $box_jml) {
+                foreach ($box[$jml] as $box_item){
+                    $count_qty += $box_item['qty_pcs_box'];
+                    $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
+                    $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
+                    $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
+                }
+            }
+
+            $count_box = 0;
+            foreach ($box as $jml => $count) {
+                $count_box += count($box[$jml]);
+            }
+
+            $loop = [];
+            for ($i=0; $i < $count_box; $i++) { 
+                $loop[] = $i + 1;
+            }
 
             Pdf::loadView('pdf.packaging.packaging_doc',[
-              'data' => $data
+                'data' => $data,
+                'box' => $box,
+                'count_box' => $count_box,
+                'count_qty' => $count_qty,
+                'count_net_weight' => $count_net_weight,
+                'count_gross_weight' => $count_gross_weight,
+                'count_meas' => $count_meas,
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')

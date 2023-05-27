@@ -44,4 +44,9 @@ class RegularFixedActualContainer extends Model
     {
         return $this->hasMany(RegularFixedActualContainerCreation::class,'id_fixed_actual_container','id')->orderBy('id','asc');
     }
+
+    public function refPartOfDischarge()
+    {
+        return $this->belongsTo(MstPortOfDischarge::class,'code_consignee','code_consignee');
+    }
 }

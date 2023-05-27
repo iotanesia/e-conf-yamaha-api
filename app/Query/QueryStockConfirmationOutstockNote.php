@@ -36,12 +36,12 @@ class QueryStockConfirmationOutstockNote extends Model {
             $dataSend =  $deliveryPlan->transform(function($item) use($lastData,$request){
                 return [
                     'shipper'=>MstShipment::where('is_active',Constant::IS_ACTIVE)->first()->shipment ?? null,
-                    'yth'=>$item->lsp,
-                    'consignee'=>$item->code_consignee,
+                    'yth'=> $request->yth ?? $item->lsp,
+                    'consignee'=> $request->username ?? $item->code_consignee,
                     'no_letters'=>Helper::generateCodeLetter($lastData),
                     'delivery_date'=>Carbon::now()->format('Y-m-d'),
                     'truck_type'=>$item->truck_type,
-                    'truck_no' => null,
+                    'truck_no' => $request->truck_no ?? null,
                     'id_stock_confirmation' =>$request->id
                 ];
             });

@@ -156,6 +156,7 @@ Route::prefix('v1/regular')
             Route::post('/inquiry-scan',[StockConfirmationController::class,'outstockInquiryScan']);
             Route::post('/delete/{id}',[StockConfirmationController::class,'deleteOutStock']);
             Route::post('/delivery-note',[StockConfirmationController::class,'outstockDeliveryNote']);
+            Route::post('/delivery-note/items',[StockConfirmationController::class,'outstockDeliveryNoteItems']);
             Route::post('/delivery-note/save',[StockConfirmationController::class,'saveOutStockNote']);
             Route::post('/delivery-note/print',[StockConfirmationController::class,'printOutStockNote']);
         });
