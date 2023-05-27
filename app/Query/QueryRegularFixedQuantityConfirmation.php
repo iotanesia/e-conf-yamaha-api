@@ -293,7 +293,6 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'colis' => $delivery_plan_box
             ]
         ];
-
     }
 
     public static function creationProcess($params,$is_transaction = true)
@@ -366,7 +365,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 ->update([
                     'id_fixed_actual_container_creation' => $val->id
                 ]);
-            
+
             RegularFixedActualContainer::where('id', $val->id_fixed_actual_container)
                 ->update([
                     'is_actual' => 1
