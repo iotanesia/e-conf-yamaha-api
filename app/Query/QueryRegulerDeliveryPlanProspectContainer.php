@@ -3,6 +3,7 @@
 namespace App\Query;
 
 use App\Constants\Constant;
+use App\Models\MstConsignee;
 use App\Models\RegularDeliveryPlanProspectContainer AS Model;
 use App\ApiHelper as Helper;
 use App\Models\MstContainer;
@@ -326,9 +327,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-
-
-
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
@@ -336,11 +334,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
     }
 
-    public static function simulation($params, $id)
+    public static function simulation($params)
     {
-
-        $plan = RegularDeliveryPlan::select('id')
-            ->where('id_prospect_container', $id)
+        $plan = RegularDeliveryPlan::select('id','code_consignee')
+            ->where('id_prospect_container', $params->id)
             ->orderBy('id', 'asc')
             ->get();
         $delivery_plan = [];
@@ -348,14 +345,15 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $delivery_plan[] = $item->id;
         }
 
-
-        $container = MstContainer::find(2); // 40HC
-        $delivery_plan_box = RegularDeliveryPlanBox::select('id_box', DB::raw('count(id_box) as count_box'))
+        $container = MstContainer::find($params->id_container);
+        $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
+            'id_box', DB::raw('count(id_box) as count_box'))
         ->whereIn('id_regular_delivery_plan',$delivery_plan)
-        ->groupBy('id_box')
+        ->groupBy('id_box', 'id_regular_delivery_plan')
         ->get()
         ->map(function ($item){
             return [
+                'id_delivery_plan' => $item->id_regular_delivery_plan,
                 'label' => $item->refBox->no_box,
                 'w' =>  floatval($item->refBox->width/1000),
                 'h' => floatval($item->refBox->height/1000),
@@ -367,8 +365,18 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'base'
                 ]
             ];
-
         });
+
+        $route = MstLsp::where('code_consignee',$plan[0]->code_consignee)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'from' => 'jakarta',
+                    'to' => $item->name,
+                    'type' => 'dechargement'
+                ];
+            });
 
         return [
             'items' => [
@@ -377,26 +385,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'h' => floatval(round($container->height,2)) ?? null,
                     'l' => floatval(round($container->wide,2)) ?? null
                 ],
-                'routes' => [
-                    [
-                        'id' => 1,
-                        'from' => 'Casa',
-                        'to' => 'Rabat',
-                        'type' => 'dechargement'
-                    ],
-                    [
-                        'id' => 2,
-                        'from' => 'Rabat',
-                        'to' => 'Kenitra',
-                        'type' => 'dechargement'
-                    ],
-                    [
-                        'id' => 3,
-                        'from' => 'Kenitra',
-                        'to' => 'Tanger',
-                        'type' => 'dechargement'
-                    ]
-                ],
+                'routes' => $route,
                 'colis' => $delivery_plan_box
             ]
         ];
