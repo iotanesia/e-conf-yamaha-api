@@ -350,8 +350,9 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             'id_box', DB::raw('count(id_box) as count_box'))
         ->whereIn('id_regular_delivery_plan',$delivery_plan)
         ->groupBy('id_box', 'id_regular_delivery_plan')
+        ->orderBy('count_box','desc')
         ->get()
-        ->map(function ($item){
+        ->map(function ($item, $index){
             return [
                 'id_delivery_plan' => $item->id_regular_delivery_plan,
                 'label' => $item->refBox->no_box,
@@ -359,7 +360,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 'h' => floatval($item->refBox->height/1000),
                 'l' => floatval($item->refBox->length/1000),
                 'q' => $item->count_box,
-                'priority' => 1,
+                'priority' => $index + 1,
                 'stackingCapacity' => 0,
                 'rotations' => [
                     'base'
