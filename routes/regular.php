@@ -82,6 +82,7 @@ Route::prefix('v1/regular')
         Route::post('/edit',[DeliveryPlanController::class,'update']);
 
         Route::group(['prefix' => 'produksi'],function (){
+            Route::get('/{id}',[DeliveryPlanController::class,'showProduksi']);
             Route::post('/labeling',[DeliveryPlanController::class,'storeLabeling']);
             Route::get('/labeling/{id}',[DeliveryPlanController::class,'labeling']);
         });
@@ -91,7 +92,7 @@ Route::prefix('v1/regular')
             Route::post('/creation/move',[ProspectContainerController::class,'creationMove']);
             Route::put('/edit-mot',[DeliveryPlanController::class,'editMot']);
             Route::post('/fifo',[ProspectContainerController::class,'fifo']);
-            Route::get('/simulation',[ProspectContainerController::class,'simulation']);
+            Route::get('/simulation/{id}',[ProspectContainerController::class,'simulation']);
             Route::post('/creation/detail',[ProspectContainerController::class,'detail']);
             Route::get('/fifo/{id}',[ProspectContainerController::class,'show']);
         });

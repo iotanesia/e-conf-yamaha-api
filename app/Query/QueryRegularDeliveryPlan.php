@@ -200,6 +200,54 @@ class QueryRegularDeliveryPlan extends Model {
         ];
     }
 
+    public static function detailProduksi($params,$id_regular_order_entry)
+    {
+        $data = self::where('id_regular_order_entry',$id_regular_order_entry)
+            ->where(function ($query) use ($params){
+                $category = $params->category ?? null;
+                if($category) {
+                    if($category == 'cust_name'){
+                        $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+                    } else {
+                        $query->where($category, 'ilike', $params->value);
+                    }
+                }
+
+                // $filterdate = Helper::filterDate($params);
+                $date_from = str_replace('-','',$params->date_from);
+                $date_to = str_replace('-','',$params->date_to);
+                if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
+            })->paginate($params->limit ?? null);
+
+        $data->transform(function ($item){
+            $item->item_no = $item->refPart->item_serial ?? null;
+            $item->item_name = $item->refPart->description ?? null;
+            $item->cust_name = $item->refConsignee->nick_name ?? null;
+            $regularOrderEntry = $item->refRegularOrderEntry;
+            $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
+            $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
+            $item->regular_order_entry_year = $regularOrderEntry->year ?? null;
+            $item->box = self::getCountBox($item->id) ?? [];
+
+            unset(
+                $item->refRegularOrderEntry,
+                $item->manyDeliveryPlanBox,
+                $item->refPart,
+                $item->refConsignee
+            );
+
+            return $item;
+
+        });
+
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage(),
+
+        ];
+    }
+
     public static function exportExcel($request,$id){
         $data = self::detail($request, $id);
         return Excel::download(new InquiryExport($data), 'inquiry.xlsx');

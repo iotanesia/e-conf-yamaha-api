@@ -336,18 +336,23 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
     }
 
-    public static function simulation($params)
+    public static function simulation($params, $id)
     {
+
+        $plan = RegularDeliveryPlan::select('id')
+            ->where('id_prospect_container', $id)
+            ->orderBy('id', 'asc')
+            ->get();
+        $delivery_plan = [];
+        foreach ($plan as $item){
+            $delivery_plan[] = $item->id;
+        }
 
 
         $container = MstContainer::find(2); // 40HC
         $delivery_plan_box = RegularDeliveryPlanBox::select('id_box', DB::raw('count(id_box) as count_box'))
-        ->whereIn('id_regular_delivery_plan',[
-            4659,
-            4663,
-            4670,
-            4674,
-        ])->groupBy('id_box')
+        ->whereIn('id_regular_delivery_plan',$delivery_plan)
+        ->groupBy('id_box')
         ->get()
         ->map(function ($item){
             return [
@@ -357,7 +362,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 'l' => floatval($item->refBox->length/1000),
                 'q' => $item->count_box,
                 'priority' => 1,
-                'stackingCapacity' => 1,
+                'stackingCapacity' => $item->refBox->stack_capacity,
                 'rotations' => [
                     'base'
                 ]
