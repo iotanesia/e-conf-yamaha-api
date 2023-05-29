@@ -97,8 +97,8 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                 if(count($filter_mst_part_false) == 0) {
                     $filteredData->each(function ($row) use ($id_regular_order_entry_upload) {
                         $cust_item_no = trim($row[5]) == trim($row[23])
-                            ? '99999-99'
-                            : trim(substr_replace($row[23],'-',4).substr($row[23],4));
+                            ? '999999-9999'
+                            : trim(substr_replace($row[23],'-',6).substr($row[23],6));
 
                         QueryRegularOrderEntryUploadDetail::created([
                             'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
