@@ -75,7 +75,7 @@
                             {{ $item->refPartOfDischarge->port ?? null }} <br>
                             MADE IN INDONESIA <br>
                             INV. No. {{ $item->no_packaging }} <br>
-                            C/No. : {{ $loop->iteration }}
+                            C/No. : {{ $number++ }}
                         </td>
                         <td class="text-center" style="font-size: 20px; font-weight: 500; vertical-align=top;">
                             CUSTOMER : <br>

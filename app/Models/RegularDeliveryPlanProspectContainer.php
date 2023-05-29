@@ -41,4 +41,9 @@ class RegularDeliveryPlanProspectContainer extends Model
     {
         return $this->belongsTo(MstConsignee::class,'code_consignee','code');
     }
+
+    public function manyRegularDeliveryPlan()
+    {
+        return $this->hasMany(RegularDeliveryPlan::class,'id_prospect_container','id')->orderBy('id','asc');
+    }
 }

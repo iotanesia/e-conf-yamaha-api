@@ -428,8 +428,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                 }
 
                 $box = [];
-                foreach ($plan_box as $key => $item) {
-                    $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
+                foreach ($plan_box as $key => $val) {
+                    $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $val['id_regular_delivery_plan'])->get()->toArray();
                 }
 
                 $count_net_weight = 0;
@@ -450,7 +450,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
                 return [
                     'code_consignee' => $item->code_consignee,
-                    'consignee' => $item->refMstConsignee == null ? null : ($item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax),
+                    'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax,
                     'customer_name' => $item->refMstConsignee->nick_name ?? null,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,

@@ -653,7 +653,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             Pdf::loadView('pdf.casemarks.casemarks_doc',[
               'data' => $data,
-              'box' => $box
+              'box' => $box,
+              'number' => 1
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
@@ -709,6 +710,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'count_net_weight' => $count_net_weight,
                 'count_gross_weight' => $count_gross_weight,
                 'count_meas' => $count_meas,
+                'number' => 1
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')

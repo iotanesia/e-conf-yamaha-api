@@ -133,7 +133,7 @@
             @foreach ($box as $jml => $box_jml)
                 @foreach ($box[$jml] as $box_item)
                     <tr>
-                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $loop->iteration }}</td>
+                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $number++ }}</td>
                         <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $box_item['ref_box']['item_no_series'] }}</td>
                         <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'] ?? null }}</td>
                         <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['unit_weight_kg'],1) }}</td>
