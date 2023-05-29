@@ -64,9 +64,9 @@
 <body>
 
     @foreach ($data as $key => $item)
-        @foreach ($box as $jml => $box_jml)
-            @foreach ($box[$jml] as $box_item)
-                <table style="margin-top: 30px;">
+        @foreach ($box as $jml => $box_item)
+            @for ($i=1; $i<=2; $i++)
+                <table style="margin-top: 30px; padding:50px;">
                     <tr>
                         <td class="text-center" style="font-size: 30px; font-weight: 500; vertical-align=top;">
                             YAMAHA <br>
@@ -75,7 +75,7 @@
                             {{ $item->refPartOfDischarge->port ?? null }} <br>
                             MADE IN INDONESIA <br>
                             INV. No. {{ $item->no_packaging }} <br>
-                            C/No. : {{ $number++ }}
+                            C/No. : {{ $jml+1 }}
                         </td>
                         <td class="text-center" style="font-size: 20px; font-weight: 500; vertical-align=top;">
                             CUSTOMER : <br>
@@ -101,7 +101,7 @@
                         </td>
                     </tr>
                 </table>
-            @endforeach
+            @endfor
         @endforeach
     @endforeach 
     

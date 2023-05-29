@@ -653,8 +653,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             Pdf::loadView('pdf.casemarks.casemarks_doc',[
               'data' => $data,
-              'box' => $box,
-              'number' => 1
+              'box' => array_merge(...$box)
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
@@ -683,34 +682,20 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $count_net_weight = 0;
             $count_gross_weight = 0;
             $count_meas = 0;
-            foreach ($box as $jml => $box_jml) {
-                foreach ($box[$jml] as $box_item){
-                    $count_qty += $box_item['qty_pcs_box'];
-                    $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
-                    $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
-                    $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
-                }
-            }
-
-            $count_box = 0;
-            foreach ($box as $jml => $count) {
-                $count_box += count($box[$jml]);
-            }
-
-            $loop = [];
-            for ($i=0; $i < $count_box; $i++) { 
-                $loop[] = $i + 1;
+            foreach (array_merge(...$box) as $box_item){
+                $count_qty += $box_item['qty_pcs_box'];
+                $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
+                $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
+                $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
             }
 
             Pdf::loadView('pdf.packaging.packaging_doc',[
                 'data' => $data,
-                'box' => $box,
-                'count_box' => $count_box,
+                'box' => array_merge(...$box),
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
                 'count_gross_weight' => $count_gross_weight,
-                'count_meas' => $count_meas,
-                'number' => 1
+                'count_meas' => $count_meas
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')

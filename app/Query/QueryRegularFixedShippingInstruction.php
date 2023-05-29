@@ -432,20 +432,15 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $val['id_regular_delivery_plan'])->get()->toArray();
                 }
 
+                $count_qty = 0;
                 $count_net_weight = 0;
                 $count_gross_weight = 0;
                 $count_meas = 0;
-                foreach ($box as $jml => $box_jml) {
-                    foreach ($box[$jml] as $box_item){
-                        $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
-                        $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
-                        $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
-                    }
-                }
-
-                $count_box = 0;
-                foreach ($box as $jml => $count) {
-                    $count_box += count($box[$jml]);
+                foreach (array_merge(...$box) as $box_item){
+                    $count_qty += $box_item['qty_pcs_box'];
+                    $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
+                    $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
+                    $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
                 }
 
                 return [
@@ -488,7 +483,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'description_of_good_1' => '',
                     'description_of_good_2' => '',
                     'seal_no' => '',
-                    'carton_box_qty' => $count_box
+                    'carton_box_qty' => count($box)
                 ];
             }
         });
