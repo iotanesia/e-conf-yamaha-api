@@ -62,7 +62,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                 });
 
                 $mst_part_false =  $filteredData->map(function ($row) use ($id_regular_order_entry_upload) {
-                    $cust_item_no = trim($row[5]) == trim($row[23])
+                    $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
                         ? '999999-9999'
                         : trim(substr_replace($row[23],'-',6).substr($row[23],6));
 
@@ -96,7 +96,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
 
                 if(count($filter_mst_part_false) == 0) {
                     $filteredData->each(function ($row) use ($id_regular_order_entry_upload) {
-                        $cust_item_no = trim($row[5]) == trim($row[23])
+                        $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
                             ? '999999-9999'
                             : trim(substr_replace($row[23],'-',6).substr($row[23],6));
 
