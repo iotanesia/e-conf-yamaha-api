@@ -559,6 +559,7 @@ class QueryRegularDeliveryPlan extends Model {
         $data = RegularProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.status_bml','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.etd_wh','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','b.hs_code','no_packaging','d.port'
         ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS summary_container')
         ,DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging")
+        ,DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.datasource::character varying, ',') as datasource")
         ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
         ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
         ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
@@ -615,7 +616,8 @@ class QueryRegularDeliveryPlan extends Model {
                 'status' => $item->status ?? null,
                 'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
                 'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null,
-                'status_desc' => $status_desc
+                'status_desc' => $status_desc,
+                'datasource' => $item->datasource
             ];
         });
 
@@ -919,13 +921,6 @@ class QueryRegularDeliveryPlan extends Model {
             $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
             $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
             $filename = 'shipping-instruction-draft'.$id.'.pdf';
-            $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
-            Pdf::loadView('pdf.shipping_instruction',[
-              'data' => $data
-            ])
-            ->save($pathToFile)
-            ->setPaper('A4','potrait')
-            ->download($filename);
 
             return [
                 'items' => [

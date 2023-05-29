@@ -481,7 +481,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'fax_id' => $mst_shipment->fax_id ?? null,
                     'tel_consignee' => $item->tel_consignee,
                     'fax_consignee' => $item->fax_consignee,
-                    'consignee_address' => $item->consignee_address,
+                    // 'consignee_address' => $item->consignee_address,
                     'notify_part_address' => '',
                     'tel_notify_part' => '',
                     'fax_notify_part' => '',
