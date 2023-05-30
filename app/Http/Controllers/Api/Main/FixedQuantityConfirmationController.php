@@ -130,6 +130,18 @@ class FixedQuantityConfirmationController extends Controller
         }
     }
 
+    public function creationDownloadDoc(Request $request)
+    {
+        try {
+            $filename = 'simulation.pdf';
+            $pathToFile =  storage_path().'/app/actual_container/'.$filename;
+            $data = QueryRegularFixedQuantityConfirmation::creationDownloadDoc($request,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function generateNobooking(Request $request)
     {
         try {

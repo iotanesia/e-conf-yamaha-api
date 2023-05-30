@@ -545,6 +545,19 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         }
     }
 
+    public static function creationDownloadDoc($request,$pathToFile,$filename)
+    {
+        try {
+            Pdf::loadView('pdf.actual-container.simulation')
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
+    }
+
     public static function generateNobooking($request,$is_transaction = true)
     {
         Helper::requireParams(['id']);

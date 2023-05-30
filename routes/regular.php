@@ -187,6 +187,10 @@ Route::prefix('v1/regular')
             Route::get('/creation/move/{id}',[FixedQuantityConfirmationController::class,'getCreationMove']);
             Route::get('/creation/move/container/{id}',[FixedQuantityConfirmationController::class,'getCreationMoveContainer']);
             Route::post('/creation/move',[FixedQuantityConfirmationController::class,'creationMove']);
+            Route::get('/download',[FixedQuantityConfirmationController::class,'creationDownloadDoc']);
+            // Route::get('/download', function() {
+            //     return view('pdf.actual-container.simulation');
+            // });
         });
 
         Route::group(['prefix' => 'booking'],function (){
