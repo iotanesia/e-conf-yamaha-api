@@ -46,4 +46,9 @@ class RegularDeliveryPlanProspectContainer extends Model
     {
         return $this->hasMany(RegularDeliveryPlan::class,'id_prospect_container','id')->orderBy('id','asc');
     }
+
+    public function manyRegularDeliveryPlanProspectContainerCreation()
+    {
+        return $this->hasMany(RegularDeliveryPlanProspectContainerCreation::class,'id_prospect_container','id')->orderBy('id','asc');
+    }
 }

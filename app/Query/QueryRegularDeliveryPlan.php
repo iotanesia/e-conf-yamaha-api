@@ -168,7 +168,8 @@ class QueryRegularDeliveryPlan extends Model {
             $date_from = str_replace('-','',$params->date_from);
             $date_to = str_replace('-','',$params->date_to);
             if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
-        })->where('is_inquiry', 0)
+        })
+        // ->where('is_inquiry', 0)
         ->paginate($params->limit ?? null);
 
         $data->transform(function ($item){
@@ -295,7 +296,13 @@ class QueryRegularDeliveryPlan extends Model {
                         "created_at" => now(),
             ]);
 
-
+            foreach ($store->manyRegularDeliveryPlanProspectContainerCreation as $value) {
+                $value->update([
+                    'id_mot' => $params->id_mot,
+                    'id_type_delivery' => $params->id_type_delivery
+                ]);
+            }
+            
            self::where(function ($query) use ($params){
                    $query->whereIn('id',$params->id);
                    $query->where('code_consignee',$params->code_consignee);
