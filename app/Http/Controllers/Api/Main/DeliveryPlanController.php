@@ -32,6 +32,17 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function detailBox(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::detailBox($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function showProduksi(Request $request,$id)
     {
         try {

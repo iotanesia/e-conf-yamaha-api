@@ -123,6 +123,7 @@ Route::prefix('v1/regular')
         });
 
         Route::get('/{id}',[DeliveryPlanController::class,'show']);
+        Route::get('/{id}/detail-box',[DeliveryPlanController::class,'detailBox']);
         Route::get('/{id}/export',[DeliveryPlanController::class,'exportExcel']);
       });
 

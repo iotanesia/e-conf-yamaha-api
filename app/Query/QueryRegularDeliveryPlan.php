@@ -201,6 +201,71 @@ class QueryRegularDeliveryPlan extends Model {
         ];
     }
 
+    public static function detailBox($params,$id)
+    {
+        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $id)
+        ->where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            if($category) {
+                if($category == 'cust_name'){
+                    $query->whereHas('refRegularDeliveryPlan', function($q) use($params) {
+                        return $q->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+                    });
+                } else {
+                    $query->where($category, 'ilike', $params->value);
+                }
+            }
+
+            // $filterdate = Helper::filterDate($params);
+            $date_from = str_replace('-','',$params->date_from);
+            $date_to = str_replace('-','',$params->date_to);
+            if($params->date_from || $params->date_to) {
+                $query->whereHas('refRegularDeliveryPlan', function($q) use($date_from, $date_to) {
+                    return $q->whereBetween('etd_jkt',[$date_from, $date_to]);
+                });
+            };
+        })
+        ->paginate($params->limit ?? null);
+
+        $data->transform(function ($item){
+            $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null;
+            $item->item_no = $item->refRegularDeliveryPlan->refPart->item_serial ?? null;
+            $item->item_name = $item->refRegularDeliveryPlan->refPart->description ?? null;
+            $item->box = $item->refBox->no_box.' - '.$item->qty_pcs_box.' pcs';
+            $item->status = $item->qrcode == null ? 'Waiting Create QR Code' : 'Done Create QR Code';
+
+            unset(
+                $item->refRegularDeliveryPlan,
+                $item->refBox,
+                $item->id_regular_delivery_plan,
+                $item->id_box,
+                $item->id_proc,
+                $item->qty_pcs_box,
+                $item->lot_packing,
+                $item->packing_date,
+                $item->qrcode,
+                $item->created_at,
+                $item->created_by,
+                $item->updated_at,
+                $item->updated_by,
+                $item->deleted_at,
+                $item->is_labeling,
+                $item->id_regular_order_entry_upload_detail,
+                $item->id_regular_order_entry_upload_detail_box,
+            );
+
+            return $item;
+
+        });
+
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage(),
+
+        ];
+    }
+
     public static function detailProduksi($params,$id_regular_order_entry)
     {
         $data = self::where('id_regular_order_entry',$id_regular_order_entry)
@@ -397,7 +462,7 @@ class QueryRegularDeliveryPlan extends Model {
     public static function label($params,$id)
     {
 
-        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->orderBy('id','asc')->get();
+        $data = RegularDeliveryPlanBox::where('id',$id)->orderBy('id','asc')->get();
         if(!$data) throw new \Exception("Data not found", 400);
 
         $data->transform(function ($item)
@@ -451,7 +516,72 @@ class QueryRegularDeliveryPlan extends Model {
                 $id[] = $item['id'];
             }
 
+            $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->refRegularDeliveryPlan->id)->get();
+            $qty_pcs_total = 0;
+            $qrcode = [];
+            foreach ($plan_box as $key => $value) {
+                $qty_pcs_total += $value->qty_pcs_box;
+                $qrcode[] = $value->qrcode;
+            }
 
+            if (in_array(null, $qrcode) == false) {
+                if ($qty_pcs_total !== $check->refRegularDeliveryPlan->qty) {
+                    $remain_qty = $check->refRegularDeliveryPlan->qty - $qty_pcs_total;
+                    $remain_box = (int)floor($remain_qty / $check->refBox->qty);
+                    $new_plan_box = new RegularDeliveryPlanBox;
+                    for ($i=1; $i < $remain_box; $i++) { 
+                        $new_plan_box->id_regular_delivery_plan = $check->id_regular_delivery_plan;
+                        $new_plan_box->id_regular_order_entry_upload_detail = $check->id_regular_order_entry_upload_detail;
+                        $new_plan_box->id_regular_order_entry_upload_detail_box = $check->id_regular_order_entry_upload_detail_box;
+                        $new_plan_box->id_box = $check->id_box;
+                        $new_plan_box->id_proc = $check->id_proc;
+                        $new_plan_box->qty_pcs_box = $check->refBox->qty;
+                        $new_plan_box->lot_packing = $check->lot_packing;
+                        $new_plan_box->packing_date = $check->packing_date;
+                        $new_plan_box->is_labeling = $check->is_labeling;
+                        $new_plan_box->save();
+                    }
+    
+                    if ($remain_qty !== 0) {
+                        $new_plan_box->id_regular_delivery_plan = $check->id_regular_delivery_plan;
+                        $new_plan_box->id_regular_order_entry_upload_detail = $check->id_regular_order_entry_upload_detail;
+                        $new_plan_box->id_regular_order_entry_upload_detail_box = $check->id_regular_order_entry_upload_detail_box;
+                        $new_plan_box->id_box = $check->id_box;
+                        $new_plan_box->id_proc = $check->id_proc;
+                        $new_plan_box->qty_pcs_box = $remain_qty;
+                        $new_plan_box->lot_packing = $check->lot_packing;
+                        $new_plan_box->packing_date = $check->packing_date;
+                        $new_plan_box->is_labeling = $check->is_labeling;
+                        $new_plan_box->save();
+                    }
+                }
+            }
+
+            $queryStok = RegularStokConfirmation::query();
+            $is_stok = $queryStok->where('id_regular_delivery_plan', $check->id_regular_delivery_plan)->first();
+            if ($is_stok) {
+                $is_stok->update([
+                    'production' => $is_stok->production + $check->qty_pcs_box,
+                    'qty' => $is_stok->qty + $check->qty_pcs_box
+                ]);
+            } else {
+                $queryStok->create([
+                    "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
+                    "count_box" => $check->refRegularDeliveryPlan->manyDeliveryPlanBox->count() ?? 0,
+                    "production" => $check->qty_pcs_box,
+                    "qty" => $check->qty_pcs_box,
+                    "in_dc" => Constant::IS_NOL,
+                    "in_wh" => Constant::IS_NOL,
+                    "status_instock" => Constant::STS_STOK,
+                    "status_outstock" => Constant::STS_STOK,
+                    "etd_ypmi" => $check->refRegularDeliveryPlan->etd_ypmi,
+                    "etd_wh" => $check->refRegularDeliveryPlan->etd_wh,
+                    "etd_jkt" => $check->refRegularDeliveryPlan->etd_jkt,
+                    "code_consignee" => $check->refRegularDeliveryPlan->code_consignee,
+                    "is_actual" => 0
+                ]);
+            }
+            
             if($is_trasaction) DB::commit();
 
             $data = RegularDeliveryPlanBox::whereIn('id',$id)->orderBy('id','asc')->get();
@@ -794,9 +924,9 @@ class QueryRegularDeliveryPlan extends Model {
             $update_status_bml = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction_creation',$request->id)->first();
             $update_status_bml->status_bml = 1;
             $update_status_bml->save();
-            $regStok->map(function($item){
-                RegularStokConfirmation::create(self::paramStok($item));
-            });
+            // $regStok->map(function($item){
+            //     RegularStokConfirmation::create(self::paramStok($item));
+            // });
             if($is_transaction) DB::commit();
             return ['items'=>$update];
             Cache::flush([self::cast]); //delete cache

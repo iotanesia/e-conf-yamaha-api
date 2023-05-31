@@ -22,6 +22,7 @@ class RegularDeliveryPlanBox extends Model
         "lot_packing",
         "packing_date",
         "qrcode",
+        "is_labeling",
         "created_at",
         "created_by",
         "updated_at",
