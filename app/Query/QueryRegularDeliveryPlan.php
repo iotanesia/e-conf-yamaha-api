@@ -104,51 +104,48 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function getDeliveryPlanDetail($params)
     {
-        $key = self::cast.json_encode($params->query());
-        return Helper::storageCache($key, function () use ($params){
-            $query = self::where(function ($query) use ($params){
-               if($params->search)
-                    $query->where('code_consignee', 'like', "'%$params->search%'")
-                            ->orWhere('model', 'like', "'%$params->search%'")
-                            ->orWhere('item_no', 'like', "'%$params->search%'")
-                            ->orWhere('disburse', 'like', "'%$params->search%'")
-                            ->orWhere('delivery', 'like', "'%$params->search%'")
-                            ->orWhere('qty', 'like', "'%$params->search%'")
-                            ->orWhere('status', 'like', "'%$params->search%'")
-                            ->orWhere('order_no', 'like', "'%$params->search%'")
-                            ->orWhere('cust_item_no', 'like', "'%$params->search%'");
+        $query = self::where(function ($query) use ($params){
+           if($params->search)
+                $query->where('code_consignee', 'like', "'%$params->search%'")
+                        ->orWhere('model', 'like', "'%$params->search%'")
+                        ->orWhere('item_no', 'like', "'%$params->search%'")
+                        ->orWhere('disburse', 'like', "'%$params->search%'")
+                        ->orWhere('delivery', 'like', "'%$params->search%'")
+                        ->orWhere('qty', 'like', "'%$params->search%'")
+                        ->orWhere('status', 'like', "'%$params->search%'")
+                        ->orWhere('order_no', 'like', "'%$params->search%'")
+                        ->orWhere('cust_item_no', 'like', "'%$params->search%'");
 
-            });
-
-            if($params->withTrashed == 'true')
-                $query->withTrashed();
-
-            if($params->id_regular_order_entry)
-                $query->where("id_regular_order_entry", $params->id_regular_order_entry);
-            else
-                throw new \Exception("id_regular_order_entry must be sent in request", 400);
-
-            $data = $query
-            ->orderBy('id','desc')
-            ->paginate($params->limit ?? null);
-            return [
-                'items' => $data->getCollection()->transform(function($item){
-                    $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
-                    unset($item->manyDeliveryPlanBox);
-                    foreach($item->regular_delivery_plan_box as $box){
-                        $box->box = $box->refBox;
-                        unset($box->refBox);
-                    }
-                    return $item;
-                }),
-                'attributes' => [
-                    'total' => $data->total(),
-                    'current_page' => $data->currentPage(),
-                    'from' => $data->currentPage(),
-                    'per_page' => (int) $data->perPage(),
-                ]
-            ];
         });
+
+        if($params->withTrashed == 'true')
+            $query->withTrashed();
+
+        if($params->id_regular_order_entry)
+            $query->where("id_regular_order_entry", $params->id_regular_order_entry);
+        else
+            throw new \Exception("id_regular_order_entry must be sent in request", 400);
+
+        $data = $query
+        ->orderBy('id','desc')
+        ->paginate($params->limit ?? null);
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox;
+                unset($item->manyDeliveryPlanBox);
+                foreach($item->regular_delivery_plan_box as $box){
+                    $box->box = $box->refBox;
+                    unset($box->refBox);
+                }
+                return $item;
+            }),
+            'attributes' => [
+                'total' => $data->total(),
+                'current_page' => $data->currentPage(),
+                'from' => $data->currentPage(),
+                'per_page' => (int) $data->perPage(),
+            ]
+        ];
     }
 
     public static function detail($params,$id_regular_order_entry)
@@ -314,6 +311,33 @@ class QueryRegularDeliveryPlan extends Model {
         ];
     }
 
+    public static function detailProduksiBox($params,$id)
+    {
+        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->orderBy('id','asc')
+            ->paginate($params->limit ?? null);
+
+        $data->transform(function ($item)
+        {
+            $no = $item->refBox->no_box ?? null;
+            $qty_box = $item->refBox->qty ?? null;
+            $qty = $item->qty_pcs_box;
+
+            return [
+                'id' => $item->id,
+                'qty_pcs_box' => $qty,
+                'lot_packing' => $item->lot_packing,
+                'packing_date' => $item->packing_date,
+                'namebox' => $no. " - ".$qty_box. " pcs",
+                'status' => $item->qr_code ? 'Done created QR code' : 'Waiting created QR code'
+            ];
+        });
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
+    }
+
     public static function exportExcel($request,$id){
         $data = self::detail($request, $id);
         return Excel::download(new InquiryExport($data), 'inquiry.xlsx');
@@ -367,7 +391,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'id_type_delivery' => $params->id_type_delivery
                 ]);
             }
-            
+
            self::where(function ($query) use ($params){
                    $query->whereIn('id',$params->id);
                    $query->where('code_consignee',$params->code_consignee);
@@ -529,7 +553,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $remain_qty = $check->refRegularDeliveryPlan->qty - $qty_pcs_total;
                     $remain_box = (int)floor($remain_qty / $check->refBox->qty);
                     $new_plan_box = new RegularDeliveryPlanBox;
-                    for ($i=1; $i < $remain_box; $i++) { 
+                    for ($i=1; $i < $remain_box; $i++) {
                         $new_plan_box->id_regular_delivery_plan = $check->id_regular_delivery_plan;
                         $new_plan_box->id_regular_order_entry_upload_detail = $check->id_regular_order_entry_upload_detail;
                         $new_plan_box->id_regular_order_entry_upload_detail_box = $check->id_regular_order_entry_upload_detail_box;
@@ -541,7 +565,7 @@ class QueryRegularDeliveryPlan extends Model {
                         $new_plan_box->is_labeling = $check->is_labeling;
                         $new_plan_box->save();
                     }
-    
+
                     if ($remain_qty !== 0) {
                         $new_plan_box->id_regular_delivery_plan = $check->id_regular_delivery_plan;
                         $new_plan_box->id_regular_order_entry_upload_detail = $check->id_regular_order_entry_upload_detail;
@@ -581,7 +605,7 @@ class QueryRegularDeliveryPlan extends Model {
                     "is_actual" => 0
                 ]);
             }
-            
+
             if($is_trasaction) DB::commit();
 
             $data = RegularDeliveryPlanBox::whereIn('id',$id)->orderBy('id','asc')->get();
@@ -1096,7 +1120,7 @@ class QueryRegularDeliveryPlan extends Model {
             ->paginate($params->limit ?? null);
 
         if(!$data) throw new \Exception("Data not found", 400);
-        
+
         return [
             'items' => $data->getCollection()->transform(function($item){
 

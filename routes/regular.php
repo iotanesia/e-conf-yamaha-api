@@ -83,6 +83,7 @@ Route::prefix('v1/regular')
 
         Route::group(['prefix' => 'produksi'],function (){
             Route::get('/{id}',[DeliveryPlanController::class,'showProduksi']);
+            Route::get('box/{id}',[DeliveryPlanController::class,'showProduksiBox']);
             Route::post('/labeling',[DeliveryPlanController::class,'storeLabeling']);
             Route::get('/labeling/{id}',[DeliveryPlanController::class,'labeling']);
         });

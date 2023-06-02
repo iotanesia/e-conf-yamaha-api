@@ -54,6 +54,17 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function showProduksiBox(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::detailProduksiBox($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function exportExcel(Request $request,$id)
     {
         try {
