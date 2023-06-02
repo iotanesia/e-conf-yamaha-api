@@ -485,29 +485,18 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function label($params,$id)
     {
-
-        $data = RegularDeliveryPlanBox::where('id',$id)->orderBy('id','asc')->get();
-        if(!$data) throw new \Exception("Data not found", 400);
-
-        $data->transform(function ($item)
-        {
-            $no = $item->refBox->no_box ?? null;
-            // $qty = $item->refBox->qty ?? null;
-            // $refRegularOrderEntryUploadDetailBox = $item->refRegularOrderEntryUploadDetailBox !== null ? $item->refRegularOrderEntryUploadDetailBox->qty_pcs_box : null;
-            // $qty = $item->qty_pcs_box == null ? $refRegularOrderEntryUploadDetailBox : $item->qty_pcs_box;
-            $qty = $item->qty_pcs_box;
-
-            return [
-                'id' => $item->id,
-                'item_name' => $item->refRegularDeliveryPlan->refPart->description ?? null,
-                'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
-                'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
-                'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
-                'qty_pcs_box' => $qty,
-                'namebox' => $no. " ".$qty. " pcs" ,
-            ];
-        });
-
+        $item = RegularDeliveryPlanBox::where('id',$id)->orderBy('id','asc')->first();
+        if(!$item) throw new \Exception("Data not found", 400);
+        $data = [
+            'id' => $item->id,
+            'item_name' => trim($item->refRegularDeliveryPlan->refPart->description) ?? null,
+            'item_no' => $item->refRegularDeliveryPlan->refPart->item_serial ?? null,
+            'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
+            'qty_pcs_box' => $item->qty_pcs_box ?? 0,
+            'packing_date' => $item->packing_date ?? null,
+            'lot_packing' => $item->lot_packing ?? null,
+            'qr_code' => $item->qr_code ?? null,
+        ];
 
         return [
             'items' => $data,

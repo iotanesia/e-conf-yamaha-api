@@ -85,7 +85,7 @@ Route::prefix('v1/regular')
             Route::get('/{id}',[DeliveryPlanController::class,'showProduksi']);
             Route::get('box/{id}',[DeliveryPlanController::class,'showProduksiBox']);
             Route::post('/labeling',[DeliveryPlanController::class,'storeLabeling']);
-            Route::get('/labeling/{id}',[DeliveryPlanController::class,'labeling']);
+            Route::get('box/labeling/{id}',[DeliveryPlanController::class,'labeling']);
         });
 
         Route::group(['prefix' => 'prospect-container'],function (){
