@@ -394,43 +394,40 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     }
 
     public static function creationSimulation($params){
-        $simulation = self::simulation($params);
+        $simulation = self::simulation($params)['items'];
         $containerInfo = $simulation['container'];
-        $containerVolume = $containerInfo ? $containerInfo['w'] * $containerInfo['h'] * $containerInfo['l'] : 0;
-        dd($containerVolume);
-//        $box_volume = [];
-//        $
-//        foreach ($simulation[] as $val){
-//
-//        }
-
+        $colis = $simulation['colis'];
+        $containerVolume = $containerInfo ? round($containerInfo['w'] * $containerInfo['h'] * $containerInfo['l'],0) : 0;
+        $boxVolume = [];
+        $stackCapacities = [];
+        $qty = 0;
+        foreach ($colis as $value){
+            $volume = $value['w'] * $value['h'] * $value['l'];
+            $boxVolume[] = round($volume,2) ?? 0;
+            $stackCapacities[] = 1;
+            $qty += $value['q'];
+        }
+        $totalBoxes = self::countBoxesInContainer($containerVolume, $boxVolume, $stackCapacities) ?? 0;
+        //while()
     }
 
-    public static function countBoxesInContainer($containerVolume, $boxVolumes, $stackCapacity){
-
-        // Sort the box volumes in descending order
+    public static function countBoxesInContainer($containerVolume, $boxVolumes, $stackCapacities){
         rsort($boxVolumes);
-
+        rsort($stackCapacities);
         $totalBoxes = 0;
         $remainingVolume = $containerVolume;
-
         foreach ($boxVolumes as $boxVolume) {
-            // Calculate the number of boxes that can fit in the remaining volume
-            $boxesInVolume = floor($remainingVolume / $boxVolume);
-
-            // Calculate the number of full stacks based on the stack capacity
-            $fullStacks = floor($boxesInVolume / $stackCapacity);
-
-            // Calculate the remaining boxes that don't form a full stack
-            $remainingBoxes = $boxesInVolume % $stackCapacity;
-
-            // Update the total number of boxes
-            $totalBoxes += $fullStacks * $stackCapacity + $remainingBoxes;
-
-            // Update the remaining volume
-            $remainingVolume -= $boxesInVolume * $boxVolume;
+            foreach ($stackCapacities as $stackCapacity) {
+                $boxesInVolume = floor($remainingVolume / $boxVolume);
+                $fullStacks = floor($boxesInVolume / $stackCapacity);
+                $remainingBoxes = $boxesInVolume % $stackCapacity;
+                $totalBoxes += $fullStacks * $stackCapacity + $remainingBoxes;
+                $remainingVolume -= $boxesInVolume * $boxVolume;
+                if ($boxesInVolume == 0 || $remainingVolume <= 0) {
+                    break;
+                }
+            }
         }
-
         return $totalBoxes;
     }
 
