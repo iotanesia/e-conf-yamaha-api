@@ -58,6 +58,7 @@ class QueryRegularDeliveryPlan extends Model {
 
 
             })
+            ->where('is_inquiry',0)
             ->whereHas('refRegularOrderEntry',function ($query) use ($params){
                 $category = $params->category ?? null;
                 if($category) {
