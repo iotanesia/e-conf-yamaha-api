@@ -717,13 +717,23 @@ class QueryRegularDeliveryPlan extends Model {
         $crontainer_creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id_shipping_instruction', $id_shipping_instruction)->get();
 
         $no_packaging = [];
+        $cust_name = [];
         foreach ($crontainer_creation as $value) {
             $no_packaging[] = $value->refRegularDeliveryPlanPropspectContainer->no_packaging;
+            $cust_name[] = $value->refMstConsignee->nick_name;
+            $manyDeliveryPlan = $value->manyDeliveryPlan;
+        }
+
+        $order_no = [];
+        foreach ($manyDeliveryPlan as $value) {
+            $order_no[] = $value->order_no;
         }
 
         return [
-            'items' => $data->getCollection()->transform(function($item) use ($no_packaging){
+            'items' => $data->getCollection()->transform(function($item) use ($no_packaging,$cust_name){
                 $item->no_packaging = $no_packaging ?? null;
+                $item->cust_name = $cust_name ?? null;
+                $item->order_no = $order_no ?? null;
 
                 return $item;
             }),
