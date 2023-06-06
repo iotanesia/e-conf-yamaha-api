@@ -522,7 +522,7 @@ class QueryRegularDeliveryPlan extends Model {
             'qty_pcs_box' => $item->qty_pcs_box ?? 0,
             'packing_date' => $item->packing_date ?? null,
             'lot_packing' => $item->lot_packing ?? null,
-            'qrcode' => route('file.download').'?filename='.$item->qr_code.'&source=qr_labeling',
+            'qrcode' => route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling',
         ];
 
         return [
