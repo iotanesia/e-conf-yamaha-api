@@ -27,6 +27,7 @@ class RegularDeliveryPlan extends Model
         "etd_ypmi",
         "etd_wh",
         "id_regular_order_entry_upload_detail",
+        "id_prospect_container_creation",
         "created_at",
         "created_by",
         "updated_at",

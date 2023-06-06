@@ -385,12 +385,31 @@ class QueryRegularDeliveryPlan extends Model {
                         "created_at" => now(),
             ]);
 
-            foreach ($store->manyRegularDeliveryPlanProspectContainerCreation as $value) {
-                $value->update([
-                    'id_mot' => $params->id_mot,
-                    'id_type_delivery' => $params->id_type_delivery
+            if ($params->id_type_delivery == 4) {
+                $store->update(['id_type_delivery' => 4]);
+
+                $container_creation = RegularDeliveryPlanProspectContainerCreation::create([
+                        "id_prospect_container" => $store->id,
+                        "id_type_delivery" => 4,
+                        "id_mot" => 2,
+                        "code_consignee" => $params->code_consignee,
+                        "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
+                        "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
+                        "etd_jkt" => $params->etd_jkt,
+                        "datasource" => $params->datasource,
                 ]);
+
+                $shipping = RegularDeliveryPlanShippingInsruction::create([
+                        "no_booking" =>  'BOOK'.Carbon::parse($params->etd_jkt)->format('dmY').mt_rand(10000,99999),
+                        "booking_date" => now(),
+                        "datasource" => $params->datasource,
+                        "status" => 1
+                ]);
+
+                $container_creation->update(['id_shipping_instruction' => $shipping->id]);
             }
+
+            $id_container_creation = $params->id_type_delivery == 4 ? $container_creation->id : null;
 
            self::where(function ($query) use ($params){
                    $query->whereIn('id',$params->id);
@@ -398,10 +417,13 @@ class QueryRegularDeliveryPlan extends Model {
                    $query->where('etd_jkt',$params->etd_jkt);
                    $query->where('datasource',$params->datasource);
            })
-           ->chunk(1000,function ($data) use ($params,$store){
+           ->chunk(1000,function ($data) use ($params,$store,$id_container_creation){
                 foreach ($data as $key => $item) {
                     $item->is_inquiry = Constant::IS_ACTIVE;
                     $item->id_prospect_container = $store->id;
+                    if ($params->id_type_delivery == 4) {
+                        $item->id_prospect_container_creation = $id_container_creation;
+                    }
                     $item->save();
                 }
            });
@@ -469,6 +491,11 @@ class QueryRegularDeliveryPlan extends Model {
 
             $data = self::find($params->id);
             if(!$data) throw new \Exception("Data not found", 400);
+
+            $order_entry = $data->refRegularOrderEntry;
+            $check_year_month = ($order_entry->year.'-'.$order_entry->month) == (date('Y-m', strtotime($params->etd_jkt)));
+            if($check_year_month !== true) throw new \Exception("Data not deliver yet", 400);
+
             $request = $params->all();
             $request['etd_jkt'] = Carbon::parse($params->etd_jkt)->format('Ymd');
             $request['etd_ypmi'] =Carbon::parse($params->etd_jkt)->subDays(4)->format('Ymd');
@@ -495,7 +522,7 @@ class QueryRegularDeliveryPlan extends Model {
             'qty_pcs_box' => $item->qty_pcs_box ?? 0,
             'packing_date' => $item->packing_date ?? null,
             'lot_packing' => $item->lot_packing ?? null,
-            'qrcode' => route('file.download').'?filename='.$item->qr_code.'&source=qr_labeling',
+            'qrcode' => route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling',
         ];
 
         return [
@@ -690,13 +717,23 @@ class QueryRegularDeliveryPlan extends Model {
         $crontainer_creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id_shipping_instruction', $id_shipping_instruction)->get();
 
         $no_packaging = [];
+        $cust_name = [];
         foreach ($crontainer_creation as $value) {
             $no_packaging[] = $value->refRegularDeliveryPlanPropspectContainer->no_packaging;
+            $cust_name[] = $value->refMstConsignee->nick_name;
+            $manyDeliveryPlan = $value->manyDeliveryPlan;
+        }
+
+        $order_no = [];
+        foreach ($manyDeliveryPlan as $value) {
+            $order_no[] = $value->order_no;
         }
 
         return [
-            'items' => $data->getCollection()->transform(function($item) use ($no_packaging){
+            'items' => $data->getCollection()->transform(function($item) use ($no_packaging,$cust_name){
                 $item->no_packaging = $no_packaging ?? null;
+                $item->cust_name = $cust_name ?? null;
+                $item->order_no = $order_no ?? null;
 
                 return $item;
             }),

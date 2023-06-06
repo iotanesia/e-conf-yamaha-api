@@ -45,6 +45,11 @@ class RegularDeliveryPlanProspectContainerCreation extends Model
         return $this->belongsTo(RegularDeliveryPlanProspectContainer::class,'id_prospect_container','id');
     }
 
+    public function manyDeliveryPlan()
+    {
+        return $this->hasMany(RegularDeliveryPlan::class,'id_prospect_container_creation','id')->orderBy('id','asc');
+    }
+
     public function refMstLsp()
     {
         return $this->belongsTo(MstLsp::class,'id_lsp','id');
@@ -58,6 +63,11 @@ class RegularDeliveryPlanProspectContainerCreation extends Model
     public function refMstMot()
     {
         return $this->belongsTo(MstMot::class,'id_mot','id');
+    }
+
+    public function refMstConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
     }
 
     public function refMstContainer()

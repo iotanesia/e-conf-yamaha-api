@@ -96,6 +96,7 @@ Route::prefix('v1/regular')
             Route::get('/simulation',[ProspectContainerController::class,'simulation']);
             Route::post('/creationsimulation',[ProspectContainerController::class,'creationSimulation']);
             Route::post('/creation/detail',[ProspectContainerController::class,'detail']);
+            Route::post('/creation/detail/air',[ProspectContainerController::class,'detailAir']);
             Route::get('/fifo/{id}',[ProspectContainerController::class,'show']);
         });
 

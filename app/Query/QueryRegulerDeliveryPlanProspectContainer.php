@@ -8,6 +8,7 @@ use App\Models\RegularDeliveryPlanProspectContainer AS Model;
 use App\ApiHelper as Helper;
 use App\Models\MstContainer;
 use App\Models\MstLsp;
+use App\Models\MstTypeDelivery;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
@@ -60,10 +61,15 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 //        if(count($delivery_plan) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 //
         $data->map(function ($item){
+            $type_delivery = MstTypeDelivery::where('id', $item->id_type_delivery)->first();
+
             $item->cust_name = $item->refConsignee->nick_name ?? null;
+            $item->type_delivery = $type_delivery !== null ? (str_contains($type_delivery->name, 'SEA') ? 'SEA' : 'AIR') : null;
+            $item->mot = $item->refMot->name ?? null;
 
             unset(
-                $item->refConsignee
+                $item->refConsignee,
+                $item->refMot,
             );
             return $item;
         })->toArray();
@@ -183,6 +189,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
             return $creation;
         })->toArray();
+    
+        $check_type_delivery = [];
+        foreach ($delivery_plan as $key => $check) {
+            $check_type_delivery[] = $check[$key]['id_type_delivery'];
+        }
+        if(count(array_unique($check_type_delivery)) !== 1) throw new \Exception("Type delivery not same", 400);
 
         $prospect_container_creation = [];
         foreach ($delivery_plan as $creations) {
@@ -272,6 +284,34 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 unset(
                     $item->refRegularDeliveryPlanPropspectContainer,
                     $item->refMstTypeDelivery,
+                    $item->refMstLsp,
+                    $item->refMstMot,
+                    $item->refMstContainer,
+                );
+
+                return $item;
+            }),
+            'last_page' => $data->lastPage()
+        ];
+
+    }
+
+    public static function detailAir($params)
+    {
+        $data = RegularDeliveryPlanProspectContainerCreation::whereIn('id_prospect_container',$params->id)->where('id_type_delivery', 4)->paginate($params->limit ?? null);
+        if(!$data) throw new \Exception("Data not found", 400);
+        return [
+            'items' => $data->getCollection()->transform(function($item){
+                $item->cust_name = $item->refRegularDeliveryPlanPropspectContainer->refConsignee->nick_name;
+                $item->lsp = $item->refMstLsp->name;
+                $item->id_mot = $item->refMstMot->id;
+                $item->net_weight = $item->refMstContainer->net_weight;
+                $item->gross_weight = $item->refMstContainer->gross_weight;
+                $item->measurement = $item->refMstContainer->measurement;
+                $item->container_type = $item->refMstContainer->container_type;
+
+                unset(
+                    $item->refRegularDeliveryPlanPropspectContainer,
                     $item->refMstLsp,
                     $item->refMstMot,
                     $item->refMstContainer,
