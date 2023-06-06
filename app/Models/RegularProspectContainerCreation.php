@@ -31,7 +31,10 @@ class RegularProspectContainerCreation extends Model
         "created_by",
         "updated_at",
         "updated_by",
-        "deleted_at"
+        "deleted_at",
+        "datasource",
+        "iteration",
+        "is_completed"
     ];
 
     public function refRegularProspectContainer()

@@ -11,8 +11,14 @@ use App\Models\MstLsp;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
+use App\Models\RegularProspectContainer;
+use App\Models\RegularProspectContainerCreation;
+use BaconQrCode\Common\Mode;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Symfony\Component\Console\Output;
+
 
 class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
@@ -364,7 +370,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 'stackingCapacity' => 0,
                 'rotations' => [
                     'base'
-                ]
+                ],
+                'box' => RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
+                            ->whereNull('id_prospect_container_creation')
+                            ->orderBy('id', 'asc')
+                            ->get()
             ];
         });
 
@@ -394,21 +404,104 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     }
 
     public static function creationSimulation($params){
-        $simulation = self::simulation($params)['items'];
-        $containerInfo = $simulation['container'];
-        $colis = $simulation['colis'];
-        $containerVolume = $containerInfo ? round($containerInfo['w'] * $containerInfo['h'] * $containerInfo['l'],0) : 0;
-        $boxVolume = [];
-        $stackCapacities = [];
-        $qty = 0;
-        foreach ($colis as $value){
-            $volume = $value['w'] * $value['h'] * $value['l'];
-            $boxVolume[] = round($volume,2) ?? 0;
-            $stackCapacities[] = 1;
-            $qty += $value['q'];
+        ini_set('max_execution_time', 300);
+        DB::beginTransaction();
+        try {
+            $prospect_container = Model::find($params->id);
+            $lsp = MstLsp::where('code_consignee',$prospect_container->code_consignee)
+                ->where('id_type_delivery', 1)
+                ->first();
+            $simulation = self::simulation($params)['items'];
+            $containerInfo = $simulation['container'];
+            $colis = $simulation['colis'];
+            $containerVolume = $containerInfo ? round($containerInfo['w'] * $containerInfo['h'] * $containerInfo['l'],0) : 0;
+            $boxVolume = [];
+            $stackCapacities = [];
+            $qty = 0;
+            $id_reg_dev_plan = [];
+            foreach ($colis as $value){
+                $volume = $value['w'] * $value['h'] * $value['l'];
+                $boxVolume[] = round($volume,2) ?? 0;
+                $stackCapacities[] = 1;
+                $id_reg_dev_plan[] = $value['id_delivery_plan'];
+                $qty += $value['q'];
+            }
+
+            //dimensional algorithm container
+
+            $total_boxes = self::countBoxesInContainer($containerVolume, $boxVolume, $stackCapacities) ?? 0;
+            $sisa = ceil($qty/$total_boxes);
+            $index = 1;
+            for ($i=0; $i < $sisa ; $i++) {
+                if($qty > $total_boxes)
+                    $summary_box = $total_boxes;
+                else
+                    $summary_box = $qty;
+
+                $creation = [
+                    'id_type_delivery' => $lsp->id_type_delivery,
+                    'id_mot' => $lsp->refTypeDelivery->id_mot,
+                    'id_container' => $params->id_container,
+                    'id_lsp' => $lsp->id,
+                    'summary_box' => $summary_box,
+                    'code_consignee' => $prospect_container->code_consignee,
+                    'etd_jkt' => $prospect_container->etd_jkt,
+                    'etd_ypmi' => $prospect_container->etd_ypmi,
+                    'etd_wh' => $prospect_container->etd_wh,
+                    'measurement' => $mst_container->measurement ?? 0,
+                    'iteration' => $index,
+                    'id_prospect_container' => $params->id,
+                    'status_bml' => 0,
+                    'datasource' => $params->datasource
+                ];
+                RegularProspectContainerCreation::create($creation);
+
+                $sum = $qty - $summary_box;
+                $qty = $sum;
+                $index = $index + 1;
+            }
+
+            //distributed data algorithm
+            $arrSummaryBox = RegularProspectContainerCreation::where('id_prospect_container', $params->id)
+                ->orderBy('id', 'asc')
+                ->get()
+                ->map(function ($item){
+                    return $item->summary_box;
+                });
+            $iteration = 1;
+            $index = 1;
+            $countSummaryBox = count($arrSummaryBox);
+            $counter = 0;
+            foreach ($colis as $value) {
+              foreach ($value['box'] as $val) {
+                  $id_prop = RegularProspectContainerCreation::where('id_prospect_container', $params->id)
+                                ->where('iteration', $iteration)
+                                ->orderBy('id', 'asc')
+                                ->first();
+
+                  $fill = RegularDeliveryPlanBox::find($val['id']);
+                  $fill->id_prospect_container_creation = $id_prop->id;
+                  $fill->save();
+
+                  if($counter < $countSummaryBox) {
+                      if ($index == $arrSummaryBox[$counter]) {
+                          $iteration = $iteration + 1;
+                          $counter = $counter + 1;
+                      }
+                  }
+                  $index = $index + 1;
+              }
+            }
+
+            $upd = RegularProspectContainer::find($params->id);
+            $upd->is_prospect = 1;
+            $upd->save();
+
+           DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
-        $totalBoxes = self::countBoxesInContainer($containerVolume, $boxVolume, $stackCapacities) ?? 0;
-        //while()
     }
 
     public static function countBoxesInContainer($containerVolume, $boxVolumes, $stackCapacities){
