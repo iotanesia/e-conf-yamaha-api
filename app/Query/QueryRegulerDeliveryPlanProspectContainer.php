@@ -59,9 +59,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
             $item->cust_name = $item->refConsignee->nick_name ?? null;
             $item->type_delivery = $type_delivery !== null ? (str_contains($type_delivery->name, 'SEA') ? 'SEA' : 'AIR') : null;
+            $item->mot = $item->refMot->name ?? null;
 
             unset(
-                $item->refConsignee
+                $item->refConsignee,
+                $item->refMot,
             );
             return $item;
         })->toArray();

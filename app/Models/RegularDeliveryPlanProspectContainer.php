@@ -26,7 +26,8 @@ class RegularDeliveryPlanProspectContainer extends Model
         "updated_by",
         "deleted_at",
         "uuid",
-        "is_prospect"
+        "is_prospect",
+        "id_mot",
     ];
 
     public static function boot()
@@ -40,6 +41,11 @@ class RegularDeliveryPlanProspectContainer extends Model
     public function refConsignee()
     {
         return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
+
+    public function refMot()
+    {
+        return $this->belongsTo(MstMot::class,'id_mot','id');
     }
 
     public function manyRegularDeliveryPlan()
