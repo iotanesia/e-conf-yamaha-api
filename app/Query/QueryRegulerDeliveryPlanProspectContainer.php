@@ -83,8 +83,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function byIdProspectContainer($params,$id)
     {
-        $data = RegularDeliveryPlan::where('id_prospect_container_creation',$id)
-        ->where(function ($query) use ($params){
+        $data = RegularDeliveryPlan::where(function ($query) use ($params){
+            $query->with('manyDeliveryPlanBox')
+                ->whereRelation('manyDeliveryPlanBox', 'id_prospect_container_creation', $params->id)
+                ->get();
+
             $category = $params->category ?? null;
             if($category) {
                  $query->where($category, 'ilike', $params->kueri);
@@ -189,7 +192,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
             return $creation;
         })->toArray();
-    
+
         $check_type_delivery = [];
         foreach ($delivery_plan as $key => $check) {
             $check_type_delivery[] = $check[$key]['id_type_delivery'];
