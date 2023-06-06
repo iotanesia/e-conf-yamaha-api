@@ -3,6 +3,7 @@
 namespace App\Query;
 
 use App\Constants\Constant;
+use App\Jobs\ContainerPlan;
 use App\Models\MstConsignee;
 use App\Models\RegularDeliveryPlanProspectContainer AS Model;
 use App\ApiHelper as Helper;
@@ -83,22 +84,17 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function byIdProspectContainer($params,$id)
     {
-        $data = RegularDeliveryPlan::where(function ($query) use ($params){
-            $query->with('manyDeliveryPlanBox')
-                ->whereRelation('manyDeliveryPlanBox', 'id_prospect_container_creation', $params->id)
-                ->get();
-
-            $category = $params->category ?? null;
-            if($category) {
-                 $query->where($category, 'ilike', $params->kueri);
-            }
-
-            $filterdate = Helper::filterDate($params);
-            if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
+        $data = RegularDeliveryPlanBox::where('id_prospect_container_creation', $params->id)
+        ->where(function ($query) use ($params){
+//            $category = $params->category ?? null;
+//            if($category) {
+//                 $query->where($category, 'ilike', $params->kueri);
+//            }
+//
+//            $filterdate = Helper::filterDate($params);
+//            if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
         })
         ->paginate($params->limit ?? null);
-
-        if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
         $data->transform(function ($item) use ($id){
             $item->item_name = $item->refPart->description ?? null;
@@ -107,18 +103,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
             $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
             $item->regular_order_entry_year = $regularOrderEntry->year ?? null;
-            $item->box = $item->manyDeliveryPlanBox->map(function ($item) use ($id)
-            {
-                return [
-                    'id' => $item->id,
-                    'id_prospect_container' => $id,
-                    'id_box' => $item->id_box,
-                    'qty' => $item->refBox->qty ?? null,
-                    'width' => $item->refBox->width ?? null,
-                    'height' => $item->refBox->height ?? null,
-                ];
-            });
-
+            $item->box = null;
             unset(
                 $item->refRegularOrderEntry,
                 $item->manyDeliveryPlanBox,
@@ -447,9 +432,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     }
 
     public static function creationSimulation($params){
-        ini_set('max_execution_time', 300);
+
         DB::beginTransaction();
         try {
+
             $prospect_container = Model::find($params->id);
             $lsp = MstLsp::where('code_consignee',$prospect_container->code_consignee)
                 ->where('id_type_delivery', 1)
@@ -504,43 +490,19 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $index = $index + 1;
             }
 
-            //distributed data algorithm
-            $arrSummaryBox = RegularProspectContainerCreation::where('id_prospect_container', $params->id)
-                ->orderBy('id', 'asc')
-                ->get()
-                ->map(function ($item){
-                    return $item->summary_box;
-                });
-            $iteration = 1;
-            $index = 1;
-            $countSummaryBox = count($arrSummaryBox);
-            $counter = 0;
-            foreach ($colis as $value) {
-              foreach ($value['box'] as $val) {
-                  $id_prop = RegularProspectContainerCreation::where('id_prospect_container', $params->id)
-                                ->where('iteration', $iteration)
-                                ->orderBy('id', 'asc')
-                                ->first();
-
-                  $fill = RegularDeliveryPlanBox::find($val['id']);
-                  $fill->id_prospect_container_creation = $id_prop->id;
-                  $fill->save();
-
-                  if($counter < $countSummaryBox) {
-                      if ($index == $arrSummaryBox[$counter]) {
-                          $iteration = $iteration + 1;
-                          $counter = $counter + 1;
-                      }
-                  }
-                  $index = $index + 1;
-              }
-            }
-
             $upd = RegularProspectContainer::find($params->id);
-            $upd->is_prospect = 1;
+            $upd->is_prospect = 99;
             $upd->save();
 
+            $set = [
+                'id' => $params->id,
+                'colis' => $colis,
+            ];
+
            DB::commit();
+
+           ContainerPlan::dispatch($set);
+
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
