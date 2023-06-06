@@ -41,8 +41,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             if($params->date_start || $params->date_finish)
                 $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
 
-        })->where('is_prospect', $params->is_prospect ?? 1)
-            ->paginate($params->limit ?? null);
+            if($params->is_prospect == 0)
+                $query->whereIn('is_prospect', [0,99]);
+            else
+                $query->where('is_prospect', $params->is_prospect);
+
+        })->paginate($params->limit ?? null);
         //if(count($data) == 0) throw new \Exception("Data tidak ditemukan.", 400);
 
 //        $id_container = [];
@@ -67,6 +71,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $item->cust_name = $item->refConsignee->nick_name ?? null;
             $item->type_delivery = $type_delivery !== null ? (str_contains($type_delivery->name, 'SEA') ? 'SEA' : 'AIR') : null;
             $item->mot = $item->refMot->name ?? null;
+            $item->status = $item->is_prospect;
+            if($item->is_prospect == 1)
+                $item->status_desc = 'Done Prospect Container';
+            elseif($item->is_prospect == 0)
+                $item->status_desc = 'Prospect Container yet';
+            elseif($item->is_prospect == 99)
+                $item->status_desc = 'Waiting Prospect Container';
 
             unset(
                 $item->refConsignee,
