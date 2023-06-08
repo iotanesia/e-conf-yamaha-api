@@ -753,7 +753,7 @@ class QueryRegularDeliveryPlan extends Model {
         ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS summary_container')
         ,DB::raw("string_agg(DISTINCT no_packaging::character varying, ',') as no_packaging")
         ,DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.datasource::character varying, ',') as datasource")
-        ,DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id::character varying, ',') as id_prospect_container_creation")
+        ,DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_prospect_container::character varying, ',') as id_prospect_container")
         ,DB::raw("string_agg(DISTINCT i.hs_code::character varying, ',') as hs_code")
         ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
         ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
@@ -780,21 +780,49 @@ class QueryRegularDeliveryPlan extends Model {
 
         $data->transform(function ($item) {
 
+            $status_desc = $item->status_bml == 1 ? 'BML Confirmed' : 'BML Inconfirmed';
+
             if ($item->mot == 'AIR') {
-                $delivery_plan_box = RegularDeliveryPlanBox::where('id_prospect_container_creation',$item->id_prospect_container_creation)->first();
+                $delivery_plan = RegularDeliveryPlan::where('id_prospect_container', $item->id_prospect_container)->get();
+
+                $count_box = 0;
+                foreach ($delivery_plan as $key => $value) {
+                    $count_box += RegularDeliveryPlanBox::select('id_box', DB::raw('count(*) as jml'))
+                            ->where('id_regular_delivery_plan', $value->id)
+                            ->groupBy('id_box')
+                            ->first()->jml;
+                }
+    
                 return [
+                    'code_consignee' => $item->code_consignee,
+                    'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2,
                     'customer_name' => $item->refMstConsignee->nick_name,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
-                    'summary_box' => $delivery_plan_box == null ? null : self::getCountBox($delivery_plan_box->id_regular_delivery_plan)[0]['qty'],
+                    'summary_container' => $count_box,
+                    'no_packaging' => $item->no_packaging,
+                    'hs_code' => $item->hs_code ?? null,
+                    'via' => $item->mot,
+                    'freight_chart' => 'COLLECT',
+                    'incoterm' => 'FOB',
+                    'shipped_by' => $item->mot,
+                    'container_value' => intval($item->container_type),
+                    'container_type' => $item->container_value,
+                    'net_weight' => 0,
+                    'gross_weight' => 0,
+                    'measurement' => 0,
+                    'port' => $item->port,
+                    'type_delivery' => $item->type_delivery,
+                    'count' => $item->summary_container,
+                    'summary_box' => $count_box,
+                    'to' => $item->refMstLsp->name ?? null,
+                    'status' => $item->status ?? null,
+                    'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
+                    'shipment' => MstShipment::where('is_active',1)->first()->shipment ?? null,
+                    'status_desc' => $status_desc,
+                    'datasource' => $item->datasource
                 ];
             } else {
-                if ($item->status_bml == 1) {
-                    $status_desc = 'BML Confirmed';
-                } else {
-                    $status_desc = 'BML Inconfirmed';
-                }
-    
                 return [
                     'code_consignee' => $item->code_consignee,
                     'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2,
