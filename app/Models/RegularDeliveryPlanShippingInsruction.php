@@ -16,6 +16,7 @@ class RegularDeliveryPlanShippingInsruction extends Model
         "datasource",
         "status",
         "datasource",
+        "id_mot",
         "created_at",
         "created_by",
         "updated_at",
@@ -29,5 +30,10 @@ class RegularDeliveryPlanShippingInsruction extends Model
         static::creating(function ($model){
             // $model->uuid = (string) Str::uuid();
         });
+    }
+
+    public function refMot()
+    {
+        return $this->belongsTo(MstMot::class,'id_mot','id');
     }
 }

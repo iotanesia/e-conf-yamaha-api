@@ -95,31 +95,26 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function byIdProspectContainer($params,$id)
     {
-        $data = RegularDeliveryPlanBox::where('id_prospect_container_creation', $params->id)
-        ->where(function ($query) use ($params){
-//            $category = $params->category ?? null;
-//            if($category) {
-//                 $query->where($category, 'ilike', $params->kueri);
-//            }
-//
-//            $filterdate = Helper::filterDate($params);
-//            if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
-        })
-        ->paginate($params->limit ?? null);
+        $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_regular_delivery_plan',
+                        DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
+                        DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
+                        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+                        DB::raw("string_agg(DISTINCT a.qty::character varying, ',') as qty"),
+                        DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
+                        DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
+                        DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
+                        DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"))
+                        ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
+                        ->join('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
+                        ->groupBy('regular_delivery_plan_box.id_regular_delivery_plan')
+                        ->paginate($params->limit ?? null);
 
         $data->transform(function ($item) use ($id){
-            $item->item_name = $item->refPart->description ?? null;
-            $item->cust_name = $item->refConsignee->nick_name ?? null;
-            $regularOrderEntry = $item->refRegularOrderEntry;
-            $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
-            $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
-            $item->regular_order_entry_year = $regularOrderEntry->year ?? null;
-            $item->box = null;
+            $item->item_name = $item->refRegularDeliveryPlan->refPart->description ?? null;
+            $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null;
+            $item->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0]['qty'] ?? null;
             unset(
-                $item->refRegularOrderEntry,
-                $item->manyDeliveryPlanBox,
-                $item->refPart,
-                $item->refConsignee
+                $item->refRegularDeliveryPlan,
             );
 
             return $item;
@@ -132,6 +127,23 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             'last_page' => $data->lastPage(),
 
         ];
+    }
+
+    public static function getCountBox($id){
+        $data = RegularDeliveryPlanBox::select('id_box', DB::raw('count(*) as jml'))
+                ->where('id_regular_delivery_plan', $id)
+                ->groupBy('id_box')
+                ->get();
+        return
+            $data->map(function ($item){
+                $set['id'] = 0;
+                $set['id_box'] = $item->id_box;
+                $set['qty'] =  $item->refBox->qty." x ".$item->jml." pcs";
+                $set['length'] =  "";
+                $set['width'] =  "";
+                $set['height'] =  "";
+                return $set;
+            });
     }
 
 
@@ -513,6 +525,29 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
            DB::commit();
 
            ContainerPlan::dispatch($set);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function creationDelete($params)
+    {
+        Helper::requireParams([
+            'id'
+        ]);
+
+        DB::beginTransaction();
+        try {
+
+            $data = RegularDeliveryPlanProspectContainerCreation::find($params->id);
+            if($data->summary_box == 0) throw new \Exception("Data tidak dapat dihapus.", 400);
+            if($data->id_shipping_instruction !== null) throw new \Exception("Data tidak dapat dihapus.", 400);
+
+            $data->delete();
+
+            DB::commit();
 
         } catch (\Throwable $th) {
             DB::rollBack();
