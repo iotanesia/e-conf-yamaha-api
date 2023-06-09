@@ -130,19 +130,7 @@ class QueryMstConsignee extends Model {
 
             $pod = MstPortOfDischarge::where('code_consignee', $request->code_consignee)->get();
             foreach ($pod as $key => $value) {
-                if ($key == 0) {
-                    $id_mot = 2;
-                    $tipe = 4;
-                } elseif (($key == 1)) {
-                    $id_mot = 1;
-                    $tipe = 2;
-                } elseif (($key == 2)) {
-                    $id_mot = 1;
-                    $tipe = 3;
-                }
                 $value->update([
-                    'id_mot' => $id_mot,
-                    'tipe' => $tipe,
                     'port' => $request->pod[$key],
                 ]);
             }
