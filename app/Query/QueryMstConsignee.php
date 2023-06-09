@@ -7,6 +7,7 @@ use App\Models\MstConsignee AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\MstPortOfDischarge;
 use App\Models\MstPortOfLoading;
 use Illuminate\Support\Facades\Cache;
 
@@ -31,10 +32,19 @@ class QueryMstConsignee extends Model {
             return [
                 'items' => $data->getCollection()->transform(function($item){
 
-                    $pol = MstPortOfLoading::where('id_type_delivery', 1)->first();
+                    $pol = MstPortOfLoading::get();
+                    $pol_name = [];
+                    foreach ($pol as $value) {
+                        $pol_name[] = $value->name;
+                    }
+
+                    $pod_name = [];
+                    foreach ($item->refPortOfDischarge as $value) {
+                        $pod_name[] = $value->port;
+                    }
                     
-                    $item->pod = $item->refPortOfDischarge->port ?? null;
-                    $item->pol = $pol->name ?? null;
+                    $item->pod = $pod_name ?? null;
+                    $item->pol = $pol_name ?? null;
 
                     unset(
                         $item->refPortOfDischarge,
@@ -61,6 +71,25 @@ class QueryMstConsignee extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
+            
+            foreach ($request->pod as $key => $value) {
+                if ($key == 0) {
+                    $id_mot = 2;
+                    $tipe = 4;
+                } elseif (($key == 1)) {
+                    $id_mot = 1;
+                    $tipe = 2;
+                } elseif (($key == 2)) {
+                    $id_mot = 1;
+                    $tipe = 3;
+                }
+                MstPortOfDischarge::create([
+                    'code_consignee' => $request->code_consignee,
+                    'id_mot' => $id_mot,
+                    'tipe' => $tipe,
+                    'port' => $value,
+                ]);
+            }
 
             $params = $request->all();
             self::create($params);

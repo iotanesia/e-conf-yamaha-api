@@ -27,7 +27,7 @@ class MstConsignee extends Model
 
     public function refPortOfDischarge()
     {
-        return $this->hasOne(MstPortOfDischarge::class,'code_consignee','code');
+        return $this->hasMany(MstPortOfDischarge::class,'code_consignee','code');
     }
 
     public function refLsp()
