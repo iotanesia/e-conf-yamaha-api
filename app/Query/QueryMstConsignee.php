@@ -64,7 +64,17 @@ class QueryMstConsignee extends Model {
 
     public static function byId($id)
     {
-        return self::find($id);
+        $data = self::where('id',$id)->get();
+
+        return $data->transform(function($item){
+                $item->pod = $item->manyPortOfDischarge ?? null;
+
+                unset(
+                    $item->manyPortOfDischarge
+                );
+
+                return $item;
+            })[0];
     }
 
     public static function store($request,$is_transaction = true)
@@ -114,9 +124,29 @@ class QueryMstConsignee extends Model {
 
             $params = $request->all();
             $update = self::find($params['id']);
-            if(!$update) throw new \Exception("id tida ditemukan", 400);
+            if(!$update) throw new \Exception("id tidak ditemukan", 400);
             $update->fill($params);
             $update->save();
+
+            $pod = MstPortOfDischarge::where('code_consignee', $request->code_consignee)->get();
+            foreach ($pod as $key => $value) {
+                if ($key == 0) {
+                    $id_mot = 2;
+                    $tipe = 4;
+                } elseif (($key == 1)) {
+                    $id_mot = 1;
+                    $tipe = 2;
+                } elseif (($key == 2)) {
+                    $id_mot = 1;
+                    $tipe = 3;
+                }
+                $value->update([
+                    'id_mot' => $id_mot,
+                    'tipe' => $tipe,
+                    'port' => $request->pod[$key],
+                ]);
+            }
+
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {

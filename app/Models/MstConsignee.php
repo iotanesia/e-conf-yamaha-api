@@ -25,12 +25,12 @@ class MstConsignee extends Model
         'deleted_at'
     ];
 
-    public function refPortOfDischarge()
+    public function manyPortOfDischarge()
     {
         return $this->hasMany(MstPortOfDischarge::class,'code_consignee','code');
     }
 
-    public function refLsp()
+    public function manyLsp()
     {
         return $this->hasMany(MstLsp::class,'code_consignee','code');
     }
