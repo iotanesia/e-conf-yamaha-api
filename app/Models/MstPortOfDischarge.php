@@ -16,6 +16,7 @@ class MstPortOfDischarge extends Model
         'id_mot',
         'tipe',
         'id_port',
+        'port',
         'created_at',
         'created_by',
         'updated_at',

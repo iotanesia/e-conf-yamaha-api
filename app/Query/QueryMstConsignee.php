@@ -37,9 +37,9 @@ class QueryMstConsignee extends Model {
                     foreach ($pol as $value) {
                         $pol_name[] = $value->name;
                     }
-
+                    
                     $pod_name = [];
-                    foreach ($item->refPortOfDischarge as $value) {
+                    foreach ($item->manyPortOfDischarge as $value) {
                         $pod_name[] = $value->port;
                     }
                     
@@ -47,7 +47,7 @@ class QueryMstConsignee extends Model {
                     $item->pol = $pol_name ?? null;
 
                     unset(
-                        $item->refPortOfDischarge,
+                        $item->manyPortOfDischarge,
                     );
                     return $item;
                 }),
@@ -94,7 +94,7 @@ class QueryMstConsignee extends Model {
                     $tipe = 3;
                 }
                 MstPortOfDischarge::create([
-                    'code_consignee' => $request->code_consignee,
+                    'code_consignee' => $request->code,
                     'id_mot' => $id_mot,
                     'tipe' => $tipe,
                     'port' => $value,
