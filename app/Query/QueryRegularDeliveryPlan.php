@@ -1067,7 +1067,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             $no_booking = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').mt_rand(10000,99999);
             $datasource = $etdJkt[0]->datasource;
-            $booking_date = Carbon::now()->format('d/m/Y');
+            $booking_date = Carbon::now()->format('dmY');
 
             return [
                 'items' => [
