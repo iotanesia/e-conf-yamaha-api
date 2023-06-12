@@ -383,6 +383,7 @@ class QueryRegularDeliveryPlan extends Model {
                         "no_packaging" => $params->no_packaging,
                         "datasource" => $params->datasource,
                         "created_at" => now(),
+                        "id_mot" => $params->id_mot
             ]);
 
             if ($params->id_type_delivery == 4) {
