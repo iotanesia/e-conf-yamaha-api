@@ -75,6 +75,11 @@ class RegularDeliveryPlanProspectContainerCreation extends Model
         return $this->belongsTo(MstContainer::class,'id_container','id');
     }
 
+    public function refDeliveryPlanBox()
+    {
+        return $this->belongsTo(MstContainer::class,'id_prospect_container_creation','id');
+    }
+
     public static function boot()
     {
         parent::boot();

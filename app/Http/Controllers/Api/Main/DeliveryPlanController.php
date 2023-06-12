@@ -174,11 +174,11 @@ class DeliveryPlanController extends Controller
         }
     }
 
-    public function shippingInstructionDetailSI(Request $request)
+    public function shippingInstructionDetailSI(Request $request, $id)
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularDeliveryPlan::shippingDetailSI($request)
+                QueryRegularDeliveryPlan::shippingDetailSI($request, $id)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
