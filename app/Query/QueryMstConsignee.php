@@ -68,6 +68,7 @@ class QueryMstConsignee extends Model {
 
         return $data->transform(function($item){
                 $item->pod = $item->manyPortOfDischarge ?? null;
+                $item->pol = MstPortOfLoading::get() ?? null;
 
                 unset(
                     $item->manyPortOfDischarge
@@ -99,6 +100,11 @@ class QueryMstConsignee extends Model {
                     'tipe' => $tipe,
                     'port' => $value,
                 ]);
+            }
+
+            foreach ($request->pol as $key => $pol) {
+                $mst_pol = MstPortOfLoading::where('id', $key+1)->first();
+                $mst_pol->update(['name' => $pol]);
             }
 
             $params = $request->all();
@@ -133,6 +139,11 @@ class QueryMstConsignee extends Model {
                 $value->update([
                     'port' => $request->pod[$key],
                 ]);
+            }
+
+            foreach ($request->pol as $key => $pol) {
+                $mst_pol = MstPortOfLoading::where('id', $key+1)->first();
+                $mst_pol->update(['name' => $pol]);
             }
 
             if($is_transaction) DB::commit();
