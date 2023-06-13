@@ -107,8 +107,8 @@ Route::prefix('v1/regular')
             Route::post('/update-status',[DeliveryPlanController::class,'shippingInstructionUpdate']);
             Route::get('/draft/{id}',[DeliveryPlanController::class,'getShippingInstructionListDraft']);
             Route::get('/draft/detail/{id}',[DeliveryPlanController::class,'shippingInstructionListDraftDetail']);
-            Route::get('/download-dok/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDoc']);
-            Route::get('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
+            Route::post('/download-dok/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDoc']);
+            Route::post('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
             Route::get('/download-dok-draft/{id}/{filename}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraftSave']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
             Route::post('/detail',[DeliveryPlanController::class,'shippingInstructionDetailSI']);
