@@ -111,7 +111,7 @@ Route::prefix('v1/regular')
             Route::get('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
             Route::get('/download-dok-draft/{id}/{filename}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraftSave']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
-            Route::post('/detail',[DeliveryPlanController::class,'shippingInstructionDetailSI']);
+            Route::get('/detail/{id}',[DeliveryPlanController::class,'shippingInstructionDetailSI']);
         });
 
         Route::group(['prefix' => 'booking'],function(){
