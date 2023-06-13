@@ -460,6 +460,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         try {
 
             $prospect_container = Model::find($params->id);
+            $mst_container = MstContainer::where('id', $params->id_container)->first();
             $lsp = MstLsp::where('code_consignee',$prospect_container->code_consignee)
                 ->where('id_type_delivery', 1)
                 ->first();
