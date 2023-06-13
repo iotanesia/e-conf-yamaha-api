@@ -18,6 +18,7 @@ class RegularFixedActualContainer extends Model
         "etd_ypmi",
         "etd_wh",
         "etd_jkt",
+        "is_actual",
         "created_at",
         "created_by",
         "updated_at",

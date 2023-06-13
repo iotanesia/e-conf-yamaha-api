@@ -29,6 +29,8 @@ class RegularFixedActualContainerCreation extends Model
         "is_booking",
         "datasource",
         "item_no",
+        "iteration",
+        "status_bml",
         "created_at",
         "created_by",
         "updated_at",

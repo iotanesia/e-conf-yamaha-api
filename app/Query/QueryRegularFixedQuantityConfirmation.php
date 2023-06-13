@@ -5,6 +5,7 @@ namespace App\Query;
 use App\Constants\Constant;
 use App\Models\RegularFixedQuantityConfirmation AS Model;
 use App\ApiHelper as Helper;
+use App\Jobs\ContainerActual;
 use App\Models\MstBox;
 use App\Models\MstContainer;
 use App\Models\MstLsp;
@@ -303,82 +304,97 @@ class QueryRegularFixedQuantityConfirmation extends Model {
              'id'
          ]);
 
-        $fixed_quantity_confirmation = RegularFixedQuantityConfirmation::select('id_fixed_actual_container')->whereIn('id_fixed_actual_container',$params->id)->groupBy('id_fixed_actual_container')->get()
-        ->transform(function ($delivery){
-            $id_fixed_actual_container = $delivery->id_fixed_actual_container;
-            $data = RegularFixedQuantityConfirmation::where('id_fixed_actual_container',$id_fixed_actual_container)->get()->map(function ($item){
-                $qty = $item->refRegularDeliveryPlan->manyDeliveryPlanBox->count();
-                $item->total_qty = $qty;
-                unset(
-                    $item->manyDeliveryPlanBox
-                );
-                return $item;
-            })->toArray();
-
-            $lsp = MstLsp::where('code_consignee',$data[0]['code_consignee'])
-            ->where('id_type_delivery',2)
-            ->first();
-
-            $boxSize = 0;
-            foreach ($data as $key => $item) {
-                $boxSize += $item['total_qty'];
+        $actual_container = RegularFixedActualContainer::find($params->id);
+            $lsp = MstLsp::where('code_consignee',$actual_container->code_consignee)
+                ->where('id_type_delivery', 1)
+                ->first();
+            $simulation = self::simulation($params)['items'];
+            $containerInfo = $simulation['container'];
+            $colis = $simulation['colis'];
+            $containerVolume = $containerInfo ? round($containerInfo['w'] * $containerInfo['h'] * $containerInfo['l'],0) : 0;
+            $boxVolume = [];
+            $stackCapacities = [];
+            $qty = 0;
+            $id_reg_dev_plan = [];
+            foreach ($colis as $value){
+                $volume = $value['w'] * $value['h'] * $value['l'];
+                $boxVolume[] = round($volume,2) ?? 0;
+                $stackCapacities[] = 1;
+                $id_reg_dev_plan[] = $value['id_delivery_plan'];
+                $qty += $value['q'];
             }
 
-            $mst_container = MstContainer::find(2);
-            $capacity = $mst_container->capacity;
-            $boxSizes = array_fill(0,$boxSize,1); // Create an array of 2400 boxes with size 1
-            $containers = self::packBoxesIntoContainers($boxSizes,$capacity);
+            //dimensional algorithm container
 
-            $creation = [];
-            foreach ($containers as $summary_box) {
-                array_push($creation,[
-                    'id_type_delivery' => 2,
-                    'id_mot' => 1,
-                    'id_container' => 2, //
-                    'id_lsp' => $lsp->id ?? 2, // ini cari table mst lsp by code cogsingne
+            $total_boxes = self::countBoxesInContainer($containerVolume, $boxVolume, $stackCapacities) ?? 0;
+            $sisa = ceil($qty/$total_boxes);
+            $index = 1;
+            for ($i=0; $i < $sisa ; $i++) {
+                if($qty > $total_boxes)
+                    $summary_box = $total_boxes;
+                else
+                    $summary_box = $qty;
+
+                $creation = [
+                    'id_type_delivery' => $lsp->id_type_delivery,
+                    'id_mot' => $lsp->refTypeDelivery->id_mot,
+                    'id_container' => $params->id_container,
+                    'id_lsp' => $lsp->id,
                     'summary_box' => $summary_box,
-                    'code_consignee' => $data[0]['code_consignee'],
-                    'etd_jkt' => $data[0]['etd_jkt'],
-                    'etd_ypmi' => $data[0]['etd_ypmi'],
-                    'etd_wh' => $data[0]['etd_wh'],
-                    'measurement' => $mst_container->measurement ?? null,
-                    'status' => $data[0]['status'],
-                    'datasource' => $data[0]['datasource'],
-                    'item_no' => $data[0]['item_no'],
-                    'id_fixed_actual_container' => $data[0]['id_fixed_actual_container'],
-                ]);
+                    'code_consignee' => $actual_container->code_consignee,
+                    'etd_jkt' => $actual_container->etd_jkt,
+                    'etd_ypmi' => $actual_container->etd_ypmi,
+                    'etd_wh' => $actual_container->etd_wh,
+                    'measurement' => $mst_container->measurement ?? 0,
+                    'iteration' => $index,
+                    'id_prospect_container' => $params->id,
+                    'status_bml' => 0,
+                    'datasource' => $params->datasource
+                ];
+                RegularFixedActualContainerCreation::create($creation);
+
+                $sum = $qty - $summary_box;
+                $qty = $sum;
+                $index = $index + 1;
             }
 
-            return $creation;
-        })->toArray();
+            $upd = RegularFixedActualContainer::find($params->id);
+            $upd->is_actual = 99;
+            $upd->save();
 
-        $actual_container_creation = [];
-        foreach ($fixed_quantity_confirmation as $creations) {
-            foreach ($creations as $item) {
-                $store= RegularFixedActualContainerCreation::create($item);
-                $actual_container_creation[] = $store;
-            }
-        }
+            $set = [
+                'id' => $params->id,
+                'colis' => $colis,
+            ];
 
-        foreach ($actual_container_creation as $val) {
-            Model::where('id_fixed_actual_container',$val->id_fixed_actual_container)
-                ->update([
-                    'id_fixed_actual_container_creation' => $val->id
-                ]);
+            if($is_transaction) DB::commit();
 
-            RegularFixedActualContainer::where('id', $val->id_fixed_actual_container)
-                ->update([
-                    'is_actual' => 1
-                ]);
-        }
+           ContainerActual::dispatch($set);
 
-        Model::whereIn('id', $params->id)->update(['is_actual' => Constant::IS_ACTUAL]);
-
-        if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
              if($is_transaction) DB::rollBack();
              throw $th;
         }
+    }
+
+    public static function countBoxesInContainer($containerVolume, $boxVolumes, $stackCapacities){
+        rsort($boxVolumes);
+        rsort($stackCapacities);
+        $totalBoxes = 0;
+        $remainingVolume = $containerVolume;
+        foreach ($boxVolumes as $boxVolume) {
+            foreach ($stackCapacities as $stackCapacity) {
+                $boxesInVolume = floor($remainingVolume / $boxVolume);
+                $fullStacks = floor($boxesInVolume / $stackCapacity);
+                $remainingBoxes = $boxesInVolume % $stackCapacity;
+                $totalBoxes += $fullStacks * $stackCapacity + $remainingBoxes;
+                $remainingVolume -= $boxesInVolume * $boxVolume;
+                if ($boxesInVolume == 0 || $remainingVolume <= 0) {
+                    break;
+                }
+            }
+        }
+        return $totalBoxes;
     }
 
     static function packBoxesIntoContainers($boxSizes, $containerCapacity) {
