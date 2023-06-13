@@ -5,6 +5,7 @@ namespace App\Query;
 use App\Constants\Constant;
 use App\Models\MstLsp;
 use App\Models\RegularDeliveryPlan AS Model;
+use App\Models\RegularOrderEntry;
 use Illuminate\Support\Facades\DB;
 use App\ApiHelper as Helper;
 use App\ApiHelper;
@@ -491,17 +492,22 @@ class QueryRegularDeliveryPlan extends Model {
                 'etd_jkt'
             ]);
 
+            $tahun = date('Y', strtotime($params->etd_jkt));
+            $bulan = date('m', strtotime($params->etd_jkt));
+            $bulan_str = $bulan < 10 ? '0'.$bulan : $bulan;
+
+            $chek = RegularOrderEntry::where('year', $tahun)->where('month', $bulan_str)->first();
+            if($chek == null) throw new \Exception("Data not deliver yet", 400);
+
             $data = self::find($params->id);
             if(!$data) throw new \Exception("Data not found", 400);
-
             $order_entry = $data->refRegularOrderEntry;
-            $check_year_month = ($order_entry->year.'-'.$order_entry->month) == (date('Y-m', strtotime($params->etd_jkt)));
-            if($check_year_month !== true) throw new \Exception("Data not deliver yet", 400);
 
             $request = $params->all();
             $request['etd_jkt'] = Carbon::parse($params->etd_jkt)->format('Ymd');
             $request['etd_ypmi'] =Carbon::parse($params->etd_jkt)->subDays(4)->format('Ymd');
             $request['etd_wh'] =Carbon::parse($params->etd_jkt)->subDays(2)->format('Ymd');
+            $request['id_regular_order_entry'] = $chek->id;
             $data->fill($request);
             $data->save();
 
