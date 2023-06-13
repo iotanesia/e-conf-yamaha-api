@@ -17,7 +17,6 @@ class RegularDeliveryPlanProspectContainerCreation extends Model
         "id_mot",
         "id_lsp",
         "id_container",
-        "item_no",
         "code_consignee",
         "no_packaging",
         "measurement",

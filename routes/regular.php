@@ -105,13 +105,14 @@ Route::prefix('v1/regular')
             Route::get('/',[DeliveryPlanController::class,'shippingInstruction']);
             Route::post('/',[DeliveryPlanController::class,'shippingInstructionStore']);
             Route::post('/update-status',[DeliveryPlanController::class,'shippingInstructionUpdate']);
-            Route::get('/draft/{id}',[DeliveryPlanController::class,'shippingInstructionListDraft']);
+            Route::get('/draft/{id}',[DeliveryPlanController::class,'getShippingInstructionListDraft']);
             Route::get('/draft/detail/{id}',[DeliveryPlanController::class,'shippingInstructionListDraftDetail']);
             Route::get('/download-dok/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDoc']);
             Route::get('/download-dok-draft/{id}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraft']);
             Route::get('/download-dok-draft/{id}/{filename}',[DeliveryPlanController::class,'shippingInstructionDownloadDocDraftSave']);
             Route::get('/{id}',[DeliveryPlanController::class,'shippingInstructionDetail']);
-            Route::get('/detail/{id}',[DeliveryPlanController::class,'shippingInstructionDetailSI']);
+            Route::post('/detail',[DeliveryPlanController::class,'shippingInstructionDetailSI']);
+            Route::post('/draft',[DeliveryPlanController::class,'shippingInstructionListDraft']);
         });
 
         Route::group(['prefix' => 'booking'],function(){

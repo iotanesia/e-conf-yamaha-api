@@ -304,7 +304,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
              'id'
          ]);
 
-        $actual_container = RegularFixedActualContainer::find($params->id);
+            $actual_container = RegularFixedActualContainer::find($params->id);
+            $mst_container = MstContainer::where('id', $params->id_container)->first();
             $lsp = MstLsp::where('code_consignee',$actual_container->code_consignee)
                 ->where('id_type_delivery', 1)
                 ->first();
