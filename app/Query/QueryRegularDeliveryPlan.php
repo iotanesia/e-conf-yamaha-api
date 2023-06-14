@@ -384,15 +384,16 @@ class QueryRegularDeliveryPlan extends Model {
                         "no_packaging" => $params->no_packaging,
                         "datasource" => $params->datasource,
                         "created_at" => now(),
-                        "id_mot" => $params->id_mot
+                        "id_mot" => $params->id_mot,
+                        "is_prospect" => $params->id_mot == 2 ? 2 : 0
             ]);
 
-            if ($params->id_type_delivery == 4) {
-                $store->update(['id_type_delivery' => 4]);
+            if ($params->id_mot == 2) {
+                $store->update(['id_type_delivery' => 1]);
 
                 $container_creation = RegularDeliveryPlanProspectContainerCreation::create([
                         "id_prospect_container" => $store->id,
-                        "id_type_delivery" => 4,
+                        "id_type_delivery" => 1,
                         "id_mot" => 2,
                         "code_consignee" => $params->code_consignee,
                         "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
@@ -412,7 +413,7 @@ class QueryRegularDeliveryPlan extends Model {
                 $container_creation->update(['id_shipping_instruction' => $shipping->id]);
             }
 
-            $id_container_creation = $params->id_type_delivery == 4 ? $container_creation->id : null;
+            $id_container_creation = $params->id_mot == 2 ? $container_creation->id : null;
 
            self::where(function ($query) use ($params){
                    $query->whereIn('id',$params->id);
@@ -424,7 +425,7 @@ class QueryRegularDeliveryPlan extends Model {
                 foreach ($data as $key => $item) {
                     $item->is_inquiry = Constant::IS_ACTIVE;
                     $item->id_prospect_container = $store->id;
-                    if ($params->id_type_delivery == 4) {
+                    if ($params->id_mot == 2) {
                         $item->id_prospect_container_creation = $id_container_creation;
                     }
                     $item->save();
