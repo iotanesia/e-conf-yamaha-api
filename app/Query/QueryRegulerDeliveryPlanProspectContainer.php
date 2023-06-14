@@ -95,7 +95,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function byIdProspectContainer($params,$id)
     {
-        $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_regular_delivery_plan',
+        $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
+                        'regular_delivery_plan_box.id_regular_delivery_plan',
                         DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
                         DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
                         DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
@@ -106,13 +107,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"))
                         ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
                         ->join('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
-                        ->groupBy('regular_delivery_plan_box.id_regular_delivery_plan')
+                        ->groupBy('regular_delivery_plan_box.id_regular_delivery_plan', 'regular_delivery_plan_box.id_prospect_container_creation')
                         ->paginate($params->limit ?? null);
 
         $data->transform(function ($item) use ($id){
-            $item->item_name = $item->refRegularDeliveryPlan->refPart->description ?? null;
+            $item->item_name = trim($item->refRegularDeliveryPlan->refPart->description) ?? null;
             $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null;
-            $item->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0]['qty'] ?? null;
+            $item->box = self::getCountBox($item->refRegularDeliveryPlan->id, $item->id_prospect_container_creation)[0]['qty'] ?? null;
             unset(
                 $item->refRegularDeliveryPlan,
             );
@@ -129,9 +130,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         ];
     }
 
-    public static function getCountBox($id){
+    public static function getCountBox($id, $id_prospect_container_creation){
         $data = RegularDeliveryPlanBox::select('id_box', DB::raw('count(*) as jml'))
                 ->where('id_regular_delivery_plan', $id)
+                ->where('id_prospect_container_creation', $id_prospect_container_creation)
                 ->groupBy('id_box')
                 ->get();
         return
