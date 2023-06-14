@@ -174,11 +174,11 @@ class DeliveryPlanController extends Controller
         }
     }
 
-    public function shippingInstructionDetailSI(Request $request, $id)
+    public function shippingInstructionDetailSI(Request $request)
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularDeliveryPlan::shippingDetailSI($request, $id)
+                QueryRegularDeliveryPlan::shippingDetailSI($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -275,11 +275,22 @@ class DeliveryPlanController extends Controller
         }
     }
 
-    public function shippingInstructionListDraft(Request $request,$id)
+    public function getShippingInstructionListDraft(Request $request,$id)
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularDeliveryPlan::shippingDraftDok($request,$id)
+                QueryRegularDeliveryPlan::getShippingDraftDok($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function shippingInstructionListDraft(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::shippingDraftDok($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

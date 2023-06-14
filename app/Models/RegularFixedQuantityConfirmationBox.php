@@ -15,6 +15,7 @@ class RegularFixedQuantityConfirmationBox extends Model
         "id_fixed_quantity_confirmation",
         "id_regular_delivery_plan",
         "id_regular_delivery_plan_box",
+        "id_prospect_container_creation",
         "id_box",
         "id_proc",
         "qty_pcs_box",
