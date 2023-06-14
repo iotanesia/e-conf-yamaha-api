@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MstPortOfDischarge extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
     protected $table = 'mst_port_of_discharge';
     public $fillable = [
         'id',

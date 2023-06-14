@@ -131,16 +131,34 @@ class QueryMstConsignee extends Model {
             $params = $request->all();
             $update = self::find($params['id']);
             if(!$update) throw new \Exception("id tidak ditemukan", 400);
+
+            $pod = MstPortOfDischarge::where('code_consignee', $update->code)->get();
+            foreach ($pod as $key => $value) {
+                $value->delete();
+            }
+            
             $update->fill($params);
             $update->save();
 
-            $pod = MstPortOfDischarge::where('code_consignee', $request->code_consignee)->get();
-            foreach ($pod as $key => $value) {
-                $value->update([
-                    'port' => $request->pod[$key],
+            foreach ($request->pod as $key => $val) {
+                if ($key == 0) {
+                    $id_mot = 2;
+                    $tipe = 4;
+                } elseif (($key == 1)) {
+                    $id_mot = 1;
+                    $tipe = 2;
+                } elseif (($key == 2)) {
+                    $id_mot = 1;
+                    $tipe = 3;
+                }
+                MstPortOfDischarge::create([
+                    'code_consignee' => $request->code,
+                    'id_mot' => $id_mot,
+                    'tipe' => $tipe,
+                    'port' => $val,
                 ]);
             }
-
+            
             foreach ($request->pol as $key => $pol) {
                 $mst_pol = MstPortOfLoading::where('id', $key+1)->first();
                 $mst_pol->update(['name' => $pol]);

@@ -410,7 +410,12 @@ class QueryRegularDeliveryPlan extends Model {
                         "id_mot" => $params->id_mot
                 ]);
 
-                $container_creation->update(['id_shipping_instruction' => $shipping->id]);
+                $id_delivery_plan = $container_creation->manyDeliveryPlan()->pluck('id');
+                $summary_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan', $id_delivery_plan)->get();
+                $container_creation->update([
+                    'id_shipping_instruction' => $shipping->id,
+                    'summary_box' => count($summary_box)
+                ]);
             }
 
             $id_container_creation = $params->id_mot == 2 ? $container_creation->id : null;

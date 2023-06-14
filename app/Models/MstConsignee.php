@@ -11,7 +11,6 @@ class MstConsignee extends Model
     use HasFactory, SoftDeletes;
     protected $table = 'mst_consignee';
     public $fillable = [
-        'id',
         'code',
         'category',
         'nick_name',
