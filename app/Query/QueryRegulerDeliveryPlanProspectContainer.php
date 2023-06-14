@@ -278,13 +278,15 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function detail($params)
     {
-        $data = RegularDeliveryPlanProspectContainerCreation::whereIn('id_prospect_container',$params->id)->paginate($params->limit ?? null);
+        $data = RegularDeliveryPlanProspectContainerCreation::whereIn('id_prospect_container',$params->id)
+            ->orderBy('iteration', 'asc')
+            ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item) use($params){
                 $item->cust_name = $item->refRegularDeliveryPlanPropspectContainer->refConsignee->nick_name;
+                $item->id_type_delivery = $item->id_type_delivery;
                 $item->type_delivery = $item->refMstTypeDelivery->name;
-                $item->id_type_delivery = $params->id_type_delivery;
                 $item->lsp = $item->refMstLsp->name;
                 $item->id_mot = $item->refMstMot->id;
                 $item->net_weight = $item->refMstContainer->net_weight;
