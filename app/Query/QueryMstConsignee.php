@@ -135,36 +135,28 @@ class QueryMstConsignee extends Model {
             $update->save();
 
             $pod = MstPortOfDischarge::where('code_consignee', $update->code)->get();
-            if (count($pod) !== 3) {
-                foreach ($pod as $del) {
-                    $del->delete();
-                }
+            
+            foreach ($pod as $del) {
+                $del->delete();
+            }
 
-                foreach ($request->pod as $key => $value) {
-                    if ($key == 0) {
-                        $id_mot = 2;
-                        $tipe = 4;
-                    } elseif (($key == 1)) {
-                        $id_mot = 1;
-                        $tipe = 2;
-                    } elseif (($key == 2)) {
-                        $id_mot = 1;
-                        $tipe = 3;
-                    }
-                    MstPortOfDischarge::create([
-                        'code_consignee' => $request->code,
-                        'id_mot' => $id_mot,
-                        'tipe' => $tipe,
-                        'port' => $value,
-                    ]);
+            foreach ($request->pod as $key => $val) {
+                if ($key == 0) {
+                    $id_mot = 2;
+                    $tipe = 4;
+                } elseif (($key == 1)) {
+                    $id_mot = 1;
+                    $tipe = 2;
+                } elseif (($key == 2)) {
+                    $id_mot = 1;
+                    $tipe = 3;
                 }
-            } else {
-                foreach ($pod as $key => $value) {
-                    $value->update([
-                        'port' => $request->pod[$key],
-                        'code_consignee' => $request->code,
-                    ]);
-                }
+                MstPortOfDischarge::create([
+                    'code_consignee' => $request->code,
+                    'id_mot' => $id_mot,
+                    'tipe' => $tipe,
+                    'port' => $val,
+                ]);
             }
             
             foreach ($request->pol as $key => $pol) {
