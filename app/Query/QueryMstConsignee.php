@@ -134,7 +134,7 @@ class QueryMstConsignee extends Model {
             $update->fill($params);
             $update->save();
 
-            $pod = MstPortOfDischarge::where('code_consignee', $request->code)->get();
+            $pod = MstPortOfDischarge::where('code_consignee', $update->code)->get();
             if (count($pod) !== 3) {
                 foreach ($pod as $del) {
                     $del->delete();
