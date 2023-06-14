@@ -773,13 +773,17 @@ class QueryRegularDeliveryPlan extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
 
         $data->transform(function ($item) use ($check) {
+
+            $id_delivery_plan = $item->manyDeliveryPlan()->pluck('id');
+            $summary_box_air = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan', $id_delivery_plan)->get();
+
             return [
                 'cust_name' => $item->refMstConsignee->nick_name,
                 'etd_jkt' => $item->etd_jkt,
                 'etd_wh' => $item->etd_wh,
                 'etd_ypmi' => $item->etd_ypmi,
                 'summary_container' => $item->summary_container,
-                'summary_box' => $check->id_mot == 2 ? $item->manyDeliveryPlan->count() : 0,
+                'summary_box' => $check->id_mot == 2 ? count($summary_box_air) : 0,
                 'code_consignee' => $item->code_consignee,
                 'datasource' => $item->datasource,
                 'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation
