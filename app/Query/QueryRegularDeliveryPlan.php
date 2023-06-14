@@ -760,9 +760,10 @@ class QueryRegularDeliveryPlan extends Model {
         $check = RegularDeliveryPlanShippingInsruction::where('id', $id)->first();
         $data = RegularDeliveryPlanProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee', 'regular_delivery_plan_prospect_container_creation.etd_jkt'
             , DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS summary_container')
+            , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id::character varying, ',') as id")
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.code_consignee::character varying, ',') as code_consignee")
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.datasource::character varying, ',') as datasource")
-            , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation::character varying, ',') as datasource")
+            , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation::character varying, ',') as id_shipping_instruction_creation")
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.etd_wh::character varying, ',') as etd_wh")
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.etd_ypmi::character varying, ',') as etd_ypmi"))
             ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction', $id)
@@ -772,13 +773,17 @@ class QueryRegularDeliveryPlan extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
 
         $data->transform(function ($item) use ($check) {
+
+            $id_delivery_plan = $item->manyDeliveryPlan()->pluck('id');
+            $summary_box_air = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan', $id_delivery_plan)->get();
+
             return [
                 'cust_name' => $item->refMstConsignee->nick_name,
                 'etd_jkt' => $item->etd_jkt,
                 'etd_wh' => $item->etd_wh,
                 'etd_ypmi' => $item->etd_ypmi,
                 'summary_container' => $item->summary_container,
-                'summary_box' => $check->id_mot == 2 ? $item->manyDeliveryPlan->count() : 0,
+                'summary_box' => $check->id_mot == 2 ? count($summary_box_air) : 0,
                 'code_consignee' => $item->code_consignee,
                 'datasource' => $item->datasource,
                 'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation
@@ -1030,7 +1035,7 @@ class QueryRegularDeliveryPlan extends Model {
            $data = RegularDeliveryPlanShippingInsruction::create(
                 [
                     'no_booking' => $request->no_booking,
-                    'booking_date' => $request->booking_date,
+                    'booking_date' => substr($request->booking_date, -4).'-'.substr($request->booking_date, -6, 2).'-'.substr($request->booking_date, -8, 2),
                     'datasource' => $request->datasource,
                     'status' =>  Constant::STS_BOOK_FINISH,
                     'id_mot' => $request->id_mot
