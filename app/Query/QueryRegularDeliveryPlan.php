@@ -759,9 +759,10 @@ class QueryRegularDeliveryPlan extends Model {
         $check = RegularDeliveryPlanShippingInsruction::where('id', $id)->first();
         $data = RegularDeliveryPlanProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.code_consignee', 'regular_delivery_plan_prospect_container_creation.etd_jkt'
             , DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS summary_container')
+            , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id::character varying, ',') as id")
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.code_consignee::character varying, ',') as code_consignee")
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.datasource::character varying, ',') as datasource")
-            , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation::character varying, ',') as datasource")
+            , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation::character varying, ',') as id_shipping_instruction_creation")
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.etd_wh::character varying, ',') as etd_wh")
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.etd_ypmi::character varying, ',') as etd_ypmi"))
             ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction', $id)
@@ -1029,7 +1030,7 @@ class QueryRegularDeliveryPlan extends Model {
            $data = RegularDeliveryPlanShippingInsruction::create(
                 [
                     'no_booking' => $request->no_booking,
-                    'booking_date' => $request->booking_date,
+                    'booking_date' => substr($request->booking_date, -4).'-'.substr($request->booking_date, -6, 2).'-'.substr($request->booking_date, -8, 2),
                     'datasource' => $request->datasource,
                     'status' =>  Constant::STS_BOOK_FINISH,
                     'id_mot' => $request->id_mot
