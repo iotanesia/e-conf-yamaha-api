@@ -96,31 +96,33 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     public static function byIdProspectContainer($params,$id)
     {
         $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_regular_delivery_plan',
-                        DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
-                        DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
-                        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-                        DB::raw("string_agg(DISTINCT a.qty::character varying, ',') as qty"),
-                        DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
-                        DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
-                        DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
-                        DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"))
-                        ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
-                        ->join('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
-                        ->groupBy('regular_delivery_plan_box.id_regular_delivery_plan')
-                        ->paginate($params->limit ?? null);
+                DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_prospect_container_creation::character varying, ',') as id_prospect_container_creation"),
+                DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
+                DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
+                DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+                DB::raw("string_agg(DISTINCT a.qty::character varying, ',') as qty"),
+                DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
+                DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
+                DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
+                DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"))
+                ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
+                ->join('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
+                ->groupBy('regular_delivery_plan_box.id_regular_delivery_plan')
+                ->paginate($params->limit ?? null);
 
         $data->transform(function ($item) use ($id){
             $item->item_name = $item->refRegularDeliveryPlan->refPart->description ?? null;
             $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null;
             $item->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0]['qty'] ?? null;
+            $item->id_prospect_container = $item->refRegularDeliveryPlanProspectContainerCreation->id_prospect_container;
             unset(
                 $item->refRegularDeliveryPlan,
+                $item->refRegularDeliveryPlanProspectContainerCreation,
             );
 
             return $item;
 
         });
-
 
         return [
             'items' => $data->items(),
@@ -235,17 +237,31 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
         if($is_transaction) DB::beginTransaction();
         try {
-            Helper::requireParams([
-                'id'
-            ]);
+            $id = [];
+            $id_prospect_container_creation = [];
+            $id_prospect_container = [];
+            foreach ($params->data as $key => $value) {
+                $id[] = $value['id'];
+                $id_prospect_container_creation[] = $value['id_prospect_container_creation'];
+                $id_prospect_container[] = $value['id_prospect_container'];
+            }
+            
+            // Helper::requireParams([
+            //     'id'
+            // ]);
+            
             $check = RegularDeliveryPlan::select('id_prospect_container_creation')
                 ->with('manyDeliveryPlanBox')
-                ->whereIn('id', $params->id)
+                ->whereIn('id', $id)
                 ->groupBy('id_prospect_container_creation')
                 ->get();
             if(count($check) > 1) throw new \Exception("Code consignee, ETD JKT and datasource not same", 400);
-            $drp = $check[0];
-            $prospect = RegularDeliveryPlanProspectContainerCreation::find($drp->id_prospect_container_creation);
+
+            $count_delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_prospect_container_creation', $id_prospect_container_creation)
+                                        ->whereIn('id_regular_delivery_plan', $id)
+                                        ->get()->count();
+            $prospect = RegularDeliveryPlanProspectContainerCreation::whereIn('id',$id_prospect_container_creation)->orderByDesc('iteration')->first();
+            
             $nextprospect = RegularDeliveryPlanProspectContainerCreation::where(function ($query) use ($prospect){
                $query->where('code_consignee',$prospect->code_consignee);
                $query->where('datasource',$prospect->datasource);
@@ -535,17 +551,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
     }
 
-    public static function creationDelete($params)
+    public static function creationDelete($params, $id)
     {
-        Helper::requireParams([
-            'id'
-        ]);
-
         DB::beginTransaction();
         try {
 
-            $data = RegularDeliveryPlanProspectContainerCreation::find($params->id);
-            if($data->summary_box == 0) throw new \Exception("Data tidak dapat dihapus.", 400);
+            $data = RegularDeliveryPlanProspectContainerCreation::find($id);
+            if($data->summary_box !== 0) throw new \Exception("Data tidak dapat dihapus.", 400);
             if($data->id_shipping_instruction !== null) throw new \Exception("Data tidak dapat dihapus.", 400);
 
             $data->delete();
