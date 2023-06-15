@@ -71,12 +71,12 @@ class ProspectContainerController extends Controller
         }
     }
 
-    public static function creationDelete(Request $request)
+    public static function creationDelete(Request $request, $id)
     {
         try {
 
             return ResponseInterface::responseData(
-                QueryRegulerDeliveryPlanProspectContainer::creationDelete($request)
+                QueryRegulerDeliveryPlanProspectContainer::creationDelete($request, $id)
             );
 
         } catch (\Throwable $th) {

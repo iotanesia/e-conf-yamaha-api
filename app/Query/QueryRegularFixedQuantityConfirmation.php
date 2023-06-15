@@ -16,6 +16,7 @@ use App\Models\RegularFixedActualContainerCreation;
 use App\Models\RegularFixedQuantityConfirmation;
 use App\Models\RegularFixedQuantityConfirmationBox;
 use App\Models\RegularFixedShippingInstruction;
+use App\Models\RegularOrderEntry;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -137,6 +138,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             'no_packaging',
             'etd_jkt',
             'code_consignee',
+            'datasource'
         ]);
 
         if($is_trasaction) DB::beginTransaction();
@@ -151,8 +153,42 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         "etd_jkt" => $params->etd_jkt,
                         "no_packaging" => $params->no_packaging,
                         "created_at" => now(),
+                        "datasource" => $params->datasource,
+                        "id_mot" => $params->id_mot,
+                        "is_prospect" => $params->id_mot == 2 ? 2 : 0
             ]);
 
+            if ($params->id_mot == 2) {
+                $store->update(['id_type_delivery' => 1]);
+
+                $container_creation = RegularFixedActualContainerCreation::create([
+                        "id_fixed_actual_container" => $store->id,
+                        "id_type_delivery" => 1,
+                        "id_mot" => 2,
+                        "code_consignee" => $params->code_consignee,
+                        "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
+                        "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
+                        "etd_jkt" => $params->etd_jkt,
+                        "datasource" => $params->datasource,
+                ]);
+
+                $shipping = RegularFixedShippingInstruction::create([
+                        "no_booking" =>  'BOOK'.Carbon::parse($params->etd_jkt)->format('dmY').mt_rand(10000,99999),
+                        "booking_date" => now(),
+                        "datasource" => $params->datasource,
+                        "status" => 1,
+                        "id_mot" => $params->id_mot
+                ]);
+
+                $id_delivery_plan = $container_creation->manyFixedQuantityConfirmation()->pluck('id_regular_delivery_plan');
+                $summary_box = RegularFixedQuantityConfirmationBox::whereIn('id_regular_delivery_plan', $id_delivery_plan)->get();
+                $container_creation->update([
+                    'id_fixed_shipping_instruction' => $shipping->id,
+                    'summary_box' => count($summary_box)
+                ]);
+            }
+            
+            $id_container_creation = $params->id_mot == 2 ? $container_creation->id : null;
 
            self::where(function ($query) use ($params){
                    $query->whereIn('id',$params->id);
@@ -160,10 +196,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                    $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
                    $query->where('datasource','PYMAC');
            })
-           ->chunk(1000,function ($data) use ($params,$store){
+           ->chunk(1000,function ($data) use ($params,$store,$id_container_creation){
                 foreach ($data as $key => $item) {
                     $item->is_actual = Constant::IS_ACTIVE;
                     $item->id_fixed_actual_container = $store->id;
+                    if ($params->id_mot == 2) {
+                        $item->id_fixed_actual_container_creation = $id_container_creation;
+                    }
                     $item->save();
                 }
            });
@@ -184,6 +223,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'id',
                 'etd_jkt'
             ]);
+
+            $tahun = date('Y', strtotime($params->etd_jkt));
+            $bulan = date('m', strtotime($params->etd_jkt));
+            $bulan_str = $bulan < 10 ? '0'.$bulan : $bulan;
+
+            $chek = RegularOrderEntry::where('year', $tahun)->where('month', $bulan_str)->first();
+            if($chek == null) throw new \Exception("Data not deliver yet", 400);
 
             $data = self::find($params->id);
             if(!$data) throw new \Exception("Data not found", 400);

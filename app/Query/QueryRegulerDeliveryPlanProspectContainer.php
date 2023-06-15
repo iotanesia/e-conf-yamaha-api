@@ -116,12 +116,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $item->box = self::getCountBox($item->refRegularDeliveryPlan->id, $item->id_prospect_container_creation)[0]['qty'] ?? null;
             unset(
                 $item->refRegularDeliveryPlan,
+                $item->refRegularDeliveryPlanProspectContainerCreation,
             );
 
             return $item;
 
         });
-
 
         return [
             'items' => $data->items(),
@@ -237,17 +237,31 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
         if($is_transaction) DB::beginTransaction();
         try {
-            Helper::requireParams([
-                'id'
-            ]);
+            $id = [];
+            $id_prospect_container_creation = [];
+            $id_prospect_container = [];
+            foreach ($params->data as $key => $value) {
+                $id[] = $value['id'];
+                $id_prospect_container_creation[] = $value['id_prospect_container_creation'];
+                $id_prospect_container[] = $value['id_prospect_container'];
+            }
+            
+            // Helper::requireParams([
+            //     'id'
+            // ]);
+            
             $check = RegularDeliveryPlan::select('id_prospect_container_creation')
                 ->with('manyDeliveryPlanBox')
-                ->whereIn('id', $params->id)
+                ->whereIn('id', $id)
                 ->groupBy('id_prospect_container_creation')
                 ->get();
             if(count($check) > 1) throw new \Exception("Code consignee, ETD JKT and datasource not same", 400);
-            $drp = $check[0];
-            $prospect = RegularDeliveryPlanProspectContainerCreation::find($drp->id_prospect_container_creation);
+
+            $count_delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_prospect_container_creation', $id_prospect_container_creation)
+                                        ->whereIn('id_regular_delivery_plan', $id)
+                                        ->get()->count();
+            $prospect = RegularDeliveryPlanProspectContainerCreation::whereIn('id',$id_prospect_container_creation)->orderByDesc('iteration')->first();
+            
             $nextprospect = RegularDeliveryPlanProspectContainerCreation::where(function ($query) use ($prospect){
                $query->where('code_consignee',$prospect->code_consignee);
                $query->where('datasource',$prospect->datasource);
@@ -590,17 +604,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
     }
 
-    public static function creationDelete($params)
+    public static function creationDelete($params, $id)
     {
-        Helper::requireParams([
-            'id'
-        ]);
-
         DB::beginTransaction();
         try {
 
-            $data = RegularDeliveryPlanProspectContainerCreation::find($params->id);
-            if($data->summary_box == 0) throw new \Exception("Data tidak dapat dihapus.", 400);
+            $data = RegularDeliveryPlanProspectContainerCreation::find($id);
+            if($data->summary_box !== 0) throw new \Exception("Data tidak dapat dihapus.", 400);
             if($data->id_shipping_instruction !== null) throw new \Exception("Data tidak dapat dihapus.", 400);
 
             $data->delete();

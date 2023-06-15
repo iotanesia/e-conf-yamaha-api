@@ -15,6 +15,7 @@ class RegularFixedShippingInstruction extends Model
         "booking_date",
         "datasource",
         "status",
+        "id_mot",
         "created_at",
         "created_by",
         "updated_at",
