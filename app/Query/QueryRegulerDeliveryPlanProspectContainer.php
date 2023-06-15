@@ -395,6 +395,58 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
     }
 
+    public static function simulationContainer($id){
+
+        $data = RegularDeliveryPlanProspectContainerCreation::where('id', $id)->first();
+
+        $container = MstContainer::find($data->id_container);
+        $plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
+            'id_box', DB::raw('count(id_box) as count_box'))
+            ->where('id_prospect_container_creation', $id)
+            ->groupBy('id_box', 'id_regular_delivery_plan')
+            ->orderBy('count_box','desc')
+            ->get()
+            ->map(function ($item, $index){
+                return [
+                    'id_delivery_plan' => $item->id_regular_delivery_plan,
+                    'label' => $item->refBox->no_box,
+                    'w' =>  floatval($item->refBox->width/1000),
+                    'h' => floatval($item->refBox->height/1000),
+                    'l' => floatval($item->refBox->length/1000),
+                    'q' => $item->count_box,
+                    'priority' => $index + 1,
+                    'stackingCapacity' => $item->refBox->stack_capacity,
+                    'rotations' => [
+                        'base'
+                    ],
+                ];
+            });
+
+        $route = MstLsp::where('code_consignee', $data->code_consignee)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'from' => 'jakarta',
+                    'to' => $item->name,
+                    'type' => 'dechargement'
+                ];
+            });
+
+        return [
+            'items' => [
+                'container' => [
+                    'w' => floatval(round($container->long,2)) ?? null,
+                    'h' => floatval(round($container->height,2)) ?? null,
+                    'l' => floatval(round($container->wide,2)) ?? null
+                ],
+                'routes' => $route,
+                'colis' => $plan_box
+            ]
+        ];
+    }
+
+
     public static function simulation($params)
     {
         $plan = RegularDeliveryPlan::select('id','code_consignee')
@@ -422,7 +474,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 'l' => floatval($item->refBox->length/1000),
                 'q' => $item->count_box,
                 'priority' => $index + 1,
-                'stackingCapacity' => 0,
+                'stackingCapacity' => $item->refBox->stack_capacity,
                 'rotations' => [
                     'base'
                 ],
@@ -479,7 +531,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             foreach ($colis as $value){
                 $volume = $value['w'] * $value['h'] * $value['l'];
                 $boxVolume[] = round($volume,2) ?? 0;
-                $stackCapacities[] = 1;
+                $stackCapacities[] = $value->stackingCapacity;
                 $id_reg_dev_plan[] = $value['id_delivery_plan'];
                 $qty += $value['q'];
             }
@@ -509,7 +561,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'iteration' => $index,
                     'id_prospect_container' => $params->id,
                     'status_bml' => 0,
-                    'datasource' => $params->datasource
+                    'datasource' => $params->datasource,
+                    'kuota' => $total_boxes
                 ];
                 RegularProspectContainerCreation::create($creation);
 
