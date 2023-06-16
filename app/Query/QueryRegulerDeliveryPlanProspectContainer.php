@@ -260,7 +260,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $count_delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_prospect_container_creation', $id_prospect_container_creation)
                                         ->whereIn('id_regular_delivery_plan', $id)
                                         ->get()->count();
-            $prospect = RegularDeliveryPlanProspectContainerCreation::whereIn('id',$id_prospect_container_creation)->orderByDesc('iteration')->first();
+            $prospect = RegularDeliveryPlanProspectContainerCreation::whereIn('id',$id_prospect_container_creation)->orderBy('iteration','asc')->first();
 
             $nextprospect = RegularDeliveryPlanProspectContainerCreation::where(function ($query) use ($prospect){
                $query->where('code_consignee',$prospect->code_consignee);
