@@ -36,7 +36,8 @@ class RegularDeliveryPlanProspectContainerCreation extends Model
         "deleted_at",
         "uuid",
         "status_bml",
-        "iteration"
+        "iteration",
+        "kuota"
     ];
 
     public function refRegularDeliveryPlanPropspectContainer()

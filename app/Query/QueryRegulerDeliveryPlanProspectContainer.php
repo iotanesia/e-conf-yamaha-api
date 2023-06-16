@@ -246,10 +246,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $id_prospect_container[] = $value['id_prospect_container'];
             }
 
-            // Helper::requireParams([
-            //     'id'
-            // ]);
-
             $check = RegularDeliveryPlan::select('id_prospect_container_creation')
                 ->with('manyDeliveryPlanBox')
                 ->whereIn('id', $id)
@@ -257,34 +253,101 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 ->get();
             if(count($check) > 1) throw new \Exception("Code consignee, ETD JKT and datasource not same", 400);
 
-            $count_delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_prospect_container_creation', $id_prospect_container_creation)
-                                        ->whereIn('id_regular_delivery_plan', $id)
-                                        ->get()->count();
-            $prospect = RegularDeliveryPlanProspectContainerCreation::whereIn('id',$id_prospect_container_creation)->orderBy('iteration','asc')->first();
+            $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_prospect_container_creation', $id_prospect_container_creation)
+                                    ->whereIn('id_regular_delivery_plan', $id)
+                                    ->get();
+            $count_delivery_plan_box = $delivery_plan_box->count();
 
-            $nextprospect = RegularDeliveryPlanProspectContainerCreation::where(function ($query) use ($prospect){
-               $query->where('code_consignee',$prospect->code_consignee);
-               $query->where('datasource',$prospect->datasource);
-               $query->where('iteration', $prospect->iteration+1);
-               $query->where('etd_jkt',Carbon::parse($prospect->etd_jkt)->format('Y-m-d'));
+            $prospectquery = RegularDeliveryPlanProspectContainerCreation::query();
+            $prospect_previous = $prospectquery->whereIn('id',$id_prospect_container_creation)->orderBy('iteration','asc')->first();
+            $nextprospect = $prospectquery->where(function ($query) use ($prospect_previous){
+               $query->where('code_consignee',$prospect_previous->code_consignee);
+               $query->where('datasource',$prospect_previous->datasource);
+               $query->where('iteration', $prospect_previous->iteration+1);
+               $query->where('etd_jkt',Carbon::parse($prospect_previous->etd_jkt)->format('Y-m-d'));
             })->first();
-            if(!$nextprospect){
-                $creation['id_type_delivery'] = $prospect->id_type_delivery;
-                $creation['id_mot'] = $prospect->id_mot;
-                $creation['id_container'] = $prospect->id_container;
-                $creation['id_lsp'] =  $prospect->id_lsp;
-                $creation['summary_box'] = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',$params->id)->count() ?? 0;
-                $creation['code_consignee'] = $prospect->code_consignee;
-                $creation['etd_jkt'] = $prospect->etd_jkt;
-                $creation['etd_ypmi'] = $prospect->etd_ypmi;
-                $creation['etd_wh'] = $prospect->etd_wh;
-                $creation['measurement'] = $prospect->measurement;
-                $creation['iteration'] = $prospect->iteration+1;
-                $creation['id_prospect_container'] = $prospect->id_prospect_container;
-                $ins = RegularDeliveryPlanProspectContainerCreation::create($creation);
-                RegularDeliveryPlan::whereIn('id',$params->id)->update(['id_prospect_container_creation'=>$ins->id]);
-            }else
-                RegularDeliveryPlan::whereIn('id',$params->id)->update(['id_prospect_container_creation'=>$nextprospect->id]);
+
+            if ($nextprospect) {
+                if ($count_delivery_plan_box <= $nextprospect->kuota) {
+                    $prospect_previous->update(['summary_box' => $prospect_previous->summary_box - $count_delivery_plan_box]);
+                    $space = $nextprospect->kuota - $nextprospect->summary_box;
+                    if($count_delivery_plan_box < $space) {
+                        $nextprospect->update([
+                            'summary_box' => $nextprospect->summary_box + $count_delivery_plan_box
+                        ]);
+                        foreach ($delivery_plan_box as $value) {
+                            $value->update(['id_prospect_container_creation' => $nextprospect->id]);
+                        }
+                    } else {
+                        $nextprospect->update([
+                            'summary_box' => $nextprospect->summary_box + $space
+                        ]);
+                        foreach ($delivery_plan_box->take($space) as $value) {
+                            $value->update(['id_prospect_container_creation' => $nextprospect->id]);
+                        }
+
+                        $sisa_count_delivery_plan_box = $count_delivery_plan_box - $space;
+
+                        $creation['id_type_delivery'] = $nextprospect->id_type_delivery;
+                        $creation['id_mot'] = $nextprospect->id_mot;
+                        $creation['id_container'] = $nextprospect->id_container;
+                        $creation['id_lsp'] =  $nextprospect->id_lsp;
+                        $creation['summary_box'] = $sisa_count_delivery_plan_box;
+                        $creation['code_consignee'] = $nextprospect->code_consignee;
+                        $creation['etd_jkt'] = $nextprospect->etd_jkt;
+                        $creation['etd_ypmi'] = $nextprospect->etd_ypmi;
+                        $creation['etd_wh'] = $nextprospect->etd_wh;
+                        $creation['measurement'] = $nextprospect->measurement;
+                        $creation['iteration'] = $nextprospect->iteration+1;
+                        $creation['id_prospect_container'] = $nextprospect->id_prospect_container;
+                        $creation['kuota'] = $nextprospect->kuota;
+                        $ins = $prospectquery->create($creation);
+                        RegularDeliveryPlan::whereIn('id',$id)->update(['id_prospect_container_creation'=>$ins->id]);
+                        foreach ($delivery_plan_box as $value) {
+                            $value->update(['id_prospect_container_creation' => $ins->id]);
+                        }
+                    }
+                } else {
+                    $creation['id_type_delivery'] = $nextprospect->id_type_delivery;
+                    $creation['id_mot'] = $nextprospect->id_mot;
+                    $creation['id_container'] = $nextprospect->id_container;
+                    $creation['id_lsp'] =  $nextprospect->id_lsp;
+                    $creation['summary_box'] = $count_delivery_plan_box;
+                    $creation['code_consignee'] = $nextprospect->code_consignee;
+                    $creation['etd_jkt'] = $nextprospect->etd_jkt;
+                    $creation['etd_ypmi'] = $nextprospect->etd_ypmi;
+                    $creation['etd_wh'] = $nextprospect->etd_wh;
+                    $creation['measurement'] = $nextprospect->measurement;
+                    $creation['iteration'] = $nextprospect->iteration+1;
+                    $creation['id_prospect_container'] = $nextprospect->id_prospect_container;
+                    $creation['kuota'] = $nextprospect->kuota;
+                    $ins = $prospectquery->create($creation);
+                    RegularDeliveryPlan::whereIn('id',$id)->update(['id_prospect_container_creation'=>$ins->id]);
+                    foreach ($delivery_plan_box as $value) {
+                        $value->update(['id_prospect_container_creation' => $ins->id]);
+                    }
+                }
+            } else {
+                $creation['id_type_delivery'] = $prospect_previous->id_type_delivery;
+                $creation['id_mot'] = $prospect_previous->id_mot;
+                $creation['id_container'] = $prospect_previous->id_container;
+                $creation['id_lsp'] =  $prospect_previous->id_lsp;
+                $creation['summary_box'] = $count_delivery_plan_box;
+                $creation['code_consignee'] = $prospect_previous->code_consignee;
+                $creation['etd_jkt'] = $prospect_previous->etd_jkt;
+                $creation['etd_ypmi'] = $prospect_previous->etd_ypmi;
+                $creation['etd_wh'] = $prospect_previous->etd_wh;
+                $creation['measurement'] = $prospect_previous->measurement;
+                $creation['iteration'] = $prospect_previous->iteration+1;
+                $creation['id_prospect_container'] = $prospect_previous->id_prospect_container;
+                $creation['kuota'] = $prospect_previous->kuota;
+                $ins = $prospectquery->create($creation);
+                RegularDeliveryPlan::whereIn('id',$id)->update(['id_prospect_container_creation'=>$ins->id]);
+                foreach ($delivery_plan_box as $value) {
+                    $value->update(['id_prospect_container_creation' => $ins->id]);
+                }
+            }
+
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
