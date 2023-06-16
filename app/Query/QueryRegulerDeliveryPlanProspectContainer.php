@@ -545,7 +545,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             foreach ($colis as $value){
                 $volume = $value['w'] * $value['h'] * $value['l'];
                 $boxVolume[] = round($volume,2) ?? 0;
-                $stackCapacities[] = $value->stackingCapacity;
+                $stackCapacities[] = $value['stackingCapacity'];
                 $id_reg_dev_plan[] = $value['id_delivery_plan'];
                 $qty += $value['q'];
             }
