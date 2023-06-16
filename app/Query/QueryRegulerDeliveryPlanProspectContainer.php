@@ -245,11 +245,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $id_prospect_container_creation[] = $value['id_prospect_container_creation'];
                 $id_prospect_container[] = $value['id_prospect_container'];
             }
-            
+
             // Helper::requireParams([
             //     'id'
             // ]);
-            
+
             $check = RegularDeliveryPlan::select('id_prospect_container_creation')
                 ->with('manyDeliveryPlanBox')
                 ->whereIn('id', $id)
@@ -261,7 +261,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                                         ->whereIn('id_regular_delivery_plan', $id)
                                         ->get()->count();
             $prospect = RegularDeliveryPlanProspectContainerCreation::whereIn('id',$id_prospect_container_creation)->orderByDesc('iteration')->first();
-            
+
             $nextprospect = RegularDeliveryPlanProspectContainerCreation::where(function ($query) use ($prospect){
                $query->where('code_consignee',$prospect->code_consignee);
                $query->where('datasource',$prospect->datasource);
@@ -409,14 +409,14 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
     }
 
-    public static function simulationContainer($id){
+    public static function simulationContainer($params){
 
-        $data = RegularDeliveryPlanProspectContainerCreation::where('id', $id)->first();
+        $data = RegularDeliveryPlanProspectContainerCreation::where('id', $params->id)->first();
 
         $container = MstContainer::find($data->id_container);
         $plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
             'id_box', DB::raw('count(id_box) as count_box'))
-            ->where('id_prospect_container_creation', $id)
+            ->where('id_prospect_container_creation', $params->id)
             ->groupBy('id_box', 'id_regular_delivery_plan')
             ->orderBy('count_box','desc')
             ->get()

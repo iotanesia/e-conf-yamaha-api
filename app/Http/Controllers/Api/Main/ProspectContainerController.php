@@ -123,12 +123,12 @@ class ProspectContainerController extends Controller
         }
     }
 
-    public static function simulation($id)
+    public static function simulation(Request $request)
     {
         try {
 
             return ResponseInterface::responseDataTest(
-                QueryRegulerDeliveryPlanProspectContainer::simulationContainer($id)
+                QueryRegulerDeliveryPlanProspectContainer::simulationContainer($request)
             );
 
         } catch (\Throwable $th) {
