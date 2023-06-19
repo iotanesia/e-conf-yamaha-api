@@ -365,21 +365,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item) use($params){
 
-                $data = RegularDeliveryPlanProspectContainer::where('id', $item->id_prospect_container)->get();
-
-                foreach ($data as $key => $value) {
-                    $plan_box = $value->manyRegularDeliveryPlan;
-                }
-
-                $box = [];
-                foreach ($plan_box as $key => $val) {
-                    $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $val['id'])->get()->toArray();
-                }
+                $box = RegularDeliveryPlanBox::with('refBox')->where('id_prospect_container_creation', $item->id)->get()->toArray();
 
                 $count_net_weight = 0;
                 $count_gross_weight = 0;
                 $count_meas = 0;
-                foreach (array_merge(...$box) as $box_item){
+                foreach ($box as $box_item){
                     $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
                     $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
                     $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
