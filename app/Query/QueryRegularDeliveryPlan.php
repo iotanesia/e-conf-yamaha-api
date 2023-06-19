@@ -744,7 +744,7 @@ class QueryRegularDeliveryPlan extends Model {
         }
 
         return [
-            'items' => $data->getCollection()->transform(function($item) use ($no_packaging,$cust_name){
+            'items' => $data->getCollection()->transform(function($item) use ($no_packaging,$cust_name,$order_no){
                 $item->no_packaging = $no_packaging ?? null;
                 $item->cust_name = $cust_name ?? null;
                 $item->order_no = $order_no ?? null;
@@ -1047,7 +1047,7 @@ class QueryRegularDeliveryPlan extends Model {
                 ]
             );
 
-           RegularDeliveryPlanProspectContainerCreation::whereIn('id',$request->id)->get()
+           RegularDeliveryPlanProspectContainerCreation::whereIn('id_prospect_container',$request->id)->get()
             ->map(function ($item) use ($request,$data){
                 $item->id_shipping_instruction = $data->id;
                 $item->is_booking = Constant::IS_ACTIVE;
