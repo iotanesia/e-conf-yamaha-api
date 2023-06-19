@@ -329,7 +329,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'lot_packing' => $item->lot_packing,
                 'packing_date' => $item->packing_date,
                 'namebox' => $no. " - ".$qty_box. " pcs",
-                'status' => $item->qr_code ? 'Done created QR code' : 'Waiting created QR code'
+                'status' => $item->qrcode !== null ? 'Done created QR code' : 'Waiting created QR code'
             ];
         });
 
@@ -927,7 +927,10 @@ class QueryRegularDeliveryPlan extends Model {
                 $insert = RegularDeliveryPlanShippingInsructionCreation::create($params);
                 $consignee = MstConsignee::where('nick_name', $request->consignee)->first()->code ?? null;
                 $prospect_container_creation = RegularDeliveryPlanProspectContainerCreation::query();
-                $prospect_container_creation->where('datasource',$request->datasource)->where('code_consignee',$consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
+                $update_creation = $prospect_container_creation->where('datasource',$request->datasource)->where('code_consignee',$consignee)->where('etd_jkt',$request->etd_jkt)->get();
+                foreach ($update_creation as $key => $value) {
+                    $value->update(['id_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
+                }
 
                 if (count($prospect_container_creation->where('id_shipping_instruction', $params['id_shipping_instruction'])->get()) == count($prospect_container_creation->where('id_shipping_instruction', $params['id_shipping_instruction'])->where('status', 2)->get())) {
                     RegularDeliveryPlanShippingInsruction::where('id', $params['id_shipping_instruction'])->update(['status' => 2]);

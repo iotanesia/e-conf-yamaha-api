@@ -40,6 +40,8 @@ class RegularDeliveryPlanShippingInsructionCreation extends Model
         "no_open",
         "hs_code",
         "net_weight",
+        "cosignee_address",
+        "count_container",
         "measurement",
         "peb",
         "other",
