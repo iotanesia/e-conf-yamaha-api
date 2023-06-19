@@ -735,19 +735,12 @@ class QueryRegularDeliveryPlan extends Model {
         foreach ($crontainer_creation as $value) {
             $no_packaging[] = $value->refRegularDeliveryPlanPropspectContainer->no_packaging;
             $cust_name[] = $value->refMstConsignee->nick_name;
-            $manyDeliveryPlan = $value->manyDeliveryPlan;
-        }
-
-        $order_no = [];
-        foreach ($manyDeliveryPlan as $value) {
-            $order_no[] = $value->order_no;
         }
 
         return [
-            'items' => $data->getCollection()->transform(function($item) use ($no_packaging,$cust_name,$order_no){
-                $item->no_packaging = $no_packaging ?? null;
-                $item->cust_name = $cust_name ?? null;
-                $item->order_no = $order_no ?? null;
+            'items' => $data->getCollection()->transform(function($item) use ($no_packaging,$cust_name){
+                $item->no_packaging = array_unique($no_packaging) ?? null;
+                $item->cust_name = array_unique($cust_name) ?? null;
                 $item->mot = $item->refMot->name ?? null;
 
                 unset(
@@ -804,7 +797,6 @@ class QueryRegularDeliveryPlan extends Model {
     public static function shippingDetailSI($params)
     {
         $data = RegularDeliveryPlanProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.id_shipping_instruction','regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.etd_wh','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','d.port'
-        ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS summary_container')
         ,DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation::character varying, ',') as id_shipping_instruction_creation")
         ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
         ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
@@ -816,11 +808,11 @@ class QueryRegularDeliveryPlan extends Model {
         ,DB::raw("string_agg(DISTINCT h.address1::character varying, ',') as consignee_address")
         ,DB::raw("string_agg(DISTINCT i.no_packaging::character varying, ',') as no_packaging")
         ,DB::raw("string_agg(DISTINCT j.id::character varying, ',') as id_shipping_instruction")
+        ,DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.summary_box::character varying, ',') as summary_box")
         ,DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_prospect_container::character varying, ',') as id_prospect_container")
         ,DB::raw("SUM(f.net_weight) as net_weight")
         ,DB::raw("SUM(f.gross_weight) as gross_weight")
-        ,DB::raw("SUM(f.measurement) as measurement")
-        ,DB::raw("SUM(regular_delivery_plan_prospect_container_creation.summary_box) as summary_box_sum"))
+        ,DB::raw("SUM(f.measurement) as measurement"))
         ->where('regular_delivery_plan_prospect_container_creation.code_consignee', $params->code_consignee)
         ->where('regular_delivery_plan_prospect_container_creation.etd_jkt', $params->etd_jkt)
         ->where('regular_delivery_plan_prospect_container_creation.datasource', $params->datasource)
@@ -868,11 +860,11 @@ class QueryRegularDeliveryPlan extends Model {
 
                 return [
                     'code_consignee' => $item->code_consignee,
-                    'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax,
+                    'consignee' => $item->refMstConsignee->name.'\r\n'.$item->refMstConsignee->address1.'\r\n'.$item->refMstConsignee->address2.'\r\n'.$item->refMstConsignee->tel.'\r\n'.$item->refMstConsignee->fax,
                     'customer_name' => $item->refMstConsignee->nick_name ?? null,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
-                    'summary_container' => $item->summary_container,
+                    'summary_container' => count(explode(",",$item->summary_box)),
                     'hs_code' => '',
                     'via' => $item->mot,
                     'freight_chart' => 'COLLECT',
@@ -887,7 +879,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'port_of_loading' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
                     'count' => $item->summary_container,
-                    'summary_box' => $item->summary_box_sum,
+                    'summary_box' => array_sum(explode(",",$item->summary_box)),
                     'to' => $item->refMstLsp->name ?? null,
                     'status' => $item->status ?? null,
                     'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
