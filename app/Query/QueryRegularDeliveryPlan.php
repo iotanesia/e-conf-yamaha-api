@@ -368,6 +368,7 @@ class QueryRegularDeliveryPlan extends Model {
             'no_packaging',
             'etd_jkt',
             'code_consignee',
+            'datasource',
         ]);
 
         if($is_trasaction) DB::beginTransaction();
