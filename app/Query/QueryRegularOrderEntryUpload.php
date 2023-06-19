@@ -221,6 +221,14 @@ class QueryRegularOrderEntryUpload extends Model {
             $data = self::find($request->id_regular_order_entry_upload);
             if(!$data) throw new \Exception("data not found", 400);
 
+            $upload_detail = RegularOrderEntryUploadDetail::where('id_regular_order_entry_upload', $request->id_regular_order_entry_upload)->get();
+            if ($upload_detail) {
+                foreach ($upload_detail as $value) {
+                    $value->refRegularOrderEntryUploadDetailBox()->delete();
+                    $value->delete();
+                }
+            }
+            
             DB::table('regular_order_entry_upload_detail_revision')
             ->where('id_regular_order_entry_upload',$request->id_regular_order_entry_upload)
             ->delete();
