@@ -860,7 +860,7 @@ class QueryRegularDeliveryPlan extends Model {
 
                 return [
                     'code_consignee' => $item->code_consignee,
-                    'consignee' => $item->refMstConsignee->name.'\r\n'.$item->refMstConsignee->address1.'\r\n'.$item->refMstConsignee->address2.'\r\n'.$item->refMstConsignee->tel.'\r\n'.$item->refMstConsignee->fax,
+                    'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax,
                     'customer_name' => $item->refMstConsignee->nick_name ?? null,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
