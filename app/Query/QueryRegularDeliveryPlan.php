@@ -537,6 +537,8 @@ class QueryRegularDeliveryPlan extends Model {
             'packing_date' => $item->packing_date ?? null,
             'lot_packing' => $item->lot_packing ?? null,
             'qrcode' => route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling',
+            'qr_key' => $item->id,
+            'no_box' => $item->refBox->no_box ?? null,
         ];
 
         return [
@@ -1005,7 +1007,7 @@ class QueryRegularDeliveryPlan extends Model {
             $check = RegularDeliveryPlanProspectContainerCreation::whereIn('id',$request->id)->whereNotNull('id_shipping_instruction')->count();
             if($check > 0) throw new \Exception("Prospect has been booked", 400);
 
-            $etdJkt = RegularDeliveryPlanProspectContainerCreation::select('etd_jkt','datasource')->whereIn('id',$request->id)->groupBy('etd_jkt','datasource')->get();
+            $etdJkt = RegularDeliveryPlanProspectContainerCreation::select('etd_jkt','datasource',DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_mot::character varying, ',') as id_mot"))->whereIn('id',$request->id)->groupBy('etd_jkt','datasource')->get();
             if(!count($etdJkt)) throw new \Exception("Data not found", 400);
 
             $no_booking = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').mt_rand(10000,99999);
