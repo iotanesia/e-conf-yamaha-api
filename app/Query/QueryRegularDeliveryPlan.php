@@ -329,7 +329,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'lot_packing' => $item->lot_packing,
                 'packing_date' => $item->packing_date,
                 'namebox' => $no. " - ".$qty_box. " pcs",
-                'status' => $item->qr_code ? 'Done created QR code' : 'Waiting created QR code'
+                'status' => $item->qrcode !== null ? 'Done created QR code' : 'Waiting created QR code'
             ];
         });
 
@@ -368,6 +368,7 @@ class QueryRegularDeliveryPlan extends Model {
             'no_packaging',
             'etd_jkt',
             'code_consignee',
+            'datasource',
         ]);
 
         if($is_trasaction) DB::beginTransaction();
@@ -536,6 +537,8 @@ class QueryRegularDeliveryPlan extends Model {
             'packing_date' => $item->packing_date ?? null,
             'lot_packing' => $item->lot_packing ?? null,
             'qrcode' => route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling',
+            'qr_key' => $item->id,
+            'no_box' => $item->refBox->no_box ?? null,
         ];
 
         return [
@@ -734,19 +737,12 @@ class QueryRegularDeliveryPlan extends Model {
         foreach ($crontainer_creation as $value) {
             $no_packaging[] = $value->refRegularDeliveryPlanPropspectContainer->no_packaging;
             $cust_name[] = $value->refMstConsignee->nick_name;
-            $manyDeliveryPlan = $value->manyDeliveryPlan;
-        }
-
-        $order_no = [];
-        foreach ($manyDeliveryPlan as $value) {
-            $order_no[] = $value->order_no;
         }
 
         return [
             'items' => $data->getCollection()->transform(function($item) use ($no_packaging,$cust_name){
-                $item->no_packaging = $no_packaging ?? null;
-                $item->cust_name = $cust_name ?? null;
-                $item->order_no = $order_no ?? null;
+                $item->no_packaging = array_unique($no_packaging) ?? null;
+                $item->cust_name = array_unique($cust_name) ?? null;
                 $item->mot = $item->refMot->name ?? null;
 
                 unset(
@@ -803,7 +799,6 @@ class QueryRegularDeliveryPlan extends Model {
     public static function shippingDetailSI($params)
     {
         $data = RegularDeliveryPlanProspectContainerCreation::select('regular_delivery_plan_prospect_container_creation.id_shipping_instruction','regular_delivery_plan_prospect_container_creation.code_consignee','regular_delivery_plan_prospect_container_creation.etd_jkt','regular_delivery_plan_prospect_container_creation.etd_wh','regular_delivery_plan_prospect_container_creation.id_lsp','g.status','id_shipping_instruction_creation','f.measurement','f.net_weight','f.gross_weight','f.container_value','f.container_type','e.name','c.name','d.port'
-        ,DB::raw('COUNT(regular_delivery_plan_prospect_container_creation.etd_jkt) AS summary_container')
         ,DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation::character varying, ',') as id_shipping_instruction_creation")
         ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
         ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
@@ -815,11 +810,11 @@ class QueryRegularDeliveryPlan extends Model {
         ,DB::raw("string_agg(DISTINCT h.address1::character varying, ',') as consignee_address")
         ,DB::raw("string_agg(DISTINCT i.no_packaging::character varying, ',') as no_packaging")
         ,DB::raw("string_agg(DISTINCT j.id::character varying, ',') as id_shipping_instruction")
+        ,DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.summary_box::character varying, ',') as summary_box")
         ,DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_prospect_container::character varying, ',') as id_prospect_container")
         ,DB::raw("SUM(f.net_weight) as net_weight")
         ,DB::raw("SUM(f.gross_weight) as gross_weight")
-        ,DB::raw("SUM(f.measurement) as measurement")
-        ,DB::raw("SUM(regular_delivery_plan_prospect_container_creation.summary_box) as summary_box_sum"))
+        ,DB::raw("SUM(f.measurement) as measurement"))
         ->where('regular_delivery_plan_prospect_container_creation.code_consignee', $params->code_consignee)
         ->where('regular_delivery_plan_prospect_container_creation.etd_jkt', $params->etd_jkt)
         ->where('regular_delivery_plan_prospect_container_creation.datasource', $params->datasource)
@@ -871,7 +866,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'customer_name' => $item->refMstConsignee->nick_name ?? null,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
-                    'summary_container' => $item->summary_container,
+                    'summary_container' => count(explode(",",$item->summary_box)),
                     'hs_code' => '',
                     'via' => $item->mot,
                     'freight_chart' => 'COLLECT',
@@ -886,7 +881,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'port_of_loading' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
                     'count' => $item->summary_container,
-                    'summary_box' => $item->summary_box_sum,
+                    'summary_box' => array_sum(explode(",",$item->summary_box)),
                     'to' => $item->refMstLsp->name ?? null,
                     'status' => $item->status ?? null,
                     'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
@@ -934,7 +929,10 @@ class QueryRegularDeliveryPlan extends Model {
                 $insert = RegularDeliveryPlanShippingInsructionCreation::create($params);
                 $consignee = MstConsignee::where('nick_name', $request->consignee)->first()->code ?? null;
                 $prospect_container_creation = RegularDeliveryPlanProspectContainerCreation::query();
-                $prospect_container_creation->where('datasource',$request->datasource)->where('code_consignee',$consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
+                $update_creation = $prospect_container_creation->where('datasource',$request->datasource)->where('code_consignee',$consignee)->where('etd_jkt',$request->etd_jkt)->get();
+                foreach ($update_creation as $key => $value) {
+                    $value->update(['id_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
+                }
 
                 if (count($prospect_container_creation->where('id_shipping_instruction', $params['id_shipping_instruction'])->get()) == count($prospect_container_creation->where('id_shipping_instruction', $params['id_shipping_instruction'])->where('status', 2)->get())) {
                     RegularDeliveryPlanShippingInsruction::where('id', $params['id_shipping_instruction'])->update(['status' => 2]);
@@ -1009,7 +1007,7 @@ class QueryRegularDeliveryPlan extends Model {
             $check = RegularDeliveryPlanProspectContainerCreation::whereIn('id',$request->id)->whereNotNull('id_shipping_instruction')->count();
             if($check > 0) throw new \Exception("Prospect has been booked", 400);
 
-            $etdJkt = RegularDeliveryPlanProspectContainerCreation::select('etd_jkt','datasource')->whereIn('id',$request->id)->groupBy('etd_jkt','datasource')->get();
+            $etdJkt = RegularDeliveryPlanProspectContainerCreation::select('etd_jkt','datasource',DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_mot::character varying, ',') as id_mot"))->whereIn('id',$request->id)->groupBy('etd_jkt','datasource')->get();
             if(!count($etdJkt)) throw new \Exception("Data not found", 400);
 
             $no_booking = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').mt_rand(10000,99999);
@@ -1046,7 +1044,7 @@ class QueryRegularDeliveryPlan extends Model {
                 ]
             );
 
-           RegularDeliveryPlanProspectContainerCreation::whereIn('id',$request->id)->get()
+           RegularDeliveryPlanProspectContainerCreation::whereIn('id_prospect_container',$request->id)->get()
             ->map(function ($item) use ($request,$data){
                 $item->id_shipping_instruction = $data->id;
                 $item->is_booking = Constant::IS_ACTIVE;

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RegularOrderEntryUploadDetail extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
     protected $table = 'regular_order_entry_upload_detail';
     public $fillable = [
         "id",

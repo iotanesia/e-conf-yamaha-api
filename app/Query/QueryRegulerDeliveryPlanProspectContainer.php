@@ -12,6 +12,7 @@ use App\Models\MstLsp;
 use App\Models\MstTypeDelivery;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
+use App\Models\RegularDeliveryPlanProspectContainer;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
 use App\Models\RegularProspectContainer;
 use App\Models\RegularProspectContainerCreation;
@@ -363,14 +364,26 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         if(!$data) throw new \Exception("Data not found", 400);
         return [
             'items' => $data->getCollection()->transform(function($item) use($params){
+
+                $box = RegularDeliveryPlanBox::with('refBox')->where('id_prospect_container_creation', $item->id)->get()->toArray();
+
+                $count_net_weight = 0;
+                $count_gross_weight = 0;
+                $count_meas = 0;
+                foreach ($box as $box_item){
+                    $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
+                    $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
+                    $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
+                }
+
                 $item->cust_name = $item->refRegularDeliveryPlanPropspectContainer->refConsignee->nick_name;
                 $item->id_type_delivery = $item->id_type_delivery;
                 $item->type_delivery = $item->refMstTypeDelivery->name;
                 $item->lsp = $item->refMstLsp->name;
                 $item->id_mot = $item->refMstMot->id;
-                $item->net_weight = $item->refMstContainer->net_weight;
-                $item->gross_weight = $item->refMstContainer->gross_weight;
-                $item->measurement = $item->refMstContainer->measurement;
+                $item->net_weight = round($count_net_weight,1);
+                $item->gross_weight = round($count_gross_weight,1);
+                $item->measurement = round($count_meas,3);
                 $item->container_type = $item->refMstContainer->container_type;
 
                 unset(
