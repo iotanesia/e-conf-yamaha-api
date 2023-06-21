@@ -539,6 +539,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function simulation($params)
     {
+
         $plan = RegularDeliveryPlan::select('id','code_consignee')
             ->where('id_prospect_container', $params->id)
             ->orderBy('id', 'asc')
@@ -842,6 +843,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         $remainingVolume = $containerVolume;
         foreach ($boxVolumes as $boxVolume) {
             foreach ($stackCapacities as $stackCapacity) {
+                $boxVolume = round($boxVolume);
                 $boxesInVolume = floor($remainingVolume / $boxVolume);
                 $fullStacks = floor($boxesInVolume / $stackCapacity);
                 $remainingBoxes = $boxesInVolume % $stackCapacity;
@@ -854,5 +856,4 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
         return $totalBoxes;
     }
-
 }
