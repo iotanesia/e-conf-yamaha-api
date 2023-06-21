@@ -35,7 +35,8 @@ class RegularProspectContainerCreation extends Model
         "datasource",
         "iteration",
         "is_completed",
-        "kuota"
+        "kuota",
+        "space",
     ];
 
     public function refRegularProspectContainer()

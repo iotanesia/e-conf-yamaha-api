@@ -63,7 +63,7 @@ class ProspectContainerController extends Controller
         try {
 
             return ResponseInterface::responseData(
-                QueryRegulerDeliveryPlanProspectContainer::creationSimulation($request)
+                QueryRegulerDeliveryPlanProspectContainer::creationCalculation($request)
             );
 
         } catch (\Throwable $th) {
