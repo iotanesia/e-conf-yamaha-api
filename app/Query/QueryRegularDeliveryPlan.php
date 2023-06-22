@@ -13,6 +13,7 @@ use App\Exports\InquiryExport;
 use App\Models\MstConsignee;
 use App\Models\MstContainer;
 use App\Models\MstShipment;
+use App\Models\MstSignature;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainer;
@@ -1088,6 +1089,9 @@ class QueryRegularDeliveryPlan extends Model {
             $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
             $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
             $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
+            $data->approved = MstSignature::where('type', 'APPROVED')->first()->name;
+            $data->checked = MstSignature::where('type', 'CHECKED')->first()->name;
+            $data->issued = MstSignature::where('type', 'ISSUED')->first()->name;
             $filename = 'shipping-instruction-'.$id.'.pdf';
             $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
             Pdf::loadView('pdf.shipping_instruction',[
