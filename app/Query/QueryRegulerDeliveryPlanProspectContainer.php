@@ -795,7 +795,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 }
 
                 RegularProspectContainerCreation::create($creation);
-                $sum_count_box = $sum_count_box - 12031;
+                $sum_row_length = $sum_row_length - 12031;
             }
 
             $upd = RegularProspectContainer::find($params->id);
