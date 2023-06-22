@@ -45,6 +45,7 @@ class RegularDeliveryPlanShippingInsructionCreation extends Model
         "measurement",
         "peb",
         "other",
+        "issued",
         "created_at",
         "created_by" ,
         "updated_at",
