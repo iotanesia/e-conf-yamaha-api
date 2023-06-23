@@ -79,7 +79,7 @@ class FixedQuantityConfirmationController extends Controller
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularFixedQuantityConfirmation::creationProcess($request)
+                QueryRegularFixedQuantityConfirmation::creationCalculation($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

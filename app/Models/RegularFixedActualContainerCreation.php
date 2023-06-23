@@ -31,6 +31,7 @@ class RegularFixedActualContainerCreation extends Model
         "item_no",
         "iteration",
         "status_bml",
+        "space",
         "created_at",
         "created_by",
         "updated_at",

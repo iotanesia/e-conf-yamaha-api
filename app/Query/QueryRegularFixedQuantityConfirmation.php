@@ -424,6 +424,147 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         }
     }
 
+    public static function creationCalculation($params)
+    {
+        DB::beginTransaction();
+        try {
+
+            $actual_container = RegularFixedActualContainer::find($params->id);
+            $lsp = MstLsp::where('code_consignee',$actual_container->code_consignee)
+                ->where('id_type_delivery', 1)
+                ->first();
+            
+            $fixedQuantity = RegularFixedQuantityConfirmation::select('id','code_consignee')
+                ->where('id_fixed_actual_container', $params->id)
+                ->orderBy('id', 'asc')
+                ->get();
+            $id_fixed_quantity = [];
+            foreach ($fixedQuantity as $item){
+                $id_fixed_quantity[] = $item->id;
+            }
+    
+            $quantityConfirmationBox = RegularFixedQuantityConfirmationBox::select('id_fixed_quantity_confirmation',
+                'id_box', DB::raw('count(id_box) as count_box'))
+            ->whereIn('id_fixed_quantity_confirmation',$id_fixed_quantity)
+            ->groupBy('id_box', 'id_fixed_quantity_confirmation')
+            ->orderBy('count_box','desc')
+            ->get()
+            ->map(function ($item, $index){
+                return [
+                    'id_fixed_quantity_confirmation' => $item->id_fixed_quantity_confirmation,
+                    'item_no' => $item->refBox->item_no,
+                    'label' => $item->refBox->no_box,
+                    'width' =>  $item->refBox->width,
+                    'length' => $item->refBox->length,
+                    'count_box' => $item->count_box,
+                    'priority' => $index + 1,
+                    'forkside' => $item->refBox->fork_side,
+                    'stackingCapacity' => $item->refBox->stack_capacity,
+                    'row' => (int)ceil($item->count_box / 4),
+                    'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
+                    'row_length' => $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4)),
+                    'box' => RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
+                                ->whereNull('id_prospect_container_creation')
+                                ->orderBy('id', 'asc')
+                                ->get()
+                ];
+            });
+
+            $sum_row_length = 0;
+            $sum_count_box = 0;
+            $first_row_length = [];
+            $first_row = [];
+            $first_count_box = [];
+            $row_length = [];
+            $count_box = [];
+            foreach ($quantityConfirmationBox as $key => $value) {
+                $sum_row_length += $value['row_length'];
+                $sum_count_box += $value['count_box'];
+                $first_row_length[] = $quantityConfirmationBox[$key]['first_row_length'];
+                $first_row[] = $quantityConfirmationBox[$key]['row'];
+                $first_count_box[] = $quantityConfirmationBox[$key]['count_box'];
+                $row_length[] = $quantityConfirmationBox[$key]['row_length'];
+                $count_box[] = $quantityConfirmationBox[$key]['count_box'];
+            }
+ 
+            $space = 0;
+            $sum_first_length = 0;
+            $summary_box = 0;
+            $num_items = count($first_row_length);
+            foreach ($first_row_length as $key => $value) {
+                $sum_first_length += $value * $first_row[$key];
+                $summary_box += $count_box[$key];
+                if ($sum_first_length > 5905 && $sum_first_length <= 12031) {
+                    if ($key+1 < $num_items) {
+                        if ($sum_first_length + ($value * $first_row[$key+1]) <= 12031) {
+                            $sum_first_length = $sum_first_length + ($value * $first_row[$key+1]);
+                            $summary_box = $summary_box + $count_box[$key+1];
+                            if ($sum_first_length + ($value * $first_row[$key+2]) <= 12031) {
+                                $sum_first_length = $sum_first_length + ($value * $first_row[$key+2]);
+                                $summary_box = $summary_box + $count_box[$key+2];
+                            }
+                        }
+                    }
+                    $space = 12031 - $sum_first_length;
+                    $summary_box = $summary_box;
+                    break;
+                }
+            }
+
+            $creation = [
+                'id_type_delivery' => $lsp->id_type_delivery,
+                'id_mot' => $lsp->refTypeDelivery->id_mot,
+                'id_lsp' => $lsp->id,
+                'code_consignee' => $actual_container->code_consignee,
+                'etd_jkt' => $actual_container->etd_jkt,
+                'etd_ypmi' => $actual_container->etd_ypmi,
+                'etd_wh' => $actual_container->etd_wh,
+                'id_prospect_container' => $params->id,
+                'status_bml' => 0,
+                'datasource' => $params->datasource,
+            ];
+
+            $count_container = (int)ceil($sum_row_length / 12031);
+            $send_summary_box = $summary_box;
+            for ($i=1; $i <= $count_container; $i++) { 
+                if ($sum_row_length < 5905) {
+                    $creation['id_container'] = 1;
+                    $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
+                    $creation['summary_box'] = $sum_count_box;
+                    $creation['iteration'] = $i;
+                    $creation['space'] = 5905 - $sum_row_length;
+                } else {
+                    $creation['id_container'] = 2;
+                    $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
+                    $creation['summary_box'] = $send_summary_box;
+                    $creation['iteration'] = $i;
+                    $creation['space'] = $space;
+                }
+
+                RegularFixedActualContainerCreation::create($creation);
+                $sum_row_length = $sum_row_length - 12031;
+                $send_summary_box = $sum_count_box - $summary_box;
+            }
+
+            $upd = RegularFixedActualContainer::find($params->id);
+            $upd->is_actual = 99;
+            $upd->save();
+
+            $set = [
+                'id' => $params->id,
+                'colis' => $quantityConfirmationBox,
+            ];
+
+           DB::commit();
+
+           ContainerActual::dispatch($set);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
     public static function countBoxesInContainer($containerVolume, $boxVolumes, $stackCapacities){
         rsort($boxVolumes);
         rsort($stackCapacities);
