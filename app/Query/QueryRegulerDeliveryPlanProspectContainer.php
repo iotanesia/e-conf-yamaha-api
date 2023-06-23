@@ -559,20 +559,20 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         ->map(function ($item, $index){
             return [
                 'id_delivery_plan' => $item->id_regular_delivery_plan,
+                'item_no' => $item->refRegularDeliveryPlan->item_no,
                 'label' => $item->refBox->no_box,
-                'w' =>  floatval($item->refBox->width/1000),
+                'w' => floatval($item->refBox->width/1000),
                 'h' => floatval($item->refBox->height/1000),
                 'l' => floatval($item->refBox->length/1000),
                 'q' => $item->count_box,
+                'v' => round(floatval($item->refBox->width/1000) * floatval($item->refBox->height/1000) * floatval($item->refBox->length/1000),2),
+                'forkside' => $item->refBox->fork_side,
+                'forklength' => $item->refBox->fork_length,
                 'priority' => $index + 1,
                 'stackingCapacity' => $item->refBox->stack_capacity,
                 'rotations' => [
                     'base'
-                ],
-                'box' => RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
-                            ->whereNull('id_prospect_container_creation')
-                            ->orderBy('id', 'asc')
-                            ->get()
+                ]
             ];
         });
 
@@ -611,6 +611,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $lsp = MstLsp::where('code_consignee',$prospect_container->code_consignee)
                 ->where('id_type_delivery', 1)
                 ->first();
+
             $simulation = self::simulation($params)['items'];
             $containerInfo = $simulation['container'];
             $colis = $simulation['colis'];
