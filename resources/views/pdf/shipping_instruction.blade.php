@@ -204,7 +204,7 @@
                 </tr>
             </table>
             </br>
-            <table>
+            {{-- <table>
                 <tr>
                     <td>CASE MARKS</td>
                     @foreach ($actual_container as $key => $item)
@@ -249,7 +249,7 @@
                         @endforeach
                     @endforeach 
                 </tr>
-            </table>
+            </table> --}}
         </table>
         <br>
         <p>Sincerelly Yours</p>

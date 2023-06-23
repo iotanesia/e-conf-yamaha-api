@@ -682,6 +682,143 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         }
     }
 
+    public static function creationCalculation($params)
+    {
+        DB::beginTransaction();
+        try {
+
+            $prospect_container = Model::find($params->id);
+            $lsp = MstLsp::where('code_consignee',$prospect_container->code_consignee)
+                ->where('id_type_delivery', 1)
+                ->first();
+            
+            $plan = RegularDeliveryPlan::select('id','code_consignee')
+                ->where('id_prospect_container', $params->id)
+                ->orderBy('id', 'asc')
+                ->get();
+            $delivery_plan = [];
+            foreach ($plan as $item){
+                $delivery_plan[] = $item->id;
+            }
+    
+            $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
+                'id_box', DB::raw('count(id_box) as count_box'))
+            ->whereIn('id_regular_delivery_plan',$delivery_plan)
+            ->groupBy('id_box', 'id_regular_delivery_plan')
+            ->orderBy('count_box','desc')
+            ->get()
+            ->map(function ($item, $index){
+                return [
+                    'id_delivery_plan' => $item->id_regular_delivery_plan,
+                    'item_no' => $item->refBox->item_no,
+                    'label' => $item->refBox->no_box,
+                    'width' =>  $item->refBox->width,
+                    'length' => $item->refBox->length,
+                    'count_box' => $item->count_box,
+                    'priority' => $index + 1,
+                    'forkside' => $item->refBox->fork_side,
+                    'stackingCapacity' => $item->refBox->stack_capacity,
+                    'row' => (int)ceil($item->count_box / 4),
+                    'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
+                    'row_length' => $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4)),
+                    'box' => RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
+                                ->whereNull('id_prospect_container_creation')
+                                ->orderBy('id', 'asc')
+                                ->get()
+                ];
+            });
+
+            $sum_row_length = 0;
+            $sum_count_box = 0;
+            $first_row_length = [];
+            $first_row = [];
+            $first_count_box = [];
+            $row_length = [];
+            $count_box = [];
+            foreach ($delivery_plan_box as $key => $value) {
+                $sum_row_length += $value['row_length'];
+                $sum_count_box += $value['count_box'];
+                $first_row_length[] = $delivery_plan_box[$key]['first_row_length'];
+                $first_row[] = $delivery_plan_box[$key]['row'];
+                $first_count_box[] = $delivery_plan_box[$key]['count_box'];
+                $row_length[] = $delivery_plan_box[$key]['row_length'];
+                $count_box[] = $delivery_plan_box[$key]['count_box'];
+            }
+
+            $space = 0;
+            $sum_first_length = 0;
+            $summary_box = 0;
+            foreach ($first_row_length as $key => $value) {
+                $sum_first_length += $value * $first_row[$key];
+                $summary_box += $count_box[$key];
+                if ($sum_first_length > 5905 && $sum_first_length <= 12031) {
+                    if ($sum_first_length + ($value * $first_row[$key+1]) <= 12031) {
+                        $sum_first_length = $sum_first_length + ($value * $first_row[$key+1]);
+                        $summary_box = $summary_box + $count_box[$key+1];
+                        if ($sum_first_length + ($value * $first_row[$key+2]) <= 12031) {
+                            $sum_first_length = $sum_first_length + ($value * $first_row[$key+2]);
+                            $summary_box = $summary_box + $count_box[$key+2];
+                        }
+                    }
+                    $space = 12031 - $sum_first_length;
+                    $summary_box = $summary_box;
+                    break;
+                }
+            }
+
+            $creation = [
+                'id_type_delivery' => $lsp->id_type_delivery,
+                'id_mot' => $lsp->refTypeDelivery->id_mot,
+                'id_lsp' => $lsp->id,
+                'code_consignee' => $prospect_container->code_consignee,
+                'etd_jkt' => $prospect_container->etd_jkt,
+                'etd_ypmi' => $prospect_container->etd_ypmi,
+                'etd_wh' => $prospect_container->etd_wh,
+                'id_prospect_container' => $params->id,
+                'status_bml' => 0,
+                'datasource' => $params->datasource,
+            ];
+
+            $count_container = (int)ceil($sum_row_length / 12031);
+            for ($i=1; $i <= $count_container; $i++) { 
+                if ($sum_row_length < 5905) {
+                    $creation['id_container'] = 1;
+                    $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
+                    $creation['summary_box'] = $sum_count_box;
+                    $creation['iteration'] = $i;
+                    $creation['space'] = 5905 - $sum_row_length;
+                } else {
+                    $creation['id_container'] = 2;
+                    $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
+                    $creation['summary_box'] = $summary_box;
+                    $creation['iteration'] = $i;
+                    $creation['space'] = $space;
+                }
+
+                RegularProspectContainerCreation::create($creation);
+                $sum_row_length = $sum_row_length - 12031;
+                $sum_count_box = $sum_count_box - $summary_box;
+            }
+
+            $upd = RegularProspectContainer::find($params->id);
+            $upd->is_prospect = 99;
+            $upd->save();
+
+            $set = [
+                'id' => $params->id,
+                'colis' => $delivery_plan_box,
+            ];
+
+           DB::commit();
+
+           ContainerPlan::dispatch($set);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
     public static function creationDelete($params, $id)
     {
         DB::beginTransaction();
