@@ -741,10 +741,20 @@ class QueryRegularDeliveryPlan extends Model {
             $cust_name[] = $value->refMstConsignee->nick_name;
         }
 
+        $no_packaging_unique = [];
+        foreach (array_unique($no_packaging) as $value) {
+            $no_packaging_unique[] = $value;
+        }
+
+        $cust_name_unique = [];
+        foreach (array_unique($cust_name) as $value) {
+            $cust_name_unique[] = $value;
+        }
+
         return [
-            'items' => $data->getCollection()->transform(function($item) use ($no_packaging,$cust_name){
-                $item->no_packaging = array_unique($no_packaging) ?? null;
-                $item->cust_name = array_unique($cust_name) ?? null;
+            'items' => $data->getCollection()->transform(function($item) use ($no_packaging_unique,$cust_name_unique){
+                $item->no_packaging = $no_packaging_unique ?? null;
+                $item->cust_name = $cust_name_unique ?? null;
                 $item->mot = $item->refMot->name ?? null;
 
                 unset(
