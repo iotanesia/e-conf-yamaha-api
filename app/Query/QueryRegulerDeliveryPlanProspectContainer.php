@@ -783,6 +783,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             ];
 
             $count_container = (int)ceil($sum_row_length / 12031);
+            $send_summary_box = $summary_box;
             for ($i=1; $i <= $count_container; $i++) { 
                 if ($sum_row_length < 5905) {
                     $creation['id_container'] = 1;
@@ -793,14 +794,14 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 } else {
                     $creation['id_container'] = 2;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                    $creation['summary_box'] = $summary_box;
+                    $creation['summary_box'] = $send_summary_box;
                     $creation['iteration'] = $i;
                     $creation['space'] = $space;
                 }
 
                 RegularProspectContainerCreation::create($creation);
                 $sum_row_length = $sum_row_length - 12031;
-                $sum_count_box = $sum_count_box - $summary_box;
+                $send_summary_box = $sum_count_box - $summary_box;
             }
 
             $upd = RegularProspectContainer::find($params->id);
