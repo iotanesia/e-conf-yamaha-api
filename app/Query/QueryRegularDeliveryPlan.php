@@ -868,6 +868,11 @@ class QueryRegularDeliveryPlan extends Model {
                     $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
                 }
 
+                $container_count = [];
+                foreach (array_count_values(explode(',', $item->container_type)) as $key => $value) {
+                    $container_count[] = $value;
+                }
+
                 return [
                     'code_consignee' => $item->code_consignee,
                     'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax,
@@ -881,7 +886,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'incoterm' => 'FOB',
                     'shipped_by' => $item->mot,
                     'container_value' => explode(',', $item->container_type),
-                    'container_count' => array_count_values(explode(',', $item->container_type)),
+                    'container_count' => $container_count,
                     'container_type' => $item->container_value,
                     'net_weight' => round($count_net_weight,1),
                     'gross_weight' => round($count_gross_weight,1),

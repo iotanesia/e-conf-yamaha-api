@@ -743,20 +743,23 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $row_length[] = $delivery_plan_box[$key]['row_length'];
                 $count_box[] = $delivery_plan_box[$key]['count_box'];
             }
-
+ 
             $space = 0;
             $sum_first_length = 0;
             $summary_box = 0;
+            $num_items = count($first_row_length);
             foreach ($first_row_length as $key => $value) {
                 $sum_first_length += $value * $first_row[$key];
                 $summary_box += $count_box[$key];
                 if ($sum_first_length > 5905 && $sum_first_length <= 12031) {
-                    if ($sum_first_length + ($value * $first_row[$key+1]) <= 12031) {
-                        $sum_first_length = $sum_first_length + ($value * $first_row[$key+1]);
-                        $summary_box = $summary_box + $count_box[$key+1];
-                        if ($sum_first_length + ($value * $first_row[$key+2]) <= 12031) {
-                            $sum_first_length = $sum_first_length + ($value * $first_row[$key+2]);
-                            $summary_box = $summary_box + $count_box[$key+2];
+                    if ($key+1 < $num_items) {
+                        if ($sum_first_length + ($value * $first_row[$key+1]) <= 12031) {
+                            $sum_first_length = $sum_first_length + ($value * $first_row[$key+1]);
+                            $summary_box = $summary_box + $count_box[$key+1];
+                            if ($sum_first_length + ($value * $first_row[$key+2]) <= 12031) {
+                                $sum_first_length = $sum_first_length + ($value * $first_row[$key+2]);
+                                $summary_box = $summary_box + $count_box[$key+2];
+                            }
                         }
                     }
                     $space = 12031 - $sum_first_length;
