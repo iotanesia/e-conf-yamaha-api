@@ -68,10 +68,41 @@ class QueryMstBox extends Model {
                 'no_box',
                 'id_part'
             ]);
-
             $params = $request->all();
-            self::create($params);
+            $num_set = self::latest()->first()->num_set;
 
+            for ($i=0; $i < count($params['item_no']); $i++) { 
+                self::create([
+                    "no_box" => $params['no_box'],
+                    "id_group_product" => $params['id_group_product'][$i],
+                    "id_part" => $params['id_part'][$i],
+                    "item_no" => $params['item_no'][$i],
+                    "item_no_series" => $params['item_no_series'],
+                    "qty" => $params['qty'][$i],
+                    "unit_weight_gr" => $params['unit_weight_gr'][$i],
+                    "unit_weight_kg" => $params['unit_weight_kg'][$i],
+                    "outer_carton_weight" => $params['outer_carton_weight'],
+                    "total_gross_weight" => $params['total_gross_weight'],
+                    "length" => $params['length'],
+                    "width" => $params['width'],
+                    "height" => $params['height'],
+                    "ratio" => $params['ratio'],
+                    "fork_length" => $params['fork_length'],
+                    "row_qty" => $params['row_qty'],
+                    "box_in_cont" => $params['box_in_cont'],
+                    "qty_in_cont" => $params['qty_in_cont'],
+                    "fork_side" => $params['fork_side'],
+                    "code_consignee" => $params['code_consignee'],
+                    "stack_capacity" => $params['stack_capacity'],
+                    "size" => $params['size'],
+                    "volume" => $params['volume'],
+                    "part_set" => $params['part_set'],
+                    "num_set" => $num_set == null ? 1 : $num_set +1
+                ]);
+
+                $num_set = $num_set - 1;
+            }
+            
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
 
