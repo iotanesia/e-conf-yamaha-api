@@ -97,12 +97,12 @@ class QueryMstBox extends Model {
                     "fork_side" => $params['fork_side'],
                     "code_consignee" => $params['code_consignee'],
                     "size" => $params['size'],
-                    "volume" => $params['length'] * $params['width'] * $params['height'],
+                    "volume" => (float)substr((($params['length'] * $params['width'] * $params['height']) / 1000000000),0,4),
                     "part_set" => $params['part_set'],
                     "num_set" => $num_set == null ? 1 : $num_set +1
                 ]);
-
-                $num_set = $num_set - 1;
+                
+                $num_set = $num_set;
             }
             
             if($is_transaction) DB::commit();
