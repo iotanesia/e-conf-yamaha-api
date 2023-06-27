@@ -55,30 +55,6 @@ class QueryRegularOrderEntryUploadDetail extends Model {
         if($params->id_regular_order_entry_upload) $query->where('id_regular_order_entry_upload', $params->id_regular_order_entry_upload);
 
         $data = $query
-        ->select('a.part_set','a.num_set',
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.id::character varying, ',') as id"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.code_consignee::character varying, ',') as code_consignee"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.id_regular_order_entry_upload::character varying, ',') as id_regular_order_entry_upload"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.model::character varying, ',') as model"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.disburse::character varying, ',') as disburse"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.delivery::character varying, ',') as delivery"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.qty::character varying, ',') as qty"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.status::character varying, ',') as status"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.order_no::character varying, ',') as order_no"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.cust_item_no::character varying, ',') as cust_item_no"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.created_at::character varying, ',') as created_at"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.updated_at::character varying, ',') as updated_at"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.updated_by::character varying, ',') as updated_by"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.deleted_at::character varying, ',') as deleted_at"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.uuid::character varying, ',') as uuid"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.etd_jkt::character varying, ',') as etd_jkt"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.etd_wh::character varying, ',') as etd_wh"),
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.etd_ypmi::character varying, ',') as etd_ypmi"),
-          DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
-          DB::raw("string_agg(DISTINCT a.item_no_series::character varying, ',') as item_no_series"),
-          )
-        ->leftJoin('mst_box as a','regular_order_entry_upload_detail.item_no','a.item_no')
-        ->groupBy('a.part_set','a.num_set')
         ->orderBy('id','asc')
         ->paginate($params->limit ?? null);
 
@@ -86,10 +62,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
             'items' => $data->map(function ($item){
                 $box = self::getDetailBox($item->id);
                 $custname = self::getCustName($item->code_consignee);
-                $itemname = [];
-                foreach (explode(',',$item->item_no) as $value) {
-                  $itemname[] = $value;
-                }
+                $itemname = self::getPart($item->item_no);
 
                 $set["id"] = $item->id;
                 $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
@@ -97,13 +70,13 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 $set["cust_name"] = $custname;
                 $set["model"] = $item->model;
                 $set["item_name"] = $itemname;
-                $set["item_no"] = explode(',',$item->item_no_series);
+                $set["item_no"] = $item->refMstPart->item_serial;
                 $set["disburse"] = $item->disburse;
                 $set["delivery"] = $item->delivery;
-                $set["qty"] = explode(',', $item->qty);
+                $set["qty"] = $item->qty;
                 $set["status"] = $item->status;
-                $set["order_no"] = explode(',',$item->order_no);
-                $set["cust_item_no"] = explode(',',$item->cust_item_no);
+                $set["order_no"] = $item->order_no;
+                $set["cust_item_no"] = $item->cust_item_no;
                 $set["created_at"] = $item->created_at;
                 $set["created_by"] = $item->created_by;
                 $set["updated_at"] = $item->updated_at;
@@ -113,8 +86,6 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 $set["etd_jkt"] = $item->etd_jkt;
                 $set["etd_wh"] = $item->etd_wh;
                 $set["etd_ypmi"] = $item->etd_ypmi;
-                $set["part_set"] = $item->part_set;
-                $set["num_set"] = $item->num_set;
                 $set["box"] = self::getCountBox($item->id);
 
                 unset($item->refRegularOrderEntryUpload);
