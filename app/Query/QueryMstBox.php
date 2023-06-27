@@ -7,6 +7,7 @@ use App\Models\MstBox AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\MstPart;
 use Illuminate\Support\Facades\Cache;
 
 class QueryMstBox extends Model {
@@ -66,14 +67,12 @@ class QueryMstBox extends Model {
 
             Helper::requireParams([
                 'no_box',
-                'id_part'
+                'item_no'
             ]);
 
             $params = $request->all();
-            self::create($params);
+            $num_set = self::latest()->first()->num_set;
 
-<<<<<<< HEAD
-=======
             for ($i=0; $i < count($params['item_no']); $i++) { 
                 $mst_part = MstPart::where('item_no', $params['item_no'][$i])->get();
                 self::create([
@@ -106,7 +105,6 @@ class QueryMstBox extends Model {
                 $num_set = $num_set - 1;
             }
             
->>>>>>> d27f9b1df8776d6fc0becd5c0df9b05098b34d98
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
 
