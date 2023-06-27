@@ -7,6 +7,7 @@ use App\Models\MstBox AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\MstPart;
 use Illuminate\Support\Facades\Cache;
 
 class QueryMstBox extends Model {
@@ -66,18 +67,19 @@ class QueryMstBox extends Model {
 
             Helper::requireParams([
                 'no_box',
-                'id_part'
+                'item_no'
             ]);
             $params = $request->all();
             $num_set = self::latest()->first()->num_set;
 
             for ($i=0; $i < count($params['item_no']); $i++) { 
+                $mst_part = MstPart::where('item_no', $params['item_no'])->get();
                 self::create([
                     "no_box" => $params['no_box'],
                     "id_group_product" => $params['id_group_product'][$i],
-                    "id_part" => $params['id_part'][$i],
+                    "id_part" => $mst_part[$i]->id,
                     "item_no" => $params['item_no'][$i],
-                    "item_no_series" => $params['item_no_series'],
+                    "item_no_series" => $mst_part[$i]->item_serial,
                     "qty" => $params['qty'][$i],
                     "unit_weight_gr" => $params['unit_weight_gr'][$i],
                     "unit_weight_kg" => $params['unit_weight_kg'][$i],
@@ -93,9 +95,8 @@ class QueryMstBox extends Model {
                     "qty_in_cont" => $params['qty_in_cont'],
                     "fork_side" => $params['fork_side'],
                     "code_consignee" => $params['code_consignee'],
-                    "stack_capacity" => $params['stack_capacity'],
                     "size" => $params['size'],
-                    "volume" => $params['volume'],
+                    "volume" => $params['length'] * $params['width'] * $params['height'],
                     "part_set" => $params['part_set'],
                     "num_set" => $num_set == null ? 1 : $num_set +1
                 ]);
