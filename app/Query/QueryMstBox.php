@@ -73,7 +73,7 @@ class QueryMstBox extends Model {
             $num_set = self::latest()->first()->num_set;
 
             for ($i=0; $i < count($params['item_no']); $i++) { 
-                $mst_part = MstPart::where('item_no', $params['item_no'])->get();
+                $mst_part = MstPart::where('item_no', $params['item_no'][$i])->get();
                 self::create([
                     "no_box" => $params['no_box'],
                     "id_group_product" => $params['id_group_product'][$i],
