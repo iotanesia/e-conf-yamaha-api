@@ -102,7 +102,7 @@ class QueryMstBox extends Model {
                     "num_set" => $num_set == null ? 1 : $num_set +1
                 ]);
                 
-                $num_set = $num_set;
+                $num_set = $num_set; 
             }
             
             if($is_transaction) DB::commit();
