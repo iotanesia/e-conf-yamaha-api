@@ -72,6 +72,41 @@ class QueryMstBox extends Model {
             $params = $request->all();
             self::create($params);
 
+<<<<<<< HEAD
+=======
+            for ($i=0; $i < count($params['item_no']); $i++) { 
+                $mst_part = MstPart::where('item_no', $params['item_no'][$i])->get();
+                self::create([
+                    "no_box" => $params['no_box'],
+                    "id_group_product" => $params['id_group_product'][$i],
+                    "id_part" => $mst_part[$i]->id,
+                    "item_no" => $params['item_no'][$i],
+                    "item_no_series" => $mst_part[$i]->item_serial,
+                    "qty" => $params['qty'][$i],
+                    "unit_weight_gr" => $params['unit_weight_gr'][$i],
+                    "unit_weight_kg" => $params['unit_weight_kg'][$i],
+                    "outer_carton_weight" => $params['outer_carton_weight'],
+                    "total_gross_weight" => $params['total_gross_weight'],
+                    "length" => $params['length'],
+                    "width" => $params['width'],
+                    "height" => $params['height'],
+                    "ratio" => $params['ratio'],
+                    "fork_length" => $params['fork_length'],
+                    "row_qty" => $params['row_qty'],
+                    "box_in_cont" => $params['box_in_cont'],
+                    "qty_in_cont" => $params['qty_in_cont'],
+                    "fork_side" => $params['fork_side'],
+                    "code_consignee" => $params['code_consignee'],
+                    "size" => $params['size'],
+                    "volume" => $params['length'] * $params['width'] * $params['height'],
+                    "part_set" => $params['part_set'],
+                    "num_set" => $num_set == null ? 1 : $num_set +1
+                ]);
+
+                $num_set = $num_set - 1;
+            }
+            
+>>>>>>> d27f9b1df8776d6fc0becd5c0df9b05098b34d98
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
 
