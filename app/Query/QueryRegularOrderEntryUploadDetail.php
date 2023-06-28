@@ -87,14 +87,17 @@ class QueryRegularOrderEntryUploadDetail extends Model {
             'items' => $data->map(function ($item){
                 $box = self::getDetailBox($item->id);
                 $custname = self::getCustName($item->code_consignee);
-                $itemname = self::getPart($item->item_no);
-
+                $itemname = [];
+                foreach (explode(',', $item->item_no) as $value) {
+                  $itemname[] = self::getPart($value);
+                }
+                
                 $set["id"] = $item->id;
                 $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
                 $set["code_consignee"] = $item->code_consignee;
                 $set["cust_name"] = $custname;
                 $set["model"] = $item->model;
-                $set["item_name"] = $itemname;
+                $set["item_name"] = implode(',',$itemname);
                 $set["item_no"] = $item->item_no_series;
                 $set["disburse"] = $item->disburse;
                 $set["delivery"] = $item->delivery;
