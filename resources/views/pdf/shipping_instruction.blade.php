@@ -266,8 +266,8 @@
             </tr>
             <tr>
                 <td class="text-center">{{ $data->issued }}</td>
-                <td class="text-center">{{ $data->checked }}</td>
-                <td class="text-center">{{ $data->approved }}</td>
+                <td class="text-center"></td>
+                <td class="text-center"></td>
             </tr>
         </table>
     </body>
