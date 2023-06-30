@@ -237,7 +237,7 @@ class QueryRegularDeliveryPlan extends Model {
                 }
             }
 
-            $set["id"] = $item->id_regular_delivery_plan;
+            $set["id"] = explode(',',$item->id_regular_delivery_plan);
             $set["code_consignee"] = $item->code_consignee;
             $set["cust_name"] = $custname;
             $set["model"] = $item->model;
