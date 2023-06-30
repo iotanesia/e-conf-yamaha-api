@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\DB;
 use App\ApiHelper as Helper;
 use App\ApiHelper;
 use App\Exports\InquiryExport;
+use App\Models\MstBox;
 use App\Models\MstConsignee;
 use App\Models\MstContainer;
+use App\Models\MstPart;
 use App\Models\MstShipment;
 use App\Models\MstSignature;
 use App\Models\RegularDeliveryPlan;
@@ -153,7 +155,7 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function detail($params,$id_regular_order_entry)
     {
-        $data = self::where('id_regular_order_entry',$id_regular_order_entry)
+        $query = self::where('id_regular_order_entry',$id_regular_order_entry)
         ->where(function ($query) use ($params){
             $category = $params->category ?? null;
             if($category) {
@@ -169,28 +171,98 @@ class QueryRegularDeliveryPlan extends Model {
             $date_to = str_replace('-','',$params->date_to);
             if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
         })
-        ->where('is_inquiry', 0)
-        ->paginate($params->limit ?? null);
+        ->where('is_inquiry', 0);
+
+        $data = $query->select('a.part_set','a.num_set','regular_delivery_plan.etd_jkt',
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.id::character varying, ',') as id_regular_delivery_plan"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.code_consignee::character varying, ',') as code_consignee"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.item_no::character varying, ',') as item_no"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.model::character varying, ',') as model"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.disburse::character varying, ',') as disburse"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.delivery::character varying, ',') as delivery"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.qty::character varying, ',') as qty"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.order_no::character varying, ',') as order_no"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.cust_item_no::character varying, ',') as cust_item_no"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.created_at::character varying, ',') as created_at"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.updated_at::character varying, ',') as updated_at"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.updated_by::character varying, ',') as updated_by"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.deleted_at::character varying, ',') as deleted_at"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.uuid::character varying, ',') as uuid"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.etd_wh::character varying, ',') as etd_wh"),
+        DB::raw("string_agg(DISTINCT regular_delivery_plan.etd_ypmi::character varying, ',') as etd_ypmi"),
+        DB::raw("string_agg(DISTINCT a.item_no_series::character varying, ',') as item_no_series"),
+        DB::raw("string_agg(DISTINCT a.part_set::character varying, ',') as part_set"),
+        DB::raw("string_agg(DISTINCT a.num_set::character varying, ',') as num_set"),
+        )
+      ->leftJoin('mst_box as a','regular_delivery_plan.item_no','a.item_no')
+      ->groupBy('a.part_set','a.num_set','regular_delivery_plan.etd_jkt')
+      ->paginate($params->limit ?? null);
 
         $data->transform(function ($item){
-            $item->item_no = $item->refPart->item_serial ?? null;
-            $item->item_name = $item->refPart->description ?? null;
-            $item->cust_name = $item->refConsignee->nick_name ?? null;
-            $regularOrderEntry = $item->refRegularOrderEntry;
-            $item->regular_order_entry_period = $regularOrderEntry->period ?? null;
-            $item->regular_order_entry_month = $regularOrderEntry->month ?? null;
-            $item->regular_order_entry_year = $regularOrderEntry->year ?? null;
-            $item->box = self::getCountBox($item->id) ?? [];
+            $custname = self::getCustName($item->code_consignee);
+            $itemname = [];
+            foreach (explode(',', $item->item_no) as $value) {
+                $itemname[] = self::getPart($value);
+            }
 
-            unset(
-                $item->refRegularOrderEntry,
-                $item->manyDeliveryPlanBox,
-                $item->refPart,
-                $item->refConsignee
-            );
+            $item_no = [];
+            foreach (explode(',', $item->item_no) as $value) {
+                $item_no[] = $value;
+            }
 
-            return $item;
+            if (count($item_no) > 1) {
+                $mst_box = MstBox::whereIn('item_no', $item_no)
+                                ->get()->map(function ($item){
+                                $qty =  $item->qty;
+                                return $qty;
+                            });
 
+                $qty = [];
+                foreach (explode(',', $item->qty) as $key => $value) {
+                $qty[] = $value / $mst_box->toArray()[$key];
+                }
+                
+                $box = [
+                'qty' =>  array_sum($mst_box->toArray())." x ".(int)ceil(max($qty)),
+                'length' =>  "",
+                'width' =>  "",
+                'height' =>  "",
+                ];
+
+                if (count(explode(',',$item->qty)) == 1) {
+                $qty_order = [];
+                for ($i=1; $i <= count($item_no); $i++) { 
+                    $qty_order[] = $item->qty;
+                }
+                }
+            }
+
+            $set["id"] = $item->id_regular_delivery_plan;
+            $set["code_consignee"] = $item->code_consignee;
+            $set["cust_name"] = $custname;
+            $set["model"] = $item->model;
+            $set["item_name"] = $itemname;
+            $set["item_no"] = explode(',',$item->item_no_series);
+            $set["disburse"] = $item->disburse;
+            $set["delivery"] = $item->delivery;
+            $set["qty"] = count($item_no) > 1 ? (count(explode(',',$item->qty)) == 1 ? $qty_order : explode(',',$item->qty)) : explode(',',$item->qty);
+            $set["order_no"] = $item->order_no;
+            $set["cust_item_no"] = $item->cust_item_no;
+            $set["created_at"] = $item->created_at;
+            $set["created_by"] = $item->created_by;
+            $set["updated_at"] = $item->updated_at;
+            $set["updated_by"] = $item->updated_by;
+            $set["deleted_at"] = $item->deleted_at;
+            $set["uuid"] = $item->uuid;
+            $set["etd_jkt"] = $item->etd_jkt;
+            $set["etd_wh"] = $item->etd_wh;
+            $set["etd_ypmi"] = $item->etd_ypmi;
+            $set["part_set"] = $item->part_set;
+            $set["num_set"] = $item->num_set;
+            $set["box"] = count($item_no) > 1 ? [$box] : self::getCountBox($item->id_regular_delivery_plan);
+
+            unset($item->refRegularOrderEntry);
+            return $set;
         });
 
 
@@ -199,6 +271,16 @@ class QueryRegularDeliveryPlan extends Model {
             'last_page' => $data->lastPage(),
 
         ];
+    }
+
+    public static function getPart($id_part){
+        $data = MstPart::where('item_no', $id_part)->first();
+        return $data->description ?? null;
+    }
+
+    public static function getCustName($code_consignee){
+        $data = MstConsignee::where('code', $code_consignee)->first();
+        return $data->nick_name ?? null;
     }
 
     public static function detailBox($params,$id)
