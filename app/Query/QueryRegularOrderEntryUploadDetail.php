@@ -11,6 +11,7 @@ use App\Models\RegularOrderEntryUploadDetailBox;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\MstBox;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use stdClass;
@@ -56,7 +57,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
         $data = $query
         ->select('a.part_set','a.num_set','regular_order_entry_upload_detail.etd_jkt',
-          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.id::character varying, ',') as id"),
+          DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.id::character varying, ',') as id_regular_order_entry_upload_detail"),
           DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.code_consignee::character varying, ',') as code_consignee"),
           DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.item_no::character varying, ',') as item_no"),
           DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail.id_regular_order_entry_upload::character varying, ',') as id_regular_order_entry_upload"),
@@ -80,28 +81,59 @@ class QueryRegularOrderEntryUploadDetail extends Model {
           )
         ->leftJoin('mst_box as a','regular_order_entry_upload_detail.item_no','a.item_no')
         ->groupBy('a.part_set','a.num_set','regular_order_entry_upload_detail.etd_jkt')
-        ->orderBy('id','asc')
+        ->orderBy('id_regular_order_entry_upload_detail','asc')
         ->paginate($params->limit ?? null);
 
         return [
             'items' => $data->map(function ($item){
-                $box = self::getDetailBox($item->id);
+                // $box = self::getDetailBox($item->id);
                 $custname = self::getCustName($item->code_consignee);
                 $itemname = [];
                 foreach (explode(',', $item->item_no) as $value) {
                   $itemname[] = self::getPart($value);
                 }
+                $item_no = [];
+                foreach (explode(',', $item->item_no) as $value) {
+                  $item_no[] = $value;
+                }
+
+                if (count($item_no) > 1) {
+                  $mst_box = MstBox::whereIn('item_no', $item_no)
+                                  ->get()->map(function ($item){
+                                    $qty =  $item->qty;
+                                    return $qty;
+                              });
+
+                  $qty = [];
+                  foreach (explode(',', $item->qty) as $key => $value) {
+                    $qty[] = $value / $mst_box->toArray()[$key];
+                  }
+                  
+                  $box = [
+                    'qty' =>  array_sum($mst_box->toArray())." x ".(int)ceil(max($qty)),
+                    'length' =>  "",
+                    'width' =>  "",
+                    'height' =>  "",
+                  ];
+
+                  if (count(explode(',',$item->qty)) == 1) {
+                    $qty_order = [];
+                    for ($i=1; $i <= count($item_no); $i++) { 
+                      $qty_order[] = $item->qty;
+                    }
+                  }
+                }
                 
-                $set["id"] = $item->id;
+                $set["id"] = $item->id_regular_order_entry_upload_detail;
                 $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
                 $set["code_consignee"] = $item->code_consignee;
                 $set["cust_name"] = $custname;
                 $set["model"] = $item->model;
-                $set["item_name"] = implode(',',$itemname);
-                $set["item_no"] = $item->item_no_series;
+                $set["item_name"] = $itemname;
+                $set["item_no"] = explode(',',$item->item_no_series);
                 $set["disburse"] = $item->disburse;
                 $set["delivery"] = $item->delivery;
-                $set["qty"] = $item->qty;
+                $set["qty"] = count($item_no) > 1 ? (count(explode(',',$item->qty)) == 1 ? $qty_order : explode(',',$item->qty)) : explode(',',$item->qty);
                 $set["status"] = $item->status;
                 $set["order_no"] = $item->order_no;
                 $set["cust_item_no"] = $item->cust_item_no;
@@ -116,7 +148,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 $set["etd_ypmi"] = $item->etd_ypmi;
                 $set["part_set"] = $item->part_set;
                 $set["num_set"] = $item->num_set;
-                $set["box"] = self::getCountBox($item->id);
+                $set["box"] = count($item_no) > 1 ? [$box] : self::getCountBox($item->id_regular_order_entry_upload_detail);
 
                 unset($item->refRegularOrderEntryUpload);
                 return $set;
