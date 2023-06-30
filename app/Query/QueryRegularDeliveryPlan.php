@@ -537,14 +537,22 @@ class QueryRegularDeliveryPlan extends Model {
 
             ]);
 
-            $check = RegularDeliveryPlan::select('etd_jkt','code_consignee','datasource')->whereIn('id',$params->id)
+            $id = $params->id;
+            if (count($params->id[0]) > 1) {
+                $id = [];
+                foreach ($params->id[0] as $key => $value) {
+                    $id[] = [$value];
+                }
+            }
+
+            $check = RegularDeliveryPlan::select('etd_jkt','code_consignee','datasource')->whereIn('id',$id)
             ->groupBy('etd_jkt','code_consignee','datasource')
             ->get()
             ->toArray();
 
             if(count($check) > 1) throw new \Exception("ETD JKT and Customer name not same", 400);
 
-            $data = RegularDeliveryPlan::select(DB::raw('count(order_no) as total'),'order_no')->whereIn('id',$params->id)
+            $data = RegularDeliveryPlan::select(DB::raw('count(order_no) as total'),'order_no')->whereIn('id',$id)
             ->groupBy('order_no')
             ->orderBy('total','desc')
             ->get()
@@ -559,7 +567,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             return [
                 "items" => [
-                    'id' => $params->id,
+                    'id' => $id,
                     'no_packaging' => $no_packaging,
                     'etd_jkt' => $tanggal,
                     'code_consignee' => $code_consignee,
