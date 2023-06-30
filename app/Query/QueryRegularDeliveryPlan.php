@@ -455,6 +455,14 @@ class QueryRegularDeliveryPlan extends Model {
             // 'datasource',
         ]);
 
+        $id = $params->id;
+        if (count($params->id[0]) > 1) {
+            $id = [];
+            foreach ($params->id[0] as $key => $value) {
+                $id[] = [$value];
+            }
+        }
+
         if($is_trasaction) DB::beginTransaction();
         try {
            $check = RegularDeliveryPlanProspectContainer::where('no_packaging',$params->no_packaging)->first();
@@ -504,8 +512,8 @@ class QueryRegularDeliveryPlan extends Model {
 
             $id_container_creation = $params->id_mot == 2 ? $container_creation->id : null;
 
-           self::where(function ($query) use ($params){
-                   $query->whereIn('id',$params->id);
+           self::where(function ($query) use ($params,$id){
+                   $query->whereIn('id',$id);
                    $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
                    $query->where('datasource',$params->datasource);
