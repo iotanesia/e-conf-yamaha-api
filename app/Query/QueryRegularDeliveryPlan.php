@@ -516,7 +516,7 @@ class QueryRegularDeliveryPlan extends Model {
                    $query->whereIn('id',$id);
                    $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
-                   $query->where('datasource',$params->datasource);
+                //    $query->where('datasource',$params->datasource);
            })
            ->chunk(1000,function ($data) use ($params,$store,$id_container_creation){
                 foreach ($data as $key => $item) {
