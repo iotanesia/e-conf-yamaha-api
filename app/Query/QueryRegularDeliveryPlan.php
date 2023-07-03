@@ -213,27 +213,38 @@ class QueryRegularDeliveryPlan extends Model {
             if (count($item_no) > 1) {
                 $mst_box = MstBox::whereIn('item_no', $item_no)
                                 ->get()->map(function ($item){
-                                $qty =  $item->qty;
-                                return $qty;
-                            });
+                                    $qty = [
+                                        $item->item_no => $item->qty
+                                    ];
+                                
+                                    return array_merge($qty);
+                                });
+
+                $qty_per_item_no = [];
+                foreach (explode(',', $item->item_no) as $key => $value) {
+                    $qty_per_item_no[] = [
+                        $value => explode(',', $item->qty)[$key]
+                    ];
+                }
 
                 $qty = [];
-                foreach (explode(',', $item->qty) as $key => $value) {
-                $qty[] = $value / $mst_box->toArray()[$key];
+                foreach ($mst_box as $key => $value) {
+                    $arary_key = array_keys($value)[0];
+                    $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
                 }
                 
                 $box = [
-                'qty' =>  array_sum($mst_box->toArray())." x ".(int)ceil(max($qty)),
-                'length' =>  "",
-                'width' =>  "",
-                'height' =>  "",
+                    'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty)),
+                    'length' =>  "",
+                    'width' =>  "",
+                    'height' =>  "",
                 ];
 
                 if (count(explode(',',$item->qty)) == 1) {
-                $qty_order = [];
-                for ($i=1; $i <= count($item_no); $i++) { 
-                    $qty_order[] = $item->qty;
-                }
+                    $qty_order = [];
+                    for ($i=1; $i <= count($item_no); $i++) { 
+                        $qty_order[] = $item->qty;
+                    }
                 }
             }
 
