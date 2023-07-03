@@ -520,7 +520,7 @@ class QueryRegularDeliveryPlan extends Model {
                 foreach ($data as $key => $item) {
                     $item->is_inquiry = Constant::IS_ACTIVE;
                     $item->id_prospect_container = $store->id;
-                    if ($params->id_mot == 2) {
+                    if ($params->id_mot == 1) {
                         $item->id_prospect_container_creation = $id_container_creation;
                     }
                     $item->save();
