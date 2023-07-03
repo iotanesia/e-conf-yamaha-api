@@ -480,26 +480,24 @@ class QueryRegularDeliveryPlan extends Model {
                         "is_prospect" => $params->id_mot == 2 ? 2 : 0
             ]);
 
-            if ($params->id_mot == 2) {
-                $store->update(['id_type_delivery' => 1]);
+            $shipping = RegularDeliveryPlanShippingInsruction::create([
+                "no_booking" =>  'BOOK'.Carbon::parse($params->etd_jkt)->format('dmY').mt_rand(10000,99999),
+                "booking_date" => now(),
+                "datasource" => $params->datasource,
+                "status" => 1,
+                "id_mot" => $params->id_mot
+            ]);
 
+            if ($params->id_mot == 1) {
                 $container_creation = RegularDeliveryPlanProspectContainerCreation::create([
                         "id_prospect_container" => $store->id,
                         "id_type_delivery" => 1,
-                        "id_mot" => 2,
+                        "id_mot" => 1,
                         "code_consignee" => $params->code_consignee,
                         "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
                         "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
                         "etd_jkt" => $params->etd_jkt,
                         "datasource" => $params->datasource,
-                ]);
-
-                $shipping = RegularDeliveryPlanShippingInsruction::create([
-                        "no_booking" =>  'BOOK'.Carbon::parse($params->etd_jkt)->format('dmY').mt_rand(10000,99999),
-                        "booking_date" => now(),
-                        "datasource" => $params->datasource,
-                        "status" => 1,
-                        "id_mot" => $params->id_mot
                 ]);
 
                 $id_delivery_plan = $container_creation->manyDeliveryPlan()->pluck('id');
@@ -510,7 +508,7 @@ class QueryRegularDeliveryPlan extends Model {
                 ]);
             }
 
-            $id_container_creation = $params->id_mot == 2 ? $container_creation->id : null;
+            $id_container_creation = $params->id_mot == 1 ? $container_creation->id : null;
 
            self::where(function ($query) use ($params,$id){
                    $query->whereIn('id',$id);
