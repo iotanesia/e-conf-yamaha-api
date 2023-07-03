@@ -220,11 +220,25 @@ class QueryRegularDeliveryPlan extends Model {
                                     return array_merge($qty);
                                 });
 
-                $qty_per_item_no = [];
-                foreach (explode(',', $item->item_no) as $key => $value) {
-                    $qty_per_item_no[] = [
-                        $value => explode(',', $item->qty)[$key]
-                    ];
+                if (count(explode(',',$item->qty)) == 1) {
+                    $qty_order = [];
+                    for ($i=1; $i <= count($item_no); $i++) { 
+                        $qty_order[] = $item->qty;
+                    }
+
+                    $qty_per_item_no = [];
+                    foreach (explode(',', $item->item_no) as $key => $value) {
+                        $qty_per_item_no[] = [
+                            $value => $qty_order[$key]
+                        ];
+                    }
+                } else {
+                  $qty_per_item_no = [];
+                  foreach (explode(',', $item->item_no) as $key => $value) {
+                      $qty_per_item_no[] = [
+                          $value => explode(',', $item->qty)[$key]
+                      ];
+                  }
                 }
 
                 $qty = [];
@@ -240,12 +254,6 @@ class QueryRegularDeliveryPlan extends Model {
                     'height' =>  "",
                 ];
 
-                if (count(explode(',',$item->qty)) == 1) {
-                    $qty_order = [];
-                    for ($i=1; $i <= count($item_no); $i++) { 
-                        $qty_order[] = $item->qty;
-                    }
-                }
             }
 
             $set["id"] = explode(',',$item->id_regular_delivery_plan);
