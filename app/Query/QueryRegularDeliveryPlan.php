@@ -480,7 +480,7 @@ class QueryRegularDeliveryPlan extends Model {
                         "is_prospect" => $params->id_mot == 2 ? 2 : 0
             ]);
 
-            if ($params->id_mot == 1) {
+            if ($params->id_mot == 2) {
                 $store->update(['id_type_delivery' => 1]);
 
                 $container_creation = RegularDeliveryPlanProspectContainerCreation::create([
@@ -510,7 +510,7 @@ class QueryRegularDeliveryPlan extends Model {
                 ]);
             }
 
-            $id_container_creation = $params->id_mot == 1 ? $container_creation->id : null;
+            $id_container_creation = $params->id_mot == 2 ? $container_creation->id : null;
 
            self::where(function ($query) use ($params,$id){
                    $query->whereIn('id',$id);
@@ -522,7 +522,7 @@ class QueryRegularDeliveryPlan extends Model {
                 foreach ($data as $key => $item) {
                     $item->is_inquiry = Constant::IS_ACTIVE;
                     $item->id_prospect_container = $store->id;
-                    if ($params->id_mot == 1) {
+                    if ($params->id_mot == 2) {
                         $item->id_prospect_container_creation = $id_container_creation;
                     }
                     $item->save();
