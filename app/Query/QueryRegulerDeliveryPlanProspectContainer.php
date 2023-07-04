@@ -809,29 +809,33 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 foreach ($plan as $value) {
                     $item_no[] = $value->item_no;
                 }
-                $mst_box = MstBox::whereIn('item_no', $item_no)
-                ->get()->map(function ($item){
-                    $qty = [
-                        $item->item_no => $item->qty
-                    ];
-                
-                    return array_merge($qty);
-                });
 
-                $qty_per_item_no = [];
-                    foreach ($item_no as $key => $value) {
-                    $qty_per_item_no[] = [
-                        $value => $sum_qty_box[$key]
-                    ];
+                $cek_set = MstBox::where('part_set', 'set')->whereIn('item_no',$item_no)->get();
+                if (count($cek_set)) {
+                    $mst_box = MstBox::whereIn('item_no', $item_no)
+                    ->get()->map(function ($item){
+                        $qty = [
+                            $item->item_no => $item->qty
+                        ];
+                    
+                        return array_merge($qty);
+                    });
+
+                    $qty_per_item_no = [];
+                        foreach ($item_no as $key => $value) {
+                        $qty_per_item_no[] = [
+                            $value => $sum_qty_box[$key]
+                        ];
+                    }
+
+                    $qty = [];
+                    foreach ($mst_box as $key => $value) {
+                        $arary_key = array_keys($value)[0];
+                        $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
+                    }
+
+                    $sum_row_length = max($big_row_length);   
                 }
-
-                $qty = [];
-                foreach ($mst_box as $key => $value) {
-                    $arary_key = array_keys($value)[0];
-                    $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
-                }
-
-                $sum_row_length = max($big_row_length);
             }
       
             $space = 0;
