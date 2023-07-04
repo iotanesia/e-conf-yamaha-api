@@ -643,7 +643,8 @@ class QueryRegularDeliveryPlan extends Model {
             }
 
             return [
-                'items' => $result
+                'items' => $result,
+                'last_page' => 0
             ];
 
         } else {
@@ -876,19 +877,43 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function label($params,$id)
     {
-        $item = RegularDeliveryPlanBox::where('id',$id)->orderBy('id','asc')->first();
+        if (count(explode(',',$id)) > 1) {
+            $id_plan_box = explode(',',$id);
+            $item = RegularDeliveryPlanBox::whereIn('id',$id_plan_box)->orderBy('id','asc')->get();
+            $itemname = [];
+            $item_no = [];
+            $order_no = [];
+            $qty_pcs_box = [];
+            $packing_date = [];
+            $lot_packing = [];
+            $qrcode = '';
+            $no_box = [];
+            foreach ($item as $value) {
+                $itemname[] = trim($value->refRegularDeliveryPlan->refPart->description) ?? null;
+                $item_no[] = $value->refRegularDeliveryPlan->refPart->item_serial ?? null;
+                $order_no[] = $value->refRegularDeliveryPlan->order_no ?? null;
+                $qty_pcs_box[] = $value->qty_pcs_box ?? 0;
+                $packing_date[] = $value->packing_date ?? null;
+                $lot_packing[] = $value->lot_packing ?? null;
+                $qrcode = $value->qrcode;
+                $no_box[] = $value->refBox->no_box ?? null;
+            }
+        } else {
+            $item = RegularDeliveryPlanBox::where('id',$id)->orderBy('id','asc')->first();
+        }
+        
         if(!$item) throw new \Exception("Data not found", 400);
         $data = [
-            'id' => $item->id,
-            'item_name' => trim($item->refRegularDeliveryPlan->refPart->description) ?? null,
-            'item_no' => $item->refRegularDeliveryPlan->refPart->item_serial ?? null,
-            'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
-            'qty_pcs_box' => $item->qty_pcs_box ?? 0,
-            'packing_date' => $item->packing_date ?? null,
-            'lot_packing' => $item->lot_packing ?? null,
-            'qrcode' => route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling',
-            'qr_key' => $item->id,
-            'no_box' => $item->refBox->no_box ?? null,
+            'id' => count(explode(',',$id)) > 1 ? explode(',',$id) : $item->id,
+            'item_name' => count(explode(',',$id)) > 1 ? $itemname : (trim($item->refRegularDeliveryPlan->refPart->description) ?? null),
+            'item_no' => count(explode(',',$id)) > 1 ? $item_no : ($item->refRegularDeliveryPlan->refPart->item_serial ?? null),
+            'order_no' => count(explode(',',$id)) > 1 ? $order_no : ($item->refRegularDeliveryPlan->order_no ?? null),
+            'qty_pcs_box' => count(explode(',',$id)) > 1 ? $qty_pcs_box : ($item->qty_pcs_box ?? 0),
+            'packing_date' => count(explode(',',$id)) > 1 ? $packing_date : ($item->packing_date ?? null),
+            'lot_packing' => count(explode(',',$id)) > 1 ? $lot_packing : ($item->lot_packing ?? null),
+            'qrcode' => count(explode(',',$id)) > 1 ? (route('file.download').'?filename='.$qrcode.'&source=qr_labeling') : (route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling'),
+            'qr_key' => count(explode(',',$id)) > 1 ? explode(',',$id) : $item->id,
+            'no_box' => count(explode(',',$id)) > 1 ? $no_box : ($item->refBox->no_box ?? null),
         ];
 
         return [
