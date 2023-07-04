@@ -882,21 +882,21 @@ class QueryRegularDeliveryPlan extends Model {
             $item = RegularDeliveryPlanBox::whereIn('id',$id_plan_box)->orderBy('id','asc')->get();
             $itemname = [];
             $item_no = [];
-            $order_no = [];
+            $order_no = '';
             $qty_pcs_box = [];
-            $packing_date = [];
-            $lot_packing = [];
+            $packing_date = '';
+            $lot_packing = '';
             $qrcode = '';
-            $no_box = [];
+            $no_box = '';
             foreach ($item as $value) {
                 $itemname[] = trim($value->refRegularDeliveryPlan->refPart->description) ?? null;
                 $item_no[] = $value->refRegularDeliveryPlan->refPart->item_serial ?? null;
-                $order_no[] = $value->refRegularDeliveryPlan->order_no ?? null;
+                $order_no = $value->refRegularDeliveryPlan->order_no ?? null;
                 $qty_pcs_box[] = $value->qty_pcs_box ?? 0;
-                $packing_date[] = $value->packing_date ?? null;
-                $lot_packing[] = $value->lot_packing ?? null;
+                $packing_date = $value->packing_date ?? null;
+                $lot_packing = $value->lot_packing ?? null;
                 $qrcode = $value->qrcode;
-                $no_box[] = $value->refBox->no_box ?? null;
+                $no_box = $value->refBox->no_box ?? null;
             }
         } else {
             $item = RegularDeliveryPlanBox::where('id',$id)->orderBy('id','asc')->first();
