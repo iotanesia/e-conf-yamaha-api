@@ -791,6 +791,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $first_count_box = [];
             $row_length = [];
             $count_box = [];
+            $big_row_length = [];
             foreach ($delivery_plan_box as $key => $value) {
                 $sum_row_length += $value['row_length'];
                 $sum_count_box += $value['count_box'];
@@ -800,6 +801,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $first_count_box[] = $delivery_plan_box[$key]['count_box'];
                 $row_length[] = $delivery_plan_box[$key]['row_length'];
                 $count_box[] = $delivery_plan_box[$key]['count_box'];
+                $big_row_length[] = $delivery_plan_box[$key]['first_row_length'] * $delivery_plan_box[$key]['row'];
             }
            
             if (count($delivery_plan) > 1) {
@@ -828,6 +830,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     $arary_key = array_keys($value)[0];
                     $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
                 }
+
+                $sum_row_length = max($big_row_length);
             }
       
             $space = 0;
