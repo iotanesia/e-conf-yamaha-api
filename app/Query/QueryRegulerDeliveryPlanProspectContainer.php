@@ -811,7 +811,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 }
 
                 $cek_set = MstBox::where('part_set', 'set')->whereIn('item_no',$item_no)->get();
-                if (count($cek_set)) {
+                if (count($cek_set) > 0) {
                     $mst_box = MstBox::whereIn('item_no', $item_no)
                     ->get()->map(function ($item){
                         $qty = [
@@ -881,13 +881,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 if ($sum_row_length < 5905) {
                     $creation['id_container'] = 1;
                     $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-                    $creation['summary_box'] = count($delivery_plan) > 1 ? (int)ceil(max($qty)) : $sum_count_box;
+                    $creation['summary_box'] = count($cek_set) > 0 ? (int)ceil(max($qty)) : $sum_count_box;
                     $creation['iteration'] = $i;
                     $creation['space'] = 5905 - $sum_row_length;
                 } else {
                     $creation['id_container'] = 2;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                    $creation['summary_box'] = count($delivery_plan) > 1 ? (int)ceil(max($qty)) : $send_summary_box;
+                    $creation['summary_box'] = count($cek_set) > 0 ? (int)ceil(max($qty)) : $send_summary_box;
                     $creation['iteration'] = $i;
                     $creation['space'] = $space;
                 }
