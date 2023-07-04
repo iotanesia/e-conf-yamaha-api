@@ -939,12 +939,26 @@ class QueryRegularDeliveryPlan extends Model {
 
             $id = [];
             foreach ($request['data'] as $key => $item) {
-                $check = RegularDeliveryPlanBox::find($item['id']);
-                if($check) {
-                    $check->fill($item);
-                    $check->save();
+                if (count($item['id']) > 1) {
+                    foreach ($item['id'] as $value) {
+                        $check = RegularDeliveryPlanBox::find($value);
+                        if($check) {
+                            $fill['id_proc'] = $item['id_proc'];
+                            $fill['packing_date'] = $item['packing_date'];
+                            $fill['lot_packing'] = $item['lot_packing'];
+                            $check->fill($fill);
+                            $check->save();
+                        }
+                        $id[] = $value;
+                    }
+                } else {
+                    $check = RegularDeliveryPlanBox::find($item['id']);
+                    if($check) {
+                        $check->fill($item);
+                        $check->save();
+                    }
+                    $id[] = $item['id'];
                 }
-                $id[] = $item['id'];
             }
 
             $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->refRegularDeliveryPlan->id)->get();
