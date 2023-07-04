@@ -506,9 +506,60 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function detailProduksiBox($params,$id)
     {
-        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->orderBy('id','asc')
+        if (count(explode(',',$id)) > 1) {
+            $id_delivery_plan = explode(',',$id);
+            $data = RegularDeliveryPlanBox::select(
+            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id::character varying, ',') as id_regular_delivery_plan_box"),
+            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
+            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_box::character varying, ',') as id_box"),
+            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.qty_pcs_box::character varying, ',') as qty_pcs_box"),
+            DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"),
+            DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
+            DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
+            DB::raw("string_agg(DISTINCT b.num_set::character varying, ',') as num_set"),
+            )
+            ->whereIn('id_regular_delivery_plan',$id_delivery_plan)
+            ->leftJoin('regular_delivery_plan as a','regular_delivery_plan_box.id_regular_delivery_plan','a.id')
+            ->leftJoin('mst_box as b','a.item_no','b.item_no')
+            ->groupBy('a.item_no')
             ->paginate($params->limit ?? null);
 
+            $item_no = [];
+            foreach ($data as $value) {
+                $item_no[] = $value->item_no;
+            }
+            $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)
+                                ->get()->map(function ($item){
+                                    $qty = [
+                                        $item->item_no => $item->qty
+                                    ];
+                                
+                                    return array_merge($qty);
+                                });
+// dd($data);
+            
+            $tes = $data->map(function ($item){
+                $qty = [
+                    $item->item_no => $item->sum_qty
+                ];
+            
+                return array_merge($qty);
+            });
+// dd($tes);
+
+            // //tes
+                $qty = [];
+                foreach ($mst_box as $key => $value) {
+                    $arary_key = array_keys($value)[0];
+                    dd($arary_key);
+                    $qty[] = array_merge(...$tes)[$arary_key] / $value[$arary_key];
+                }
+
+        } else {
+            $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->orderBy('id','asc')
+                                            ->paginate($params->limit ?? null);
+        }
+        
         $data->transform(function ($item)
         {
             $no = $item->refBox->no_box ?? null;

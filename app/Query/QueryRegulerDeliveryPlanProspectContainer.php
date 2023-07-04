@@ -746,7 +746,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 ->where('id_type_delivery', 1)
                 ->first();
             
-            $plan = RegularDeliveryPlan::select('id','code_consignee')
+            $plan = RegularDeliveryPlan::select('id','code_consignee','item_no')
                 ->where('id_prospect_container', $params->id)
                 ->orderBy('id', 'asc')
                 ->get();
@@ -756,7 +756,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             }
     
             $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
-                'id_box', DB::raw('count(id_box) as count_box'))
+                'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
             ->whereIn('id_regular_delivery_plan',$delivery_plan)
             ->groupBy('id_box', 'id_regular_delivery_plan')
             ->orderBy('count_box','desc')
@@ -769,6 +769,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'width' =>  $item->refBox->width,
                     'length' => $item->refBox->length,
                     'count_box' => $item->count_box,
+                    'sum_qty' => $item->sum_qty,
                     'priority' => $index + 1,
                     'forkside' => $item->refBox->fork_side,
                     'stackingCapacity' => $item->refBox->stack_capacity,
@@ -783,7 +784,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             });
 
             $sum_row_length = 0;
-            $sum_count_box = [];
+            $sum_count_box = 0;
+            $sum_qty_box = [];
             $first_row_length = [];
             $first_row = [];
             $first_count_box = [];
@@ -791,14 +793,43 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $count_box = [];
             foreach ($delivery_plan_box as $key => $value) {
                 $sum_row_length += $value['row_length'];
-                $sum_count_box[] = $value['count_box'];
+                $sum_count_box += $value['count_box'];
+                $sum_qty_box[] = $value['sum_qty'];
                 $first_row_length[] = $delivery_plan_box[$key]['first_row_length'];
                 $first_row[] = $delivery_plan_box[$key]['row'];
                 $first_count_box[] = $delivery_plan_box[$key]['count_box'];
                 $row_length[] = $delivery_plan_box[$key]['row_length'];
                 $count_box[] = $delivery_plan_box[$key]['count_box'];
             }
- 
+           
+            if (count($delivery_plan) > 1) {
+                $item_no = [];
+                foreach ($plan as $value) {
+                    $item_no[] = $value->item_no;
+                }
+                $mst_box = MstBox::whereIn('item_no', $item_no)
+                ->get()->map(function ($item){
+                    $qty = [
+                        $item->item_no => $item->qty
+                    ];
+                
+                    return array_merge($qty);
+                });
+
+                $qty_per_item_no = [];
+                    foreach ($item_no as $key => $value) {
+                    $qty_per_item_no[] = [
+                        $value => $sum_qty_box[$key]
+                    ];
+                }
+
+                $qty = [];
+                foreach ($mst_box as $key => $value) {
+                    $arary_key = array_keys($value)[0];
+                    $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
+                }
+            }
+      
             $space = 0;
             $sum_first_length = 0;
             $summary_box = 0;
@@ -842,20 +873,20 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 if ($sum_row_length < 5905) {
                     $creation['id_container'] = 1;
                     $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-                    $creation['summary_box'] = max($sum_count_box);
+                    $creation['summary_box'] = count($delivery_plan) > 1 ? (int)ceil(max($qty)) : $sum_count_box;
                     $creation['iteration'] = $i;
                     $creation['space'] = 5905 - $sum_row_length;
                 } else {
                     $creation['id_container'] = 2;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                    $creation['summary_box'] = $send_summary_box;
+                    $creation['summary_box'] = count($delivery_plan) > 1 ? (int)ceil(max($qty)) : $send_summary_box;
                     $creation['iteration'] = $i;
                     $creation['space'] = $space;
                 }
 
                 RegularProspectContainerCreation::create($creation);
                 $sum_row_length = $sum_row_length - 12031;
-                $send_summary_box = max($sum_count_box) - $summary_box;
+                $send_summary_box = $sum_count_box - $summary_box;
             }
 
             $upd = RegularProspectContainer::find($params->id);
