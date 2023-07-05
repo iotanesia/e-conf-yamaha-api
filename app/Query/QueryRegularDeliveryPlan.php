@@ -1029,38 +1029,90 @@ class QueryRegularDeliveryPlan extends Model {
 
             if($is_trasaction) DB::commit();
 
-            $data = RegularDeliveryPlanBox::whereIn('id',$id)->orderBy('id','asc')->get();
-            $data->transform(function ($item)
-            {
-                $no = $item->refBox->no_box ?? null;
-                $qty = $item->refBox->qty ?? null;
+            if (count($id) > 1) {
+                $data = RegularDeliveryPlanBox::select(
+                DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id::character varying, ',') as id_regular_delivery_plan_box"),
+                DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
+                DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_box::character varying, ',') as id_box"),
+                DB::raw("string_agg(DISTINCT regular_delivery_plan_box.qty_pcs_box::character varying, ',') as qty_pcs_box"),
+                DB::raw("string_agg(DISTINCT regular_delivery_plan_box.lot_packing::character varying, ',') as lot_packing"),
+                DB::raw("string_agg(DISTINCT regular_delivery_plan_box.packing_date::character varying, ',') as packing_date"),
+                DB::raw("string_agg(DISTINCT regular_delivery_plan_box.qrcode::character varying, ',') as qrcode"),
+                DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
+                DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+                )
+                ->whereIn('regular_delivery_plan_box.id',$id)
+                ->leftJoin('regular_delivery_plan as a','regular_delivery_plan_box.id_regular_delivery_plan','a.id')
+                ->groupBy('a.order_no')
+                ->get();
+    
+                $data->transform(function ($item)
+                {
+                    $itemname = [];
+                    $item_no = [];
+                    $cust_name = '';
+                    foreach (explode(',',$item->id_regular_delivery_plan) as $value) {
+                        $deivery_plan = RegularDeliveryPlan::where('id',$value)->first();
+                        $itemname[] = $deivery_plan->refPart->description ?? null;
+                        $item_no[] = $deivery_plan->item_no ?? null;
+                        $cust_name = $deivery_plan->refConsignee->nick_name ?? null;
+                    }
+    
+                    $no = '';
+                    $qty = '';
+                    foreach (explode(',',$item->id_box) as $value) {
+                        $mst_box = MstBox::where('id', $value)->first();
+                        $no = $mst_box->no_box;
+                        $qty = $mst_box->qty;
+                    }
+    
+                    return [
+                        'id' => explode(',',$item->id_regular_delivery_plan_box),
+                        'item_name' => $itemname,
+                        'cust_name' => $cust_name,
+                        'item_no' => $item_no,
+                        'order_no' => $item->order_no,
+                        'qty_pcs_box' => $item->qty_pcs_box ?? null,
+                        'namebox' => $no. " ".$qty. " pcs" ,
+                        'lot_packing' => $item->lot_packing,
+                        'packing_date' => $item->packing_date,
+                        'qr_key' => explode(',',$item->id_regular_delivery_plan_box),
+                        'no_box' => $no,
+                    ];
+                });
+            } else {
+                $data = RegularDeliveryPlanBox::whereIn('id',$id)->orderBy('id','asc')->get();
+                $data->transform(function ($item)
+                {
+                    $no = $item->refBox->no_box ?? null;
+                    $qty = $item->refBox->qty ?? null;
 
-                $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
+                    $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
 
-                $qr_name = (string) Str::uuid().'.png';
-                $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
-                QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
+                    $qr_name = (string) Str::uuid().'.png';
+                    $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
+                    QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
 
-                $item->qrcode = $qr_name;
-                $item->save();
+                    $item->qrcode = $qr_name;
+                    $item->save();
 
-                return [
-                    'id' => $item->id,
-                    'item_name' => $item->refRegularDeliveryPlan->refPart->description ?? null,
-                    'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
-                    'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
-                    'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
-                    'qty_pcs_box' => $item->qty_pcs_box ?? null,
-                    'namebox' => $no. " ".$qty. " pcs" ,
-                    'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
-                    'lot_packing' => $item->lot_packing,
-                    'packing_date' => $item->packing_date,
-                    'qr_key' => $item->id,
-                    'no_box' => $item->refBox->no_box ?? null,
-                ];
-            });
-
-
+                    return [
+                        'id' => $item->id,
+                        'item_name' => $item->refRegularDeliveryPlan->refPart->description ?? null,
+                        'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
+                        'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
+                        'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
+                        'qty_pcs_box' => $item->qty_pcs_box ?? null,
+                        'namebox' => $no. " ".$qty. " pcs" ,
+                        'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
+                        'lot_packing' => $item->lot_packing,
+                        'packing_date' => $item->packing_date,
+                        'qr_key' => $item->id,
+                        'no_box' => $item->refBox->no_box ?? null,
+                    ];
+                });
+            }
+            
             return [
                 'items' => $data,
                 'last_page' => 0
