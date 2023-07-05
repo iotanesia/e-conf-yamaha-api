@@ -1077,7 +1077,7 @@ class QueryRegularDeliveryPlan extends Model {
                     foreach (explode(',',$item->id_regular_delivery_plan_box) as $value) {
                         $update_qr = RegularDeliveryPlanBox::where('id',$value)->first();
                         $update_qr->qrcode = $qr_name;
-                        $item->save();
+                        $update_qr->save();
                     }
     
                     return [
