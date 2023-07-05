@@ -599,22 +599,23 @@ class QueryRegularDeliveryPlan extends Model {
                 $packing_date[] = array_merge(...$data_packing_date->toArray())[$arary_key];
                 $qrcode[] = array_merge(...$data_qrcode->toArray())[$arary_key];
             }
-
+            
             $result = [];
             $first = array_merge(...$total)[$arary_keys[0]];
             $second = array_merge(...$total)[$arary_keys[1]];
             $first_result = array_merge(...$total)[$arary_keys[0]] - array_merge(...$mst_box->toArray())[$arary_keys[0]];
             $second_result = array_merge(...$total)[$arary_keys[1]] - array_merge(...$mst_box->toArray())[$arary_keys[1]];
-            for ($i=0; $i < max($qty); $i++) { 
-                $first_id = $id_plan_box[0][$key] ?? null;
-                $second_id = $id_plan_box[1][$key] ?? null;
-                $first_lot_packing = $lot_packing[0][$key] ?? null;
-                $second_lot_packing = $lot_packing[1][$key] ?? null;
-                $first_packing_date = $packing_date[0][$key] ?? null;
-                $second_packing_date = $packing_date[1][$key] ?? null;
-                $first_qrcode = $qrcode[0][$key] ?? [null];
-                $second_qrcode = $qrcode[1][$key] ?? [null];
-                $qrmerge = array_merge($first_qrcode,$second_qrcode);
+            
+            for ($i=0; $i < (int)floor(max($qty)); $i++) { 
+                $first_id = $id_plan_box[0][$i] ?? null;
+                $second_id = $id_plan_box[1][$i] ?? null;
+                $first_lot_packing = $lot_packing[0][$i] ?? null;
+                $second_lot_packing = $lot_packing[1][$i] ?? null;
+                $first_packing_date = $packing_date[0][$i] ?? null;
+                $second_packing_date = $packing_date[1][$i] ?? null;
+                $first_qrcode = $qrcode[0][$i] ?? null;
+                $second_qrcode = $qrcode[1][$i] ?? null;
+                
                 $result[] = [
                     'id' => [
                         $first_id,
@@ -633,7 +634,7 @@ class QueryRegularDeliveryPlan extends Model {
                         $second_packing_date
                     ],
                     'namebox' => $no. " - ".$qty_box. " pcs",
-                    'status' => in_array(null,$qrmerge) !== true ? 'Done created QR code' : 'Waiting created QR code'
+                    'status' => in_array(null,[$first_qrcode,$second_qrcode]) !== true ? 'Done created QR code' : 'Waiting created QR code'
                 ];
 
                 $first = $first - array_merge(...$mst_box->toArray())[$arary_keys[0]];
