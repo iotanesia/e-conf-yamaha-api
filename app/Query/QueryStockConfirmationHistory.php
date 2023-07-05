@@ -322,14 +322,26 @@ class QueryStockConfirmationHistory extends Model {
                         $update_qr->qrcode = $qr_name;
                         $update_qr->save();
                     }
-    
+
+                    if (count(explode(',',$item->qty_pcs_box)) == 1) {
+                        $qty_order = [];
+                        for ($i=1; $i <= count($item_no); $i++) { 
+                            $qty_order[] = $item->qty_pcs_box;
+                        }
+                    } else {
+                        $qty_order = [];
+                        foreach (explode(',',$item->qty_pcs_box) as $value) {
+                            $qty_order[] = $value;
+                        }
+                    }
+   
                     return [
                         'id' => explode(',',$item->id_regular_delivery_plan_box),
                         'item_name' => $itemname,
                         'cust_name' => $cust_name,
                         'item_no' => $item_no,
                         'order_no' => $item->order_no,
-                        'qty_pcs_box' => $item->qty_pcs_box ?? null,
+                        'qty_pcs_box' => array_sum($qty_order),
                         'namebox' => $no. " ".$qty. " pcs" ,
                         'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
                         'lot_packing' => $item->lot_packing,
