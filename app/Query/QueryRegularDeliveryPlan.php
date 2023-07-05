@@ -1051,11 +1051,15 @@ class QueryRegularDeliveryPlan extends Model {
                     $itemname = [];
                     $item_no = [];
                     $cust_name = '';
+                    $datasource = '';
+                    $etd_jkt = '';
                     foreach (explode(',',$item->id_regular_delivery_plan) as $value) {
                         $deivery_plan = RegularDeliveryPlan::where('id',$value)->first();
                         $itemname[] = $deivery_plan->refPart->description ?? null;
                         $item_no[] = $deivery_plan->item_no ?? null;
                         $cust_name = $deivery_plan->refConsignee->nick_name ?? null;
+                        $datasource = $deivery_plan->refRegularOrderEntry->datasource ?? null;
+                        $etd_jkt = $deivery_plan->etd_jkt ?? null;
                     }
     
                     $no = '';
@@ -1064,6 +1068,16 @@ class QueryRegularDeliveryPlan extends Model {
                         $mst_box = MstBox::where('id', $value)->first();
                         $no = $mst_box->no_box;
                         $qty = $mst_box->qty;
+                    }
+                    
+                    $qr_name = (string) Str::uuid().'.png';
+                    $qr_key = $item->id_regular_delivery_plan_box. " | ".$item->id_box. " | ".$datasource. " | ".$etd_jkt. " | ".$item->qty_pcs_box;
+                    QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
+
+                    foreach (explode(',',$item->id_regular_delivery_plan_box) as $value) {
+                        $update_qr = RegularDeliveryPlanBox::where('id',$value)->first();
+                        $update_qr->qrcode = $qr_name;
+                        $item->save();
                     }
     
                     return [
@@ -1074,6 +1088,7 @@ class QueryRegularDeliveryPlan extends Model {
                         'order_no' => $item->order_no,
                         'qty_pcs_box' => $item->qty_pcs_box ?? null,
                         'namebox' => $no. " ".$qty. " pcs" ,
+                        'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
                         'lot_packing' => $item->lot_packing,
                         'packing_date' => $item->packing_date,
                         'qr_key' => explode(',',$item->id_regular_delivery_plan_box),
