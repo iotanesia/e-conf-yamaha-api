@@ -209,7 +209,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
         try {
             $store = RegularOrderEntryUploadDetailTemp::create($request);
             if($is_transaction) DB::commit();
-            Cache::flush([self::cast]); //delete cache
+            // Cache::flush([self::cast]); //delete cache
             return $store;
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
