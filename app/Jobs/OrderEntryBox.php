@@ -45,6 +45,7 @@ class OrderEntryBox implements ShouldQueue
                 'label' => $params['id_regular_order_entry_upload']
             ]);
 
+            sleep(2);
             $tes = RegularOrderEntryUploadDetail::where([
                 'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
             ])->first();
