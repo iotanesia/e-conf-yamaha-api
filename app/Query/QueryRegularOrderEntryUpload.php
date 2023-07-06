@@ -240,7 +240,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     $single[] = $value;
                 }
             }
-dd($set);
+dd($data->toArray());
             $id_set = [];
             foreach ($set as $value) {
                 $id_set[] = $value['id_regular_order_entry_upload_detail_temp'];
