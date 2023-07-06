@@ -240,6 +240,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     $single[] = $value;
                 }
             }
+            dd($store->id);
 dd($data->toArray());
             $id_set = [];
             foreach ($set as $value) {
