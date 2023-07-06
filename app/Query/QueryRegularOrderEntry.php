@@ -125,7 +125,6 @@ class QueryRegularOrderEntry extends Model {
 
             //mapping data set
             sleep(2);
-            dd(RegularOrderEntryUploadDetailTemp::get());
             $data = RegularOrderEntryUploadDetailTemp::
             select('regular_order_entry_upload_detail_temp.etd_jkt','a.id_box','a.part_set',
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.id::character varying, ',') as id_regular_order_entry_upload_detail_temp"),
