@@ -279,7 +279,7 @@ class QueryRegularOrderEntryUpload extends Model {
             foreach ($single_upload as $value) {
                 $upload = RegularOrderEntryUploadDetail::create($value);
                 $upload->update(['jenis' => 'single']);
-            }
+            } 
 
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
