@@ -231,20 +231,6 @@ class QueryRegularOrderEntryUpload extends Model {
             ->orderBy('id_regular_order_entry_upload_detail_temp','asc')
             ->get();
 
-            RegularOrderEntryUploadDetail::create([
-                'id_regular_order_entry_upload' => 99,
-                'code_consignee' => 1234,
-                'delivery' => 123,
-                'qty' => 1234,
-                'status' => 1234,
-                'order_no' => 1234,
-                'cust_item_no' => 1234,
-                'etd_wh' => 1234,
-                'etd_ypmi' => 1234,
-                'etd_jkt' => 1234,
-                'jenis' => 'set'
-            ]);
-
             $set = [];
             $single = [];
             foreach ($data->toArray() as $value) {
@@ -254,7 +240,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     $single[] = $value;
                 }
             }
-
+dd($set);
             $id_set = [];
             foreach ($set as $value) {
                 $id_set[] = $value['id_regular_order_entry_upload_detail_temp'];
