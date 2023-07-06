@@ -124,6 +124,8 @@ class QueryRegularOrderEntry extends Model {
             if($is_transaction) DB::commit();
 
             //mapping data set
+            sleep(2);
+            dd(RegularOrderEntryUploadDetailTemp::get());
             $data = RegularOrderEntryUploadDetailTemp::
             select('regular_order_entry_upload_detail_temp.etd_jkt','a.id_box','a.part_set',
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.id::character varying, ',') as id_regular_order_entry_upload_detail_temp"),
@@ -158,7 +160,7 @@ class QueryRegularOrderEntry extends Model {
                     $single[] = $value;
                 }
             }
-dd(RegularOrderEntryUploadDetailTemp::get());
+
             $id_set = [];
             foreach ($set as $value) {
                 $id_set[] = $value['id_regular_order_entry_upload_detail_temp'];
