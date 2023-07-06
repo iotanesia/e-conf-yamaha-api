@@ -129,7 +129,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 $set["etd_ypmi"] = $item->etd_ypmi;
                 $set["part_set"] = $item->part_set;
                 $set["num_set"] = $item->num_set;
-                $set["box"] = $item->item_no == null ? $box : self::getCountBox($item->id);
+                $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
 
                 unset($item->refRegularOrderEntryUpload);
                 return $set;
