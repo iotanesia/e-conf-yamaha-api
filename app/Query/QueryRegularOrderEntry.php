@@ -155,7 +155,7 @@ class QueryRegularOrderEntry extends Model {
                     $single[] = $value;
                 }
             }
-dd($data->toArray());
+dd(RegularOrderEntryUploadDetailTemp::where('id_regular_order_entry_upload', $id_upload)->get());
             $id_set = [];
             foreach ($set as $value) {
                 $id_set[] = $value['id_regular_order_entry_upload_detail_temp'];
