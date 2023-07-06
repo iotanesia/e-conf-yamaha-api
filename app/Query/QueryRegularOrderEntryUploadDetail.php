@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use App\Models\MstBox;
+use App\Models\RegularOrderEntryUploadDetailSet;
 use App\Models\RegularOrderEntryUploadDetailTemp;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -67,6 +68,42 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 $itemname = self::getPart($item->item_no);
 
                 $item_no_series = MstBox::where('item_no', $item->item_no)->first();
+
+                if ($item->item_no == null) {
+                  $item_no_set = RegularOrderEntryUploadDetailSet::where('id_detail', $item->id)->get()->pluck('item_no');
+                  $mst_box = MstBox::whereIn('item_no', $item_no_set->toArray())
+                                  ->get()->map(function ($item){
+                                      $qty = [
+                                          $item->item_no => $item->qty
+                                      ];
+                                  
+                                      return array_merge($qty);
+                                  });
+  
+                  $upload_temp = RegularOrderEntryUploadDetailTemp::where('id_regular_order_entry_upload', $item->id_regular_order_entry_upload)
+                                                                    ->whereIn('item_no', $item_no_set->toArray())
+                                                                    ->where('etd_jkt', $item->etd_jkt)
+                                                                    ->get()->pluck('qty');
+                  $qty_per_item_no = [];
+                  foreach ($item_no_set as $key => $value) {
+                      $qty_per_item_no[] = [
+                          $value => $upload_temp->toArray()[$key]
+                      ];
+                  }
+  
+                  $qty = [];
+                  foreach ($mst_box as $key => $value) {
+                      $arary_key = array_keys($value)[0];
+                      $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
+                  }
+                  
+                  $box = [
+                      'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty)),
+                      'length' =>  "",
+                      'width' =>  "",
+                      'height' =>  "",
+                  ];
+              }
                 
                 $set["id"] = $item->id;
                 $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
@@ -92,7 +129,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 $set["etd_ypmi"] = $item->etd_ypmi;
                 $set["part_set"] = $item->part_set;
                 $set["num_set"] = $item->num_set;
-                $set["box"] = self::getCountBox($item->id);
+                $set["box"] = $item->item_no == null ? $box : self::getCountBox($item->id);
 
                 unset($item->refRegularOrderEntryUpload);
                 return $set;
