@@ -228,7 +228,6 @@ class QueryRegularOrderEntryUpload extends Model {
             ->where('regular_order_entry_upload_detail_temp.id_regular_order_entry_upload', $store->id)
             ->leftJoin('mst_box as a','regular_order_entry_upload_detail_temp.item_no','a.item_no')
             ->groupBy('a.part_set','a.id_box','regular_order_entry_upload_detail_temp.etd_jkt')
-            ->orderBy('id_regular_order_entry_upload_detail_temp','asc')
             ->get();
 
             $set = [];
@@ -240,7 +239,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     $single[] = $value;
                 }
             }
-            dd($store->id);
+            
 dd($data->toArray());
             $id_set = [];
             foreach ($set as $value) {
