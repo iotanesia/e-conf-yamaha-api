@@ -239,7 +239,13 @@ class QueryRegularOrderEntryUpload extends Model {
                     $single[] = $value;
                 }
             }
-            dd(RegularOrderEntryUploadDetailTemp::where('id_regular_order_entry_upload', $store->id)->get());
+
+            $tes = RegularOrderEntryUploadDetailTemp::get();
+            $tesid = [$store->id];
+            dd([
+                'id' => $tesid,
+                'asd' => $tes->toArray()
+            ]);
 dd($data->toArray());
             $id_set = [];
             foreach ($set as $value) {
