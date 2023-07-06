@@ -243,12 +243,12 @@ class QueryRegularOrderEntryUpload extends Model {
 
             $id_set = [];
             foreach ($set as $value) {
-                $id_set[] = $value['id_regular_order_entry_upload_detail'];
+                $id_set[] = $value['id_regular_order_entry_upload_detail_temp'];
             }
 
             $single_upload = [];
             foreach ($single as $value) {
-                if (!str_contains(implode(',',$id_set),$value['id_regular_order_entry_upload_detail'])) {
+                if (!str_contains(implode(',',$id_set),$value['id_regular_order_entry_upload_detail_temp'])) {
                     $single_upload[] = $value;
                 }
             }
