@@ -157,9 +157,9 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
         return [
             AfterImport::class => function (AfterImport $event){
                 QueryRegularOrderEntryUpload::updateStatusAfterImport($this->id_regular_order_entry_upload);
-                // OrderEntryBox::dispatch([
-                //     'id_regular_order_entry_upload' => $this->id_regular_order_entry_upload
-                // ]);
+                OrderEntryBox::dispatch([
+                    'id_regular_order_entry_upload' => $this->id_regular_order_entry_upload
+                ]);
             }
         ];
     }
