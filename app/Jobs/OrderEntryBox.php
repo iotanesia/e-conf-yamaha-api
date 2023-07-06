@@ -42,7 +42,7 @@ class OrderEntryBox implements ShouldQueue
             $params = $this->params;
 
             DB::table('temp')->insert([
-                'label' => $params
+                'label' => 'tes'
             ]);
             
             RegularOrderEntryUploadDetail::where([
