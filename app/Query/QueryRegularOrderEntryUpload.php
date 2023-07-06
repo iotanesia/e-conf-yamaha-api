@@ -205,6 +205,7 @@ class QueryRegularOrderEntryUpload extends Model {
                 'month' => $request->month,
             ]),storage_path().'/app/'.$params['filepath']);
 
+            sleep(4);
             RegularOrderEntryUploadDetail::where([
                 'id_regular_order_entry_upload' => $store->id
             ])
