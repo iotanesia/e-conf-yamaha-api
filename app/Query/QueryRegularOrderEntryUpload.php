@@ -225,10 +225,10 @@ class QueryRegularOrderEntryUpload extends Model {
             DB::raw("string_agg(DISTINCT a.item_no_series::character varying, ',') as item_no_series"),
             DB::raw("SUM(regular_order_entry_upload_detail_temp.qty) as sum_qty")
             )
-            ->where('id_regular_order_entry_upload', $store->id)
+            ->where('regular_order_entry_upload_detail_temp.id_regular_order_entry_upload', $store->id)
             ->leftJoin('mst_box as a','regular_order_entry_upload_detail_temp.item_no','a.item_no')
             ->groupBy('a.part_set','a.id_box','regular_order_entry_upload_detail_temp.etd_jkt')
-            ->orderBy('id_regular_order_entry_upload_detail_temp','asc')
+            ->orderBy('regular_order_entry_upload_detail_temp.id_regular_order_entry_upload_detail_temp','asc')
             ->get();
 
             $set = [];
