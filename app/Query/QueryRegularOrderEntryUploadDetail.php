@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use App\Models\MstBox;
+use App\Models\RegularOrderEntryUploadDetailTemp;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use stdClass;
@@ -282,7 +283,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            $store = self::create($request);
+            $store = RegularOrderEntryUploadDetailTemp::create($request);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
             return $store;

@@ -30,7 +30,8 @@ class RegularOrderEntryUploadDetail extends Model
         "updated_at",
         "updated_by",
         "deleted_at",
-        "uuid"
+        "uuid",
+        "jenis",
     ];
 
     public function refRegularOrderEntryUpload()
