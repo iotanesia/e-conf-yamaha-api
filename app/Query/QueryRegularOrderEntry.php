@@ -120,7 +120,7 @@ class QueryRegularOrderEntry extends Model {
             }
             $request->id_regular_order_entry = $store->id;
             $id_upload = QueryRegularOrderEntryUpload::saveFile($store,$request,false);
-dd($id_upload);
+
             $data = RegularOrderEntryUploadDetailTemp::
             select('regular_order_entry_upload_detail_temp.etd_jkt','a.id_box','a.part_set',
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.id::character varying, ',') as id_regular_order_entry_upload_detail_temp"),
@@ -155,7 +155,7 @@ dd($id_upload);
                     $single[] = $value;
                 }
             }
-
+dd($data->toArray());
             $id_set = [];
             foreach ($set as $value) {
                 $id_set[] = $value['id_regular_order_entry_upload_detail_temp'];
