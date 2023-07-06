@@ -71,6 +71,8 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
                 if ($item->item_no == null) {
                   $item_no_set = RegularOrderEntryUploadDetailSet::where('id_detail', $item->id)->get()->pluck('item_no');
+                  $item_no_series = MstBox::whereIn('item_no', $item_no_set->toArray())->get()->pluck('item_no_series');
+                  $item_name = MstPart::whereIn('item_no', $item_no_set->toArray())->get()->pluck('description');
                   $mst_box = MstBox::whereIn('item_no', $item_no_set->toArray())
                                   ->get()->map(function ($item){
                                       $qty = [
@@ -110,8 +112,8 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 $set["code_consignee"] = $item->code_consignee;
                 $set["cust_name"] = $custname;
                 $set["model"] = $item->model;
-                $set["item_name"] = $itemname;
-                $set["item_no"] = $item_no_series->item_no_series ?? null;
+                $set["item_name"] = $item->item_no == null ? $item_name : $itemname;
+                $set["item_no"] = $item->item_no == null ? $item_no_series->toArray() : $item_no_series->item_no_series;
                 $set["disburse"] = $item->disburse;
                 $set["delivery"] = $item->delivery;
                 $set["qty"] = $item->qty;
