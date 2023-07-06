@@ -44,16 +44,20 @@ class OrderEntryBox implements ShouldQueue
             DB::table('temp')->insert([
                 'label' => $params['id_regular_order_entry_upload']
             ]);
+
+            $tes = RegularOrderEntryUploadDetail::where([
+                'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
+            ])->first();
+
+            DB::table('temp')->insert([
+                'label' => $tes->created_at
+            ]);
             
             RegularOrderEntryUploadDetail::where([
                 'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
             ])
             ->each(function ($item){
                 $request = $item->toArray();
-                
-                DB::table('temp')->insert([
-                    'label' => $request['item_no']
-                ]);
 
                 // $detail_set = RegularOrderEntryUploadDetailSet::where('id_detail', $request['id'])->get();
                 // if ($detail_set) {
