@@ -206,7 +206,7 @@ class QueryRegularOrderEntryUpload extends Model {
             ]),storage_path().'/app/'.$params['filepath']);
 
             RegularOrderEntryUploadDetail::where([
-                'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
+                'id_regular_order_entry_upload' => $store->id
             ])
             ->each(function ($item){
                 $request = $item->toArray();
