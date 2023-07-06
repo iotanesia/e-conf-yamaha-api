@@ -50,7 +50,11 @@ class OrderEntryBox implements ShouldQueue
             ])
             ->each(function ($item){
                 $request = $item->toArray();
-                dd($request);
+                
+                DB::table('temp')->insert([
+                    'label' => $request['item_no']
+                ]);
+
                 // $detail_set = RegularOrderEntryUploadDetailSet::where('id_detail', $request['id'])->get();
                 // if ($detail_set) {
                 //     foreach ($detail_set as $key => $value) {
