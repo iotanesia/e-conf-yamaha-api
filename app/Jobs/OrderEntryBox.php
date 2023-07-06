@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\RegularOrderEntryUploadDetail;
 use App\Models\RegularOrderEntryUploadDetailBox;
+use App\Models\RegularOrderEntryUploadDetailSet;
 use App\Query\QueryMstBox;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -38,11 +39,47 @@ class OrderEntryBox implements ShouldQueue
     {
        try {
             $params = $this->params;
+            
             RegularOrderEntryUploadDetail::where([
                 'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
             ])
             ->each(function ($item){
                 $request = $item->toArray();
+                $detail_set = RegularOrderEntryUploadDetailSet::where('id_detail', $request['id'])->get();
+                if ($detail_set) {
+                    foreach ($detail_set as $key => $value) {
+                        $box = QueryMstBox::byItemNoCdConsignee($value->item_no,$request['code_consignee']);
+                        if($box) {
+                            $box = $box->toArray();
+                            $box_capacity = $box['qty'];
+                            $qty = $request['qty'];
+                            $loops = (int) ceil($qty / $box_capacity);
+                            $ext = [];
+                            for ($i=0; $i < $loops ; $i++) {
+                                if($qty > $box_capacity)
+                                    $qty_pcs_box = $box_capacity;
+                                else
+                                    $qty_pcs_box = $qty;
+                                $ext[] = [
+                                    'uuid' => (string) Str::uuid(),
+                                    'id_regular_order_entry_upload_detail' => $request['id'],
+                                    'uuid_regular_order_entry_upload_detail' => $request['uuid'],
+                                    'id_box' => $box['id_box'],
+                                    'created_at' => now(),
+                                    'updated_at' => now(),
+                                    'qty_pcs_box' => $qty_pcs_box
+                                ];
+                                $sum = $qty - $box_capacity;
+                                $qty = $sum;
+                            }
+
+                            foreach (array_chunk($ext,10000) as $chunk) {
+                                RegularOrderEntryUploadDetailBox::insert($chunk);
+                            }
+                        }
+                    }
+                }
+                
                 $box = QueryMstBox::byItemNoCdConsignee($request['item_no'],$request['code_consignee']);
                 if($box) {
                     $box = $box->toArray();
@@ -59,7 +96,7 @@ class OrderEntryBox implements ShouldQueue
                             'uuid' => (string) Str::uuid(),
                             'id_regular_order_entry_upload_detail' => $request['id'],
                             'uuid_regular_order_entry_upload_detail' => $request['uuid'],
-                            'id_box' => $box['id'],
+                            'id_box' => $box['id_box'],
                             'created_at' => now(),
                             'updated_at' => now(),
                             'qty_pcs_box' => $qty_pcs_box

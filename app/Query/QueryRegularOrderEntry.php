@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use App\Imports\OrderEntry;
 use App\Models\RegularOrderEntryUploadDetail;
+use App\Models\RegularOrderEntryUploadDetailBox;
 use App\Models\RegularOrderEntryUploadDetailSet;
 use App\Models\RegularOrderEntryUploadDetailTemp;
 use Illuminate\Support\Facades\Cache;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Str;
 
 class QueryRegularOrderEntry extends Model {
 
@@ -184,6 +186,7 @@ class QueryRegularOrderEntry extends Model {
                     'etd_wh' => $value['etd_wh'],
                     'etd_ypmi' => $value['etd_ypmi'],
                     'etd_jkt' => $value['etd_jkt'],
+                    'uuid' => $value['uuid'],
                     'jenis' => 'set'
                 ]);
 

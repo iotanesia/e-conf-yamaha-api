@@ -200,7 +200,7 @@ class QueryRegularOrderEntryUpload extends Model {
 
             $store = self::create($params);
 
-
+            sleep(2);
             Excel::queueImport(new OrderEntry($store->id,[
                 'year' => $request->year,
                 'month' => $request->month,
