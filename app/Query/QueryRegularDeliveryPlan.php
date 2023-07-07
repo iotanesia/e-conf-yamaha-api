@@ -677,12 +677,6 @@ class QueryRegularDeliveryPlan extends Model {
         ]);
 
         $id = $params->id;
-        if (count($params->id[0]) > 1) {
-            $id = [];
-            foreach ($params->id[0] as $key => $value) {
-                $id[] = [$value];
-            }
-        }
 
         if($is_trasaction) DB::beginTransaction();
         try {
