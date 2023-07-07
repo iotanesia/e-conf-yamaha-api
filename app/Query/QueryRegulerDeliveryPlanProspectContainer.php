@@ -803,40 +803,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $count_box[] = $delivery_plan_box[$key]['count_box'];
                 $big_row_length[] = $delivery_plan_box[$key]['first_row_length'] * $delivery_plan_box[$key]['row'];
             }
-           
-            if (count($delivery_plan) > 1) {
-                $item_no = [];
-                foreach ($plan as $value) {
-                    $item_no[] = $value->item_no;
-                }
-
-                $cek_set = MstBox::where('part_set', 'set')->whereIn('item_no',$item_no)->get();
-                if (count($cek_set) > 0) {
-                    $mst_box = MstBox::whereIn('item_no', $item_no)
-                    ->get()->map(function ($item){
-                        $qty = [
-                            $item->item_no => $item->qty
-                        ];
-                    
-                        return array_merge($qty);
-                    });
-
-                    $qty_per_item_no = [];
-                        foreach ($item_no as $key => $value) {
-                        $qty_per_item_no[] = [
-                            $value => $sum_qty_box[$key]
-                        ];
-                    }
-
-                    $qty = [];
-                    foreach ($mst_box as $key => $value) {
-                        $arary_key = array_keys($value)[0];
-                        $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
-                    }
-
-                    $sum_row_length = max($big_row_length);   
-                }
-            }
       
             $space = 0;
             $sum_first_length = 0;
@@ -881,13 +847,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 if ($sum_row_length < 5905) {
                     $creation['id_container'] = 1;
                     $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-                    $creation['summary_box'] = count($cek_set) > 0 ? (int)ceil(max($qty)) : $sum_count_box;
+                    $creation['summary_box'] = $sum_count_box;
                     $creation['iteration'] = $i;
                     $creation['space'] = 5905 - $sum_row_length;
                 } else {
                     $creation['id_container'] = 2;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                    $creation['summary_box'] = count($cek_set) > 0 ? (int)ceil(max($qty)) : $send_summary_box;
+                    $creation['summary_box'] = $send_summary_box;
                     $creation['iteration'] = $i;
                     $creation['space'] = $space;
                 }
