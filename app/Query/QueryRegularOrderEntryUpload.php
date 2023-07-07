@@ -11,6 +11,7 @@ use App\ApiHelper as Helper;
 use App\Imports\OrderEntry;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
+use App\Models\RegularDeliveryPlanSet;
 use App\Models\RegularOrderEntry;
 use App\Models\RegularOrderEntryUpload;
 use App\Models\RegularOrderEntryUploadDetail;
@@ -577,7 +578,8 @@ class QueryRegularOrderEntryUpload extends Model {
                        "is_inquiry" => 0,
                        'datasource' => $item->datasource,
                     //    "id_regular_order_entry_upload_detail" => $item->id,
-                       "uuid" => (string) Str::uuid()
+                       "uuid" => (string) Str::uuid(),
+                       "jenis" => $item->item_no == null ? 'set' : 'single'
                    ]);
 
                    $box = VFinishBox::where([
@@ -609,6 +611,31 @@ class QueryRegularOrderEntryUpload extends Model {
                 }
             }
 
+            $upload_detail_set = RegularOrderEntryUploadDetailSet::where('id_regular_order_entry', $upload->id_regular_order_entry)->get()->toArray();
+            foreach ($upload_detail_set as $key => $value) {
+                RegularDeliveryPlanSet::create([
+                    "id_delivery_plan" => $value['id_detail'],
+                    "item_no" => $value['item_no'],
+                    "id_regular_order_entry" => $value['id_regular_order_entry'],
+                    "qty" => $value['qty'],
+                ]);
+            }
+
+            $deliv_plan_set = RegularDeliveryPlanSet::select('regular_delivery_plan_set.id_delivery_plan',
+                                        DB::raw("SUM(regular_delivery_plan_set.qty) as sum_qty")
+                                    )->where('id_regular_order_entry', $upload->id_regular_order_entry)
+                                    ->groupBy('regular_delivery_plan_set.id_delivery_plan')
+                                    ->get();
+
+            $id_deliv_plan = RegularDeliveryPlan::where('id_regular_order_entry', $upload->id_regular_order_entry)->where('item_no', null)->get()->toArray();
+        
+            foreach ($deliv_plan_set as $key => $value) {
+                for ($i=0; $i < count($id_deliv_plan); $i++) { 
+                    if ($value->sum_qty == $id_deliv_plan[$i]['qty']) {
+                        $value->update(['id_delivery_plan' => $id_deliv_plan[$i]['id']]);
+                    }
+                }
+            }
 
 
             if($is_transaction) DB::commit();

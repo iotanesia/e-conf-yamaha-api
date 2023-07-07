@@ -34,7 +34,8 @@ class RegularDeliveryPlan extends Model
         "updated_by",
         "deleted_at",
         "uuid",
-        "datasource"
+        "datasource",
+        "jenis"
     ];
 
     public static function boot()

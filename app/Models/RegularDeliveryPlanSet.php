@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class RegularOrderEntryUploadDetailSet extends Model
+class RegularDeliveryPlanSet extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'regular_order_entry_upload_detail_set';
+    protected $table = 'regular_delivery_plan_set';
     public $fillable = [
         "id",
-        "id_detail",
+        "id_delivery_plan",
         "item_no",
         "id_regular_order_entry",
         "qty",
@@ -20,6 +20,6 @@ class RegularOrderEntryUploadDetailSet extends Model
         "created_by",
         "updated_at",
         "updated_by",
-        "deleted_at",
+        "deleted_at"
     ];
 }

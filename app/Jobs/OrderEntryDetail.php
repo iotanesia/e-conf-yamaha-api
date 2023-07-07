@@ -106,10 +106,17 @@ class OrderEntryDetail implements ShouldQueue
                     'jenis' => 'set'
                 ]);
 
-                foreach (explode(',',$value['item_no']) as $value) {
+                foreach (explode(',',$value['item_no']) as $key => $value) {
+                    if (count(explode(',',$value['qty'])) == 1) {
+                        $qty = explode(',',$value['qty'])[0];
+                    } else {
+                        $qty = explode(',',$value['qty'])[$key];
+                    }
                     RegularOrderEntryUploadDetailSet::create([
                         'id_detail' => $upload_detail->id,
                         'item_no' => $value,
+                        'id_regular_order_entry' => $upload_detail->refRegularOrderEntryUpload->id_regular_order_entry,
+                        'qty' => $qty
                     ]);
                 }
             }
