@@ -767,12 +767,6 @@ class QueryRegularDeliveryPlan extends Model {
             ]);
 
             $id = $params->id;
-            if (count($params->id[0]) > 1) {
-                $id = [];
-                foreach ($params->id[0] as $key => $value) {
-                    $id[] = [$value];
-                }
-            }
 
             $check = RegularDeliveryPlan::select('etd_jkt','code_consignee','datasource')->whereIn('id',$id)
             ->groupBy('etd_jkt','code_consignee','datasource')
