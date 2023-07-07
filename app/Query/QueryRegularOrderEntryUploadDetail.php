@@ -71,8 +71,16 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
                 if ($item->item_no == null) {
                   $item_no_set = RegularOrderEntryUploadDetailSet::where('id_detail', $item->id)->get()->pluck('item_no');
-                  $item_no_series = MstBox::whereIn('item_no', $item_no_set->toArray())->get()->pluck('item_no_series');
-                  $item_name = MstPart::whereIn('item_no', $item_no_set->toArray())->get()->pluck('description');
+                  $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get()->pluck('item_no_series');
+                  $mst_part = MstPart::select('mst_part.item_no',
+                                        DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
+                                        ->whereIn('mst_part.item_no', $item_no_set->toArray())
+                                        ->groupBy('mst_part.item_no')->get();
+                  $item_name = [];
+                  foreach ($mst_part as $value) {
+                    $item_name[] = $value->description;
+                  }
+
                   $mst_box = MstBox::whereIn('item_no', $item_no_set->toArray())
                                   ->get()->map(function ($item){
                                       $qty = [
