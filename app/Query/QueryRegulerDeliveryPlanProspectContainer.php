@@ -98,8 +98,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function byIdProspectContainer($params,$id)
     {
-        $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
-                        'b.part_set','b.num_set',
+        $check = RegularDeliveryPlanBox::where('id_prospect_container_creation', $params->id)->first();
+
+        if ($check->refRegularDeliveryPlan->item_no !== null) {
+            $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
+                        'b.part_set','b.id_box',
                         DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
                         DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
                         DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
@@ -110,14 +113,34 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
                         DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
                         DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
-                        DB::raw("string_agg(DISTINCT b.num_set::character varying, ',') as num_set"))
+                        DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"))
                         ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
-                        ->join('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
+                        ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
                         ->leftJoin('mst_box as b','a.item_no','b.item_no')
-                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.num_set',)
+                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box')
                         ->paginate($params->limit ?? null);
+        } else {
+            $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
+                        'b.part_set','b.id_box','c.item_no',
+                        DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
+                        DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
+                        DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
+                        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+                        DB::raw("string_agg(DISTINCT a.qty::character varying, ',') as qty"),
+                        DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
+                        DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
+                        DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
+                        DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
+                        DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"))
+                        ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
+                        ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
+                        ->leftJoin('regular_delivery_plan_set as c','c.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
+                        ->leftJoin('mst_box as b','c.item_no','b.item_no')
+                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box','c.item_no')
+                        ->paginate($params->limit ?? null);
+        }
 
-        $data->transform(function ($item) use ($id){
+        $data->transform(function ($item) use ($check){
             $custname = self::getCustName($item->code_consignee);
             $itemname = [];
             foreach (explode(',', $item->item_no) as $value) {
@@ -128,7 +151,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $item_no[] = $value;
             }
 
-            if (count($item_no) > 1) {
+            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) {
                 $mst_box = MstBox::whereIn('item_no', $item_no)
                                 ->get()->map(function ($item){
                                 $qty =  $item->qty;
@@ -137,28 +160,34 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
                 $qty = [];
                 foreach (explode(',', $item->qty) as $key => $value) {
-                $qty[] = $value / $mst_box->toArray()[$key];
+                    $qty[] = $value / $mst_box->toArray()[$key];
                 }
-                
+        
                 $box = [
-                'qty' =>  array_sum($mst_box->toArray())." x ".(int)ceil(max($qty)),
-                'length' =>  "",
-                'width' =>  "",
-                'height' =>  "",
+                    'qty' =>  array_sum($mst_box->toArray())." x ".(int)ceil(max($qty)),
+                    'length' =>  "",
+                    'width' =>  "",
+                    'height' =>  "",
                 ];
 
                 if (count(explode(',',$item->qty)) == 1) {
-                $qty_order = [];
-                for ($i=1; $i <= count($item_no); $i++) { 
-                    $qty_order[] = $item->qty;
-                }
+                    $qty_order = [];
+                    for ($i=1; $i <= count($item_no); $i++) { 
+                        $qty_order[] = $item->qty;
+                    }
                 }
             }
 
+            $box_result = self::getCountBox($item->id_delivery_plan, $item->id_prospect_container_creation);
+            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
+
+            $qty_result = explode(',',$item->qty);
+            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = (count(explode(',',$item->qty)) == 1 ? $qty_order : explode(',',$item->qty));
+
             $item->item_name = $itemname;
             $item->cust_name = $custname;
-            $item->qty = count($item_no) > 1 ? (count(explode(',',$item->qty)) == 1 ? $qty_order : explode(',',$item->qty)) : explode(',',$item->qty);
-            $item->box = count($item_no) > 1 ? [$box] : self::getCountBox($item->id_delivery_plan, $item->id_prospect_container_creation);
+            $item->qty = $qty_result;
+            $item->box = $box_result;
             unset(
                 $item->refRegularDeliveryPlan,
                 $item->refRegularDeliveryPlanProspectContainerCreation,
@@ -754,7 +783,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             foreach ($plan as $item){
                 $delivery_plan[] = $item->id;
             }
-    
+
             $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
                 'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
             ->whereIn('id_regular_delivery_plan',$delivery_plan)
@@ -803,7 +832,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $count_box[] = $delivery_plan_box[$key]['count_box'];
                 $big_row_length[] = $delivery_plan_box[$key]['first_row_length'] * $delivery_plan_box[$key]['row'];
             }
-      
+    
             $space = 0;
             $sum_first_length = 0;
             $summary_box = 0;
