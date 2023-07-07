@@ -622,6 +622,7 @@ class QueryRegularOrderEntryUpload extends Model {
             }
 
             $deliv_plan_set = RegularDeliveryPlanSet::select('regular_delivery_plan_set.id_delivery_plan',
+                                        DB::raw("string_agg(DISTINCT regular_delivery_plan_set.id::character varying, ',') as id_plan_set"),
                                         DB::raw("SUM(regular_delivery_plan_set.qty) as sum_qty")
                                     )->where('id_regular_order_entry', $upload->id_regular_order_entry)
                                     ->groupBy('regular_delivery_plan_set.id_delivery_plan')
@@ -632,7 +633,10 @@ class QueryRegularOrderEntryUpload extends Model {
             foreach ($deliv_plan_set as $key => $value) {
                 for ($i=0; $i < count($id_deliv_plan); $i++) { 
                     if ($value->sum_qty == $id_deliv_plan[$i]['qty']) {
-                        $value->update(['id_delivery_plan' => $id_deliv_plan[$i]['id']]);
+                        foreach (explode(',',$value->id_plan_set) as $key => $id_update) {
+                            $upd = RegularDeliveryPlanSet::find($id_update);
+                            $upd->update(['id_delivery_plan' => $id_deliv_plan[$i]['id']]);
+                        }
                     }
                 }
             }
