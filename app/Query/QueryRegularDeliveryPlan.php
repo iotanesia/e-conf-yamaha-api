@@ -206,11 +206,6 @@ class QueryRegularDeliveryPlan extends Model {
                                     return array_merge($qty);
                                 });
 
-                $upload_temp = RegularOrderEntryUploadDetailTemp::where('id_regular_order_entry_upload', $item->id_regular_order_entry_upload)
-                                                                ->whereIn('item_no', $item_no_set->toArray())
-                                                                ->where('etd_jkt', $item->etd_jkt)
-                                                                ->get()->pluck('qty');
-
                 $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id)->get();
                 $qty_per_item_no = [];
                 foreach ($deliv_plan_set as $key => $value) {
