@@ -120,7 +120,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box')
                         ->paginate($params->limit ?? null);
         } else {
-            $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
+            $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan',
                         DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
                         DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_box::character varying, ',') as id_box"),
                         DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
@@ -135,7 +135,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
                         ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
                         ->leftJoin('regular_delivery_plan_set as b','b.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
-                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation')
+                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan')
                         ->paginate($params->limit ?? null);
         }
 
