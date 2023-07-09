@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Jobs\OrderEntryBox;
+use App\Jobs\OrderEntryBoxSet;
 use App\Jobs\OrderEntryDetail;
 use App\Models\MstPart;
 use App\Query\QueryMstBox;
@@ -162,6 +163,9 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                     'id_regular_order_entry_upload' => $this->id_regular_order_entry_upload
                 ]);
                 OrderEntryBox::dispatch([
+                    'id_regular_order_entry_upload' => $this->id_regular_order_entry_upload
+                ]);
+                OrderEntryBoxSet::dispatch([
                     'id_regular_order_entry_upload' => $this->id_regular_order_entry_upload
                 ]);
             }

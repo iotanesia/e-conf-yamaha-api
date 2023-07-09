@@ -167,5 +167,22 @@ class QueryMstBox extends Model {
         return $tes;
     }
 
+    public static function byItemNoCdConsigneeSet($itemNo,$consingee)
+    {
+        // echo 'item no : '.$itemNo." consignee : ".$consingee;
+        // die();
+        $tes = self::where('part_set', 'set')
+            ->where('item_no',trim($itemNo))
+            ->where('code_consignee',trim($consingee))
+            ->first() ?? null;
+
+        DB::table('box_temporary')->insert([
+            'item_no' => trim($itemNo),
+            'consignee' => trim($consingee),
+            'status' => $tes ? 1 : 0
+        ]);
+        return $tes;
+    }
+
 
 }
