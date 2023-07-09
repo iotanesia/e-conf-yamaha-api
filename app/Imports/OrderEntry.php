@@ -165,9 +165,6 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                 OrderEntryBox::dispatch([
                     'id_regular_order_entry_upload' => $this->id_regular_order_entry_upload
                 ]);
-                OrderEntryBoxSet::dispatch([
-                    'id_regular_order_entry_upload' => $this->id_regular_order_entry_upload
-                ]);
             }
         ];
     }
