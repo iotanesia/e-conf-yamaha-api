@@ -16,6 +16,7 @@ use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainer;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
+use App\Models\RegularDeliveryPlanSet;
 use App\Models\RegularProspectContainer;
 use App\Models\RegularProspectContainerCreation;
 use BaconQrCode\Common\Mode;
@@ -780,8 +781,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 ->orderBy('id', 'asc')
                 ->get();
             $delivery_plan = [];
+            $item_no = [];
             foreach ($plan as $item){
                 $delivery_plan[] = $item->id;
+                $item_no[] = $item->item_no;
             }
 
             $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
@@ -855,6 +858,43 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     $summary_box = $summary_box;
                     break;
                 }
+            }
+
+            if ($item_no[0] == null) {
+                $set = RegularDeliveryPlanSet::select('regular_delivery_plan_set.id_delivery_plan',
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.id::character varying, ',') as id_deliv_plan_set"),
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.item_no::character varying, ',') as item_no"),
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.qty::character varying, ',') as qty")
+                )
+                ->whereIn('id_delivery_plan', $delivery_plan)
+                ->groupBy('regular_delivery_plan_set.id_delivery_plan')
+                ->orderBy('id_deliv_plan_set','asc')->get();
+
+                $item_no_set = [];
+                $qty_set = [];
+                foreach ($set as $key => $value) {
+                    $item_no_set[] = explode(',',$value->item_no);
+                    $qty_set[] = explode(',',$value->qty);
+                }
+                
+                $max_qty = [];
+                foreach ($item_no_set as $key => $value) {
+                    $mst_box = MstBox::where('part_set', 'set')
+                                ->whereIn('item_no', $value)
+                                ->orderBy('id','asc')
+                                ->get()->map(function ($item){
+                                $qty =  $item->qty;
+                                return $qty;
+                            });
+                            
+                    $qty = [];
+                    foreach ($qty_set[$key] as $i => $value) {
+                        $qty[] = $value / $mst_box->toArray()[$i];
+                    }
+                    $max_qty[] = (int)ceil(max($qty));
+                }
+                
+                $sum_count_box = array_sum($max_qty);
             }
 
             $creation = [
