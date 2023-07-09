@@ -68,7 +68,7 @@ class OrderEntryBox implements ShouldQueue
                                     'uuid' => (string) Str::uuid(),
                                     'id_regular_order_entry_upload_detail' => $request['id'],
                                     'uuid_regular_order_entry_upload_detail' => $request['uuid'],
-                                    'id_box' => $box['id_box'],
+                                    'id_box' => $box['id'],
                                     'created_at' => now(),
                                     'updated_at' => now(),
                                     'qty_pcs_box' => $qty_pcs_box
