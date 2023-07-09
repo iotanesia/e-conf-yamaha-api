@@ -55,7 +55,7 @@ class ContainerPlan implements ShouldQueue
                     ->first();
 
                 $fill = RegularDeliveryPlanBox::find($val['id']);
-                $fill->id_prospect_container_creation = $id_prop->id ?? null;
+                $fill->id_prospect_container_creation = $id_prop->id;
                 $fill->save();
 
                 if($counter < $countSummaryBox) {

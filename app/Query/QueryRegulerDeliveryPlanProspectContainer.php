@@ -98,30 +98,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function byIdProspectContainer($params,$id)
     {
-        $check = RegularDeliveryPlanBox::where('id_prospect_container_creation', 2134)->first();
+        $check = RegularDeliveryPlanBox::where('id_prospect_container_creation', $params->id)->first();
 
-        // if ($check->refRegularDeliveryPlan->item_no !== null) {
-        //     $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
-        //                 'b.part_set','b.id_box',
-        //                 DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
-        //                 DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
-        //                 DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
-        //                 DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-        //                 DB::raw("string_agg(DISTINCT a.qty::character varying, ',') as qty"),
-        //                 DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
-        //                 DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
-        //                 DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
-        //                 DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
-        //                 DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
-        //                 DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"))
-        //                 ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
-        //                 ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
-        //                 ->leftJoin('mst_box as b','a.item_no','b.item_no')
-        //                 ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box')
-        //                 ->paginate($params->limit ?? null);
-        // } else {
+        if ($check->refRegularDeliveryPlan->item_no !== null) {
             $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
-                        'b.part_set','b.id_box','c.item_no',
+                        'b.part_set','b.id_box',
                         DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
                         DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
                         DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
@@ -130,17 +111,33 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
                         DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
                         DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
+                        DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
                         DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
                         DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"))
                         ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
                         ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
-                        ->leftJoin('regular_delivery_plan_set as c','c.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
-                        ->leftJoin('mst_box as b','c.item_no','b.item_no')
-                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box','c.item_no')
+                        ->leftJoin('mst_box as b','a.item_no','b.item_no')
+                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box')
                         ->paginate($params->limit ?? null);
-        // }
-
-        dd($data->toArray());
+        } else {
+            $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
+                        DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
+                        DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_box::character varying, ',') as id_box"),
+                        DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
+                        DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
+                        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+                        DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
+                        DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
+                        DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
+                        DB::raw("string_agg(DISTINCT b.qty::character varying, ',') as qty"),
+                        DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no")
+                        )
+                        ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
+                        ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
+                        ->leftJoin('regular_delivery_plan_set as b','b.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
+                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation')
+                        ->paginate($params->limit ?? null);
+        }
 
         $data->transform(function ($item) use ($check){
             $custname = self::getCustName($item->code_consignee);
@@ -154,7 +151,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             }
 
             if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) {
-                $mst_box = MstBox::whereIn('item_no', $item_no)
+                $mst_box = MstBox::where('part_set', 'set')
+                                ->whereIn('item_no', $item_no)
                                 ->get()->map(function ($item){
                                 $qty =  $item->qty;
                                 return $qty;
