@@ -451,151 +451,84 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function detailProduksiBox($params,$id)
     {
-        if (count(explode(',',$id)) > 1) {
-            $id_delivery_plan = explode(',',$id);
-            $data = RegularDeliveryPlanBox::select(
-            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id::character varying, ',') as id_regular_delivery_plan_box"),
-            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
-            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_box::character varying, ',') as id_box"),
-            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.qty_pcs_box::character varying, ',') as qty_pcs_box"),
-            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.lot_packing::character varying, ',') as lot_packing"),
-            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.packing_date::character varying, ',') as packing_date"),
-            DB::raw("string_agg(DISTINCT regular_delivery_plan_box.qrcode::character varying, ',') as qrcode"),
-            DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
-            DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"),
-            )
-            ->whereIn('id_regular_delivery_plan',$id_delivery_plan)
-            ->leftJoin('regular_delivery_plan as a','regular_delivery_plan_box.id_regular_delivery_plan','a.id')
-            ->groupBy('a.item_no')
-            ->paginate($params->limit ?? null);
+        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->orderBy('qty_pcs_box','desc')
+                                        ->paginate($params->limit ?? null);
 
+        if ($data[0]->refRegularDeliveryPlan->item_no == null) {
+            $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$id)->get();
             $item_no = [];
-            foreach ($data as $value) {
+            foreach ($plan_set as $key => $value) {
                 $item_no[] = $value->item_no;
             }
-            $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)
-                                ->get()->map(function ($item){
-                                    $qty = [
-                                        $item->item_no => $item->qty
-                                    ];
-                                
-                                    return $qty;
-                                });
-
-            $total = $data->map(function ($item){
-                $qty = [
-                    $item->item_no => $item->sum_qty,
-                ];
-            
-                return $qty;
-            });
-
-            $data_id_plan_box = $data->map(function ($item){
-                $qty = [
-                    $item->item_no => explode(',',$item->id_regular_delivery_plan_box),
-                ];
-            
-                return $qty;
-            });
-
-            $data_lot_packing = $data->map(function ($item){
-                $qty = [
-                    $item->item_no => explode(',',$item->lot_packing),
-                ];
-            
-                return $qty;
-            });
-
-            $data_packing_date = $data->map(function ($item){
-                $qty = [
-                    $item->item_no => explode(',',$item->packing_date),
-                ];
-            
-                return $qty;
-            });
-
-            $data_qrcode = $data->map(function ($item){
-                $qty = [
-                    $item->item_no => explode(',',$item->qrcode),
-                ];
-            
-                return $qty;
-            });
-
+            $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
             $no = '';
             $qty_box = '';
-            foreach ($data as $value) {
-                $no = $value->refBox->no_box;
-                $qty_box = $value->refBox->qty;
+            $sum_qty = [];
+            foreach ($mst_box as $key => $value) {
+                $no = $value->no_box;
+                $qty_box = $value->qty;
+                $sum_qty[] = $value->qty;
             }
-            
-            $qty = [];
-            $arary_keys = [];
-            $id_plan_box = [];
+
+            $id_deliv_box = [];
+            $qty_pcs_box = [];
             $lot_packing = [];
             $packing_date = [];
-            $qrcode = [];
-            foreach ($mst_box as $key => $value) {
-                $arary_key = array_keys($value)[0];
-                $arary_keys[] = $arary_key;
-                $qty[] = array_merge(...$total)[$arary_key] / $value[$arary_key];
-                $id_plan_box[] = array_merge(...$data_id_plan_box->toArray())[$arary_key];
-                $lot_packing[] = array_merge(...$data_lot_packing->toArray())[$arary_key];
-                $packing_date[] = array_merge(...$data_packing_date->toArray())[$arary_key];
-                $qrcode[] = array_merge(...$data_qrcode->toArray())[$arary_key];
-            }
-            
-            $result = [];
-            $first = array_merge(...$total)[$arary_keys[0]];
-            $second = array_merge(...$total)[$arary_keys[1]];
-            $first_result = array_merge(...$total)[$arary_keys[0]] - array_merge(...$mst_box->toArray())[$arary_keys[0]];
-            $second_result = array_merge(...$total)[$arary_keys[1]] - array_merge(...$mst_box->toArray())[$arary_keys[1]];
-            
-            for ($i=0; $i < (int)floor(max($qty)); $i++) { 
-                $first_id = $id_plan_box[0][$i] ?? null;
-                $second_id = $id_plan_box[1][$i] ?? null;
-                $first_lot_packing = $lot_packing[0][$i] ?? null;
-                $second_lot_packing = $lot_packing[1][$i] ?? null;
-                $first_packing_date = $packing_date[0][$i] ?? null;
-                $second_packing_date = $packing_date[1][$i] ?? null;
-                $first_qrcode = $qrcode[0][$i] ?? null;
-                $second_qrcode = $qrcode[1][$i] ?? null;
-                
-                $result[] = [
-                    'id' => [
-                        $first_id,
-                        $second_id
-                    ],
-                    'qty_pcs_box' => [
-                            $first - $first_result,
-                            $second - $second_result
-                    ],
-                    'lot_packing' => [
-                        $first_lot_packing,
-                        $second_lot_packing
-                    ],
-                    'packing_date' => [
-                        $first_packing_date,
-                        $second_packing_date
-                    ],
-                    'namebox' => $no. " - ".$qty_box. " pcs",
-                    'status' => in_array(null,[$first_qrcode,$second_qrcode]) !== true ? 'Done created QR code' : 'Waiting created QR code'
-                ];
+            $qty = 0;
+            $group = [];
+            $group_qty = [];
+            $group_lot_packing = [];
+            $group_packing_date = [];
+            foreach ($data as $key => $value) {
+                $qty += $value->qty_pcs_box;
+                $group[] = $value->id;
+                $group_qty[] = $value->qty_pcs_box;
+                $group_lot_packing[] = $value->lot_packing;
+                $group_packing_date[] = $value->packing_date;
 
-                $first = $first - array_merge(...$mst_box->toArray())[$arary_keys[0]];
-                $second = $second - array_merge(...$mst_box->toArray())[$arary_keys[1]];
-                $first_result = $first_result - array_merge(...$mst_box->toArray())[$arary_keys[0]];
-                $second_result = $second_result - array_merge(...$mst_box->toArray())[$arary_keys[1]];
+                if ($qty >= (array_sum($sum_qty) * count($item_no))) {
+                    $id_deliv_box[] = $group;
+                    $qty_pcs_box[] = $group_qty;
+                    $lot_packing[] = $group_lot_packing;
+                    $packing_date[] = $group_packing_date;
+                    $qty = 0;
+                    $group = [];
+                    $group_qty = [];
+                    $group_lot_packing = [];
+                    $group_packing_date = [];
+                }
+            }
+
+            if (!empty($group)) {
+                $id_deliv_box[] = $group;
+            }
+            if (!empty($group_qty)) {
+                $qty_pcs_box[] = $group_qty;
+            }
+            if (!empty($group_lot_packing)) {
+                $lot_packing[] = $group_lot_packing;
+            }
+            if (!empty($group_packing_date)) {
+                $packing_date[] = $group_packing_date;
+            }
+
+            $result = [];
+            for ($i=0; $i < count($id_deliv_box); $i++) { 
+                $qrcode = RegularDeliveryPlanBox::whereIn('id', $id_deliv_box[$i])->get()->pluck('qrcode');
+                $result[] = [
+                    'id' => $id_deliv_box[$i],
+                    'qty_pcs_box' => array_sum($qty_pcs_box[$i]) / count($item_no),
+                    'lot_packing' => $lot_packing[$i],
+                    'packing_date' => $packing_date[$i],
+                    'namebox' => $no. " - ".$qty_box. " pcs",
+                    'status' => in_array(null,$qrcode->toArray()) !== true ? 'Done created QR code' : 'Waiting created QR code'
+                ];
             }
 
             return [
-                'items' => $result,
-                'last_page' => 0
-            ];
-
-        } else {
-            $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->orderBy('id','asc')
-                                            ->paginate($params->limit ?? null);
+                    'items' => $result,
+                    'last_page' => 0
+                ];    
         }
         
         $data->transform(function ($item)
