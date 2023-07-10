@@ -827,8 +827,8 @@ class QueryRegularDeliveryPlan extends Model {
                             $fill['id_proc'] = $value->id_proc;
                             $fill['packing_date'] = $value->packing_date;
                             $fill['lot_packing'] = $value->lot_packing;
-                            $check->fill($fill);
-                            $check->save();
+                            $value->fill($fill);
+                            $value->save();
                         }      
                     }
                     $id = explode(',',$item['id']);
@@ -948,7 +948,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $qty_pcs_box = array_sum($qty_pcs_box) / count($item_no_set);
     
                     return [
-                        'id' => $item->id,
+                        'id' => implode(',',$id),
                         'item_name' => $item_name_set,
                         'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
                         'item_no' => $item_no_set,
@@ -958,7 +958,7 @@ class QueryRegularDeliveryPlan extends Model {
                         'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
                         'lot_packing' => $item->lot_packing,
                         'packing_date' => $item->packing_date,
-                        'qr_key' => $item->id,
+                        'qr_key' => implode(',',$id),
                         'no_box' => $item->refBox->no_box ?? null,
                     ];
                 });
