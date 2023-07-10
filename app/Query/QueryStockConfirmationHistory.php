@@ -218,10 +218,19 @@ class QueryStockConfirmationHistory extends Model {
                     $status = 'Out Of Date';
                 }
 
+                $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+                $part_set = MstPart::whereIn('item_no', $deliv_plan_set->toArray())->get();
+                $item_no_set = [];
+                $item_name_set = [];
+                foreach ($part_set as $key => $value) {
+                    $item_no_set[] = $value->item_serial;
+                    $item_name_set[] = $value->description;
+                }
+
                 $item->status_tracking = $status ?? null;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
-                $item->item_no = $item->refRegularDeliveryPlan->refPart->item_serial;
-                $item->item_name = $item->refRegularDeliveryPlan->refPart->description;
+                $item->item_no = $item_no_set;
+                $item->item_name = $item_name_set;
                 $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
                 $item->cust_order_no = $item->refRegularDeliveryPlan->order_no;
                 $item->qty = $item->refRegularDeliveryPlan->qty;
@@ -380,31 +389,93 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
-            if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
+            if (count(explode(',',$params->id)) > 1) {
+                $id = explode(',',$params->id)[0];
+                $total_item = explode(',',$params->id)[1];
 
-            $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->where('type',Constant::INSTOCK)->first();
-            if($stock_confirmation_history) throw new \Exception("QR Code Done Scan", 400);
+                $delivery_plan_box = RegularDeliveryPlanBox::find($id);
+                if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
 
-            $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
-            $qty = $stock_confirmation->qty;
-            $status = $stock_confirmation->status;
-            $in_stock_dc = $stock_confirmation->in_dc;
-            $in_dc_total = $in_stock_dc + $delivery_plan_box->qty_pcs_box;
+                $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->where('type',Constant::INSTOCK)->first();
+                if($stock_confirmation_history) throw new \Exception("QR Code Done Scan", 400);
 
-            $stock_confirmation->in_dc = $in_dc_total;
-            $stock_confirmation->production = $qty - $in_dc_total - $stock_confirmation->in_wh;
-            $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
-            $stock_confirmation->save();
+                $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)->get()->pluck('id_regular_delivery_plan_box');
+                $query = RegularDeliveryPlanBox::query();
+                if (count($check_scan) > 1) {
+                    $box = $query->where('id_regular_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)
+                                                ->whereNotIn('id',$check_scan->toArray())
+                                                ->whereNotNull('qrcode')
+                                                ->orderBy('qty_pcs_box', 'desc')
+                                                ->get();
+                } else {
+                    $box = $query->where('id_regular_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)
+                                                ->whereNotNull('qrcode')
+                                                ->orderBy('qty_pcs_box', 'desc')
+                                                ->get();
+                }
+                
+                $qty_pcs_box = [];
+                $id_plan_box = [];
+                $id_box = [];
+                foreach ($box->take($total_item) as $key => $value) {
+                    $qty_pcs_box[] = $value->qty_pcs_box;
+                    $id_plan_box[] = $value->id;
+                    $id_box[] = $value->id_box;
+                }  
 
-            self::create([
-                'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
-                'id_regular_delivery_plan_box' => $delivery_plan_box->id,
-                'id_stock_confirmation' => $stock_confirmation->id,
-                'id_box' => $delivery_plan_box->id_box,
-                'type' => 'INSTOCK',
-                'qty_pcs_perbox' => $qty,
-            ]);
+                $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+                
+                $qty_pcs_box = array_sum($qty_pcs_box) / count($deliv_plan_set);
+
+                $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+                $qty = $stock_confirmation->qty;
+                $status = $stock_confirmation->status;
+                $in_stock_dc = $stock_confirmation->in_dc;
+                $in_dc_total = $in_stock_dc + $qty_pcs_box;
+
+                $stock_confirmation->in_dc = $in_dc_total;
+                $stock_confirmation->production = $qty - $in_dc_total - $stock_confirmation->in_wh;
+                $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
+                $stock_confirmation->save();
+
+                for ($i=0; $i < $total_item; $i++) { 
+                    self::create([
+                        'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
+                        'id_regular_delivery_plan_box' => $id_plan_box[$i],
+                        'id_stock_confirmation' => $stock_confirmation->id,
+                        'id_box' => $id_box[$i],
+                        'type' => 'INSTOCK',
+                        'qty_pcs_perbox' => $qty,
+                    ]);
+                }
+                
+            } else {
+                $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
+                if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
+
+                $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->where('type',Constant::INSTOCK)->first();
+                if($stock_confirmation_history) throw new \Exception("QR Code Done Scan", 400);
+
+                $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+                $qty = $stock_confirmation->qty;
+                $status = $stock_confirmation->status;
+                $in_stock_dc = $stock_confirmation->in_dc;
+                $in_dc_total = $in_stock_dc + $delivery_plan_box->qty_pcs_box;
+
+                $stock_confirmation->in_dc = $in_dc_total;
+                $stock_confirmation->production = $qty - $in_dc_total - $stock_confirmation->in_wh;
+                $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
+                $stock_confirmation->save();
+
+                self::create([
+                    'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
+                    'id_regular_delivery_plan_box' => $delivery_plan_box->id,
+                    'id_stock_confirmation' => $stock_confirmation->id,
+                    'id_box' => $delivery_plan_box->id_box,
+                    'type' => 'INSTOCK',
+                    'qty_pcs_perbox' => $qty,
+                ]);
+            }
 
         if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
