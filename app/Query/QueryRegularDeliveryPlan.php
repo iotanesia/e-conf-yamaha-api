@@ -823,12 +823,11 @@ class QueryRegularDeliveryPlan extends Model {
                                                         ->orderBy('qty_pcs_box', 'desc')
                                                         ->get();
                         
-                        foreach ($upd->take(explode(',',$item['id'])[1]) as $key => $value) {
-                            $fill['id_proc'] = $value->id_proc;
-                            $fill['packing_date'] = $value->packing_date;
-                            $fill['lot_packing'] = $value->lot_packing;
-                            $value->fill($fill);
-                            $value->save();
+                        foreach ($upd->take(explode(',',$item['id'])[1]) as $key => $val) {
+                            $val->id_proc = $val->id_proc;
+                            $val->packing_date = $val->packing_date;
+                            $val->lot_packing = $val->lot_packing;
+                            $val->save();
                         }      
                     }
                     $id = explode(',',$item['id']);
