@@ -824,9 +824,9 @@ class QueryRegularDeliveryPlan extends Model {
                                                         ->get();
                         
                         foreach ($upd->take(explode(',',$item['id'])[1]) as $key => $val) {
-                            $val->id_proc = $val->id_proc;
-                            $val->packing_date = $val->packing_date;
-                            $val->lot_packing = $val->lot_packing;
+                            $val->id_proc = $item['id_proc'];
+                            $val->packing_date = $item['packing_date'];
+                            $val->lot_packing = $item['lot_packing'];
                             $val->save();
                         }      
                     }
