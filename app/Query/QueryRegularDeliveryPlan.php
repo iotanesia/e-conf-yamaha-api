@@ -819,8 +819,10 @@ class QueryRegularDeliveryPlan extends Model {
                     $check = RegularDeliveryPlanBox::find(explode(',',$item['id'])[0]);
                     if($check) {
                         $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
-                                                        ->where('qrcode', null)
-                                                        ->orderBy('qty_pcs_box', 'desc')
+                                                        ->where('id_proc', null)
+                                                        ->where('packing_date', null)
+                                                        ->where('packing_date', null)
+                                                        ->orderBy('lot_packing', 'desc')
                                                         ->get();
                         
                         foreach ($upd->take(explode(',',$item['id'])[1]) as $key => $val) {
