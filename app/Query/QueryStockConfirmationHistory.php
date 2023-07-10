@@ -229,8 +229,8 @@ class QueryStockConfirmationHistory extends Model {
 
                 $item->status_tracking = $status ?? null;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
-                $item->item_no = $item_no_set;
-                $item->item_name = $item_name_set;
+                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_set : $item->refRegularDeliveryPlan->refPart->item_serial;
+                $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name_set : $item->refRegularDeliveryPlan->refPart->description;
                 $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
                 $item->cust_order_no = $item->refRegularDeliveryPlan->order_no;
                 $item->qty = $item->refRegularDeliveryPlan->qty;
