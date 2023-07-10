@@ -747,6 +747,14 @@ class QueryRegularDeliveryPlan extends Model {
         if (count(explode(',',$id)) > 1) {
             $id_plan_box = explode(',',$id);
             $item = RegularDeliveryPlanBox::whereIn('id',$id_plan_box)->orderBy('id','asc')->get();
+            $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item[0]->id_regular_delivery_plan)->get()->pluck('item_no');
+            $part_set = MstPart::whereIn('item_no', $deliv_plan_set->toArray())->get();
+            $item_no_set = [];
+            $item_name_set = [];
+            foreach ($part_set as $key => $value) {
+                $item_no_set[] = $value->item_serial;
+                $item_name_set[] = $value->description;
+            }
             $itemname = [];
             $item_no = [];
             $order_no = '';
@@ -756,8 +764,8 @@ class QueryRegularDeliveryPlan extends Model {
             $qrcode = '';
             $no_box = '';
             foreach ($item as $value) {
-                $itemname[] = trim($value->refRegularDeliveryPlan->refPart->description) ?? null;
-                $item_no[] = $value->refRegularDeliveryPlan->refPart->item_serial ?? null;
+                $itemname = $item_name_set;
+                $item_no = $item_no_set;
                 $order_no = $value->refRegularDeliveryPlan->order_no ?? null;
                 $qty_pcs_box[] = $value->qty_pcs_box ?? 0;
                 $packing_date = $value->packing_date ?? null;
@@ -765,6 +773,7 @@ class QueryRegularDeliveryPlan extends Model {
                 $qrcode = $value->qrcode;
                 $no_box = $value->refBox->no_box ?? null;
             }
+            $qty_pcs_box = array_sum($qty_pcs_box) / count($item_no);
         } else {
             $item = RegularDeliveryPlanBox::where('id',$id)->orderBy('id','asc')->first();
         }
