@@ -136,7 +136,7 @@ class QueryStockConfirmationHistory extends Model {
 
                 if ($qty >= (array_sum($sum_qty) * count($plan_set->toArray()))) {
                     $result_qty[] = $group_qty;
-                    $result_arr[] = $group_arr[0];
+                    $result_arr[] = $group_arr[0] ?? [];
                     $qty = 0;
                     $group_qty = [];
                     $group_arr = [];
@@ -149,11 +149,13 @@ class QueryStockConfirmationHistory extends Model {
             if (!empty($group_arr)) {
                 $result_arr[] = $group_arr[0];
             }
-
+            
             $result_merge = [];
             for ($i=0; $i < count($result_qty); $i++) { 
-                $merge_qty = ['qty' => (array_sum($result_qty[$i]) / count($plan_set->toArray()))];
-                $result_merge[] = array_merge($merge_qty,$result_arr[$i]);
+                if (count($result_qty[$i]) !== 0) {
+                    $merge_qty = ['qty' => (array_sum($result_qty[$i]) / count($plan_set->toArray()))];
+                    $result_merge[] = array_merge($merge_qty,$result_arr[$i]);
+                }
             }
 
             $result[] = $result_merge;
