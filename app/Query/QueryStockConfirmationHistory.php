@@ -296,11 +296,17 @@ class QueryStockConfirmationHistory extends Model {
                                                         ->get();
                         
                     $qty_pcs_box = [];
-                    foreach ($upd->take($total_item) as $key => $value) {
-                        $value->qrcode = $qr_name;
-                        $value->save();
-                        $qty_pcs_box[] = $value->qty_pcs_box;
-                    }  
+                    foreach ($upd as $key => $val) {
+                        if ($val->id === $item->id) {
+                            for ($i=0; $i < $total_item; $i++) { 
+                                $upd[$key+$i]->update([
+                                    'qrcode' => $qr_name
+                                ]);
+
+                                $qty_pcs_box[] = $upd[$key+$i]->qty_pcs_box;
+                            }
+                        }
+                    }
 
                     $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
                     $part_set = MstPart::whereIn('item_no', $deliv_plan_set->toArray())->get();
@@ -311,14 +317,13 @@ class QueryStockConfirmationHistory extends Model {
                         $item_name_set[] = $value->description;
                     }
 
-                    
-                    $qty_pcs_box = array_sum($qty_pcs_box) / count($item_no_set);
+                    $qty_pcs_box = array_sum($qty_pcs_box) / count(array_unique($item_no_set));
    
                     return [
                         'id' => $params->qr_code,
-                        'item_name' => $item_name_set,
+                        'item_name' => array_unique($item_name_set),
                         'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
-                        'item_no' => $item_no_set,
+                        'item_no' => array_unique($item_no_set),
                         'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
                         'qty_pcs_box' => $qty_pcs_box,
                         'namebox' => $no. " ".$qty. " pcs" ,
@@ -413,15 +418,19 @@ class QueryStockConfirmationHistory extends Model {
                                                 ->orderBy('qty_pcs_box', 'desc')
                                                 ->get();
                 }
-                
+               
                 $qty_pcs_box = [];
                 $id_plan_box = [];
                 $id_box = [];
-                foreach ($box->take($total_item) as $key => $value) {
-                    $qty_pcs_box[] = $value->qty_pcs_box;
-                    $id_plan_box[] = $value->id;
-                    $id_box[] = $value->id_box;
-                }  
+                foreach ($box as $key => $val) {
+                    if ($val->id === $delivery_plan_box->id) {
+                        for ($i=0; $i < $total_item; $i++) { 
+                            $qty_pcs_box[] = $box[$key+$i]->qty_pcs_box;
+                            $id_plan_box[] = $box[$key+$i]->id;
+                            $id_box[] = $box[$key+$i]->id_box;
+                        }
+                    }
+                }
 
                 $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)->get()->pluck('item_no');
                 

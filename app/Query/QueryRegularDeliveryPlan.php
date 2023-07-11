@@ -764,8 +764,8 @@ class QueryRegularDeliveryPlan extends Model {
             $qrcode = '';
             $no_box = '';
             foreach ($item as $value) {
-                $itemname = $item_name_set;
-                $item_no = $item_no_set;
+                $itemname = array_unique($item_name_set);
+                $item_no = array_unique($item_no_set);
                 $order_no = $value->refRegularDeliveryPlan->order_no ?? null;
                 $qty_pcs_box[] = $value->qty_pcs_box ?? 0;
                 $packing_date = $value->packing_date ?? null;
@@ -820,14 +820,19 @@ class QueryRegularDeliveryPlan extends Model {
                     if($check) {
                         $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
                                                         ->where('qrcode', null)
-                                                        ->orderBy('lot_packing', 'desc')
+                                                        ->orderBy('qty_pcs_box', 'desc')
                                                         ->get();
-                        
-                        foreach ($upd->take(explode(',',$item['id'])[1]) as $key => $val) {
-                            $val->id_proc = $item['id_proc'];
-                            $val->packing_date = $item['packing_date'];
-                            $val->lot_packing = $item['lot_packing'];
-                            $val->save();
+                            
+                        foreach ($upd as $key => $val) {
+                            if ($val->id === $check->id) {
+                                for ($i=0; $i < explode(',',$item['id'])[1]; $i++) { 
+                                    $upd[$key+$i]->update([
+                                        'id_proc' => $item['id_proc'],
+                                        'packing_date' => $item['packing_date'],
+                                        'lot_packing' => $item['lot_packing'],
+                                    ]);
+                                }
+                            }
                         }      
                     }
                     $id = explode(',',$item['id']);
@@ -882,6 +887,23 @@ class QueryRegularDeliveryPlan extends Model {
                 }
             }
 
+            if (count($id) > 1) {
+                $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
+                                                        ->orderBy('qty_pcs_box', 'desc')
+                                                        ->get();
+                
+                $qty_pcs_box = [];
+                foreach ($box as $key => $val) {
+                    if ($val->id === $check->id) {
+                        for ($i=0; $i < $id[1]; $i++) { 
+                            $qty_pcs_box[] = $box[$key+$i]->qty_pcs_box;
+                        }
+                    }
+                } 
+                $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $check->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+                $qty_pcs_box = array_sum($qty_pcs_box) / count($deliv_plan_set);
+            }
+
             $queryStok = RegularStokConfirmation::query();
             $is_stok = $queryStok->where('id_regular_delivery_plan', $check->id_regular_delivery_plan)->first();
             if ($is_stok) {
@@ -893,8 +915,8 @@ class QueryRegularDeliveryPlan extends Model {
                 $queryStok->create([
                     "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
                     "count_box" => $check->refRegularDeliveryPlan->manyDeliveryPlanBox->count() ?? 0,
-                    "production" => $check->qty_pcs_box,
-                    "qty" => $check->qty_pcs_box,
+                    "production" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
+                    "qty" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
                     "in_dc" => Constant::IS_NOL,
                     "in_wh" => Constant::IS_NOL,
                     "status_instock" => Constant::STS_STOK,
@@ -924,15 +946,22 @@ class QueryRegularDeliveryPlan extends Model {
 
                     $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->refRegularDeliveryPlan->id)
                                                         ->where('qrcode', null)
+                                                        ->whereNotNull('packing_date')
                                                         ->orderBy('qty_pcs_box', 'desc')
                                                         ->get();
-                        
+                    
                     $qty_pcs_box = [];
-                    foreach ($upd->take($id[1]) as $key => $value) {
-                        $value->qrcode = $qr_name;
-                        $value->save();
-                        $qty_pcs_box[] = $value->qty_pcs_box;
-                    }  
+                    foreach ($upd as $key => $val) {
+                        if ($val->id === $item->id) {
+                            for ($i=0; $i < $id[1]; $i++) { 
+                                $upd[$key+$i]->update([
+                                    'qrcode' => $qr_name
+                                ]);
+
+                                $qty_pcs_box[] = $upd[$key+$i]->qty_pcs_box;
+                            }
+                        }
+                    }
 
                     $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
                     $part_set = MstPart::whereIn('item_no', $deliv_plan_set->toArray())->get();
