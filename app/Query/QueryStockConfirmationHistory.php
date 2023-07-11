@@ -160,7 +160,7 @@ class QueryStockConfirmationHistory extends Model {
         }
 
         return [
-            'items' => $result[0],
+            'items' => $result[0] ?? [],
             'last_page' => $data->lastPage()
         ];
         //tes
