@@ -451,7 +451,9 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function detailProduksiBox($params,$id)
     {
-        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)->orderBy('qty_pcs_box','desc')
+        $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)
+                                        ->orderBy('qty_pcs_box','desc')
+                                        ->orderBy('id','asc')
                                         ->paginate($params->limit ?? null);
 
         if ($data[0]->refRegularDeliveryPlan->item_no == null) {
@@ -821,6 +823,7 @@ class QueryRegularDeliveryPlan extends Model {
                         $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
                                                         ->where('qrcode', null)
                                                         ->orderBy('qty_pcs_box', 'desc')
+                                                        ->orderBy('id','asc')
                                                         ->get();
                             
                         foreach ($upd as $key => $val) {
@@ -890,6 +893,7 @@ class QueryRegularDeliveryPlan extends Model {
             if (count($id) > 1) {
                 $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
                                                         ->orderBy('qty_pcs_box', 'desc')
+                                                        ->orderBy('id','asc')
                                                         ->get();
                 
                 $qty_pcs_box = [];
@@ -948,6 +952,7 @@ class QueryRegularDeliveryPlan extends Model {
                                                         ->where('qrcode', null)
                                                         ->whereNotNull('packing_date')
                                                         ->orderBy('qty_pcs_box', 'desc')
+                                                        ->orderBy('id','asc')
                                                         ->get();
                     
                     $qty_pcs_box = [];

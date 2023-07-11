@@ -82,53 +82,136 @@ class QueryStockConfirmationHistory extends Model {
     {
         $data = RegularStokConfirmation::where('status_instock','=',2)->where('in_dc','>',0)->paginate($request->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
+
+        //tes
+        $result = [];
+        foreach ($data as $key => $value) {
+            $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$value->id_regular_delivery_plan)->orderBy('qty_pcs_box','desc')->get();
+            $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$value->id_regular_delivery_plan)->get()->pluck('item_no');
+            $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan',$value->id_regular_delivery_plan)->where('type','INSTOCK')->get()->pluck('id_regular_delivery_plan_box');
+
+            $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->toArray())->get();
+            $sum_qty = [];
+            foreach ($mst_box as $key => $value) {
+                $sum_qty[] = $value->qty;
+            }
+
+            $result_qty = [];
+            $result_arr = [];
+            $qty = 0;
+            $group_qty = [];
+            $group_arr = [];
+            foreach ($plan_box as $key => $val) {
+                $qty += $val->qty_pcs_box;
+                if (in_array($val->id,$check_scan->toArray())) {
+                    $group_qty[] = $val->qty_pcs_box;
+                    $group_arr[] = [
+                        'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
+                        'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
+                        'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
+                        'model' => $val->refRegularDeliveryPlan->model,
+                        'item_no' => $plan_set->toArray(),
+                        'disburse' => $val->refRegularDeliveryPlan->disburse,
+                        'delivery' => $val->refRegularDeliveryPlan->delivery,
+                        'status_regular_delivery_plan' => $val->refRegularDeliveryPlan->status_regular_delivery_plan,
+                        'order_no' => $val->refRegularDeliveryPlan->order_no,
+                        'cust_item_no' => $val->refRegularDeliveryPlan->cust_item_no,
+                        'created_at' => $val->refRegularDeliveryPlan->created_at,
+                        'created_by' => $val->refRegularDeliveryPlan->created_by,
+                        'updated_at' => $val->refRegularDeliveryPlan->updated_at,
+                        'updated_by' => $val->refRegularDeliveryPlan->updated_by,
+                        'deleted_at' => $val->refRegularDeliveryPlan->deleted_at,
+                        'uuid' => $val->refRegularDeliveryPlan->uuid,
+                        'etd_ypmi' => $val->refRegularDeliveryPlan->etd_ypmi,
+                        'etd_wh' => $val->refRegularDeliveryPlan->etd_wh,
+                        'etd_jkt' => $val->refRegularDeliveryPlan->etd_jkt,
+                        'is_inquiry' => $val->refRegularDeliveryPlan->is_inquiry,
+                        'id_prospect_container' => $val->refRegularDeliveryPlan->id_prospect_container,
+                        'id_prospect_container_creation' => $val->refRegularDeliveryPlan->id_prospect_container_creation,
+                        'status_bml' => $val->refRegularDeliveryPlan->status_bml,
+                        'cust_name' => $val->refRegularDeliveryPlan->refConsignee->nick_name,
+                        'status_desc' => 'Instock',
+                    ];
+                }
+
+                if ($qty >= (array_sum($sum_qty) * count($plan_set->toArray()))) {
+                    $result_qty[] = $group_qty;
+                    $result_arr[] = $group_arr[0];
+                    $qty = 0;
+                    $group_qty = [];
+                    $group_arr = [];
+                }
+            }
+
+            if (!empty($group_qty)) {
+                $result_qty[] = $group_qty;
+            }
+            if (!empty($group_arr)) {
+                $result_arr[] = $group_arr[0];
+            }
+
+            $result_merge = [];
+            for ($i=0; $i < count($result_qty); $i++) { 
+                $merge_qty = ['qty' => (array_sum($result_qty[$i]) / count($plan_set->toArray()))];
+                $result_merge[] = array_merge($merge_qty,$result_arr[$i]);
+            }
+
+            $result[] = $result_merge;
+        }
+
         return [
-            'items' => $data->getCollection()->transform(function($item){
-                $item->id_regular_delivery_plan = $item->refRegularDeliveryPlan->id;
-                $item->id_regular_order_entry = $item->refRegularDeliveryPlan->id_regular_order_entry;
-                $item->code_consignee = $item->refRegularDeliveryPlan->code_consignee;
-                $item->model = $item->refRegularDeliveryPlan->model;
-                $item->item_no = $item->refRegularDeliveryPlan->item_no;
-                $item->disburse = $item->refRegularDeliveryPlan->disburse;
-                $item->delivery = $item->refRegularDeliveryPlan->delivery;
-                $item->qty = $item->refRegularDeliveryPlan->qty;
-                $item->status_regular_delivery_plan = $item->refRegularDeliveryPlan->status_regular_delivery_plan;
-                $item->order_no = $item->refRegularDeliveryPlan->order_no;
-                $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
-                $item->created_at = $item->refRegularDeliveryPlan->created_at;
-                $item->created_by = $item->refRegularDeliveryPlan->created_by;
-                $item->updated_at = $item->refRegularDeliveryPlan->updated_at;
-                $item->updated_by = $item->refRegularDeliveryPlan->updated_by;
-                $item->deleted_at = $item->refRegularDeliveryPlan->deleted_at;
-                $item->uuid = $item->refRegularDeliveryPlan->uuid;
-                $item->etd_ypmi = $item->refRegularDeliveryPlan->etd_ypmi;
-                $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh;
-                $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt;
-                $item->is_inquiry = $item->refRegularDeliveryPlan->is_inquiry;
-                $item->id_prospect_container = $item->refRegularDeliveryPlan->id_prospect_container;
-                $item->id_prospect_container_creation = $item->refRegularDeliveryPlan->id_prospect_container_creation;
-                $item->status_bml = $item->refRegularDeliveryPlan->status_bml;
-                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
-                $item->status_desc = 'Instock';
-                $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox[0];
-                $item->regular_delivery_plan_box->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null;
-                $item->regular_delivery_plan_box = [$item->manyDeliveryPlanBox[0]];
-
-                unset(
-                    $item->count_box,
-                    $item->created_at,
-                    $item->created_by,
-                    $item->updated_at,
-                    $item->updated_by,
-                    $item->deleted_at,
-                    $item->refRegularDeliveryPlan,
-                    $item->manyDeliveryPlanBox
-                );
-
-                return $item;
-            }),
+            'items' => $result[0],
             'last_page' => $data->lastPage()
         ];
+        //tes
+
+        // return [
+        //     'items' => $data->getCollection()->transform(function($item){
+        //         $item->id_regular_delivery_plan = $item->refRegularDeliveryPlan->id;
+        //         $item->id_regular_order_entry = $item->refRegularDeliveryPlan->id_regular_order_entry;
+        //         $item->code_consignee = $item->refRegularDeliveryPlan->code_consignee;
+        //         $item->model = $item->refRegularDeliveryPlan->model;
+        //         $item->item_no = $item->refRegularDeliveryPlan->item_no;
+        //         $item->disburse = $item->refRegularDeliveryPlan->disburse;
+        //         $item->delivery = $item->refRegularDeliveryPlan->delivery;
+        //         $item->qty = $item->refRegularDeliveryPlan->qty;
+        //         $item->status_regular_delivery_plan = $item->refRegularDeliveryPlan->status_regular_delivery_plan;
+        //         $item->order_no = $item->refRegularDeliveryPlan->order_no;
+        //         $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
+        //         $item->created_at = $item->refRegularDeliveryPlan->created_at;
+        //         $item->created_by = $item->refRegularDeliveryPlan->created_by;
+        //         $item->updated_at = $item->refRegularDeliveryPlan->updated_at;
+        //         $item->updated_by = $item->refRegularDeliveryPlan->updated_by;
+        //         $item->deleted_at = $item->refRegularDeliveryPlan->deleted_at;
+        //         $item->uuid = $item->refRegularDeliveryPlan->uuid;
+        //         $item->etd_ypmi = $item->refRegularDeliveryPlan->etd_ypmi;
+        //         $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh;
+        //         $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt;
+        //         $item->is_inquiry = $item->refRegularDeliveryPlan->is_inquiry;
+        //         $item->id_prospect_container = $item->refRegularDeliveryPlan->id_prospect_container;
+        //         $item->id_prospect_container_creation = $item->refRegularDeliveryPlan->id_prospect_container_creation;
+        //         $item->status_bml = $item->refRegularDeliveryPlan->status_bml;
+        //         $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+        //         $item->status_desc = 'Instock';
+        //         $item->regular_delivery_plan_box = $item->manyDeliveryPlanBox[0];
+        //         $item->regular_delivery_plan_box->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null;
+        //         $item->regular_delivery_plan_box = [$item->manyDeliveryPlanBox[0]];
+
+        //         unset(
+        //             $item->count_box,
+        //             $item->created_at,
+        //             $item->created_by,
+        //             $item->updated_at,
+        //             $item->updated_by,
+        //             $item->deleted_at,
+        //             $item->refRegularDeliveryPlan,
+        //             $item->manyDeliveryPlanBox
+        //         );
+
+        //         return $item;
+        //     }),
+        //     'last_page' => $data->lastPage()
+        // ];
     }
 
     public static function getOutStock($request)
@@ -293,6 +376,7 @@ class QueryStockConfirmationHistory extends Model {
 
                     $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->refRegularDeliveryPlan->id)
                                                         ->orderBy('qty_pcs_box', 'desc')
+                                                        ->orderBy('id', 'asc')
                                                         ->get();
                         
                     $qty_pcs_box = [];
@@ -411,11 +495,13 @@ class QueryStockConfirmationHistory extends Model {
                                                 ->whereNotIn('id',$check_scan->toArray())
                                                 ->whereNotNull('qrcode')
                                                 ->orderBy('qty_pcs_box', 'desc')
+                                                ->orderBy('id', 'asc')
                                                 ->get();
                 } else {
                     $box = $query->where('id_regular_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)
                                                 ->whereNotNull('qrcode')
                                                 ->orderBy('qty_pcs_box', 'desc')
+                                                ->orderBy('id', 'asc')
                                                 ->get();
                 }
                
