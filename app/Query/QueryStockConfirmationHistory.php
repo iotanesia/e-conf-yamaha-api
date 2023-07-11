@@ -162,7 +162,7 @@ class QueryStockConfirmationHistory extends Model {
         }
 
         return [
-            'items' => $result[0] ?? [],
+            'items' => array_merge(...$result) ?? [],
             'last_page' => $data->lastPage()
         ];
         //tes
