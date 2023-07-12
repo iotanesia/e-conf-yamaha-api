@@ -593,7 +593,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $send_summary_box = $sum_count_box - $summary_box;
             }
 
-            $upd = RegularFixedActualContainer::find($params->id);
+            $upd = RegularFixedActualContainer::where('id',$params->id)->first();
             $upd->is_actual = 99;
             $upd->save();
 
