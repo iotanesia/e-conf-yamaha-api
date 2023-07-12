@@ -894,6 +894,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $data = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id_prospect_container_creation',
                         'b.part_set','b.id_box',
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
+                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation::character varying, ',') as id_fixed_quantity_confirmation"),
                         DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
                         DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
                         DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
@@ -912,6 +913,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         } else {
             $data = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id_prospect_container_creation','b.id_delivery_plan',
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
+                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation::character varying, ',') as id_fixed_quantity_confirmation"),
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
                         DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
                         DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
