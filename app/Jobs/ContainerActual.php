@@ -52,22 +52,25 @@ class ContainerActual implements ShouldQueue
         $counter = 0;
         foreach ($params['colis'] as $value) {
             foreach ($value['box'] as $val) {
-                $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
+                $fill = RegularFixedQuantityConfirmationBox::find($val['id']);
+                if ($fill->id_prospect_container_creation == null) {
+                    $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
                     ->where('iteration', $iteration)
                     ->orderBy('id', 'asc')
                     ->first();
 
-                $fill = RegularFixedQuantityConfirmationBox::find($val['id']);
-                $fill->id_prospect_container_creation = $id_prop->id;
-                $fill->save();
+                    $fill = RegularFixedQuantityConfirmationBox::find($val['id']);
+                    $fill->id_prospect_container_creation = $id_prop->id;
+                    $fill->save();
 
-                if($counter < $countSummaryBox) {
-                    if ($index == $arrSummaryBox[$counter]) {
-                        $iteration = $iteration + 1;
-                        $counter = $counter + 1;
+                    if($counter < $countSummaryBox) {
+                        if ($index == $arrSummaryBox[$counter]) {
+                            $iteration = $iteration + 1;
+                            $counter = $counter + 1;
+                        }
                     }
+                    $index = $index + 1;
                 }
-                $index = $index + 1;
             }
         }
 

@@ -11,6 +11,7 @@ use App\Models\MstContainer;
 use App\Models\MstLsp;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
+use App\Models\RegularDeliveryPlanSet;
 use App\Models\RegularFixedActualContainer;
 use App\Models\RegularFixedActualContainerCreation;
 use App\Models\RegularFixedQuantityConfirmation;
@@ -434,17 +435,21 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 ->where('id_type_delivery', 1)
                 ->first();
             
-            $fixedQuantity = RegularFixedQuantityConfirmation::select('id','code_consignee')
-                ->where('id_fixed_actual_container', $params->id)
-                ->orderBy('id', 'asc')
-                ->get();
+            $fixedQuantity = RegularFixedQuantityConfirmation::select('id','code_consignee','item_no')
+            ->where('id_fixed_actual_container', $params->id)
+            ->orderBy('id', 'asc')
+            ->get();
             $id_fixed_quantity = [];
+            $id_dev_plan = [];
+            $item_no = [];
             foreach ($fixedQuantity as $item){
                 $id_fixed_quantity[] = $item->id;
+                $id_dev_plan[] = $item->id_regular_delivery_plan;
+                $item_no[] = $item->item_no;
             }
     
             $quantityConfirmationBox = RegularFixedQuantityConfirmationBox::select('id_fixed_quantity_confirmation',
-                'id_box', DB::raw('count(id_box) as count_box'))
+                'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as sum_qty"))
             ->whereIn('id_fixed_quantity_confirmation',$id_fixed_quantity)
             ->groupBy('id_box', 'id_fixed_quantity_confirmation')
             ->orderBy('count_box','desc')
@@ -457,6 +462,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     'width' =>  $item->refBox->width,
                     'length' => $item->refBox->length,
                     'count_box' => $item->count_box,
+                    'sum_qty' => $item->sum_qty,
                     'priority' => $index + 1,
                     'forkside' => $item->refBox->fork_side,
                     'stackingCapacity' => $item->refBox->stack_capacity,
@@ -472,19 +478,23 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             $sum_row_length = 0;
             $sum_count_box = 0;
+            $sum_qty_box = [];
             $first_row_length = [];
             $first_row = [];
             $first_count_box = [];
             $row_length = [];
             $count_box = [];
+            $big_row_length = [];
             foreach ($quantityConfirmationBox as $key => $value) {
                 $sum_row_length += $value['row_length'];
                 $sum_count_box += $value['count_box'];
+                $sum_qty_box[] = $value['sum_qty'];
                 $first_row_length[] = $quantityConfirmationBox[$key]['first_row_length'];
                 $first_row[] = $quantityConfirmationBox[$key]['row'];
                 $first_count_box[] = $quantityConfirmationBox[$key]['count_box'];
                 $row_length[] = $quantityConfirmationBox[$key]['row_length'];
                 $count_box[] = $quantityConfirmationBox[$key]['count_box'];
+                $big_row_length[] = $quantityConfirmationBox[$key]['first_row_length'] * $quantityConfirmationBox[$key]['row'];
             }
  
             $space = 0;
@@ -509,6 +519,43 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $summary_box = $summary_box;
                     break;
                 }
+            }
+
+            if ($item_no[0] == null) {
+                $set = RegularDeliveryPlanSet::select('regular_delivery_plan_set.id_delivery_plan',
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.id::character varying, ',') as id_deliv_plan_set"),
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.item_no::character varying, ',') as item_no"),
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.qty::character varying, ',') as qty")
+                )
+                ->whereIn('id_delivery_plan', $id_dev_plan)
+                ->groupBy('regular_delivery_plan_set.id_delivery_plan')
+                ->orderBy('id_deliv_plan_set','asc')->get();
+
+                $item_no_set = [];
+                $qty_set = [];
+                foreach ($set as $key => $value) {
+                    $item_no_set[] = explode(',',$value->item_no);
+                    $qty_set[] = explode(',',$value->qty);
+                }
+                
+                $max_qty = [];
+                foreach ($item_no_set as $key => $value) {
+                    $mst_box = MstBox::where('part_set', 'set')
+                                ->whereIn('item_no', $value)
+                                ->orderBy('id','asc')
+                                ->get()->map(function ($item){
+                                $qty =  $item->qty;
+                                return $qty;
+                            });
+                            
+                    $qty = [];
+                    foreach ($qty_set[$key] as $i => $value) {
+                        $qty[] = $value / $mst_box->toArray()[$i];
+                    }
+                    $max_qty[] = (int)ceil(max($qty));
+                }
+                
+                $sum_count_box = array_sum($max_qty);
             }
 
             $creation = [
