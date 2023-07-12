@@ -430,7 +430,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         DB::beginTransaction();
         try {
 
-            $actual_container = RegularFixedActualContainer::find($params->id);
+            $actual_container = RegularFixedActualContainer::where('id',$params->id)->first();
             $lsp = MstLsp::where('code_consignee',$actual_container->code_consignee)
                 ->where('id_type_delivery', 1)
                 ->first();
@@ -457,18 +457,18 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->map(function ($item, $index){
                 return [
                     'id_fixed_quantity_confirmation' => $item->id_fixed_quantity_confirmation,
-                    'item_no' => $item->refBox->item_no,
-                    'label' => $item->refBox->no_box,
-                    'width' =>  $item->refBox->width,
-                    'length' => $item->refBox->length,
+                    'item_no' => $item->refMstBox->item_no,
+                    'label' => $item->refMstBox->no_box,
+                    'width' =>  $item->refMstBox->width,
+                    'length' => $item->refMstBox->length,
                     'count_box' => $item->count_box,
                     'sum_qty' => $item->sum_qty,
                     'priority' => $index + 1,
-                    'forkside' => $item->refBox->fork_side,
-                    'stackingCapacity' => $item->refBox->stack_capacity,
+                    'forkside' => $item->refMstBox->fork_side,
+                    'stackingCapacity' => $item->refMstBox->stack_capacity,
                     'row' => (int)ceil($item->count_box / 4),
-                    'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
-                    'row_length' => $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4)),
+                    'first_row_length' => $item->refMstBox->fork_side == 'Width' ? $item->refMstBox->width : $item->refMstBox->length,
+                    'row_length' => $item->refMstBox->fork_side == 'Width' ? ($item->refMstBox->width * (int)ceil($item->count_box / 4)) : ($item->refMstBox->length * (int)ceil($item->count_box / 4)),
                     'box' => RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
                                 ->whereNull('id_prospect_container_creation')
                                 ->orderBy('id', 'asc')
