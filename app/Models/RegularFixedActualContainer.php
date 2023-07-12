@@ -53,4 +53,9 @@ class RegularFixedActualContainer extends Model
     {
         return $this->belongsTo(MstPortOfDischarge::class,'code_consignee','code_consignee');
     }
+
+    public function refMot()
+    {
+        return $this->belongsTo(MstMot::class,'id_mot','id');
+    }
 }

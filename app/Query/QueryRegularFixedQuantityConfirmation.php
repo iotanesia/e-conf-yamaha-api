@@ -287,10 +287,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $data->map(function ($item){
             $item->cust_name = $item->refConsignee->nick_name ?? null;
-            //$item->status_desc = 'Confirmed';
+            $item->mot = $item->refMot->name ?? null;
+            $item->status_desc = 'Confirmed';
 
             unset(
-                $item->refConsignee
+                $item->refConsignee,
+                $item->refMot
             );
             return $item;
         })->toArray();
