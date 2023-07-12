@@ -868,7 +868,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             $data = $request->all();
-            $etdJkt = RegularFixedActualContainerCreation::select('etd_jkt','datasource')->whereIn('id_fixed_actual_container',$request->id)->groupBy('etd_jkt','datasource')->get();
+            $etdJkt = RegularFixedActualContainerCreation::select('etd_jkt','id_mot','datasource')->whereIn('id_fixed_actual_container',$request->id)->groupBy('etd_jkt','datasource')->get();
             if(!count($etdJkt)) throw new \Exception("Data not found", 400);
             // if(count($etdJkt) > 1)  throw new \Exception("Invalid ETD JKT", 400);
             $data['no_booking'] = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').mt_rand(10000,99999);
