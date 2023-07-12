@@ -974,6 +974,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $qty_result = explode(',',$item->qty);
             if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = (count(explode(',',$item->qty)) == 1 ? $qty_order : explode(',',$item->qty));
 
+            $item->item_no = $item_no;
             $item->item_name = $itemname;
             $item->cust_name = $custname;
             $item->qty = $qty_result;
