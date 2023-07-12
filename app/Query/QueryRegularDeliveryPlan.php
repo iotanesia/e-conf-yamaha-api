@@ -569,7 +569,7 @@ class QueryRegularDeliveryPlan extends Model {
             $data->map(function ($item){
                 $set['id'] = 0;
                 $set['id_box'] = $item->id_box;
-                $set['qty'] =  $item->refBox->qty." x ".$item->jml." pcs";
+                $set['qty'] =  $item->refBox->qty." x ".$item->jml;
                 $set['length'] =  "";
                 $set['width'] =  "";
                 $set['height'] =  "";
@@ -584,7 +584,7 @@ class QueryRegularDeliveryPlan extends Model {
             'no_packaging',
             'etd_jkt',
             'code_consignee',
-            // 'datasource',
+            'datasource',
         ]);
 
         $id = $params->id;
@@ -642,7 +642,7 @@ class QueryRegularDeliveryPlan extends Model {
                    $query->whereIn('id',$id);
                    $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
-                //    $query->where('datasource',$params->datasource);
+                   $query->where('datasource',$params->datasource);
            })
            ->chunk(1000,function ($data) use ($params,$store,$id_container_creation){
                 foreach ($data as $key => $item) {

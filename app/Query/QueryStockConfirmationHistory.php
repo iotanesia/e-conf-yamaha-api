@@ -197,7 +197,8 @@ class QueryStockConfirmationHistory extends Model {
                         $group_qty[] = $val->qty_pcs_box;
                         $group_id_planbox[] = $val->id;
                         $group_arr[] = [
-                            // 'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
+                            'id' => $value->id,
+                            'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
                             'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
                             'model' => $val->refRegularDeliveryPlan->model,
@@ -253,7 +254,7 @@ class QueryStockConfirmationHistory extends Model {
                     if (count($result_qty[$i]) !== 0) {
                         $merge_qty = [
                             'in_dc' => (array_sum($result_qty[$i]) / count($plan_set->toArray())),
-                            'id_regular_delivery_plan' => $result_id_planbox[$i][0].','.count($result_id_planbox[$i]),
+                            'id_regular_delivery_plan_box' => $result_id_planbox[$i][0].','.count($result_id_planbox[$i]),
                         ];
                         $result_merge[] = array_merge($merge_qty,$result_arr[$i]);
                     }
@@ -272,8 +273,9 @@ class QueryStockConfirmationHistory extends Model {
                     if (in_array($val->id,$check_scan->toArray())) {
                         $group_qty[] = $val->qty_pcs_box;
                         $group_arr[] = [
-                            // 'id_regular_delivery_plan_box' => $val->id,
-                            'id_regular_delivery_plan' => $val->id,
+                            'id' => $value->id,
+                            'id_regular_delivery_plan_box' => $val->id,
+                            'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
                             'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
                             'model' => $val->refRegularDeliveryPlan->model,
@@ -368,7 +370,8 @@ class QueryStockConfirmationHistory extends Model {
                         $group_qty[] = $val->qty_pcs_box;
                         $group_id_planbox[] = $val->id;
                         $group_arr[] = [
-                            // 'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
+                            'id' => $value->id,
+                            'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
                             'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
                             'model' => $val->refRegularDeliveryPlan->model,
@@ -423,8 +426,8 @@ class QueryStockConfirmationHistory extends Model {
                 for ($i=0; $i < count($result_qty); $i++) { 
                     if (count($result_qty[$i]) !== 0) {
                         $merge_qty = [
-                            'in_dc' => (array_sum($result_qty[$i]) / count($plan_set->toArray())),
-                            'id_regular_delivery_plan' => $result_id_planbox[$i][0].','.count($result_id_planbox[$i]),
+                            'in_wh' => (array_sum($result_qty[$i]) / count($plan_set->toArray())),
+                            'id_regular_delivery_plan_box' => $result_id_planbox[$i][0].','.count($result_id_planbox[$i]),
                         ];
                         $result_merge[] = array_merge($merge_qty,$result_arr[$i]);
                     }
@@ -443,8 +446,9 @@ class QueryStockConfirmationHistory extends Model {
                     if (in_array($val->id,$check_scan->toArray())) {
                         $group_qty[] = $val->qty_pcs_box;
                         $group_arr[] = [
-                            // 'id_regular_delivery_plan_box' => $val->id,
-                            'id_regular_delivery_plan' => $val->id,
+                            'id' => $value->id,
+                            'id_regular_delivery_plan_box' => $val->id,
+                            'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
                             'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
                             'model' => $val->refRegularDeliveryPlan->model,
@@ -470,7 +474,7 @@ class QueryStockConfirmationHistory extends Model {
                             'status_bml' => $val->refRegularDeliveryPlan->status_bml,
                             'cust_name' => $val->refRegularDeliveryPlan->refConsignee->nick_name,
                             'status_desc' => 'Instock',
-                            'in_dc' => $val->qty_pcs_box,
+                            'in_wh' => $val->qty_pcs_box,
                             'box' => $val->qty_pcs_box.' x 1 pcs'
                         ];
                     }

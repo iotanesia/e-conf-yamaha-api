@@ -153,6 +153,17 @@ class FixedQuantityConfirmationController extends Controller
         }
     }
 
+    public function show(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedQuantityConfirmation::byIdProspectContainer($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function detailById(Request $request)
     {
         try {

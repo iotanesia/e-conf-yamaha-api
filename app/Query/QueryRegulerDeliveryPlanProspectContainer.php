@@ -186,6 +186,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = (count(explode(',',$item->qty)) == 1 ? $qty_order : explode(',',$item->qty));
 
             $item->item_name = $itemname;
+            $item->item_no = $item_no;
             $item->cust_name = $custname;
             $item->qty = $qty_result;
             $item->box = $box_result;

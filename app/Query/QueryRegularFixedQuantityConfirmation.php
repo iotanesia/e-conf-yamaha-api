@@ -7,8 +7,10 @@ use App\Models\RegularFixedQuantityConfirmation AS Model;
 use App\ApiHelper as Helper;
 use App\Jobs\ContainerActual;
 use App\Models\MstBox;
+use App\Models\MstConsignee;
 use App\Models\MstContainer;
 use App\Models\MstLsp;
+use App\Models\MstPart;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanSet;
@@ -63,14 +65,29 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         } else {
                             $status = 'Out Of Date';
                         }
+
+                        if ($item->refRegularDeliveryPlan->item_no == null) {
+                            $item_no_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+                            $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get()->pluck('item_no_series');
+                            $mst_part = MstPart::select('mst_part.item_no',
+                                                DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
+                                                ->whereIn('mst_part.item_no', $item_no_set->toArray())
+                                                ->groupBy('mst_part.item_no')->get();
+                            $item_name = [];
+                            foreach ($mst_part as $value) {
+                                $item_name[] = $value->description;
+                            }
+                        }
                     }
 
                     $item->status_desc = $status ?? null;
                     $item->customer_name = $item->refConsignee->nick_name;
-                    $item->item_name = $item->refRegularDeliveryPlan->refPart->description ?? null;
                     $item->production = $item->production ?? null;
                     $item->in_dc = $item->in_dc ?? null;
                     $item->in_wh = $item->in_wh ?? null;
+                    $item->item_serial = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series : $item->refRegularDeliveryPlan->refPart->item_serial;
+                    $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_set : $item->refRegularDeliveryPlan->item_no;
+                    $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name : $item->refRegularDeliveryPlan->refPart->description;
 
                     unset(
                         $item->refConsignee,
@@ -139,7 +156,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             'no_packaging',
             'etd_jkt',
             'code_consignee',
-            // 'datasource'
+            'datasource'
         ]);
 
         if($is_trasaction) DB::beginTransaction();
@@ -154,7 +171,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         "etd_jkt" => $params->etd_jkt,
                         "no_packaging" => $params->no_packaging,
                         "created_at" => now(),
-                        // "datasource" => $params->datasource,
+                        "datasource" => $params->datasource,
                         "id_mot" => $params->id_mot,
                         "is_prospect" => $params->id_mot == 2 ? 2 : 0
             ]);
@@ -170,13 +187,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
                         "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
                         "etd_jkt" => $params->etd_jkt,
-                        // "datasource" => $params->datasource,
+                        "datasource" => $params->datasource,
                 ]);
 
                 $shipping = RegularFixedShippingInstruction::create([
                         "no_booking" =>  'BOOK'.Carbon::parse($params->etd_jkt)->format('dmY').mt_rand(10000,99999),
                         "booking_date" => now(),
-                        // "datasource" => $params->datasource,
+                        "datasource" => $params->datasource,
                         "status" => 1,
                         "id_mot" => $params->id_mot
                 ]);
@@ -195,7 +212,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                    $query->whereIn('id',$params->id);
                    $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
-                //    $query->where('datasource','PYMAC');
+                   $query->where('datasource','PYMAC');
            })
            ->chunk(1000,function ($data) use ($params,$store,$id_container_creation){
                 foreach ($data as $key => $item) {
@@ -834,6 +851,123 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             if($is_transaction) DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function byIdProspectContainer($params,$id)
+    {
+        $check = RegularFixedQuantityConfirmationBox::where('id_prospect_container_creation', $params->id)->first();
+
+        if ($check->refRegularDeliveryPlan->item_no !== null) {
+            $data = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id_prospect_container_creation',
+                        'b.part_set','b.id_box',
+                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
+                        DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
+                        DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
+                        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+                        DB::raw("string_agg(DISTINCT a.qty::character varying, ',') as qty"),
+                        DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
+                        DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
+                        DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
+                        DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
+                        DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
+                        DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"))
+                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $params->id)
+                        ->leftJoin('regular_delivery_plan as a','a.id','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
+                        ->leftJoin('mst_box as b','a.item_no','b.item_no')
+                        ->groupBy('regular_fixed_quantity_confirmation_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box')
+                        ->paginate($params->limit ?? null);
+        } else {
+            $data = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id_prospect_container_creation','b.id_delivery_plan',
+                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
+                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
+                        DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
+                        DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
+                        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+                        DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
+                        DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
+                        DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
+                        DB::raw("string_agg(DISTINCT b.qty::character varying, ',') as qty"),
+                        DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no")
+                        )
+                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $params->id)
+                        ->leftJoin('regular_delivery_plan as a','a.id','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
+                        ->leftJoin('regular_delivery_plan_set as b','b.id_delivery_plan','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
+                        ->groupBy('regular_fixed_quantity_confirmation_box.id_prospect_container_creation','b.id_delivery_plan')
+                        ->paginate($params->limit ?? null);
+        }
+
+        $data->transform(function ($item) use ($check){
+            $custname = self::getCustName($item->code_consignee);
+            $itemname = [];
+            foreach (explode(',', $item->item_no) as $value) {
+                $itemname[] = self::getPart($value);
+            }
+            $item_no = [];
+            foreach (explode(',', $item->item_no) as $value) {
+                $item_no[] = $value;
+            }
+
+            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) {
+                $mst_box = MstBox::where('part_set', 'set')
+                                ->whereIn('item_no', $item_no)
+                                ->get()->map(function ($item){
+                                $qty =  $item->qty;
+                                return $qty;
+                            });
+
+                $qty = [];
+                foreach (explode(',', $item->qty) as $key => $value) {
+                    $qty[] = $value / $mst_box->toArray()[$key];
+                }
+        
+                $box = [
+                    'qty' =>  array_sum($mst_box->toArray())." x ".(int)ceil(max($qty)),
+                    'length' =>  "",
+                    'width' =>  "",
+                    'height' =>  "",
+                ];
+
+                if (count(explode(',',$item->qty)) == 1) {
+                    $qty_order = [];
+                    for ($i=1; $i <= count($item_no); $i++) { 
+                        $qty_order[] = $item->qty;
+                    }
+                }
+            }
+
+            $box_result = self::getCountBox($item->id_delivery_plan, $item->id_prospect_container_creation);
+            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
+
+            $qty_result = explode(',',$item->qty);
+            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = (count(explode(',',$item->qty)) == 1 ? $qty_order : explode(',',$item->qty));
+
+            $item->item_name = $itemname;
+            $item->cust_name = $custname;
+            $item->qty = $qty_result;
+            $item->box = $box_result;
+            unset(
+                $item->refRegularDeliveryPlan,
+            );
+
+            return $item;
+
+        });
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage(),
+
+        ];
+    }
+
+    public static function getCustName($code_consignee){
+        $data = MstConsignee::where('code', $code_consignee)->first();
+        return $data->nick_name ?? null;
+    }
+
+    public static function getPart($id_part){
+        $data = MstPart::where('item_no', $id_part)->first();
+        return $data->description ?? null;
     }
 
     public static function detailById($params)

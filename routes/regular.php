@@ -195,6 +195,7 @@ Route::prefix('v1/regular')
             Route::get('/creation/move/container/{id}',[FixedQuantityConfirmationController::class,'getCreationMoveContainer']);
             Route::post('/creation/move',[FixedQuantityConfirmationController::class,'creationMove']);
             Route::get('/download',[FixedQuantityConfirmationController::class,'creationDownloadDoc']);
+            Route::get('/fifo/{id}',[FixedQuantityConfirmationController::class,'show']);
         });
 
         Route::group(['prefix' => 'booking'],function (){
