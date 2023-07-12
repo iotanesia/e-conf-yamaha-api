@@ -52,14 +52,14 @@ class ContainerActual implements ShouldQueue
         $counter = 0;
         foreach ($params['colis'] as $value) {
             foreach ($value['box'] as $val) {
-                $fill = RegularFixedQuantityConfirmationBox::find($val['id']);
+                $fill = RegularFixedQuantityConfirmationBox::where('id',$val['id'])->first();
                 if ($fill->id_prospect_container_creation == null) {
                     $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
                     ->where('iteration', $iteration)
                     ->orderBy('id', 'asc')
                     ->first();
 
-                    $fill = RegularFixedQuantityConfirmationBox::find($val['id']);
+                    $fill = RegularFixedQuantityConfirmationBox::where('id',$val['id'])->first();
                     $fill->id_prospect_container_creation = $id_prop->id;
                     $fill->save();
 
@@ -74,7 +74,7 @@ class ContainerActual implements ShouldQueue
             }
         }
 
-        $upd = RegularFixedActualContainer::find($params['id']);
+        $upd = RegularFixedActualContainer::where('id',$params['id'])->first();
         $upd->is_actual = 1;
         $upd->save();
     }
