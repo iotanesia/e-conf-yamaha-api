@@ -878,7 +878,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             RegularFixedActualContainerCreation::whereIn('id_fixed_actual_container',$request->id)->update(['id_fixed_shipping_instruction'=>$insert->id]);
             if($is_transaction) DB::commit();
             return [
-                'items' => ['id'=>$insert->id,'no_booking'=>$data['no_booking'],'etd_jkt'=>$etdJkt[0]->etd_jkt]
+                'items' => [
+                    'id'=>$insert->id,
+                    'no_booking'=>$data['no_booking'],
+                    'etd_jkt'=>$etdJkt[0]->etd_jkt,
+                    'id_mot' => $etdJkt[0]->id_mot,
+                    'datasource' => $etdJkt[0]->datasource
+                    ]
             ];
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
