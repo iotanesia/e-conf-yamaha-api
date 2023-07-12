@@ -190,6 +190,7 @@ Route::prefix('v1/regular')
             Route::get('/',[FixedQuantityConfirmationController::class,'getActualContainer']);
             Route::get('/simulation',[FixedQuantityConfirmationController::class,'simulation']);
             Route::post('/creation',[FixedQuantityConfirmationController::class,'creation']);
+            Route::put('/edit-mot',[FixedQuantityConfirmationController::class,'editMot']);
             Route::post('/creation/detail',[FixedQuantityConfirmationController::class,'creationDetail']);
             Route::get('/creation/move/{id}',[FixedQuantityConfirmationController::class,'getCreationMove']);
             Route::get('/creation/move/container/{id}',[FixedQuantityConfirmationController::class,'getCreationMoveContainer']);

@@ -86,6 +86,17 @@ class FixedQuantityConfirmationController extends Controller
         }
     }
 
+    public function editMot(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedQuantityConfirmation::updateProspectContainerCreation($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function creationDetail(Request $request)
     {
         try {

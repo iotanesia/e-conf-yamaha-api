@@ -631,6 +631,37 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         }
     }
 
+    public static function updateProspectContainerCreation($request,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $params = $request->all();
+
+            Helper::requireParams([
+                'id',
+                'id_mot',
+                'id_type_delivery'
+            ]);
+
+            $update = RegularFixedActualContainerCreation::find($params['id']);
+            if(!$update) throw new \Exception("id tidak ditemukan", 400);
+
+            $check = MstLsp::where('code_consignee', $params['code_consignee'])
+                ->where('id_type_delivery', $params['id_type_delivery'])
+                ->first();
+
+            if(!$check) throw new \Exception("LSP not found", 400);
+
+            $update->fill($params);
+            $update->id_lsp = $check->id;
+            $update->save();
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
     public static function countBoxesInContainer($containerVolume, $boxVolumes, $stackCapacities){
         rsort($boxVolumes);
         rsort($stackCapacities);
