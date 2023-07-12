@@ -873,14 +873,14 @@ class QueryStockConfirmationHistory extends Model {
 
                 $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)->get()->pluck('item_no');
                 
-                $qty_pcs_box = array_sum($qty_pcs_box) / count($deliv_plan_set);
+                $qty_pcs_box_res = array_sum($qty_pcs_box) / count($deliv_plan_set);
 
                 $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
                 $qty = $stock_confirmation->qty;
                 $status = $stock_confirmation->status;
                 $in_stock_wh = $stock_confirmation->in_wh;
-                $in_wh_total = $in_stock_wh + $qty_pcs_box;
-                $in_dc_total = $stock_confirmation->in_dc - $qty_pcs_box;
+                $in_wh_total = $in_stock_wh + $qty_pcs_box_res;
+                $in_dc_total = $stock_confirmation->in_dc - $qty_pcs_box_res;
 
                 $stock_confirmation->in_wh = $in_wh_total;
                 $stock_confirmation->in_dc = $in_dc_total;
