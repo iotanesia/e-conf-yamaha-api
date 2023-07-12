@@ -939,7 +939,7 @@ class QueryStockConfirmationHistory extends Model {
                 $fixed_quantity_confirmation->code_consignee = $fixed_quantity_confirmation->refRegularDeliveryPlan->code_consignee;
                 $fixed_quantity_confirmation->model = $fixed_quantity_confirmation->refRegularDeliveryPlan->model;
                 $fixed_quantity_confirmation->item_no = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no;
-                $fixed_quantity_confirmation->item_serial = $fixed_quantity_confirmation->refRegularDeliveryPlan->refPart->item_serial;
+                $fixed_quantity_confirmation->item_serial = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no == null ? null : $fixed_quantity_confirmation->refRegularDeliveryPlan->refPart->item_serial;
                 $fixed_quantity_confirmation->disburse = $fixed_quantity_confirmation->refRegularDeliveryPlan->disburse;
                 $fixed_quantity_confirmation->delivery = $fixed_quantity_confirmation->refRegularDeliveryPlan->delivery;
                 $fixed_quantity_confirmation->qty = $fixed_quantity_confirmation->refRegularDeliveryPlan->qty;
