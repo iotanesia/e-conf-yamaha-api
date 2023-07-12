@@ -566,7 +566,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'etd_jkt' => $actual_container->etd_jkt,
                 'etd_ypmi' => $actual_container->etd_ypmi,
                 'etd_wh' => $actual_container->etd_wh,
-                'id_fixed_actual_container' => $params->id,
+                'id_fixed_actual_container' => $actual_container->id,
                 'status_bml' => 0,
                 'datasource' => $params->datasource,
             ];
