@@ -138,7 +138,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             'no_packaging',
             'etd_jkt',
             'code_consignee',
-            'datasource'
+            // 'datasource'
         ]);
 
         if($is_trasaction) DB::beginTransaction();
@@ -153,7 +153,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         "etd_jkt" => $params->etd_jkt,
                         "no_packaging" => $params->no_packaging,
                         "created_at" => now(),
-                        "datasource" => $params->datasource,
+                        // "datasource" => $params->datasource,
                         "id_mot" => $params->id_mot,
                         "is_prospect" => $params->id_mot == 2 ? 2 : 0
             ]);
@@ -169,13 +169,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
                         "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
                         "etd_jkt" => $params->etd_jkt,
-                        "datasource" => $params->datasource,
+                        // "datasource" => $params->datasource,
                 ]);
 
                 $shipping = RegularFixedShippingInstruction::create([
                         "no_booking" =>  'BOOK'.Carbon::parse($params->etd_jkt)->format('dmY').mt_rand(10000,99999),
                         "booking_date" => now(),
-                        "datasource" => $params->datasource,
+                        // "datasource" => $params->datasource,
                         "status" => 1,
                         "id_mot" => $params->id_mot
                 ]);
@@ -194,7 +194,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                    $query->whereIn('id',$params->id);
                    $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
-                   $query->where('datasource','PYMAC');
+                //    $query->where('datasource','PYMAC');
            })
            ->chunk(1000,function ($data) use ($params,$store,$id_container_creation){
                 foreach ($data as $key => $item) {
