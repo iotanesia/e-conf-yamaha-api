@@ -1023,7 +1023,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         Helper::requireParams(['id']);
         if($is_transaction) DB::beginTransaction();
         try {
-            $res = RegularFixedShippingInstruction::find($request->id);
+            $res = RegularFixedShippingInstruction::where('id',$request->id)->first();
             $res->status = Constant::STS_BOOK_FINISH;
             $res->save();
             $actual_creation = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $res->id)->get();
