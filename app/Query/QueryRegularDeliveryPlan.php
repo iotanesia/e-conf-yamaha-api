@@ -1205,8 +1205,19 @@ class QueryRegularDeliveryPlan extends Model {
 
         $data->transform(function ($item) {
             if ($item->id_shipping_instruction_creation) {
-                $data = RegularDeliveryPlanShippingInsructionCreation::find($item->id_shipping_instruction_creation);
-                return $data->toArray();
+                $SI = RegularDeliveryPlanShippingInsructionCreation::where('id',$item->id_shipping_instruction_creation)->paginate(1);
+                $SI->transform(function ($si_item) {
+                    $si_item->container_value = explode(',', $si_item->container_value);
+                    $si_item->container_count = explode(',', $si_item->container_count);
+                    $si_item->container_type = explode(',', $si_item->container_type);
+
+                    return $si_item;
+                });
+                
+                return [
+                    'items' => $SI->items()[0],
+                    'last_page' => $SI->lastPage()
+                ];
             } else {
 
                 $mst_shipment = MstShipment::where('is_active', 1)->first();

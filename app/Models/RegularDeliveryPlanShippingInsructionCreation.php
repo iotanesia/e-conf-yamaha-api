@@ -20,6 +20,7 @@ class RegularDeliveryPlanShippingInsructionCreation extends Model
         "si_number",
         "invoice_no",
         "consignee",
+        "cosignee_address",
         "notify_part",
         "information_date",
         "container",
