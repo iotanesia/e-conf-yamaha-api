@@ -41,6 +41,7 @@ class RegularDeliveryPlanShippingInsructionCreation extends Model
         "hs_code",
         "net_weight",
         "consignee_address",
+        "notify_part_address",
         "container_count",
         "measurement",
         "peb",
