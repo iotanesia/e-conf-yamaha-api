@@ -1206,14 +1206,23 @@ class QueryStockConfirmationHistory extends Model {
         $items->transform(function ($item) use($items){
             if($items[0]->item_number == null) {
                 $set = RegularDeliveryPlanSet::where('id_delivery_plan', $items[0]->id_deliv_plan)->get()->pluck('item_no');
-                $item_no = MstPart::whereIn('item_no', $set->toArray())->get()->pluck('description');
+                $mst_part = MstPart::whereIn('item_no', $set->toArray())->get();
+                $item_no = [];
+                $item_name = [];
+                foreach ($mst_part as $key => $value) {
+                    $item_no[] = $value->item_no;
+                    $item_name[] = $value->description;
+                }
             } else {
-                $item_no = MstPart::where('item_no', $items[0]->item_number)->get()->pluck('description');
+                $mst_part = MstPart::where('item_no', $items[0]->item_number)->get();
+                $item_no = $mst_part->item_no;
+                $item_name = $mst_part->description;
             }
     
             // $items = array_merge($items->toArray(), $item_no->toArray());
 
             $item->item_number = $item_no;
+            $item->item_name = $item_name;
 
             return $item;
         });
