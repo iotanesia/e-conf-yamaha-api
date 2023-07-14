@@ -71,6 +71,6 @@ class RegularFixedActualContainerCreation extends Model
 
     public function manyFixedQuantityConfirmation()
     {
-        return $this->belongsTo(RegularFixedQuantityConfirmation::class,'id_fixed_actual_container_creation','id');
+        return $this->hasMany(RegularFixedQuantityConfirmation::class,'id_fixed_actual_container_creation','id');
     }
 }

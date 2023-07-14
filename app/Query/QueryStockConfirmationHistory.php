@@ -900,6 +900,7 @@ class QueryStockConfirmationHistory extends Model {
                         'type' => 'OUTSTOCK',
                         'qty_pcs_perbox' => $qty_pcs_box[$i],
                     ]);
+                    RegularStokConfirmationHistory::where('id_regular_delivery_plan_box',$id_plan_box[$i])->where('type',Constant::INSTOCK)->first()->delete();
                 }
                 
             } else {
@@ -931,6 +932,7 @@ class QueryStockConfirmationHistory extends Model {
                     'type' => 'OUTSTOCK',
                     'qty_pcs_perbox' => $qty,
                 ]);
+                RegularStokConfirmationHistory::where('id_regular_delivery_plan_box',$delivery_plan_box->id)->where('type',Constant::INSTOCK)->first()->delete();
             }
 
             if ($stock_confirmation->in_dc == 0 && $stock_confirmation->in_wh == $stock_confirmation->qty && $stock_confirmation->production == 0) {
@@ -1191,17 +1193,15 @@ class QueryStockConfirmationHistory extends Model {
         $items = RegularStokConfirmation::select(
             DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_number"),
             DB::raw("string_agg(DISTINCT a.id::character varying, ',') as id_deliv_plan"),
-        // DB::raw("string_agg(DISTINCT c.description::character varying, ',') as item_name"),
-        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-        DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as quantity"),
-        DB::raw("string_agg(DISTINCT b.no_packaging::character varying, ',') as no_packing_list")
+            DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+            DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as quantity"),
+            DB::raw("string_agg(DISTINCT b.no_packaging::character varying, ',') as no_packing_list")
         )
-                        ->whereIn('regular_stock_confirmation.id',$request->id_stock_confirmation)
-                        ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
-                        ->join('regular_delivery_plan_prospect_container as b','b.id','a.id_prospect_container')
-                        // ->join('mst_part as c','c.item_no','a.item_no')
-                        ->groupBy('a.id')
-                        ->get();
+        ->whereIn('regular_stock_confirmation.id',$request->id_stock_confirmation)
+        ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
+        ->join('regular_delivery_plan_prospect_container as b','b.id','a.id_prospect_container')
+        ->groupBy('a.id')
+        ->get();
 
         $items->transform(function ($item) use($items){
             if($items[0]->item_number == null) {
@@ -1219,15 +1219,11 @@ class QueryStockConfirmationHistory extends Model {
                 $item_name = $mst_part->description;
             }
     
-            // $items = array_merge($items->toArray(), $item_no->toArray());
-
             $item->item_number = $item_no;
             $item->item_name = $item_name;
 
             return $item;
         });
-
-        
 
         return [
             'items' => $items ?? []

@@ -454,7 +454,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 ->where('id_type_delivery', 1)
                 ->first();
             
-            $fixedQuantity = RegularFixedQuantityConfirmation::select('id','code_consignee','item_no')
+            $fixedQuantity = RegularFixedQuantityConfirmation::select('id','code_consignee','item_no','id_regular_delivery_plan')
             ->where('id_fixed_actual_container', $params->id)
             ->orderBy('id', 'asc')
             ->get();

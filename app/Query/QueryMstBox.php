@@ -72,7 +72,7 @@ class QueryMstBox extends Model {
             ]);
 
             $params = $request->all();
-            $num_set = Model::orderByDesc('id')->first()->num_set;
+            $id_box = Model::orderByDesc('id')->first()->id_box;
 
             for ($i=0; $i < count($params['item_no']); $i++) { 
                 $mst_part = MstPart::where('item_no', $params['item_no'][$i])->get();
@@ -100,10 +100,10 @@ class QueryMstBox extends Model {
                     "size" => $params['size'],
                     "volume" => (float)substr((($params['length'] * $params['width'] * $params['height']) / 1000000000),0,4),
                     "part_set" => $params['part_set'],
-                    "num_set" => $num_set == null ? 1 : $num_set +1
+                    "id_box" => $id_box == null ? 1 : $id_box +1
                 ]);
                 
-                $num_set = $num_set; 
+                $id_box = $id_box; 
             }
             
             if($is_transaction) DB::commit();

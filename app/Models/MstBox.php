@@ -35,7 +35,7 @@ class MstBox extends Model
         'size',
         'volume',
         'part_set',
-        'num_set',
+        'id_box',
         'created_at',
         'created_by',
         'updated_at',
