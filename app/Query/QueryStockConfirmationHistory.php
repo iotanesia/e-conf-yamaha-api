@@ -1188,13 +1188,37 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function outstockDeliveryNoteItems($request)
     {
-        $items = RegularStokConfirmation::select(DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_number"),DB::raw("string_agg(DISTINCT c.description::character varying, ',') as item_name"),DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as quantity"),DB::raw("string_agg(DISTINCT b.no_packaging::character varying, ',') as no_packing_list"))
+        $items = RegularStokConfirmation::select(
+            DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_number"),
+            DB::raw("string_agg(DISTINCT a.id::character varying, ',') as id_deliv_plan"),
+        // DB::raw("string_agg(DISTINCT c.description::character varying, ',') as item_name"),
+        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+        DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as quantity"),
+        DB::raw("string_agg(DISTINCT b.no_packaging::character varying, ',') as no_packing_list")
+        )
                         ->whereIn('regular_stock_confirmation.id',$request->id_stock_confirmation)
                         ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
                         ->join('regular_delivery_plan_prospect_container as b','b.id','a.id_prospect_container')
-                        ->join('mst_part as c','c.item_no','a.item_no')
+                        // ->join('mst_part as c','c.item_no','a.item_no')
                         ->groupBy('a.id')
                         ->get();
+
+        $items->transform(function ($item) use($items){
+            if($items[0]->item_number == null) {
+                $set = RegularDeliveryPlanSet::where('id_delivery_plan', $items[0]->id_deliv_plan)->get()->pluck('item_no');
+                $item_no = MstPart::whereIn('item_no', $set->toArray())->get()->pluck('description');
+            } else {
+                $item_no = MstPart::where('item_no', $items[0]->item_number)->get()->pluck('description');
+            }
+    
+            // $items = array_merge($items->toArray(), $item_no->toArray());
+
+            $item->item_number = $item_no;
+
+            return $item;
+        });
+
+        
 
         return [
             'items' => $items ?? []
