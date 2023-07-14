@@ -1156,7 +1156,13 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function outstockDeliveryNote($request)
     {
-        $data = RegularStokConfirmation::select(DB::raw("string_agg(DISTINCT c.name::character varying, ',') as yth"),DB::raw("string_agg(DISTINCT d.nick_name::character varying, ',') as username"),DB::raw("string_agg(DISTINCT e.name::character varying, ',') as jenis_truck"))
+        $data = RegularStokConfirmation::select(
+                            DB::raw("string_agg(DISTINCT c.name::character varying, ',') as yth"),
+                            DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),
+                            DB::raw("string_agg(DISTINCT regular_stock_confirmation.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
+                            DB::raw("string_agg(DISTINCT d.nick_name::character varying, ',') as username"),
+                            DB::raw("string_agg(DISTINCT e.name::character varying, ',') as jenis_truck")
+                        )
                         ->whereIn('regular_stock_confirmation.id',$request->id_stock_confirmation)
                         ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
                         ->join('regular_delivery_plan_prospect_container_creation as b','b.id','a.id_prospect_container_creation')
