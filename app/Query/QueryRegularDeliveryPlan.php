@@ -1423,7 +1423,20 @@ class QueryRegularDeliveryPlan extends Model {
             $etdJkt = RegularDeliveryPlanProspectContainerCreation::select('etd_jkt','datasource',DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_mot::character varying, ',') as id_mot"))->whereIn('id',$request->id)->groupBy('etd_jkt','datasource')->get();
             if(!count($etdJkt)) throw new \Exception("Data not found", 400);
 
-            $no_booking = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').mt_rand(10000,99999);
+            $check_no_booking = RegularDeliveryPlanShippingInsruction::orderByDesc('updated_at')->first();
+
+            if ($check_no_booking == null) {
+                $iteration = '000001';
+            } elseif (substr($check_no_booking->no_booking,-6) == '999999') {
+                $iteration = '000001';
+            } elseif (substr($check_no_booking->no_booking,8,-6) !== Carbon::now()->format('Y')) {
+                $iteration = '000001';
+            } else {
+                $last_iteration = '000000'.(int)substr($check_no_booking->no_booking,-6) + 1;
+                $iteration = substr($last_iteration,-6);
+            }
+
+            $no_booking = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').$iteration;
             $datasource = $etdJkt[0]->datasource;
             $booking_date = Carbon::now()->format('dmY');
 

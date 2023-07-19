@@ -881,7 +881,21 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $etdJkt = RegularFixedActualContainerCreation::select('etd_jkt','id_mot','datasource')->whereIn('id_fixed_actual_container',$request->id)->groupBy('etd_jkt','id_mot','datasource')->get();
             if(!count($etdJkt)) throw new \Exception("Data not found", 400);
             // if(count($etdJkt) > 1)  throw new \Exception("Invalid ETD JKT", 400);
-            $data['no_booking'] = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').mt_rand(10000,99999);
+
+            $check_no_booking = RegularFixedShippingInstruction::orderByDesc('updated_at')->first();
+
+            if ($check_no_booking == null) {
+                $iteration = '000001';
+            } elseif (substr($check_no_booking->no_booking,-6) == '999999') {
+                $iteration = '000001';
+            } elseif (substr($check_no_booking->no_booking,8,-6) !== Carbon::now()->format('Y')) {
+                $iteration = '000001';
+            } else {
+                $last_iteration = '000000'.(int)substr($check_no_booking->no_booking,-6) + 1;
+                $iteration = substr($last_iteration,-6);
+            }
+
+            $data['no_booking'] = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').$iteration;
             $data['datasource'] = $etdJkt[0]->datasource;
             $data['booking_date'] = Carbon::now()->format('Y-m-d');
             $insert = RegularFixedShippingInstruction::create($data);
