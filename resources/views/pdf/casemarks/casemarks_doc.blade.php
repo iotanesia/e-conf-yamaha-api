@@ -63,7 +63,7 @@
 
 <body>
 
-    @foreach ($data as $key => $item)
+    @foreach ($data as $key => $item) 
     @if ($check == null) {{-- part set --}}
         @foreach ($box as $jml => $box_item)
             @for ($i=1; $i<=2; $i++)
