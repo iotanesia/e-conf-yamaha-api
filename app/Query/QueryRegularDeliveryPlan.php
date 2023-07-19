@@ -688,7 +688,17 @@ class QueryRegularDeliveryPlan extends Model {
 
             if(count($data) == 0) throw new \Exception("Data not found", 400);
 
-            $no_packaging = $data[0]['order_no'].substr(mt_rand(),0,5);
+            $check_no_packaging = RegularDeliveryPlanProspectContainer::orderByDesc('updated_at')->first();
+
+            if ($check_no_packaging == null) {
+                $iteration = 'P01';
+            } elseif (substr($check_no_packaging->no_packaging,-2) == '10') {
+                $iteration = 'P01';
+            } else {
+                $iteration = 'P0'.(int)substr($check_no_packaging->no_packaging,-2) + 1;
+            }
+
+            $no_packaging = $data[0]['order_no'].$iteration;
             $tanggal = $check[0]['etd_jkt'];
             $code_consignee = $check[0]['code_consignee'];
             $datasource = $check[0]['datasource'];
