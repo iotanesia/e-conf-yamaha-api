@@ -180,8 +180,8 @@ class QueryStockConfirmationHistory extends Model {
 
                 $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->toArray())->get();
                 $sum_qty = [];
-                foreach ($mst_box as $key => $value) {
-                    $sum_qty[] = $value->qty;
+                foreach ($mst_box as $key => $value_box) {
+                    $sum_qty[] = $value_box->qty;
                 }
 
                 $result_qty = [];
@@ -353,8 +353,8 @@ class QueryStockConfirmationHistory extends Model {
 
                 $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->toArray())->get();
                 $sum_qty = [];
-                foreach ($mst_box as $key => $value) {
-                    $sum_qty[] = $value->qty;
+                foreach ($mst_box as $key => $value_box) {
+                    $sum_qty[] = $value_box->qty;
                 }
 
                 $result_qty = [];
