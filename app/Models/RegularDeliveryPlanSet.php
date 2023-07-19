@@ -22,4 +22,8 @@ class RegularDeliveryPlanSet extends Model
         "updated_by",
         "deleted_at"
     ];
+
+    public function refBox(){
+        return $this->belongsTo(MstBox::class,'item_no','item_no');
+    }
 }

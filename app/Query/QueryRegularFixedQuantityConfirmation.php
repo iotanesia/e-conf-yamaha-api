@@ -1084,19 +1084,82 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     {
         try {
             $data = RegularFixedActualContainer::where('id', $id)->get();
-
-            foreach ($data as $key => $value) {
-                $tes = $value->manyFixedQuantityConfirmation;
-            }
+            $deliv_plan = RegularDeliveryPlan::find($data[0]->manyFixedQuantityConfirmation[0]->id_regular_delivery_plan);
 
             $box = [];
-            foreach ($tes as $key => $item) {
-                $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
+            foreach ($data[0]->manyFixedQuantityConfirmation as $key => $item) {
+                $box[] = RegularDeliveryPlanBox::with('refBox.refPart')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
+            }
+
+            $box = array_merge(...$box);
+
+            if ($deliv_plan->item_no == null) {
+                $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_plan->id)->get();
+                $deliv_plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$deliv_plan->id)
+                                                    ->orderBy('qty_pcs_box','desc')
+                                                    ->orderBy('id','asc')
+                                                    ->get();
+                $item_no = [];
+                $set_qty = [];
+                $item_no_series = [];
+                foreach ($plan_set as $key => $value) {
+                    $item_no[] = $value->item_no;
+                    $set_qty[] = $value->qty;
+                    $item_no_series[] = $value->refBox->item_no_series;
+                }
+                $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
+                $qty_box = [];
+                $sum_qty = [];
+                $unit_weight_kg = [];
+                $total_gross_weight = '';
+                foreach ($mst_box as $key => $value) {
+                    $qty_box[] = $value->qty;
+                    $sum_qty[] = $value->qty;
+                    $unit_weight_kg[] = $value->unit_weight_kg;
+                    $total_gross_weight = $value->total_gross_weight;
+                }
+    
+                $id_deliv_box = [];
+                $qty_pcs_box = [];
+                $qty = 0;
+                $group = [];
+                $group_qty = [];
+                foreach ($deliv_plan_box as $key => $value) {
+                    $qty += $value->qty_pcs_box;
+                    $group[] = $value->id;
+                    $group_qty[] = $value->qty_pcs_box;
+    
+                    if ($qty >= (array_sum($sum_qty) * count($item_no))) {
+                        $id_deliv_box[] = $group;
+                        $qty_pcs_box[] = $group_qty;
+                        $qty = 0;
+                        $group = [];
+                        $group_qty = [];
+                    }
+                }
+    
+                if (!empty($group)) {
+                    $id_deliv_box[] = $group;
+                }
+                if (!empty($group_qty)) {
+                    $qty_pcs_box[] = $group_qty;
+                }
+
+                $box = [];
+                for ($i=0; $i < count($id_deliv_box); $i++) { 
+                    $box[] = [
+                        'item_no' => $item_no,
+                        'qty_pcs_box' => $qty_box,
+                        'item_no_series' => $item_no_series,
+                        'total_gross_weight' => $total_gross_weight,
+                    ];
+                }
             }
 
             Pdf::loadView('pdf.casemarks.casemarks_doc',[
-              'data' => $data,
-              'box' => array_merge(...$box)
+                'check' => $deliv_plan->item_no,
+                'data' => $data,
+                'box' => $box
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
@@ -1110,31 +1173,127 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     public static function printPackaging($request,$id,$pathToFile,$filename)
     {
         try {
-            $data = RegularFixedActualContainer::where('id', $id)->get();
-
-            foreach ($data as $key => $value) {
-                $plan_box = $value->manyFixedQuantityConfirmation;
-            }
+            $data = RegularFixedActualContainer::where('id',$id)->get();
+            $deliv_plan = RegularDeliveryPlan::find($data[0]->manyFixedQuantityConfirmation[0]->id_regular_delivery_plan);
 
             $box = [];
-            foreach ($plan_box as $key => $item) {
+            foreach ($data[0]->manyFixedQuantityConfirmation as $key => $item) {
                 $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
             }
+            $box = array_merge(...$box);
 
             $count_qty = 0;
             $count_net_weight = 0;
             $count_gross_weight = 0;
             $count_meas = 0;
-            foreach (array_merge(...$box) as $box_item){
+            foreach ($box as $box_item){
                 $count_qty += $box_item['qty_pcs_box'];
                 $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
                 $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
                 $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
             }
 
+            if ($deliv_plan->item_no == null) {
+                $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_plan->id)->get();
+                $deliv_plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$deliv_plan->id)
+                                                    ->orderBy('qty_pcs_box','desc')
+                                                    ->orderBy('id','asc')
+                                                    ->get();
+                $item_no = [];
+                $set_qty = [];
+                $item_no_series = [];
+                foreach ($plan_set as $key => $value) {
+                    $item_no[] = $value->item_no;
+                    $set_qty[] = $value->qty;
+                    $item_no_series[] = $value->refBox->item_no_series;
+                }
+                $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
+                $qty_box = [];
+                $sum_qty = [];
+                $unit_weight_kg = [];
+                $total_gross_weight = '';
+                $length = '';
+                $width = '';
+                $height = '';
+                foreach ($mst_box as $key => $value) {
+                    $qty_box[] = $value->qty;
+                    $sum_qty[] = $value->qty;
+                    $unit_weight_kg[] = $value->unit_weight_kg;
+                    $total_gross_weight = $value->total_gross_weight;
+                    $length = $value->length;
+                    $width = $value->width;
+                    $height = $value->height;
+                }
+    
+                $id_deliv_box = [];
+                $qty_pcs_box = [];
+                $qty = 0;
+                $group = [];
+                $group_qty = [];
+                foreach ($deliv_plan_box as $key => $value) {
+                    $qty += $value->qty_pcs_box;
+                    $group[] = $value->id;
+                    $group_qty[] = $value->qty_pcs_box;
+    
+                    if ($qty >= (array_sum($sum_qty) * count($item_no))) {
+                        $id_deliv_box[] = $group;
+                        $qty_pcs_box[] = $group_qty;
+                        $qty = 0;
+                        $group = [];
+                        $group_qty = [];
+                    }
+                }
+    
+                if (!empty($group)) {
+                    $id_deliv_box[] = $group;
+                }
+                if (!empty($group_qty)) {
+                    $qty_pcs_box[] = $group_qty;
+                }
+
+                $res_qty = [];
+                foreach ($set_qty as $key => $value) {
+                    if ($value == max($set_qty)) {
+                        $val = array_sum($qty_pcs_box[$key]) / count($item_no);
+                    } else {
+                        $val = null;
+                    }
+
+                    $res_qty[] = $val;
+                }
+    
+                $box = [];
+                for ($i=0; $i < count($id_deliv_box); $i++) { 
+                    $check = array_sum($qty_pcs_box[0]) / count($item_no);
+                    $box[] = [
+                        'item_no' => $item_no,
+                        'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
+                        'item_no_series' => $item_no_series,
+                        'unit_weight_kg' => $unit_weight_kg,
+                        'total_gross_weight' => $total_gross_weight,
+                        'length' => $length,
+                        'width' => $width,
+                        'height' => $height,
+                    ];
+                }
+                
+                $count_qty = 0;
+                $count_net_weight = 0;
+                $count_gross_weight = 0;
+                $count_meas = 0;
+                foreach ($box as $box_item){
+                    $count_qty += array_sum($box_item['qty_pcs_box']);
+                    $count_net_weight += array_sum($box_item['unit_weight_kg']);
+                    $count_gross_weight += $box_item['total_gross_weight'];
+                    $count_meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000);
+                }
+            }
+
             Pdf::loadView('pdf.packaging.packaging_doc',[
+                'check' => $deliv_plan->item_no,
+                'set_count' => count($item_no),
                 'data' => $data,
-                'box' => array_merge(...$box),
+                'box' => $box,
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
                 'count_gross_weight' => $count_gross_weight,
