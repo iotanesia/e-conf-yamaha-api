@@ -800,7 +800,7 @@ class QueryRegularDeliveryPlan extends Model {
             'packing_date' => count(explode(',',$id)) > 1 ? $packing_date : ($item->packing_date ?? null),
             'lot_packing' => count(explode(',',$id)) > 1 ? $lot_packing : ($item->lot_packing ?? null),
             'qrcode' => count(explode(',',$id)) > 1 ? (route('file.download').'?filename='.$qrcode.'&source=qr_labeling') : (route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling'),
-            'qr_key' => count(explode(',',$id)) > 1 ? explode(',',$id)[0].','.count(explode(',',$id)) : $item->id,
+            'qr_key' => count(explode(',',$id)) > 1 ? explode(',',$id)[0].'-'.count(explode(',',$id)) : $item->id,
             'no_box' => count(explode(',',$id)) > 1 ? $no_box : ($item->refBox->no_box ?? null),
         ];
 
