@@ -792,7 +792,7 @@ class QueryRegularDeliveryPlan extends Model {
         
         if(!$item) throw new \Exception("Data not found", 400);
         $data = [
-            'id' => count(explode(',',$id)) > 1 ? explode(',',$id)[0].','.count(explode(',',$id)) : $item->id,
+            'id' => count(explode(',',$id)) > 1 ? explode(',',$id)[0].'-'.count(explode(',',$id)) : $item->id,
             'item_name' => count(explode(',',$id)) > 1 ? $itemname : (trim($item->refRegularDeliveryPlan->refPart->description) ?? null),
             'item_no' => count(explode(',',$id)) > 1 ? $item_no : ($item->refRegularDeliveryPlan->refPart->item_serial ?? null),
             'order_no' => count(explode(',',$id)) > 1 ? $order_no : ($item->refRegularDeliveryPlan->order_no ?? null),

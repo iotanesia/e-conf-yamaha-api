@@ -31,9 +31,9 @@ class QueryStockConfirmationHistory extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            if (explode(',',$id) > 1) {
-                $id_box = explode(',',$id)[0];
-                $total_item = explode(',',$id)[1];
+            if (explode('-',$id) > 1) {
+                $id_box = explode('-',$id)[0];
+                $total_item = explode('-',$id)[1];
 
                 $box = RegularDeliveryPlanBox::find($id_box);
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
@@ -96,9 +96,9 @@ class QueryStockConfirmationHistory extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
 
-            if (explode(',',$id) > 1) {
-                $id_box = explode(',',$id)[0];
-                $total_item = explode(',',$id)[1];
+            if (explode('-',$id) > 1) {
+                $id_box = explode('-',$id)[0];
+                $total_item = explode('-',$id)[1];
 
                 $box = RegularDeliveryPlanBox::find($id_box);
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
@@ -597,9 +597,9 @@ class QueryStockConfirmationHistory extends Model {
                 'qr_code'
             ]);
 
-            if (count(explode(',',$params->qr_code)) > 1) {
-                $id = explode(',',$params->qr_code)[0];
-                $total_item = explode(',',$params->qr_code)[1];
+            if (count(explode('-',$params->qr_code)) > 1) {
+                $id = explode('-',$params->qr_code)[0];
+                $total_item = explode('-',$params->qr_code)[1];
                 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if(!$delivery_plan_box) throw new \Exception("data not found", 400);
@@ -722,9 +722,9 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            if (count(explode(',',$params->id)) > 1) {
-                $id = explode(',',$params->id)[0];
-                $total_item = explode(',',$params->id)[1];
+            if (count(explode('-',$params->id)) > 1) {
+                $id = explode('-',$params->id)[0];
+                $total_item = explode('-',$params->id)[1];
 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
@@ -832,9 +832,9 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            if (count(explode(',',$params->id)) > 1) {
-                $id = explode(',',$params->id)[0];
-                $total_item = explode(',',$params->id)[1];
+            if (count(explode('-',$params->id)) > 1) {
+                $id = explode('-',$params->id)[0];
+                $total_item = explode('-',$params->id)[1];
 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
@@ -996,9 +996,9 @@ class QueryStockConfirmationHistory extends Model {
                 'qr_code'
             ]);
 
-            if (count(explode(',',$params->qr_code)) > 1) {
-                $id = explode(',',$params->qr_code)[0];
-                $total_item = explode(',',$params->qr_code)[1];
+            if (count(explode('-',$params->qr_code)) > 1) {
+                $id = explode('-',$params->qr_code)[0];
+                $total_item = explode('-',$params->qr_code)[1];
                 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if(!$delivery_plan_box) throw new \Exception("data not found", 400);
@@ -1159,18 +1159,13 @@ class QueryStockConfirmationHistory extends Model {
     public static function outstockDeliveryNote($request)
     {
         $data = RegularStokConfirmation::select(
-                            DB::raw("string_agg(DISTINCT c.name::character varying, ',') as yth"),
                             DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),
                             DB::raw("string_agg(DISTINCT regular_stock_confirmation.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
                             DB::raw("string_agg(DISTINCT d.nick_name::character varying, ',') as username"),
-                            DB::raw("string_agg(DISTINCT e.name::character varying, ',') as jenis_truck")
                         )
                         ->whereIn('regular_stock_confirmation.id',$request->id_stock_confirmation)
                         ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
-                        ->join('regular_delivery_plan_prospect_container_creation as b','b.id','a.id_prospect_container_creation')
-                        ->join('mst_lsp as c','c.id','b.id_lsp')
-                        ->join('mst_consignee as d','d.code','b.code_consignee')
-                        ->join('mst_type_delivery as e','e.id','b.id_type_delivery')
+                        ->join('mst_consignee as d','d.code','a.code_consignee')
                         ->paginate($request->limit ?? null);
 
         if(!$data) throw new \Exception("Data not found", 400);
