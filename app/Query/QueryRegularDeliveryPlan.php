@@ -775,6 +775,7 @@ class QueryRegularDeliveryPlan extends Model {
             $lot_packing = '';
             $qrcode = '';
             $no_box = '';
+            $cust_name = '';
             foreach ($item as $value) {
                 $itemname = array_unique($item_name_set);
                 $item_no = array_unique($item_no_set);
@@ -784,6 +785,7 @@ class QueryRegularDeliveryPlan extends Model {
                 $lot_packing = $value->lot_packing ?? null;
                 $qrcode = $value->qrcode;
                 $no_box = $value->refBox->no_box ?? null;
+                $cust_name = $value->refRegularDeliveryPlan->refConsignee->nick_name ?? null;
             }
             $qty_pcs_box = array_sum($qty_pcs_box) / count($item_no);
         } else {
@@ -802,6 +804,7 @@ class QueryRegularDeliveryPlan extends Model {
             'qrcode' => count(explode(',',$id)) > 1 ? (route('file.download').'?filename='.$qrcode.'&source=qr_labeling') : (route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling'),
             'qr_key' => count(explode(',',$id)) > 1 ? explode(',',$id)[0].'-'.count(explode(',',$id)) : $item->id,
             'no_box' => count(explode(',',$id)) > 1 ? $no_box : ($item->refBox->no_box ?? null),
+            'cust_name' => count(explode(',',$id)) > 1 ? $cust_name : ($item->refRegularDeliveryPlan->refConsignee->nick_name ?? null),
         ];
 
         return [
@@ -827,8 +830,8 @@ class QueryRegularDeliveryPlan extends Model {
 
             $id = [];
             foreach ($request['data'] as $key => $item) {
-                if (count(explode(',',$item['id'])) > 1) {
-                    $check = RegularDeliveryPlanBox::find(explode(',',$item['id'])[0]);
+                if (count(explode('-',$item['id'])) > 1) {
+                    $check = RegularDeliveryPlanBox::find(explode('-',$item['id'])[0]);
                     if($check) {
                         $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
                                                         ->where('qrcode', null)
@@ -838,7 +841,7 @@ class QueryRegularDeliveryPlan extends Model {
                             
                         foreach ($upd as $key => $val) {
                             if ($val->id === $check->id) {
-                                for ($i=0; $i < explode(',',$item['id'])[1]; $i++) { 
+                                for ($i=0; $i < explode('-',$item['id'])[1]; $i++) { 
                                     $upd[$key+$i]->update([
                                         'id_proc' => $item['id_proc'],
                                         'packing_date' => $item['packing_date'],
@@ -848,7 +851,7 @@ class QueryRegularDeliveryPlan extends Model {
                             }
                         }      
                     }
-                    $id = explode(',',$item['id']);
+                    $id = explode('-',$item['id']);
                 } else {
                     $check = RegularDeliveryPlanBox::find($item['id']);
                     if($check) {
@@ -991,7 +994,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $qty_pcs_box = array_sum($qty_pcs_box) / count($item_no_set);
     
                     return [
-                        'id' => implode(',',$id),
+                        'id' => implode('-',$id),
                         'item_name' => $item_name_set,
                         'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
                         'item_no' => $item_no_set,
@@ -1001,7 +1004,7 @@ class QueryRegularDeliveryPlan extends Model {
                         'qrcode' => route('file.download').'?filename='.$qr_name.'&source=qr_labeling',
                         'lot_packing' => $item->lot_packing,
                         'packing_date' => $item->packing_date,
-                        'qr_key' => implode(',',$id),
+                        'qr_key' => implode('-',$id),
                         'no_box' => $item->refBox->no_box ?? null,
                     ];
                 });
