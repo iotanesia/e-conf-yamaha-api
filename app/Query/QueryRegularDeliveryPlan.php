@@ -925,8 +925,8 @@ class QueryRegularDeliveryPlan extends Model {
             $is_stok = $queryStok->where('id_regular_delivery_plan', $check->id_regular_delivery_plan)->first();
             if ($is_stok) {
                 $is_stok->update([
-                    'production' => $is_stok->production + $check->qty_pcs_box,
-                    'qty' => $is_stok->qty + $check->qty_pcs_box
+                    'production' => count($id) > 1 ? $is_stok->production + $qty_pcs_box : $is_stok->production + $check->qty_pcs_box,
+                    'qty' => count($id) > 1 ? $is_stok->qty + $qty_pcs_box : $is_stok->qty + $check->qty_pcs_box,
                 ]);
             } else {
                 $queryStok->create([
