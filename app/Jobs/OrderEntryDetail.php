@@ -85,7 +85,7 @@ class OrderEntryDetail implements ShouldQueue
 
             $temp = RegularOrderEntryUploadDetailTemp::where('id_regular_order_entry_upload', $params['id_regular_order_entry_upload'])->get();
             $single_upload = [];
-            foreach ($temp->toArray() as $value) {
+            foreach ($temp->toArray() as $value) { 
                 if (!str_contains(implode(',',$id_set),$value['id'])) {
                     $single_upload[] = $value;
                 }
