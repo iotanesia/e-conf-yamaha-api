@@ -87,6 +87,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                         'uuid' => (string) Str::uuid(),
                         'created_at' => now(),
                         'updated_at' => now(),
+                        'keterangan' => 'Part tidak terdaftar pada Master Part'
                     ]; // check mst part
                     return $check;
                 })->toArray();
@@ -121,6 +122,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                         'uuid' => (string) Str::uuid(),
                         'created_at' => now(),
                         'updated_at' => now(),
+                        'keterangan' => 'Part tidak terdaftar pada Master Box'
                     ]; // check mst box
                     return $check;
                 })->toArray();
