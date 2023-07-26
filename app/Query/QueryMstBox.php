@@ -79,9 +79,9 @@ class QueryMstBox extends Model {
                 self::create([
                     "no_box" => $params['no_box'],
                     "id_group_product" => $params['id_group_product'][$i],
-                    "id_part" => $mst_part[$i]->id,
+                    "id_part" => $mst_part[0]->id,
                     "item_no" => $params['item_no'][$i],
-                    "item_no_series" => $mst_part[$i]->item_serial,
+                    "item_no_series" => $mst_part[0]->item_serial,
                     "qty" => $params['qty'][$i],
                     "unit_weight_gr" => $params['unit_weight_gr'][$i],
                     "unit_weight_kg" => $params['unit_weight_kg'][$i],
