@@ -111,7 +111,8 @@ class OrderEntryDetail implements ShouldQueue
                     if (count(explode(',',$value['qty'])) == 1) {
                         $qty = explode(',',$value['qty'])[0];
                     } else {
-                        $qty = explode(',',$value['qty'])[$key];
+                        $qty_temp = RegularOrderEntryUploadDetailTemp::where('id',explode(',',$value['id_regular_order_entry_upload_detail_temp'])[$key])->first();
+                        $qty = $qty_temp->qty;
                     }
                     RegularOrderEntryUploadDetailSet::create([
                         'id_detail' => $upload_detail->id,
