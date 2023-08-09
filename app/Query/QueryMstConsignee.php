@@ -22,7 +22,12 @@ class QueryMstConsignee extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('name',"%$params->kueri%");
+               if($params->kueri) $query->where('name',"like", "%$params->kueri%")
+                                        ->orWhere('nick_name',"like", "%$params->kueri%")
+                                        ->orWhere('code',"like", "%$params->kueri%")
+                                        ->orWhere('category',"like", "%$params->kueri%")
+                                        ->orWhere('address2',"like", "%$params->kueri%")
+                                        ->orWhere('address1',"like", "%$params->kueri%");
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
