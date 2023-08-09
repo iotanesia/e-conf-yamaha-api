@@ -1317,6 +1317,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'description_of_goods_1' => '',
                     'description_of_goods_2' => '',
                     'seal_no' => '',
+                    'connecting_vessel' => '',
                     'carton_box_qty' => count($box)
                 ];
             }
