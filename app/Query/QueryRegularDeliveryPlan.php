@@ -1269,14 +1269,14 @@ class QueryRegularDeliveryPlan extends Model {
 
                 return [
                     'code_consignee' => $item->code_consignee,
-                    'consignee' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax,
+                    'consignee_address' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax,
                     'customer_name' => $item->refMstConsignee->nick_name ?? null,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
                     'summary_container' => count($sumamry_box->toArray()),
                     'hs_code' => '',
                     'via' => $item->mot,
-                    'freight_chart' => 'COLLECT',
+                    'freight_charge' => 'COLLECT',
                     'incoterm' => 'FOB',
                     'shipped_by' => $item->mot,
                     'container_value' => explode(',', $item->container_type),
@@ -1294,7 +1294,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'status' => $item->status ?? null,
                     'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
                     'id_shipping_instruction' => $item->id_shipping_instruction ?? null,
-                    'packing_list_no' => $item->no_packaging,
+                    'invoice_no' => $item->no_packaging,
                     'shipper' => $mst_shipment->shipment ?? null,
                     'tel' => $mst_shipment->telp ?? null,
                     'fax' => $mst_shipment->fax ?? null,
@@ -1308,7 +1308,6 @@ class QueryRegularDeliveryPlan extends Model {
                     'description_of_goods_1' => '',
                     'description_of_goods_2' => '',
                     'seal_no' => '',
-                    'freight_charge' => '',
                     'carton_box_qty' => count($box)
                 ];
             }
