@@ -1226,7 +1226,7 @@ class QueryRegularDeliveryPlan extends Model {
 
                     return $si_item;
                 });
-                
+
                 return $SI->items()[0];
             } else {
 
@@ -1294,7 +1294,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'status' => $item->status ?? null,
                     'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
                     'id_shipping_instruction' => $item->id_shipping_instruction ?? null,
-                    'packing_list_no' => [$item->no_packaging],
+                    'packing_list_no' => $item->no_packaging,
                     'shipper' => $mst_shipment->shipment ?? null,
                     'tel' => $mst_shipment->telp ?? null,
                     'fax' => $mst_shipment->fax ?? null,
@@ -1305,9 +1305,10 @@ class QueryRegularDeliveryPlan extends Model {
                     'notify_part_address' => '',
                     'tel_notify_part' => '',
                     'fax_notify_part' => '',
-                    'description_of_good_1' => '',
-                    'description_of_good_2' => '',
+                    'description_of_goods_1' => '',
+                    'description_of_goods_2' => '',
                     'seal_no' => '',
+                    'freight_charge' => '',
                     'carton_box_qty' => count($box)
                 ];
             }
