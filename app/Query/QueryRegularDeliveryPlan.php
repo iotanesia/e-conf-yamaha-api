@@ -1228,7 +1228,7 @@ class QueryRegularDeliveryPlan extends Model {
                 });
                 
                 return [
-                    'items' => $SI->items()[0],
+                    'items' => $SI[0],
                     'last_page' => $SI->lastPage()
                 ];
             } else {
@@ -1288,8 +1288,8 @@ class QueryRegularDeliveryPlan extends Model {
                     'net_weight' => round($count_net_weight,1),
                     'gross_weight' => round($count_gross_weight,1),
                     'measurement' => round($count_meas,3),
-                    'port_of_discharge' => $item->port,
-                    'port_of_loading' => $item->type_delivery,
+                    'pod' => $item->port,
+                    'pol' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
                     'count' => $item->summary_container,
                     'summary_box' => array_sum($sumamry_box->toArray()),
@@ -1298,7 +1298,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,
                     'id_shipping_instruction' => $item->id_shipping_instruction ?? null,
                     'packing_list_no' => [$item->no_packaging],
-                    'shipment' => $mst_shipment->shipment ?? null,
+                    'shipper' => $mst_shipment->shipment ?? null,
                     'tel' => $mst_shipment->telp ?? null,
                     'fax' => $mst_shipment->fax ?? null,
                     'fax_id' => $mst_shipment->fax_id ?? null,
