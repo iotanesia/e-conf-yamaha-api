@@ -1227,10 +1227,7 @@ class QueryRegularDeliveryPlan extends Model {
                     return $si_item;
                 });
                 
-                return [
-                    'items' => $SI[0],
-                    'last_page' => $SI->lastPage()
-                ];
+                return $SI->items()[0];
             } else {
 
                 $mst_shipment = MstShipment::where('is_active', 1)->first();
