@@ -1219,10 +1219,19 @@ class QueryRegularDeliveryPlan extends Model {
         $data->transform(function ($item) {
             if ($item->id_shipping_instruction_creation) {
                 $SI = RegularDeliveryPlanShippingInsructionCreation::where('id',$item->id_shipping_instruction_creation)->paginate(1);
-                $SI->transform(function ($si_item) {
+                $summary_box = RegularDeliveryPlanProspectContainerCreation::where('code_consignee', $item->code_consignee)
+                                                                            ->where('etd_jkt', $item->etd_jkt)
+                                                                            ->where('datasource', $item->datasource)
+                                                                            ->get()->map(function($q){
+                                                                                $items = $q->summary_box;
+                                                                                return $items;
+                                                                            });
+
+                $SI->transform(function ($si_item) use ($summary_box) {
                     $si_item->container_value = explode(',', $si_item->container_value);
                     $si_item->container_count = explode(',', $si_item->container_count);
                     $si_item->container_type = explode(',', $si_item->container_type);
+                    $si_item->summary_box = array_sum($summary_box->toArray());
 
                     return $si_item;
                 });
@@ -1259,7 +1268,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $container_count[] = $value;
                 }
 
-                $sumamry_box = RegularDeliveryPlanProspectContainerCreation::where('code_consignee', $item->code_consignee)
+                $summary_box = RegularDeliveryPlanProspectContainerCreation::where('code_consignee', $item->code_consignee)
                                                                             ->where('etd_jkt', $item->etd_jkt)
                                                                             ->where('datasource', $item->datasource)
                                                                             ->get()->map(function($q){
@@ -1273,14 +1282,14 @@ class QueryRegularDeliveryPlan extends Model {
                     'customer_name' => $item->refMstConsignee->nick_name ?? null,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
-                    'summary_container' => count($sumamry_box->toArray()),
+                    'summary_container' => count($summary_box->toArray()),
                     'hs_code' => '',
                     'via' => $item->mot,
                     'freight_charge' => 'COLLECT',
                     'incoterm' => 'FOB',
                     'shipped_by' => $item->mot,
                     'container_value' => explode(',', $item->container_type),
-                    'container_count' => [count($sumamry_box->toArray())],
+                    'container_count' => [count($summary_box->toArray())],
                     'container_type' => $item->container_value,
                     'net_weight' => round($count_net_weight,1),
                     'gross_weight' => round($count_gross_weight,1),
@@ -1289,7 +1298,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'pol' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
                     'count' => $item->summary_container,
-                    'summary_box' => array_sum($sumamry_box->toArray()),
+                    'summary_box' => array_sum($summary_box->toArray()),
                     'to' => $item->refMstLsp->name ?? null,
                     'status' => $item->status ?? null,
                     'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation ?? null,

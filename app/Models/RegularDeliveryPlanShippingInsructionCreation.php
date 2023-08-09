@@ -53,7 +53,7 @@ class RegularDeliveryPlanShippingInsructionCreation extends Model
         "fax_id",
         "tel_consignee",
         "fax_consignee",
-        "tel_noitfy_part",
+        "tel_notify_part",
         "fax_notify_part",
         "container_value",
         "container_type",
