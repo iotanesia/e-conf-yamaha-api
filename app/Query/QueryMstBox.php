@@ -21,7 +21,11 @@ class QueryMstBox extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('no_box',"%$params->kueri%");
+               if($params->kueri) $query->where('no_box',"like", "%$params->kueri%")
+                                        ->orWhere('item_no',"like", "%$params->kueri%")
+                                        ->orWhere('item_no_series',"like", "%$params->kueri%")
+                                        ->orWhere('qty',"like", "%$params->kueri%")
+                                        ->orWhere('part_set',"like", "%$params->kueri%");
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();

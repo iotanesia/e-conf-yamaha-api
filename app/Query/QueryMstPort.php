@@ -20,7 +20,8 @@ class QueryMstPort extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('name',"%$params->kueri%");
+               if($params->kueri) $query->where('name',"like", "%$params->kueri%")
+                                        ->orWhere('code',"like", "%$params->kueri%");
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();

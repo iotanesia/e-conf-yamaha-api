@@ -20,7 +20,15 @@ class QueryMstPart extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-               if($params->kueri) $query->where('item_no',$params->kueri);
+               if($params->kueri) $query->where('item_no',"like", $params->kueri)
+                                        ->orWhere('description',"like", "%$params->kueri%")
+                                        ->orWhere('hs_code',"like", "%$params->kueri%")
+                                        ->orWhere('customer_use',"like", "%$params->kueri%")
+                                        ->orWhere('code_consignee',"like", "%$params->kueri%")
+                                        ->orWhere('cost_center',"like", "%$params->kueri%")
+                                        ->orWhere('coa',"like", "%$params->kueri%")
+                                        ->orWhere('gl_account',"like", "%$params->kueri%")
+                                        ->orWhere('item_serial',"like", "%$params->kueri%");
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
