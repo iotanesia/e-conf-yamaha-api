@@ -1439,7 +1439,8 @@ class QueryRegularDeliveryPlan extends Model {
                 $iteration = substr($last_iteration,-6);
             }
 
-            $no_booking = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').$iteration;
+            // $no_booking = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').$iteration;
+            $no_booking = 'BOOK'.Carbon::now()->format('dmY').$iteration;
             $datasource = $etdJkt[0]->datasource;
             $booking_date = Carbon::now()->format('dmY');
 

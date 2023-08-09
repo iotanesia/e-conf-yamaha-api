@@ -165,7 +165,7 @@ class QueryRegularOrderEntryUpload extends Model {
                 $item->datasource = $regularOrderEntry->datasource;
             }
 
-            $item->status_desc = Constant::STS_PROCESS_RG_ENTRY[$item->status];
+            $item->status_desc = $item->status == 7 ? "Send To DC Supervisor" : Constant::STS_PROCESS_RG_ENTRY[$item->status];
             unset($item->refRegularOrderEntry);
             return $item;
 
@@ -341,7 +341,7 @@ class QueryRegularOrderEntryUpload extends Model {
     public static function getOrderDcSpv($params)
     {
             $query = self::where(function ($query) use ($params){
-                $query->where('status',Constant::STS_SEND_TO_DC_MANAGER);
+                // $query->where('status',Constant::STS_SEND_TO_DC_MANAGER);
                 if($params->search) $query->where('filename', 'like', "'%$params->search%'");
             })
                 ->whereHas('refRegularOrderEntry',function ($query) use ($params){
@@ -367,7 +367,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     $result->id_upload = $item->id;
                     $result->filename = $item->filename;
                     $result->batch = $item->iteration;
-                    $result->status = "Send To Dc Spv";
+                    $result->status = $item->status == Constant::STS_SEND_TO_DC_MANAGER ? "Waiting Approve" : "Finish";
                     return $result;
                 }),
                 'last_page' => $data->lastPage(),

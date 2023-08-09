@@ -34,7 +34,8 @@ class QueryMstPosition extends Model {
                     'current_page' => $data->currentPage(),
                     'from' => $data->currentPage(),
                     'per_page' => (int) $data->perPage(),
-                ]
+                ],
+                'last_page' => $data->lastPage()
             ];
         });
     }

@@ -36,7 +36,8 @@ class QueryRole extends Model {
                      'current_page' => $data->currentPage(),
                      'from' => $data->currentPage(),
                      'per_page' => (int) $data->perPage(),
-                 ]
+                 ],
+                 'last_page' => $data->lastPage()
              ];
         } catch (\Throwable $th) {
             throw $th;

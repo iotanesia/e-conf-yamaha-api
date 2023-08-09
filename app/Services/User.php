@@ -86,7 +86,8 @@ class User {
                 'current_page' => $data->currentPage(),
                 'from' => $data->currentPage(),
                 'per_page' => $data->perPage(),
-           ]
+           ],
+           'last_page' => $data->lastPage()
         ];
     }
 
