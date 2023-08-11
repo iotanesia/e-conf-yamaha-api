@@ -1165,7 +1165,8 @@ class QueryRegularDeliveryPlan extends Model {
                 'summary_box' => $check->id_mot == 2 ? count($summary_box_air) : 0,
                 'code_consignee' => $item->code_consignee,
                 'datasource' => $item->datasource,
-                'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation
+                'id_shipping_instruction_creation' => $item->id_shipping_instruction_creation,
+                'consignee_address' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax,
             ];
         });
 
