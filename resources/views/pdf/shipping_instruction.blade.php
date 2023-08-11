@@ -91,7 +91,11 @@
             </tr>
             <tr>
                 <td><u>Consignee:</u> 
-                    <br> {{ $data->consignee }} 
+                    <br> {{ $data->refMstConsignee->name }} 
+                    <br> {{ $data->refMstConsignee->address1 }} 
+                    <br> {{ $data->refMstConsignee->address2 }} 
+                    <br> {{ $data->refMstConsignee->tel }} 
+                    <br> {{ $data->refMstConsignee->fax }} 
                 </td>
                 <td><u>Notify Party:</u> <br> {{$data->notify_part}}</td>
             </tr>
