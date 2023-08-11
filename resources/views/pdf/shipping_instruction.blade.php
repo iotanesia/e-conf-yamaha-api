@@ -72,9 +72,7 @@
                 <td class="no-bo">{{$data->attn_cc}}</td>
             </tr>
         </table>
-
-        <br>
-        <br>
+        
         <table>
             <tr>
                 <td style="padding: 3px;" class="no-bo">Please arrange our Shipment as per below Details</td>
@@ -207,7 +205,6 @@
                     <td class="no-bo"> : {{$data->hs_code}}</td>
                 </tr>
             </table>
-            </br>
             {{-- <table>
                 <tr>
                     <td>CASE MARKS</td>
@@ -255,7 +252,6 @@
                 </tr>
             </table> --}}
         </table>
-        <br>
         <p>Sincerelly Yours</p>
         <table style="width:320px">
             <tr>
