@@ -17,6 +17,8 @@ use App\Models\RegularDeliveryPlanProspectContainerCreation;
 use App\Models\RegularDeliveryPlanSet;
 use App\Models\RegularFixedQuantityConfirmation;
 use App\Models\RegularFixedQuantityConfirmationBox;
+use App\Models\RegularOrderEntryUpload;
+use App\Models\RegularOrderEntryUploadDetailTemp;
 use App\Models\RegularStokConfirmationHistory;
 use App\Models\RegularStokConfirmationOutstockNote;
 use Carbon\Carbon;
@@ -547,16 +549,62 @@ class QueryStockConfirmationHistory extends Model {
 
                 $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
                 $part_set = MstPart::whereIn('item_no', $deliv_plan_set->toArray())->get();
-                $item_no_set = [];
+                $item_serial_set = [];
                 $item_name_set = [];
                 foreach ($part_set as $key => $value) {
-                    $item_no_set[] = $value->item_serial;
+                    $item_serial_set[] = $value->item_serial;
                     $item_name_set[] = $value->description;
+                }
+
+                if ($item->refRegularDeliveryPlan->item_no == null) {
+                    $item_no_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+                    $mst_part = MstPart::select('mst_part.item_no',
+                                        DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
+                                        ->whereIn('mst_part.item_no', $item_no_set->toArray())
+                                        ->groupBy('mst_part.item_no')->get();
+                    $item_name = [];
+                    foreach ($mst_part as $value) {
+                        $item_name[] = $value->description;
+                    }
+    
+                    $mst_box = MstBox::whereIn('item_no', $item_no_set->toArray())
+                                    ->get()->map(function ($item){
+                                        $qty = [
+                                            $item->item_no.'+' => $item->qty
+                                        ];
+                                    
+                                        return array_merge($qty);
+                                    });
+    
+                    $order_entry_upload = RegularOrderEntryUpload::where('id_regular_order_entry', $item->refRegularDeliveryPlan->id_regular_order_entry)->first();
+                    $upload_temp = RegularOrderEntryUploadDetailTemp::where('id_regular_order_entry_upload', $order_entry_upload->id)
+                                                                    ->whereIn('item_no', $item_no_set->toArray())
+                                                                    ->where('etd_jkt', $item->refRegularDeliveryPlan->etd_jkt)
+                                                                    ->get()->pluck('qty');
+                    $qty_per_item_no = [];
+                    foreach ($item_no_set as $key => $value) {
+                        $qty_per_item_no[] = [
+                            $value.'+' => $upload_temp->toArray()[$key]
+                        ];
+                    }
+    
+                    $qty = [];
+                    foreach ($mst_box as $key => $value) {
+                        $arary_key = array_keys($value)[0];
+                        $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
+                    }
+                    
+                    $box = [
+                        'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty)),
+                        'length' =>  "",
+                        'width' =>  "",
+                        'height' =>  "",
+                    ];
                 }
 
                 $item->status_tracking = $status ?? null;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
-                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_set : $item->refRegularDeliveryPlan->refPart->item_serial;
+                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_serial_set : $item->refRegularDeliveryPlan->refPart->item_serial;
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name_set : $item->refRegularDeliveryPlan->refPart->description;
                 $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
                 $item->cust_order_no = $item->refRegularDeliveryPlan->order_no;
@@ -565,7 +613,7 @@ class QueryStockConfirmationHistory extends Model {
                 $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh;
                 $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt;
                 $item->production = $item->production;
-                $item->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null;
+                $item->box = $item->refRegularDeliveryPlan->item_no == null ? $box : (self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null);
 
                 unset(
                     $item->refRegularDeliveryPlan,
