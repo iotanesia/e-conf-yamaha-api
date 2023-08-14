@@ -523,7 +523,7 @@ class QueryStockConfirmationHistory extends Model {
             $data->map(function ($item){
                 $set['id'] = 0;
                 $set['id_box'] = $item->id_box;
-                $set['qty'] =  $item->refBox->qty." x ".$item->jml." pcs";
+                $set['qty'] =  $item->refBox->qty." x ".$item->jml." box";
                 $set['length'] =  "";
                 $set['width'] =  "";
                 $set['height'] =  "";
@@ -595,7 +595,7 @@ class QueryStockConfirmationHistory extends Model {
                     }
                     
                     $box = [
-                        'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty))." pcs",
+                        'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty))." box",
                         'length' =>  "",
                         'width' =>  "",
                         'height' =>  "",
