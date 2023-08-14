@@ -382,7 +382,7 @@ class QueryRegularDeliveryPlan extends Model {
                 $mst_box = MstBox::whereIn('item_no', $item_no_set->toArray())
                                 ->get()->map(function ($item){
                                     $qty = [
-                                        $item->item_no => $item->qty
+                                        $item->item_no.'+' => $item->qty
                                     ];
                                 
                                     return array_merge($qty);
@@ -396,7 +396,7 @@ class QueryRegularDeliveryPlan extends Model {
                 $qty_per_item_no = [];
                 foreach ($item_no_set as $key => $value) {
                     $qty_per_item_no[] = [
-                        $value => $upload_temp->toArray()[$key]
+                        $value.'+' => $upload_temp->toArray()[$key]
                     ];
                 }
 
@@ -454,22 +454,22 @@ class QueryRegularDeliveryPlan extends Model {
         $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)
                                         ->orderBy('qty_pcs_box','desc')
                                         ->orderBy('id','asc')
-                                        ->paginate($params->limit ?? null);
+                                        ->get();
 
         if ($data[0]->refRegularDeliveryPlan->item_no == null) {
             $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$id)->get();
             $item_no = [];
-            foreach ($plan_set as $key => $value) {
-                $item_no[] = $value->item_no;
+            foreach ($plan_set as $key => $val_set) {
+                $item_no[] = $val_set->item_no;
             }
             $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
             $no = '';
             $qty_box = '';
             $sum_qty = [];
-            foreach ($mst_box as $key => $value) {
-                $no = $value->no_box;
-                $qty_box = $value->qty;
-                $sum_qty[] = $value->qty;
+            foreach ($mst_box as $key => $val) {
+                $no = $val->no_box;
+                $qty_box = $val->qty;
+                $sum_qty[] = $val->qty;
             }
 
             $id_deliv_box = [];
@@ -550,8 +550,8 @@ class QueryRegularDeliveryPlan extends Model {
         });
 
         return [
-            'items' => $data->items(),
-            'last_page' => $data->lastPage()
+            'items' => $data,
+            'last_page' => 0
         ];
     }
 
