@@ -595,7 +595,7 @@ class QueryStockConfirmationHistory extends Model {
                     }
                     
                     $box = [
-                        'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty)),
+                        'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty))." pcs",
                         'length' =>  "",
                         'width' =>  "",
                         'height' =>  "",
