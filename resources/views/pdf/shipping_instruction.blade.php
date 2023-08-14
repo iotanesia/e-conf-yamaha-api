@@ -88,14 +88,14 @@
                 <td><u>Invoice No :</u> <br> {{$data->invoice_no}}</td>
             </tr>
             <tr>
-                <td><u>Consignee:</u> 
+                <td style="vertical-align: top;"><u>Consignee:</u> 
                     <br> {{ $data->refMstConsignee->name }} 
                     <br> {{ $data->refMstConsignee->address1 }} 
                     <br> {{ $data->refMstConsignee->address2 }} 
                     <br> {{ $data->refMstConsignee->tel }} 
                     <br> {{ $data->refMstConsignee->fax }} 
                 </td>
-                <td><u>Notify Party:</u> <br> {{$data->notify_part}}</td>
+                <td style="vertical-align: top;"><u>Notify Party:</u> <br> {{$data->notify_part}}</td>
             </tr>
         </table>
         <br>

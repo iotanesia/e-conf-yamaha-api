@@ -1517,8 +1517,8 @@ class QueryRegularDeliveryPlan extends Model {
             $data = RegularDeliveryPlanShippingInsructionCreation::find($id);
             $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
             $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
-            $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
-            $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
+            $data->eta_destination = Carbon::parse($data->eta_destination)->format('M d, Y');
+            $data->etd_jkt = Carbon::parse($data->etd_jkt)->format('M d, Y');
             $filename = 'shipping-instruction-'.$id.'.pdf';
             $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
             Pdf::loadView('pdf.shipping_instruction',[
