@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MstLsp extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
     protected $table = 'mst_lsp';
     public $fillable = [
         'id',

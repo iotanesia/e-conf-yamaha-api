@@ -69,12 +69,15 @@ class QueryMstLsp extends Model {
 
             $params = $request->all();
 
-            foreach ($params['id_type_delivery'] as $key => $value) {
-                Model::create([
-                    'name' => $params['name'][$key],
-                    'id_type_delivery' => $value,
-                    'code_consignee' => $params['code_consignee']
-                ]);
+            $id_type_delivery = [1,2,3,4];
+            foreach ($params['name'] as $key => $value) {
+                if ($value !== null) {
+                    Model::create([
+                        'name' => $value,
+                        'id_type_delivery' => $id_type_delivery[$key],
+                        'code_consignee' => $params['code_consignee']
+                    ]);
+                }
             }
 
             if($is_transaction) DB::commit();
@@ -101,12 +104,19 @@ class QueryMstLsp extends Model {
 
             $consignee = Model::where('code_consignee', $update->code_consignee)->get();
             foreach ($consignee as $key => $value) {
-                $upd = Model::find($value->id);
-                $upd->update([
-                    'name' => $params['name'][$key],
-                    'id_type_delivery' => $params['id_type_delivery'][$key],
-                    'code_consignee' => $params['code_consignee']
-                ]);
+                $upd = self::find($value->id);
+                $upd->delete();
+            }
+
+            $id_type_delivery = [1,2,3,4];
+            foreach ($params['name'] as $key => $value) {
+                if ($value !== null) {
+                    Model::create([
+                        'name' => $value,
+                        'id_type_delivery' => $id_type_delivery[$key],
+                        'code_consignee' => $params['code_consignee']
+                    ]);
+                }
             }
             
             if($is_transaction) DB::commit();
