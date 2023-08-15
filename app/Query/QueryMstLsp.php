@@ -24,7 +24,12 @@ class QueryMstLsp extends Model {
                 DB::raw("string_agg(DISTINCT mst_lsp.name::character varying, ',') as name"),
                 DB::raw("string_agg(DISTINCT a.name::character varying, ',') as type_delivery"),
                 DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as cust_name")
-            )->leftJoin('mst_type_delivery as a','mst_lsp.id_type_delivery','a.id')
+            )->where(function($query) use($params) {
+                if($params->kueri) $query->where('b.nick_name',"like", "%$params->kueri%")
+                                        ->orWhere('a.name',"like", "%$params->kueri%")
+                                        ->orWhere('mst_lsp.name',"like", "%$params->kueri%");
+            })
+            ->leftJoin('mst_type_delivery as a','mst_lsp.id_type_delivery','a.id')
             ->leftJoin('mst_consignee as b','mst_lsp.code_consignee','b.code')
             ->groupBy('mst_lsp.code_consignee');
             $data = $query
