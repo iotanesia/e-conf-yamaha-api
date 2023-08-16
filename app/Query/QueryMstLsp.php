@@ -38,6 +38,7 @@ class QueryMstLsp extends Model {
 
             $data->transform(function ($item) {
                 return [
+                    'id' => explode(',', $item->id_lsp)[0],
                     'name' => explode(',', $item->name),
                     'type_delivery' => explode(',',$item->type_delivery),
                     'cust_name' => $item->cust_name
