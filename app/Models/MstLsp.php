@@ -26,4 +26,9 @@ class MstLsp extends Model
     {
         return $this->belongsTo(MstTypeDelivery::class,'id_type_delivery','id');
     }
+
+    public function refConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
 }

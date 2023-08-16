@@ -7,6 +7,7 @@ use App\Models\MstLsp AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\MstTypeDelivery;
 use Illuminate\Support\Facades\Cache;
 
 class QueryMstLsp extends Model {
@@ -60,7 +61,16 @@ class QueryMstLsp extends Model {
 
     public static function byId($id)
     {
-        return self::find($id);
+        $data = self::where('id',$id)->get();
+
+        return $data->transform(function($item){
+                $lsp = Model::where('code_consignee',$item->code_consignee)->get();
+                $item->name = $lsp->pluck('name');
+                $item->type_delivery = MstTypeDelivery::whereIn('id', $lsp->pluck('id_type_delivery'))->get()->pluck('name');
+                $item->cust_name = $item->refConsignee->nick_name ?? null;
+
+                return $item;
+            })[0];
     }
 
     public static function store($request,$is_transaction = true)
