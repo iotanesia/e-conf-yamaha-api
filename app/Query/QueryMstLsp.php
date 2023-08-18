@@ -24,6 +24,7 @@ class QueryMstLsp extends Model {
                 DB::raw("string_agg(DISTINCT mst_lsp.id::character varying, ',') as id_lsp"),
                 DB::raw("string_agg(DISTINCT mst_lsp.name::character varying, ',') as name"),
                 DB::raw("string_agg(DISTINCT a.name::character varying, ',') as type_delivery"),
+                DB::raw("string_agg(DISTINCT b.code::character varying, ',') as code_consignee"),
                 DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as cust_name")
             )->where(function($query) use($params) {
                 if($params->kueri) $query->where('b.nick_name',"like", "%$params->kueri%")
@@ -40,7 +41,7 @@ class QueryMstLsp extends Model {
             $data->transform(function ($item) {
                 return [
                     'id' => (int)explode(',', $item->id_lsp)[0],
-                    'name' => explode(',', $item->name),
+                    'name' => Model::where('code_consignee',$item->code_consignee)->get()->pluck('name'),
                     'type_delivery' => explode(',',$item->type_delivery),
                     'cust_name' => $item->cust_name
                 ];
@@ -64,9 +65,28 @@ class QueryMstLsp extends Model {
         $data = self::where('id',$id)->get();
 
         return $data->transform(function($item){
-                $lsp = Model::where('code_consignee',$item->code_consignee)->get();
-                $item->name = $lsp->pluck('name');
-                $item->type_delivery = MstTypeDelivery::whereIn('id', $lsp->pluck('id_type_delivery'))->get()->pluck('name');
+                $lsp = Model::where('code_consignee',$item->code_consignee)->orderBy('id_type_delivery','asc')->get();
+                $first = '';
+                $second = '';
+                $third = '';
+                $fourth = '';
+                foreach ($lsp as $key => $value) {
+                    if ($value->id_type_delivery == 1) {
+                        $first = $value->name;
+                    }
+                    if ($value->id_type_delivery == 2) {
+                        $second = $value->name;
+                    }
+                    if ($value->id_type_delivery == 3) {
+                        $third = $value->name;
+                    }
+                    if ($value->id_type_delivery == 4) {
+                        $fourth = $value->name;
+                    }
+                }
+
+                $item->name = [$first,$second,$third,$fourth];
+                $item->type_delivery = MstTypeDelivery::orderBy('id', 'asc')->get()->pluck('name');
                 $item->cust_name = $item->refConsignee->nick_name ?? null;
 
                 return $item;
@@ -79,6 +99,9 @@ class QueryMstLsp extends Model {
         try {
 
             $params = $request->all();
+
+            $cek = Model::where('code_consignee', $params['code_consignee'])->get();
+            if($cek) throw new \Exception("Consignee Sudah Tersedia", 400);
 
             $id_type_delivery = [1,2,3,4];
             foreach ($params['name'] as $key => $value) {
