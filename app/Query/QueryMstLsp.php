@@ -101,7 +101,8 @@ class QueryMstLsp extends Model {
             $params = $request->all();
 
             $cek = Model::where('code_consignee', $params['code_consignee'])->get();
-            if($cek) throw new \Exception("Consignee Sudah Tersedia", 400);
+            
+            if(count($cek) > 0) throw new \Exception("Consignee Sudah Tersedia", 400);
 
             $id_type_delivery = [1,2,3,4];
             foreach ($params['name'] as $key => $value) {
