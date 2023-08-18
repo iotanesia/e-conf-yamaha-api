@@ -166,7 +166,13 @@ class QueryMstLsp extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            self::destroy($id);
+            $data = self::find($id);
+
+            $delete = Model::where('code_consignee', $data->code_consignee)->get();
+            foreach ($delete as $key => $value) {
+                $value->delete();
+            }
+
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
