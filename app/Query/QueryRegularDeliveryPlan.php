@@ -31,6 +31,7 @@ use App\Models\RegularProspectContainerCreation;
 use App\Models\RegularProspectContainerDetail;
 use App\Models\RegularProspectContainerDetailBox;
 use App\Models\RegularStokConfirmation;
+use App\Models\RegularStokConfirmationTemp;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Cache;
@@ -928,8 +929,9 @@ class QueryRegularDeliveryPlan extends Model {
                     'production' => count($id) > 1 ? $is_stok->production + $qty_pcs_box : $is_stok->production + $check->qty_pcs_box,
                     'qty' => count($id) > 1 ? $is_stok->qty + $qty_pcs_box : $is_stok->qty + $check->qty_pcs_box,
                 ]);
+                $id_stock = $is_stok->id;
             } else {
-                $queryStok->create([
+                $createStock = $queryStok->create([
                     "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
                     "count_box" => $check->refRegularDeliveryPlan->manyDeliveryPlanBox->count() ?? 0,
                     "production" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
@@ -944,7 +946,25 @@ class QueryRegularDeliveryPlan extends Model {
                     "code_consignee" => $check->refRegularDeliveryPlan->code_consignee,
                     "is_actual" => 0
                 ]);
+                $id_stock = $createStock->id;
             }
+            RegularStokConfirmationTemp::create([
+                "id_stock_confirmation" => $id_stock, 
+                "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
+                "count_box" => $check->refRegularDeliveryPlan->manyDeliveryPlanBox->count() ?? 0,
+                "production" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
+                "qty" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
+                "in_dc" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
+                "in_wh" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
+                "status_instock" => Constant::STS_STOK,
+                "status_outstock" => Constant::STS_STOK,
+                "etd_ypmi" => $check->refRegularDeliveryPlan->etd_ypmi,
+                "etd_wh" => $check->refRegularDeliveryPlan->etd_wh,
+                "etd_jkt" => $check->refRegularDeliveryPlan->etd_jkt,
+                "code_consignee" => $check->refRegularDeliveryPlan->code_consignee,
+                "is_actual" => 0,
+                "qr_key" => count($id) > 1 ? $id[0].'-'.count($id) : $check->id,
+            ]);
 
             if($is_trasaction) DB::commit();
 

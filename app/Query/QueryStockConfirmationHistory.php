@@ -21,6 +21,7 @@ use App\Models\RegularOrderEntryUpload;
 use App\Models\RegularOrderEntryUploadDetailTemp;
 use App\Models\RegularStokConfirmationHistory;
 use App\Models\RegularStokConfirmationOutstockNote;
+use App\Models\RegularStokConfirmationTemp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -44,6 +45,9 @@ class QueryStockConfirmationHistory extends Model {
                                 ->orderBy('qty_pcs_perbox', 'desc')
                                 ->orderBy('id_regular_delivery_plan_box','asc')
                                 ->get();
+
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $box->id.'-'.$total_item)->first();
+                $stokTemp->delete();
                 
                 foreach ($stock as $key => $val) {
                     if ($val->id_regular_delivery_plan_box === (int)$id_box) {
@@ -79,6 +83,9 @@ class QueryStockConfirmationHistory extends Model {
                 $stock = Model::where('id_regular_delivery_plan_box',$qty->id)->where('type',Constant::INSTOCK)->first();
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$qty->id_regular_delivery_plan)->first();
 
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $qty->id)->first();
+                $stokTemp->delete();
+
                 $update->update([
                     'production' => $update->production + $update->in_dc,
                     'in_dc' => $update->in_dc - $qty->qty_pcs_box,
@@ -109,6 +116,9 @@ class QueryStockConfirmationHistory extends Model {
                                 ->orderBy('qty_pcs_perbox', 'desc')
                                 ->orderBy('id_regular_delivery_plan_box','asc')
                                 ->get();
+
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $box->id.'-'.$total_item)->first();
+                $stokTemp->delete();
                 
                 foreach ($stock as $key => $val) {
                     if ($val->id_regular_delivery_plan_box === (int)$id_box) {
@@ -149,6 +159,9 @@ class QueryStockConfirmationHistory extends Model {
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
                 $fix = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
                 $fix == null ? null : $fix->delete();
+
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $box->id)->first();
+                $stokTemp->delete();
 
                 $update->update([
                     'production' => $update->production + $update->in_wh,
@@ -343,7 +356,8 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function getOutStock($request)
     {
-        $data = RegularStokConfirmation::where('status_outstock','=',2)->where('in_wh','>',0)->paginate($request->limit ?? null);
+        // $data = RegularStokConfirmation::where('status_outstock','=',2)->where('in_wh','>',0)->paginate($request->limit ?? null);
+        $data = RegularStokConfirmationTemp::where('status_outstock','=',2)->where('in_wh','>',0)->paginate($request->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
         
         $result = [];
@@ -825,6 +839,9 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
 
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $delivery_plan_box->id.'-'.$total_item)->first();
+                $stokTemp->update(['status_instock' => 2]);
+
                 for ($i=0; $i < $total_item; $i++) { 
                     self::create([
                         'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
@@ -853,6 +870,9 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->production = $qty - $in_dc_total - $stock_confirmation->in_wh;
                 $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
+
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $delivery_plan_box->id)->first();
+                $stokTemp->update(['status_instock' => 2]);
 
                 self::create([
                     'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
@@ -939,6 +959,9 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
 
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $delivery_plan_box->id.'-'.$total_item)->first();
+                $stokTemp->update(['status_outstock' => 2]);
+
                 for ($i=0; $i < $total_item; $i++) { 
                     self::create([
                         'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
@@ -971,6 +994,9 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->in_dc = $in_dc_total;
                 $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
+
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $delivery_plan_box->id)->first();
+                $stokTemp->update(['status_outstock' => 2]);
 
                 self::create([
                     'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
@@ -1191,11 +1217,21 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            $data = RegularStokConfirmation::whereIn('id',$params->id)->get()->map(function ($item){
+            $stokTemp = RegularStokConfirmationTemp::whereIn('id',$params->id)->get();
+            $id_stock_confirmation = [];
+            foreach ($stokTemp as $key => $value) {
+                $id_stock_confirmation[] = $value->id_stock_confirmation;
+            }
+
+            $data = RegularStokConfirmation::whereIn('id',$id_stock_confirmation)->get()->map(function ($item){
                     $item->status_outstock = 3;
                     $item->save();
                     return $item;
             });
+
+            foreach ($stokTemp as $del) {
+                $del->delete();
+            }
 
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
