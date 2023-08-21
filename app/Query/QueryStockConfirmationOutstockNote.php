@@ -9,6 +9,7 @@ use App\ApiHelper as Helper;
 use App\Models\MstShipment;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
+use App\Models\RegularStokConfirmationTemp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -23,7 +24,8 @@ class QueryStockConfirmationOutstockNote extends Model {
         try {
             $lastData = Model::latest()->first();
             Helper::generateCodeLetter($lastData);
-            $stokConfirmation = RegularStokConfirmation::whereIn('id',$request->id)->get();
+            $stokTemp = RegularStokConfirmationTemp::where('id', $request->id)->first();
+            $stokConfirmation = RegularStokConfirmation::whereIn('id',$stokTemp->id_stock_confirmation)->get();
             $idDeliveryPlan = $stokConfirmation->pluck('id_regular_delivery_plan')->toArray();
             $deliveryPlan = RegularDeliveryPlan::select(DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as code_consignee"),DB::raw("string_agg(DISTINCT c.name::character varying, ',') as lsp"),DB::raw("string_agg(DISTINCT d.name::character varying, ',') as truck_type"))
             ->whereIn('regular_delivery_plan.id',$idDeliveryPlan)
@@ -33,7 +35,7 @@ class QueryStockConfirmationOutstockNote extends Model {
             ->join('mst_type_delivery as d','d.id','a.id_type_delivery')
             ->get();
 
-            $dataSend =  $deliveryPlan->transform(function($item) use($lastData,$request){
+            $dataSend =  $deliveryPlan->transform(function($item) use($lastData,$request,$stokTemp){
                 return [
                     'shipper'=>MstShipment::where('is_active',Constant::IS_ACTIVE)->first()->shipment ?? null,
                     'yth'=> $request->yth ?? $item->lsp,
@@ -42,12 +44,12 @@ class QueryStockConfirmationOutstockNote extends Model {
                     'delivery_date'=>Carbon::now()->format('Y-m-d'),
                     'truck_type'=>$item->truck_type,
                     'truck_no' => $request->truck_no ?? null,
-                    'id_stock_confirmation' =>$request->id
+                    'id_stock_confirmation' =>$stokTemp->id_stock_confirmation
                 ];
             });
 
             $dataSendDetail = RegularStokConfirmation::select(DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as qty"),DB::raw("string_agg(DISTINCT b.no_packaging::character varying, ',') as no_packing"))
-                        ->whereIn('regular_stock_confirmation.id',$request->id)
+                        ->whereIn('regular_stock_confirmation.id',$stokTemp->id_stock_confirmation)
                         ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
                         ->join('regular_delivery_plan_prospect_container as b','b.id','a.id_prospect_container')
                         ->join('mst_part as c','c.item_no','a.item_no')
@@ -83,7 +85,8 @@ class QueryStockConfirmationOutstockNote extends Model {
     public static function downloadOutStockNote($request,$pathToFile,$filename)
     {
         try {
-            $data = Model::whereJsonContains('id_stock_confirmation',$request->id)->first();
+            $stokTemp = RegularStokConfirmationTemp::whereIn('id',$request->id)->first();
+            $data = Model::whereJsonContains('id_stock_confirmation',["$stokTemp->id_stock_confirmation"])->orderBy('id','desc')->first();
 
             Pdf::loadView('pdf.stock-confirmation.outstock.delivery_note',[
               'data' => $data
