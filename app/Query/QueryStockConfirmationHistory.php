@@ -1335,13 +1335,17 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function outstockDeliveryNote($request)
     {
-        $stokTemp = RegularStokConfirmationTemp::where('id', $request->id_stock_confirmation)->first();
+        $stokTemp = RegularStokConfirmationTemp::where('id', $request->id_stock_confirmation)->get();
+        $id_stock_confirmation = [];
+        foreach ($stokTemp as $key => $value) {
+            $id_stock_confirmation[] = $value->id_stock_confirmation;
+        }
         $data = RegularStokConfirmation::select(
                             DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),
                             DB::raw("string_agg(DISTINCT regular_stock_confirmation.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
                             DB::raw("string_agg(DISTINCT d.nick_name::character varying, ',') as username"),
                         )
-                        ->whereIn('regular_stock_confirmation.id',$stokTemp->id_stock_confirmation)
+                        ->whereIn('regular_stock_confirmation.id',$id_stock_confirmation)
                         ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
                         ->join('mst_consignee as d','d.code','a.code_consignee')
                         ->paginate($request->limit ?? null);
@@ -1363,14 +1367,18 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function outstockDeliveryNoteItems($request)
     {
-        $stokTemp = RegularStokConfirmationTemp::where('id', $request->id_stock_confirmation)->first();
+        $stokTemp = RegularStokConfirmationTemp::where('id', $request->id_stock_confirmation)->get();
+        $id_stock_confirmation = [];
+        foreach ($stokTemp as $key => $value) {
+            $id_stock_confirmation[] = $value->id_stock_confirmation;
+        }
         $items = RegularStokConfirmation::select(
             DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_number"),
             DB::raw("string_agg(DISTINCT a.id::character varying, ',') as id_deliv_plan"),
             DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
             DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as quantity"),
         )
-        ->whereIn('regular_stock_confirmation.id',$stokTemp->id_stock_confirmation)
+        ->whereIn('regular_stock_confirmation.id',$id_stock_confirmation)
         ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
         ->groupBy('a.id')
         ->get();
