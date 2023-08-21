@@ -49,7 +49,7 @@ class QueryStockConfirmationOutstockNote extends Model {
                     'delivery_date'=>Carbon::now()->format('Y-m-d'),
                     'truck_type'=>$truck,
                     'truck_no' => $request->truck_no ?? null,
-                    'id_stock_confirmation' =>$stokTemp->toArray()[0]
+                    'id_stock_confirmation' =>$stokTemp->toArray()
                 ];
             });
 
@@ -104,7 +104,7 @@ class QueryStockConfirmationOutstockNote extends Model {
 
     public static function downloadOutStockNote($request,$pathToFile,$filename)
     {
-        // try {
+        try {
             $stokTemp = RegularStokConfirmationTemp::whereIn('id',$request->id)->first();
             $data = Model::whereJsonContains('id_stock_confirmation',["$stokTemp->id_stock_confirmation"])->orderBy('id','desc')->first();
 
@@ -114,8 +114,8 @@ class QueryStockConfirmationOutstockNote extends Model {
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
-        //   } catch (\Throwable $th) {
-        //       return Helper::setErrorResponse($th);
-        //   }
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 }
