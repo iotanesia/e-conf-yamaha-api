@@ -24,8 +24,8 @@ class QueryStockConfirmationOutstockNote extends Model {
         try {
             $lastData = Model::latest()->first();
             Helper::generateCodeLetter($lastData);
-            $stokTemp = RegularStokConfirmationTemp::where('id', $request->id)->first();
-            $stokConfirmation = RegularStokConfirmation::whereIn('id',$stokTemp->id_stock_confirmation)->get();
+            $stokTemp = RegularStokConfirmationTemp::where('id', $request->id)->get()->pluck('id_stock_confirmation');
+            $stokConfirmation = RegularStokConfirmation::whereIn('id',$stokTemp->toArray())->get();
             $idDeliveryPlan = $stokConfirmation->pluck('id_regular_delivery_plan')->toArray();
             $deliveryPlan = RegularDeliveryPlan::select(DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as code_consignee"),DB::raw("string_agg(DISTINCT c.name::character varying, ',') as lsp"),DB::raw("string_agg(DISTINCT d.name::character varying, ',') as truck_type"))
             ->whereIn('regular_delivery_plan.id',$idDeliveryPlan)
@@ -44,12 +44,12 @@ class QueryStockConfirmationOutstockNote extends Model {
                     'delivery_date'=>Carbon::now()->format('Y-m-d'),
                     'truck_type'=>$item->truck_type,
                     'truck_no' => $request->truck_no ?? null,
-                    'id_stock_confirmation' =>$stokTemp->id_stock_confirmation
+                    'id_stock_confirmation' =>$stokTemp->toArray()[0]
                 ];
             });
 
             $dataSendDetail = RegularStokConfirmation::select(DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as qty"),DB::raw("string_agg(DISTINCT b.no_packaging::character varying, ',') as no_packing"))
-                        ->whereIn('regular_stock_confirmation.id',$stokTemp->id_stock_confirmation)
+                        ->whereIn('regular_stock_confirmation.id',$stokTemp->toArray())
                         ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
                         ->join('regular_delivery_plan_prospect_container as b','b.id','a.id_prospect_container')
                         ->join('mst_part as c','c.item_no','a.item_no')
@@ -84,7 +84,7 @@ class QueryStockConfirmationOutstockNote extends Model {
 
     public static function downloadOutStockNote($request,$pathToFile,$filename)
     {
-        try {
+        // try {
             $stokTemp = RegularStokConfirmationTemp::whereIn('id',$request->id)->first();
             $data = Model::whereJsonContains('id_stock_confirmation',["$stokTemp->id_stock_confirmation"])->orderBy('id','desc')->first();
 
@@ -94,8 +94,8 @@ class QueryStockConfirmationOutstockNote extends Model {
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
-          } catch (\Throwable $th) {
-              return Helper::setErrorResponse($th);
-          }
+        //   } catch (\Throwable $th) {
+        //       return Helper::setErrorResponse($th);
+        //   }
     }
 }
