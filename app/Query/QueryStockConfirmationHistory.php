@@ -529,13 +529,15 @@ class QueryStockConfirmationHistory extends Model {
 
         $data->transform(function($item) {
             
+            $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+
             $res['id'] = $item->id;
             $res['id_regular_delivery_plan_box'] = $item->id;
             $res['id_regular_delivery_plan'] = $item->refRegularDeliveryPlan->id;
             $res['id_regular_order_entry'] = $item->refRegularDeliveryPlan->id_regular_order_entry;
             $res['code_consignee'] = $item->refRegularDeliveryPlan->code_consignee;
             $res['model'] = $item->refRegularDeliveryPlan->model;
-            $res['item_no'] = $item->refRegularDeliveryPlan->item_no;
+            $res['item_no'] = $item->refRegularDeliveryPlan->item_no == null ? $plan_set->toArray() : $item->refRegularDeliveryPlan->item_no;
             $res['qty'] = $item->refRegularDeliveryPlan->qty;
             $res['disburse'] = $item->refRegularDeliveryPlan->disburse;
             $res['delivery'] = $item->refRegularDeliveryPlan->delivery;
