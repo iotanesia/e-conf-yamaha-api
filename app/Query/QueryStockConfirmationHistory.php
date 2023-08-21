@@ -1312,12 +1312,11 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            $query = RegularStokConfirmationTemp::query();
-            $stokTemp = $query->whereIn('id',$params->id)->get();
+            $stokTemp = RegularStokConfirmationTemp::whereIn('id',$params->id)->get();
             $id_stock_confirmation = [];
             foreach ($stokTemp as $key => $value) {
                 $id_stock_confirmation[] = $value->id_stock_confirmation;
-                $update = $query->find($value->id);
+                $update = RegularStokConfirmationTemp::where('id',$value->id)->first();
                 $update->update(['status_outstock' => 3]);
             }
 
