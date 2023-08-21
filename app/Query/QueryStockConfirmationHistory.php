@@ -529,8 +529,61 @@ class QueryStockConfirmationHistory extends Model {
 
         $data->transform(function($item) {
             
-            $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+            if ($item->refRegularDeliveryPlan->item_no == null) {
+                $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$item->refRegularDeliveryPlan->id)->orderBy('qty_pcs_box','desc')->orderBy('id','asc')->get();
+                $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+                $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan',$item->refRegularDeliveryPlan->id)->where('type','OUTSTOCK')->get()->pluck('id_regular_delivery_plan_box');
 
+                $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->toArray())->get();
+                $sum_qty = [];
+                foreach ($mst_box as $key => $value_box) {
+                    $sum_qty[] = $value_box->qty;
+                }
+
+                $result_qty = [];
+                $result_id_planbox = [];
+                $result_arr = [];
+                $qty = 0;
+                $group_qty = [];
+                $group_id_planbox = [];
+                $group_arr = [];
+                foreach ($plan_box as $key => $val) {
+                    $qty += $val->qty_pcs_box;
+                    if (in_array($val->id,$check_scan->toArray())) {
+                        $group_qty[] = $val->qty_pcs_box;
+                        $group_id_planbox[] = $val->id;
+                    }
+
+                    if ($qty >= (array_sum($sum_qty) * count($plan_set->toArray()))) {
+                        $result_qty[] = $group_qty;
+                        $result_id_planbox[] = $group_id_planbox;
+                        $result_arr[] = $group_arr[0] ?? [];
+                        $qty = 0;
+                        $group_qty = [];
+                        $group_id_planbox = [];
+                        $group_arr = [];
+                    }
+                }
+
+                if (!empty($group_qty)) {
+                    $result_qty[] = $group_qty;
+                }
+                if (!empty($group_id_planbox)) {
+                    $result_id_planbox[] = $group_id_planbox;
+                }
+                if (!empty($group_arr)) {
+                    $result_arr[] = $group_arr[0];
+                }
+                
+                for ($i=0; $i < count($result_qty); $i++) { 
+                    if (count($result_qty[$i]) !== 0) {
+                        $in_wh = (array_sum($result_qty[$i]) / count($plan_set->toArray()));
+                    }
+                }
+                
+                $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+            }
+            
             $res['id'] = $item->id;
             $res['id_regular_delivery_plan_box'] = $item->id;
             $res['id_regular_delivery_plan'] = $item->refRegularDeliveryPlan->id;
@@ -559,8 +612,8 @@ class QueryStockConfirmationHistory extends Model {
             $res['status_bml'] = $item->refRegularDeliveryPlan->status_bml;
             $res['cust_name'] = $item->refRegularDeliveryPlan->refConsignee->nick_name;
             $res['status_desc'] = 'Instock';
-            $res['in_wh'] = $item->qty_pcs_box;
-            $res['box'] = $item->qty_pcs_box.' x 1 pcs';
+            $res['in_wh'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh : $item->qty_pcs_box;
+            $res['box'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh.' x 1 pcs' : $item->qty_pcs_box.' x 1 pcs';
 
             return $res;
         });
