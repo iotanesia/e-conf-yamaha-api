@@ -584,8 +584,7 @@ class QueryStockConfirmationHistory extends Model {
                 $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
             }
             
-            $res['id'] = $item->id;
-            $res['id_regular_delivery_plan_box'] = $item->id;
+            $res['id'] = $item->id_stock_confirmation;
             $res['id_regular_delivery_plan'] = $item->refRegularDeliveryPlan->id;
             $res['id_regular_order_entry'] = $item->refRegularDeliveryPlan->id_regular_order_entry;
             $res['code_consignee'] = $item->refRegularDeliveryPlan->code_consignee;
@@ -1313,10 +1312,13 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            $stokTemp = RegularStokConfirmationTemp::whereIn('id',$params->id)->get();
+            $query = RegularStokConfirmationTemp::query();
+            $stokTemp = $query->whereIn('id',$params->id)->get();
             $id_stock_confirmation = [];
             foreach ($stokTemp as $key => $value) {
                 $id_stock_confirmation[] = $value->id_stock_confirmation;
+                $update = $query->find($value->id);
+                $update->update(['status_outstock' => 3]);
             }
 
             $data = RegularStokConfirmation::whereIn('id',$id_stock_confirmation)->get()->map(function ($item){
@@ -1324,10 +1326,6 @@ class QueryStockConfirmationHistory extends Model {
                     $item->save();
                     return $item;
             });
-
-            foreach ($stokTemp as $del) {
-                $del->delete();
-            }
 
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
