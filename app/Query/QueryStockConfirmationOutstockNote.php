@@ -106,7 +106,7 @@ class QueryStockConfirmationOutstockNote extends Model {
     {
         try {
             $stokTemp = RegularStokConfirmationTemp::whereIn('id',$request->id)->first();
-            $data = Model::whereJsonContains('id_stock_confirmation',["$stokTemp->id_stock_confirmation"])->orderBy('id','desc')->first();
+            $data = Model::whereJsonContains('id_stock_confirmation',[$stokTemp->id_stock_confirmation])->orderBy('id','desc')->first();
 
             Pdf::loadView('pdf.stock-confirmation.outstock.delivery_note',[
               'data' => $data
