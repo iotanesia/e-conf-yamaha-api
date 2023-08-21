@@ -528,42 +528,43 @@ class QueryStockConfirmationHistory extends Model {
         // ];
 
         $data->transform(function($item) {
-            return [
-                'id' => $item->id,
-                'id_regular_delivery_plan_box' => $item->id,
-                'id_regular_delivery_plan' => $item->refRegularDeliveryPlan->id,
-                'id_regular_order_entry' => $item->refRegularDeliveryPlan->id_regular_order_entry,
-                'code_consignee' => $item->refRegularDeliveryPlan->code_consignee,
-                'model' => $item->refRegularDeliveryPlan->model,
-                'item_no' => $item->refRegularDeliveryPlan->item_no,
-                'qty' => $item->refRegularDeliveryPlan->qty,
-                'disburse' => $item->refRegularDeliveryPlan->disburse,
-                'delivery' => $item->refRegularDeliveryPlan->delivery,
-                'status_regular_delivery_plan' => $item->refRegularDeliveryPlan->status_regular_delivery_plan,
-                'order_no' => $item->refRegularDeliveryPlan->order_no,
-                'cust_item_no' => $item->refRegularDeliveryPlan->cust_item_no,
-                'created_at' => $item->refRegularDeliveryPlan->created_at,
-                'created_by' => $item->refRegularDeliveryPlan->created_by,
-                'updated_at' => $item->refRegularDeliveryPlan->updated_at,
-                'updated_by' => $item->refRegularDeliveryPlan->updated_by,
-                'deleted_at' => $item->refRegularDeliveryPlan->deleted_at,
-                'uuid' => $item->refRegularDeliveryPlan->uuid,
-                'etd_ypmi' => $item->refRegularDeliveryPlan->etd_ypmi,
-                'etd_wh' => $item->refRegularDeliveryPlan->etd_wh,
-                'etd_jkt' => $item->refRegularDeliveryPlan->etd_jkt,
-                'is_inquiry' => $item->refRegularDeliveryPlan->is_inquiry,
-                'id_prospect_container' => $item->refRegularDeliveryPlan->id_prospect_container,
-                'id_prospect_container_creation' => $item->refRegularDeliveryPlan->id_prospect_container_creation,
-                'status_bml' => $item->refRegularDeliveryPlan->status_bml,
-                'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name,
-                'status_desc' => 'Instock',
-                'in_wh' => $item->qty_pcs_box,
-                'box' => $item->qty_pcs_box.' x 1 pcs'
-            ];
+            
+            $res['id'] = $item->id;
+            $res['id_regular_delivery_plan_box'] = $item->id;
+            $res['id_regular_delivery_plan'] = $item->refRegularDeliveryPlan->id;
+            $res['id_regular_order_entry'] = $item->refRegularDeliveryPlan->id_regular_order_entry;
+            $res['code_consignee'] = $item->refRegularDeliveryPlan->code_consignee;
+            $res['model'] = $item->refRegularDeliveryPlan->model;
+            $res['item_no'] = $item->refRegularDeliveryPlan->item_no;
+            $res['qty'] = $item->refRegularDeliveryPlan->qty;
+            $res['disburse'] = $item->refRegularDeliveryPlan->disburse;
+            $res['delivery'] = $item->refRegularDeliveryPlan->delivery;
+            $res['status_regular_delivery_plan'] = $item->refRegularDeliveryPlan->status_regular_delivery_plan;
+            $res['order_no'] = $item->refRegularDeliveryPlan->order_no;
+            $res['cust_item_no'] = $item->refRegularDeliveryPlan->cust_item_no;
+            $res['created_at'] = $item->refRegularDeliveryPlan->created_at;
+            $res['created_by'] = $item->refRegularDeliveryPlan->created_by;
+            $res['updated_at'] = $item->refRegularDeliveryPlan->updated_at;
+            $res['updated_by'] = $item->refRegularDeliveryPlan->updated_by;
+            $res['deleted_at'] = $item->refRegularDeliveryPlan->deleted_at;
+            $res['uuid'] = $item->refRegularDeliveryPlan->uuid;
+            $res['etd_ypmi'] = $item->refRegularDeliveryPlan->etd_ypmi;
+            $res['etd_wh'] = $item->refRegularDeliveryPlan->etd_wh;
+            $res['etd_jkt'] = $item->refRegularDeliveryPlan->etd_jkt;
+            $res['is_inquiry'] = $item->refRegularDeliveryPlan->is_inquiry;
+            $res['id_prospect_container'] = $item->refRegularDeliveryPlan->id_prospect_container;
+            $res['id_prospect_container_creation'] = $item->refRegularDeliveryPlan->id_prospect_container_creation;
+            $res['status_bml'] = $item->refRegularDeliveryPlan->status_bml;
+            $res['cust_name'] = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+            $res['status_desc'] = 'Instock';
+            $res['in_wh'] = $item->qty_pcs_box;
+            $res['box'] = $item->qty_pcs_box.' x 1 pcs';
+
+            return $res;
         });
 
         return [
-            'items' => $data,
+            'items' => $data->items(),
             'last_page' => $data->lastPage()
         ];
     }
