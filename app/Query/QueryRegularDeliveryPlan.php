@@ -963,7 +963,7 @@ class QueryRegularDeliveryPlan extends Model {
                 "etd_jkt" => $check->refRegularDeliveryPlan->etd_jkt,
                 "code_consignee" => $check->refRegularDeliveryPlan->code_consignee,
                 "is_actual" => 0,
-                "qr_key" => count($id) > 1 ? $id[0].'-'.count($id) : $check->id,
+                "qr_key" => $params->data[0]['id'],
             ]);
 
             if($is_trasaction) DB::commit();
