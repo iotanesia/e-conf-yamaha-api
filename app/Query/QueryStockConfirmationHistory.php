@@ -239,7 +239,7 @@ class QueryStockConfirmationHistory extends Model {
                             'status_bml' => $val->refRegularDeliveryPlan->status_bml,
                             'cust_name' => $val->refRegularDeliveryPlan->refConsignee->nick_name,
                             'status_desc' => 'Instock',
-                            'box' => array_sum($sum_qty).' x 1 pcs'
+                            'box' => array_sum($sum_qty).' x 1 '
                         ];
                     }
 
@@ -317,7 +317,7 @@ class QueryStockConfirmationHistory extends Model {
                             'cust_name' => $val->refRegularDeliveryPlan->refConsignee->nick_name,
                             'status_desc' => 'Instock',
                             'in_dc' => $val->qty_pcs_box,
-                            'box' => $val->qty_pcs_box.' x 1 pcs'
+                            'box' => $val->qty_pcs_box.' x 1 '
                         ];
                     }
 
@@ -529,8 +529,8 @@ class QueryStockConfirmationHistory extends Model {
 
         $data->transform(function($item) {
             
+            $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$item->refRegularDeliveryPlan->id)->orderBy('qty_pcs_box','desc')->orderBy('id','asc')->get();
             if ($item->refRegularDeliveryPlan->item_no == null) {
-                $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$item->refRegularDeliveryPlan->id)->orderBy('qty_pcs_box','desc')->orderBy('id','asc')->get();
                 $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
                 $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan',$item->refRegularDeliveryPlan->id)->where('type','OUTSTOCK')->get()->pluck('id_regular_delivery_plan_box');
 
@@ -611,8 +611,8 @@ class QueryStockConfirmationHistory extends Model {
             $res['status_bml'] = $item->refRegularDeliveryPlan->status_bml;
             $res['cust_name'] = $item->refRegularDeliveryPlan->refConsignee->nick_name;
             $res['status_desc'] = 'Instock';
-            $res['in_wh'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh : $item->qty_pcs_box;
-            $res['box'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh.' x 1 pcs' : $item->qty_pcs_box.' x 1 pcs';
+            $res['in_wh'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh : $plan_box[0]->qty_pcs_box;
+            $res['box'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh.' x 1 ' : $plan_box[0]->qty_pcs_box.' x 1 ';
 
             return $res;
         });
