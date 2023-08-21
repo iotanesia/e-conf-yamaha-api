@@ -9,6 +9,7 @@ use App\ApiHelper as Helper;
 use App\Models\MstShipment;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
+use App\Models\RegularDeliveryPlanProspectContainer;
 use App\Models\RegularStokConfirmationTemp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -48,17 +49,33 @@ class QueryStockConfirmationOutstockNote extends Model {
                 ];
             });
 
-            $dataSendDetail = RegularStokConfirmation::select(DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as qty"),DB::raw("string_agg(DISTINCT b.no_packaging::character varying, ',') as no_packing"))
-                        ->whereIn('regular_stock_confirmation.id',$stokTemp->toArray())
-                        ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
-                        ->join('regular_delivery_plan_prospect_container as b','b.id','a.id_prospect_container')
-                        ->join('mst_part as c','c.item_no','a.item_no')
-                        ->groupBy('a.id')
-                        ->get();
+            $dataSendDetail = RegularStokConfirmation::select(
+                DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),
+                DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
+                DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+                DB::raw("string_agg(DISTINCT a.id_prospect_container::character varying, ',') as id_prospect_container"),
+                DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as qty")
+            )
+            ->whereIn('regular_stock_confirmation.id',$stokTemp->toArray())
+            ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
+            ->join('mst_part as c','c.item_no','a.item_no')
+            ->groupBy('a.id')
+            ->get();
+
+            $dataSendDetail->transform(function($item){
+                $prospect = RegularDeliveryPlanProspectContainer::where('id', $item->id_prospect_container)->first();
+                return [
+                    'id_stock_confirmation' => $item->id_stock_confirmation,
+                    'item_no' => $item->item_no,
+                    'order_no' => $item->order_no,
+                    'qty' => $item->qty,
+                    'no_packing' => $prospect == null ? null : $prospect->no_packing
+                ];
+            });
 
             if(isset($dataSend[0])) {
                 $insert = Model::create($dataSend[0]);
-                $insert->manyRegularStockConfirmationOutstockNoteDetail()->createMany(self::getParamDetail($dataSendDetail,$insert));
+                $insert->manyRegularStockConfirmationOutstockNoteDetail()->createMany(self::getParamDetail($dataSendDetail[0],$insert));
             }
             if($is_transaction) DB::commit();
             return ['items'=>$dataSend];
@@ -67,18 +84,18 @@ class QueryStockConfirmationOutstockNote extends Model {
             throw $th;
         }
     }
-    public static function getParamDetail($params,$data) {
-        $res = [];
-        foreach ($params as $value) {
-            $res[] = [
-                'item_no' => $value->item_no,
-                'order_no' => $value->order_no,
-                'qty' => $value->qty,
-                'no_packing' => $value->no_packing,
-                'id_stock_confirmation_outstock_note' => $data->id,
-                'id_stock_confirmation' => $value->id_stock_confirmation
-            ];
-        }
+    
+    public static function getParamDetail($params,$data) 
+    {
+        $res[] = [
+            'item_no' => $params['item_no'],
+            'order_no' => $params['order_no'],
+            'qty' => $params['qty'],
+            'no_packing' => $params['no_packing'],
+            'id_stock_confirmation_outstock_note' => $data->id,
+            'id_stock_confirmation' => $params['id_stock_confirmation']
+        ];
+
         return $res;
     }
 
