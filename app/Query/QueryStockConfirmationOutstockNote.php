@@ -10,6 +10,7 @@ use App\Models\MstShipment;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainer;
+use App\Models\RegularDeliveryPlanProspectContainerCreation;
 use App\Models\RegularStokConfirmationTemp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -28,22 +29,25 @@ class QueryStockConfirmationOutstockNote extends Model {
             $stokTemp = RegularStokConfirmationTemp::where('id', $request->id)->get()->pluck('id_stock_confirmation');
             $stokConfirmation = RegularStokConfirmation::whereIn('id',$stokTemp->toArray())->get();
             $idDeliveryPlan = $stokConfirmation->pluck('id_regular_delivery_plan')->toArray();
-            $deliveryPlan = RegularDeliveryPlan::select(DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as code_consignee"),DB::raw("string_agg(DISTINCT c.name::character varying, ',') as lsp"),DB::raw("string_agg(DISTINCT d.name::character varying, ',') as truck_type"))
+            $deliveryPlan = RegularDeliveryPlan::select(
+                DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as code_consignee"),
+                DB::raw("string_agg(DISTINCT regular_delivery_plan.id_prospect_container_creation::character varying, ',') as id_prospect_container_creation"),
+            )
             ->whereIn('regular_delivery_plan.id',$idDeliveryPlan)
-            ->join('regular_delivery_plan_prospect_container_creation as a','a.id','regular_delivery_plan.id_prospect_container_creation')
             ->join('mst_consignee as b','b.code','regular_delivery_plan.code_consignee')
-            ->join('mst_lsp as c','c.id','a.id_lsp')
-            ->join('mst_type_delivery as d','d.id','a.id_type_delivery')
             ->get();
 
             $dataSend =  $deliveryPlan->transform(function($item) use($lastData,$request,$stokTemp){
+                $creation = RegularDeliveryPlanProspectContainerCreation::where('id', $item->id_prospect_container_creation)->first();
+                $lsp = $creation == null ? null : $creation->refMstLsp->name;
+                $truck = $creation == null ? null : $creation->refMstTypeDelivery->name;
                 return [
                     'shipper'=>MstShipment::where('is_active',Constant::IS_ACTIVE)->first()->shipment ?? null,
-                    'yth'=> $request->yth ?? $item->lsp,
+                    'yth'=> $request->yth ?? $lsp,
                     'consignee'=> $request->username ?? $item->code_consignee,
                     'no_letters'=>Helper::generateCodeLetter($lastData),
                     'delivery_date'=>Carbon::now()->format('Y-m-d'),
-                    'truck_type'=>$item->truck_type,
+                    'truck_type'=>$truck,
                     'truck_no' => $request->truck_no ?? null,
                     'id_stock_confirmation' =>$stokTemp->toArray()[0]
                 ];
@@ -58,7 +62,6 @@ class QueryStockConfirmationOutstockNote extends Model {
             )
             ->whereIn('regular_stock_confirmation.id',$stokTemp->toArray())
             ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
-            ->join('mst_part as c','c.item_no','a.item_no')
             ->groupBy('a.id')
             ->get();
 

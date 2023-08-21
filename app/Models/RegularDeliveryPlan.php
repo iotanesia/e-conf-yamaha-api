@@ -28,6 +28,7 @@ class RegularDeliveryPlan extends Model
         "etd_wh",
         "id_regular_order_entry_upload_detail",
         "id_prospect_container_creation",
+        "id_prospect_container",
         "created_at",
         "created_by",
         "updated_at",
@@ -74,6 +75,11 @@ class RegularDeliveryPlan extends Model
     public function refRegularDeliveryPlanProspectContainer()
     {
         return $this->hasOne(RegularDeliveryPlanProspectContainer::class,'id','id_prospect_container');
+    }
+
+    public function refRegularDeliveryPlanProspectContainerCreation()
+    {
+        return $this->hasOne(RegularDeliveryPlanProspectContainerCreation::class,'id','id_prospect_container_creation');
     }
 
     public function refRegularStockConfirmation()
