@@ -728,7 +728,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item){
 
-                $box = RegularDeliveryPlanBox::with('refBox')->where('id_prospect_container_creation', $item->id)->get()->toArray();
+                $quantity_confirmation = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $item->id_fixed_actual_container)->first();
+                $box = RegularFixedQuantityConfirmationBox::with('refMstBox')->where('id_fixed_quantity_confirmation', $quantity_confirmation->id)->get()->toArray();
 
                 $count_net_weight = 0;
                 $count_gross_weight = 0;
