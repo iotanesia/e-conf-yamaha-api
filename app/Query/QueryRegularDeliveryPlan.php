@@ -1373,7 +1373,7 @@ class QueryRegularDeliveryPlan extends Model {
             if ($shipping_instruction_creation == null) {
                 $insert = RegularDeliveryPlanShippingInsructionCreation::create($params);
                 $prospect_container_creation = RegularDeliveryPlanProspectContainerCreation::query();
-                $update_creation = $prospect_container_creation->where('datasource',$request->datasource)->where('code_consignee',$request->consignee)->where('etd_jkt',$request->etd_jkt)->get();
+                $update_creation = $prospect_container_creation->where('datasource',$request->datasource)->where('code_consignee',$request->code_consignee)->where('etd_jkt',$request->etd_jkt)->get();
                 foreach ($update_creation as $key => $value) {
                     $value->update(['id_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
                 }
