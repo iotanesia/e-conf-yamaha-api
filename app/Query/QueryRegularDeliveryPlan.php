@@ -1533,7 +1533,7 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function downloadDoc($params,$id)
     {
-        // try {
+        try {
             $data = RegularDeliveryPlanShippingInsructionCreation::find($id);
             $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
             $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
@@ -1541,16 +1541,15 @@ class QueryRegularDeliveryPlan extends Model {
             $data->etd_jkt = Carbon::parse($data->etd_jkt)->format('M d, Y');
             $filename = 'shipping-instruction-'.$id.'.pdf';
             $pathToFile = storage_path().'/app/shipping_instruction/'.$filename;
-            // dd($data);
             Pdf::loadView('pdf.shipping_instruction',[
               'data' => $data
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
-        //   } catch (\Throwable $th) {
-        //       return Helper::setErrorResponse($th);
-        //   }
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 
     public static function downloadDocDraft($params,$id)
