@@ -25,9 +25,13 @@ class UserControler extends Controller
 
     public function save(Request $request)
     {
-        return ResponseInterface::responseData(
-            Service::saveData($request)
-        );
+        try {
+            return ResponseInterface::responseData(
+                Service::saveData($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
     }
 
     public function update(Request $request,$id)
