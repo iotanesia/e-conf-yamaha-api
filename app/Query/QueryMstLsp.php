@@ -23,7 +23,7 @@ class QueryMstLsp extends Model {
             $query = Model::select('mst_lsp.code_consignee',
                 DB::raw("string_agg(DISTINCT mst_lsp.id::character varying, ',') as id_lsp"),
                 DB::raw("string_agg(DISTINCT mst_lsp.name::character varying, ',') as name"),
-                DB::raw("string_agg(DISTINCT a.name::character varying, ',') as type_delivery"),
+                DB::raw("string_agg(DISTINCT a.id::character varying, ',') as id_type_delivery"),
                 DB::raw("string_agg(DISTINCT b.code::character varying, ',') as code_consignee"),
                 DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as cust_name")
             )->where(function($query) use($params) {
@@ -39,10 +39,12 @@ class QueryMstLsp extends Model {
             ->paginate($params->limit ?? null);
 
             $data->transform(function ($item) {
+                $typeDelivery = MstTypeDelivery::whereIn('id', explode(',',$item->id_type_delivery))->orderBy('id','asc')->get()->pluck('name');
+                
                 return [
                     'id' => (int)explode(',', $item->id_lsp)[0],
                     'name' => Model::where('code_consignee',$item->code_consignee)->get()->pluck('name'),
-                    'type_delivery' => explode(',',$item->type_delivery),
+                    'type_delivery' => $typeDelivery,
                     'cust_name' => $item->cust_name
                 ];
             });
