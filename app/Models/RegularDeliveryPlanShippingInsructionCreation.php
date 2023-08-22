@@ -79,6 +79,6 @@ class RegularDeliveryPlanShippingInsructionCreation extends Model
 
     public function refMstConsignee()
     {
-        return $this->belongsTo(MstConsignee::class,'consignee','code');
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
     }
 }
