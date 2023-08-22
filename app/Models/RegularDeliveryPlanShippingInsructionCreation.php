@@ -19,7 +19,7 @@ class RegularDeliveryPlanShippingInsructionCreation extends Model
         "instruction_date",
         "si_number",
         "invoice_no",
-        "consignee",
+        "code_consignee",
         "notify_part",
         "information_date",
         "container",
