@@ -95,7 +95,7 @@
                     <br> {{ $data->refMstConsignee->tel }} 
                     <br> {{ $data->refMstConsignee->fax }} 
                 </td>
-                <td style="vertical-align: top;"><u>Notify Party:</u> <br> {{$data->notify_part}}</td>
+                <td style="vertical-align: top;"><u>Notify Part:</u> <br> {{$data->notify_part}}</td>
             </tr>
         </table>
         <br>
@@ -167,8 +167,10 @@
                     <td class="no-bo" colspan="4">Description of Goods :</td>
                 </tr>
                 <tr>
-                    <td class="no-bo" colspan="2">CARTON BOXES &nbsp; &nbsp; {{$data->description_of_goods_2}}</td>
-                    <td class="no-bo" colspan="2">OF PRODUCTION PARTS FOR YAMAHA OUTBOARD MOTORS</td>
+                    <td class="no-bo" colspan="2">{{$data->description_of_goods_1}} {{$data->description_of_goods_1_detail}} &nbsp; &nbsp; {{$data->description_of_goods_2}}</td>
+                    <td class="no-bo" colspan="2">{{$data->description_of_goods_2_detail}}</td>
+                    {{-- <td class="no-bo" colspan="2">CARTON BOXES &nbsp; &nbsp; {{$data->description_of_goods_2}}</td>
+                    <td class="no-bo" colspan="2">OF PRODUCTION PARTS FOR YAMAHA OUTBOARD MOTORS</td> --}}
                 </tr>
                 <tr>
                     <td class="no-bo">Carton Box Qty</td>
