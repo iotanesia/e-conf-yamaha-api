@@ -735,9 +735,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $count_gross_weight = 0;
                 $count_meas = 0;
                 foreach ($box as $box_item){
-                    $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
-                    $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
-                    $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
+                    $count_net_weight += $box_item['ref_mst_box']['unit_weight_kg'];
+                    $count_gross_weight += $box_item['ref_mst_box']['total_gross_weight'];
+                    $count_meas += (($box_item['ref_mst_box']['length'] * $box_item['ref_mst_box']['width'] * $box_item['ref_mst_box']['height']) / 1000000000);
                 }
 
                 $item->cust_name = $item->refMstConsignee->nick_name;
