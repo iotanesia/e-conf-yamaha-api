@@ -115,7 +115,7 @@
                 </tr>
                 <tr>
                     <td class="no-bo">CONTAINER </td>
-                    <td class="no-bo"> : {{$data->container}}</td>
+                    <td class="no-bo"> : {{$data->container_count}} x {{ $data->container_value }}</td>
                     <td width="80" class="no-bo">DO No</td>
                     <td class="no-bo"> : {{$data->do_no}}</td>
                 </tr>
@@ -167,12 +167,12 @@
                     <td class="no-bo" colspan="4">Description of Goods :</td>
                 </tr>
                 <tr>
-                    <td class="no-bo" colspan="2">CARTON BOXES</td>
+                    <td class="no-bo" colspan="2">CARTON BOXES &nbsp; &nbsp; {{$data->description_of_goods_2}}</td>
                     <td class="no-bo" colspan="2">OF PRODUCTION PARTS FOR YAMAHA OUTBOARD MOTORS</td>
                 </tr>
                 <tr>
                     <td class="no-bo">Carton Box Qty</td>
-                    <td class="no-bo"> : {{$data->carton_box_qty}}</td>
+                    <td class="no-bo"> : {{$data->description_of_goods_1}}</td>
                     <td class="no-bo" width="80">Carton Boxes</td>
                     <td class="no-bo"></td>
                     <td class="no-bo"></td>
@@ -196,7 +196,7 @@
                     <td class="no-bo"> : {{round($data->measurement,2)}}</td>
                     <td class="no-bo">Kgs</td>
                     <td class="no-bo">Container//Seal No.//Qty//GW//M3</td>
-                    <td class="no-bo"> : {{$data->container}}</td>
+                    <td class="no-bo"> : {{$data->seal_no}}</td>
                 </tr>
                 <tr>
                     <td class="no-bo">B/L </td>
