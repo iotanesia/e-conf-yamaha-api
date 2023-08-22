@@ -199,8 +199,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
         });
 
+        $uniqueData = $data->unique('item_no');
+
         return [
-            'items' => $data->items(),
+            'items' => $uniqueData->values(),
             'last_page' => $data->lastPage(),
 
         ];
