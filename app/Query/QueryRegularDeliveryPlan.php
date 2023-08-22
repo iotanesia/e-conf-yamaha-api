@@ -1382,11 +1382,11 @@ class QueryRegularDeliveryPlan extends Model {
                     RegularDeliveryPlanShippingInsruction::where('id', $params['id_shipping_instruction'])->update(['status' => 2]);
                 }
 
-                $params['id_shipping_instruction_creation'] = $insert->id;
+                $params['id_regular_delivery_plan_shipping_instruction_creation'] = $insert->id;
                 RegularDeliveryPlanShippingInsructionCreationDraft::create($params);
             } else {
                 $shipping_instruction_creation->update($params);
-                $params['id_shipping_instruction_creation'] = $shipping_instruction_creation->id;
+                $params['id_regular_delivery_plan_shipping_instruction_creation'] = $shipping_instruction_creation->id;
                 RegularDeliveryPlanShippingInsructionCreationDraft::create($params);
             }
             if($is_transaction) DB::commit();

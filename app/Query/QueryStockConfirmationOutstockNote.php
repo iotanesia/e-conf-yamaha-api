@@ -31,7 +31,7 @@ class QueryStockConfirmationOutstockNote extends Model {
             $idDeliveryPlan = $stokConfirmation->pluck('id_regular_delivery_plan')->toArray();
             $deliveryPlan = RegularDeliveryPlan::select(
                 DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as code_consignee"),
-                DB::raw("string_agg(DISTINCT regular_delivery_plan.id_prospect_container_creation::character varying, ',') as id_prospect_container_creation"),
+                DB::raw("string_agg(DISTINCT regular_delivery_plan.id_prospect_container_creation::character varying, ',') as id_prospect_container_creation")
             )
             ->whereIn('regular_delivery_plan.id',$idDeliveryPlan)
             ->join('mst_consignee as b','b.code','regular_delivery_plan.code_consignee')

@@ -94,7 +94,7 @@
         <tr>
             <td class="no-bo">Jenis Truck</td>
             <td class="no-bo">:</td>
-            <td class="no-bo">{{ $data->truck_type }}</td>
+            <td class="no-bo">LCL</td>
             <td class="no-bo"></td>
             <td class="no-bo"></td>
             <td class="no-bo"></td>
