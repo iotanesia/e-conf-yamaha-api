@@ -288,7 +288,7 @@ class QueryRegularFixedShippingInstruction extends Model {
     public static function downloadDoc($request,$id,$filename,$pathToFile)
     {
         try {
-            $data = RegularFixedShippingInstructionCreation::find($id);
+            $data = RegularFixedShippingInstructionCreation::where('id_fixed_shipping_instruction', $id)->first();
             $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
             $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
             $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');

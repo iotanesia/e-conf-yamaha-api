@@ -63,6 +63,7 @@ class RegularFixedShippingInstructionCreation extends Model
         "created_by",
         "updated_at",
         "updated_by",
-        "deleted_at"
+        "deleted_at",
+        "id_fixed_shipping_instruction"
     ];
 }

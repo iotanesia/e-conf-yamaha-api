@@ -1248,6 +1248,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $set_qty[] = $value->qty;
                     $item_no_series[] = $value->refBox->item_no_series;
                 }
+
                 $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
                 $qty_box = [];
                 $sum_qty = [];
@@ -1332,7 +1333,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             Pdf::loadView('pdf.packaging.packaging_doc',[
                 'check' => $deliv_plan->item_no,
-                'set_count' => count($item_no),
+                'set_count' => $deliv_plan->item_no == null ? count($item_no) : 1,
                 'data' => $data,
                 'box' => $box,
                 'count_qty' => $count_qty,
