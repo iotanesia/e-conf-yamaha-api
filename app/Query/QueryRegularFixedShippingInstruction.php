@@ -309,7 +309,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
             }
 
-            Pdf::loadView('pdf.shipping_instruction',[
+            Pdf::loadView('pdf.fixed_shipping_instruction',[
               'data' => $data,
               'actual_container' => $actual_container,
               'box' => $box

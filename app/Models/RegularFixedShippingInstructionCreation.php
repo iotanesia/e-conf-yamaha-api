@@ -66,4 +66,9 @@ class RegularFixedShippingInstructionCreation extends Model
         "deleted_at",
         "id_fixed_shipping_instruction"
     ];
+
+    public function refMstConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'consignee','code');
+    }
 }
