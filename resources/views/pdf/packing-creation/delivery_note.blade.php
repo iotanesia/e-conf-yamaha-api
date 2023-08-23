@@ -70,7 +70,7 @@
             <td class="no-bo" width='5'></td>
             <td class="no-bo text-right" width='100'>
                 User Name, <br>
-                {{ $data->refConsignee->nick_name }}
+                {{ $data->nick_name }}
             </td>
         </tr>
     </table>
@@ -79,9 +79,9 @@
             <td class="no-bo">Surat Jalan No</td>
             <td class="no-bo">:</td>
             <td class="no-bo">{{ $data->no_letters }}</td>
-            <td class="no-bo">Truck No</td>
-            <td class="no-bo">:</td>
-            <td class="no-bo">{{ $data->truck_no }}</td>
+            <td class="no-bo"></td>
+            <td class="no-bo"></td>
+            <td class="no-bo"></td>
         </tr>
         <tr>
             <td class="no-bo">Delivery Date</td>
@@ -109,18 +109,18 @@
                 <th class="text-center"> Item Name</th>
                 <th class="text-center"> Order No </th>
                 <th class="text-center"> Quantity <br> (pcs)</th>
-                <th class="text-center"> No. Packing List</th>
+                <th class="text-center"> No. Invoice</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($data->manyRegularFixedPackingCreationNoteDetail as $item)
+            @foreach ($actual->manyFixedQuantityConfirmation as $item)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}.</td>
                     <td class="text-center">{{ $item->item_no }}</td>
-                    <td class="text-center">{{ $item->refPart->description }}</td>
+                    <td class="text-center">{{ $item->refRegularDeliveryPlan->refPart->description }}</td>
                     <td class="text-center">{{ $item->order_no }}</td>
                     <td class="text-center">{{ $item->qty }}</td>
-                    <td class="text-center">{{ $item->no_packing }}</td>
+                    <td class="text-center">{{ $item->refFixedActualContainer->no_packaging }}</td>
                 </tr>
             @endforeach
         </tbody>

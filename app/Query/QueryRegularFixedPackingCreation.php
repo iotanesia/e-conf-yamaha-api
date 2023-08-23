@@ -225,10 +225,30 @@ class QueryRegularFixedPackingCreation extends Model {
     public static function downloadpackingCreationDeliveryNote($id,$pathToFile,$filename)
     {
         try {
-            $data = RegularFixedPackingCreationNote::where('id_fixed_packing_creation',$id)->first();
+            $actual = RegularFixedActualContainer::find($id);
+
+            $data = RegularFixedActualContainer::
+                    select(DB::raw("string_agg(DISTINCT d.name::character varying, ',') as yth"),
+                                DB::raw("string_agg(DISTINCT e.nick_name::character varying, ',') as username"),
+                                DB::raw("string_agg(DISTINCT g.container_type::character varying, ',') as jenis_truck")
+                    )->where('regular_fixed_actual_container.id',$id)
+                        ->join('regular_fixed_quantity_confirmation as b','b.id_fixed_actual_container','regular_fixed_actual_container.id')
+                        ->join('regular_fixed_actual_container_creation as c','regular_fixed_actual_container.id','c.id_fixed_actual_container')
+                        ->join('mst_lsp as d','d.id','c.id_lsp')
+                        ->join('mst_consignee as e','e.code','c.code_consignee')
+                        ->join('mst_type_delivery as f','f.id','c.id_type_delivery')
+                        ->join('mst_container as g','g.id','c.id_container')
+                        ->first();
+                        
+            $data->no_letters = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first());
+            $data->delivery_date = date('d-m-Y');
+            $data->truck_type = $data->jenis_truck." HC";
+            $data->yth = $data->yth;
+            $data->nick_name = $data->username;
 
             Pdf::loadView('pdf.packing-creation.delivery_note',[
-              'data' => $data
+              'data' => $data,
+              'actual' => $actual,
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
