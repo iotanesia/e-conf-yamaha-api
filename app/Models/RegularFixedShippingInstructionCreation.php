@@ -58,6 +58,8 @@ class RegularFixedShippingInstructionCreation extends Model
         "container_type",
         "description_of_goods_1",
         "description_of_goods_2",
+        "description_of_goods_1_detail",
+        "description_of_goods_2_detail",
         "datasource",
         "created_at",
         "created_by",

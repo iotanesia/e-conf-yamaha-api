@@ -516,7 +516,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'tel_consignee' => $item->tel_consignee,
                     'fax_consignee' => $item->fax_consignee,
                     // 'consignee_address' => $item->consignee_address,
-                    'notify_part_address' => '',
+                    'notify_part' => '',
                     'tel_notify_part' => '',
                     'fax_notify_part' => '',
                     'description_of_goods_1' => '',
