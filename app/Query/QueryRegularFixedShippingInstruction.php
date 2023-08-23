@@ -194,7 +194,13 @@ class QueryRegularFixedShippingInstruction extends Model {
         try {
             $consignee = MstConsignee::where('nick_name',$request->consignee)->first();
             // $request->merge(['consignee'=>json_encode($consignee),'status'=>Constant::DRAFT]);
-            $params = $request->all();
+            $request1 = $request->except(['container_count','container_value','container_type']);
+            $request2 = [
+                            'container_count' => implode(',',$request->container_count),
+                            'container_value' => implode(',',$request->container_value),
+                            'container_type' => implode(',',$request->container_type),
+                        ];
+            $params = array_merge($request1,$request2);
             Helper::requireParams([
                 'to',
                 'cc',
