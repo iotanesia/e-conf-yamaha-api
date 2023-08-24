@@ -340,6 +340,8 @@ class QueryRegularFixedShippingInstruction extends Model {
             $data->approved = MstSignature::where('type', 'APPROVED')->first()->name;
             $data->checked = MstSignature::where('type', 'CHECKED')->first()->name;
             $data->issued = MstSignature::where('type', 'ISSUED')->first()->name;
+            $data->pod = $data->port_of_discharge;
+            $data->pol = $data->port_of_loading;
 
             Pdf::loadView('pdf.shipping_instruction',[
               'data' => $data
