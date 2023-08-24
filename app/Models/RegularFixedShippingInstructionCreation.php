@@ -53,6 +53,7 @@ class RegularFixedShippingInstructionCreation extends Model
         "tel_consignee",
         "fax_consignee",
         "tel_notify_part",
+        "fax_notify_part",
         "seal_no",
         "container_value",
         "container_type",
