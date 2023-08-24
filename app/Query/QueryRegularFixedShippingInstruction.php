@@ -192,7 +192,6 @@ class QueryRegularFixedShippingInstruction extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            $consignee = MstConsignee::where('nick_name',$request->consignee)->first();
             // $request->merge(['consignee'=>json_encode($consignee),'status'=>Constant::DRAFT]);
             $request1 = $request->except(['container_count','container_value','container_type']);
             $request2 = [
@@ -210,9 +209,11 @@ class QueryRegularFixedShippingInstruction extends Model {
 
             if ($fixed_shipping_instruction_creation == null) {
                 $insert = RegularFixedShippingInstructionCreation::create($params);
-                $consignee = MstConsignee::where('nick_name', $request->consignee)->first()->code ?? null;
                 $actual_container_creation = RegularFixedActualContainerCreation::query();
-                $actual_container_creation->where('datasource',$request->datasource)->where('code_consignee',$consignee)->where('etd_jkt',$request->etd_jkt)->update(['id_fixed_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
+                $update_actual = $actual_container_creation->where('datasource',$request->datasource)->where('code_consignee',$request->consignee)->where('etd_jkt',$request->etd_jkt)->get();
+                foreach ($update_actual as $key => $value) {
+                    $value->update(['id_fixed_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
+                }
 
                 if (count($actual_container_creation->where('id_fixed_shipping_instruction', $params['id_fixed_shipping_instruction'])->get()) == count($actual_container_creation->where('id_fixed_shipping_instruction', $params['id_fixed_shipping_instruction'])->where('status', 2)->get())) {
                     RegularFixedShippingInstruction::where('id', $params['id_fixed_shipping_instruction'])->update(['status' => 2]);
