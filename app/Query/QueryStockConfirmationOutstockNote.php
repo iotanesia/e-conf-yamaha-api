@@ -6,11 +6,13 @@ use App\Constants\Constant;
 use App\Models\RegularStokConfirmationOutstockNote AS Model;
 use App\Models\RegularStokConfirmation;
 use App\ApiHelper as Helper;
+use App\Models\MstPart;
 use App\Models\MstShipment;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanProspectContainer;
 use App\Models\RegularDeliveryPlanProspectContainerCreation;
+use App\Models\RegularDeliveryPlanSet;
 use App\Models\RegularStokConfirmationTemp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -107,6 +109,11 @@ class QueryStockConfirmationOutstockNote extends Model {
         try {
             $stokTemp = RegularStokConfirmationTemp::whereIn('id',$request->id)->first();
             $data = Model::whereJsonContains('id_stock_confirmation',[$stokTemp->id_stock_confirmation])->orderBy('id','desc')->first();
+
+            if ($data->manyRegularStockConfirmationOutstockNoteDetail[0]->item_no == null) {
+                $data->item_no = RegularDeliveryPlanSet::where('id_delivery_plan', $stokTemp->id_regular_delivery_plan)->pluck('item_no');
+                $data->description = MstPart::whereIn('item_no', $data->item_no)->pluck('description');
+            }
 
             Pdf::loadView('pdf.stock-confirmation.outstock.delivery_note',[
               'data' => $data

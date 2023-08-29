@@ -116,8 +116,24 @@
             @foreach ($data->manyRegularStockConfirmationOutstockNoteDetail as $item)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}.</td>
-                    <td class="text-center">{{ $item->item_no }}</td>
-                    <td class="text-center">{{ $item->refMstPart->description }}</td>
+                    <td class="text-center">
+                        @if ($item->item_no == null)
+                            @foreach ($data->item_no as $item_no)
+                                {{ $item_no }} <br>
+                            @endforeach
+                        @else
+                            {{ $item->item_no }}
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        @if ($item->item_no == null)
+                            @foreach ($data->description as $description)
+                                {{ $description }} <br>
+                            @endforeach
+                        @else
+                            {{ $item->refMstPart->description}}
+                        @endif
+                    </td>
                     <td class="text-center">{{ $item->order_no }}</td>
                     <td class="text-center">{{ $item->qty }}</td>
                     <td class="text-center">{{ $item->no_packing }}</td>
