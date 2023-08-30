@@ -118,7 +118,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
                         ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
                         ->leftJoin('mst_box as b','a.item_no','b.item_no')
-                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box')
+                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box','a.order_no')
                         ->paginate($params->limit ?? null);
         } else {
             $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan',
