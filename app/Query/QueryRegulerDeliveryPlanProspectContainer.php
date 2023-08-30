@@ -179,7 +179,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 }
             }
 
-            $box_result = self::getCountBox($item->id_delivery_plan, $item->id_prospect_container_creation);
+            $box_result = self::getCountBox((int)$item->id_delivery_plan, $item->id_prospect_container_creation);
             if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
 
             $qty_result = explode(',',$item->qty);
