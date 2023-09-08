@@ -116,6 +116,8 @@ class QueryRegularOrderEntryUploadDetail extends Model {
               }
                 
                 $set["id"] = $item->id;
+                $set["id_box"] = $item_no_series->id;
+                $set["no_box"] = $item_no_series->no_box;
                 $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
                 $set["code_consignee"] = $item->code_consignee;
                 $set["cust_name"] = $custname;
