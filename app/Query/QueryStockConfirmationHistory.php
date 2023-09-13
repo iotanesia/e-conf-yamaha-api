@@ -105,7 +105,7 @@ class QueryStockConfirmationHistory extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
 
-            if (explode('-',$id) > 1) {
+            if (count(explode('-',$id)) > 1) {
                 $id_box = explode('-',$id)[0];
                 $total_item = explode('-',$id)[1];
 
