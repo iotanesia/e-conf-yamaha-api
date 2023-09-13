@@ -584,7 +584,7 @@ class QueryStockConfirmationHistory extends Model {
                 $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
             }
             
-            $res['id'] = $item->id;
+            $res['id'] = $item->qr_key;
             $res['id_regular_delivery_plan'] = $item->refRegularDeliveryPlan->id;
             $res['id_regular_order_entry'] = $item->refRegularDeliveryPlan->id_regular_order_entry;
             $res['code_consignee'] = $item->refRegularDeliveryPlan->code_consignee;
