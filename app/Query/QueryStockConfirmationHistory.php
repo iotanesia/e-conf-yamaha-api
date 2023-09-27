@@ -45,9 +45,6 @@ class QueryStockConfirmationHistory extends Model {
                                 ->orderBy('qty_pcs_perbox', 'desc')
                                 ->orderBy('id_regular_delivery_plan_box','asc')
                                 ->get();
-
-                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $id)->first();
-                $stokTemp->delete();
                 
                 foreach ($stock as $key => $val) {
                     if ($val->id_regular_delivery_plan_box === (int)$id_box) {
@@ -83,9 +80,6 @@ class QueryStockConfirmationHistory extends Model {
                 $stock = Model::where('id_regular_delivery_plan_box',$qty->id)->where('type',Constant::INSTOCK)->first();
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$qty->id_regular_delivery_plan)->first();
 
-                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $qty->id)->first();
-                $stokTemp->delete();
-
                 $update->update([
                     'production' => $update->production + $update->in_dc,
                     'in_dc' => $update->in_dc - $qty->qty_pcs_box,
@@ -116,9 +110,6 @@ class QueryStockConfirmationHistory extends Model {
                                 ->orderBy('qty_pcs_perbox', 'desc')
                                 ->orderBy('id_regular_delivery_plan_box','asc')
                                 ->get();
-
-                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $id)->first();
-                $stokTemp->delete();
                 
                 foreach ($stock as $key => $val) {
                     if ($val->id_regular_delivery_plan_box === (int)$id_box) {
@@ -159,9 +150,6 @@ class QueryStockConfirmationHistory extends Model {
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
                 $fix = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
                 $fix == null ? null : $fix->delete();
-
-                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $box->id)->first();
-                $stokTemp->delete();
 
                 $update->update([
                     'production' => $update->production + $update->in_wh,
