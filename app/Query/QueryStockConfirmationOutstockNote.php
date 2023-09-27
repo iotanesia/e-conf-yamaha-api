@@ -28,7 +28,7 @@ class QueryStockConfirmationOutstockNote extends Model {
         try {
             $lastData = Model::latest()->first();
             Helper::generateCodeLetter($lastData);
-            $stokTemp = RegularStokConfirmationTemp::where('id', $request->id)->get()->pluck('id_stock_confirmation');
+            $stokTemp = RegularStokConfirmationTemp::where('qr_key', $request->id)->get()->pluck('id_stock_confirmation');
             $stokConfirmation = RegularStokConfirmation::whereIn('id',$stokTemp->toArray())->get();
             $idDeliveryPlan = $stokConfirmation->pluck('id_regular_delivery_plan')->toArray();
             $deliveryPlan = RegularDeliveryPlan::select(
@@ -107,7 +107,7 @@ class QueryStockConfirmationOutstockNote extends Model {
     public static function downloadOutStockNote($request,$pathToFile,$filename)
     {
         try {
-            $stokTemp = RegularStokConfirmationTemp::whereIn('id',$request->id)->first();
+            $stokTemp = RegularStokConfirmationTemp::whereIn('qr_key',$request->id)->first();
             $data = Model::whereJsonContains('id_stock_confirmation',[$stokTemp->id_stock_confirmation])->orderBy('id','desc')->first();
 
             if ($data->manyRegularStockConfirmationOutstockNoteDetail[0]->item_no == null) {
