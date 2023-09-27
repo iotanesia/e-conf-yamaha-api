@@ -38,11 +38,27 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
                 $query->where('is_actual',Constant::IS_NOL);
                 $category = $params->category ?? null;
-                if($category) {
-                    if($category == 'cust_name'){
-                        $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->kueri)->get();
+                $kueri = $params->kueri ?? null;
+            
+                if ($category && $kueri) {
+                    if ($category == 'cust_name') {
+                        $query->orWhereHas('refConsignee', function ($q) use ($kueri) {
+                            $q->where('nick_name', 'like', '%' . $kueri . '%');
+                        });
+                    } elseif ($category == 'item_name') {
+                        $query->orWhereHas('refRegularDeliveryPlan.refPart', function ($q) use ($kueri) {
+                            $q->where('description', 'like', '%' . $kueri . '%');
+                        });
+                    } elseif ($category == 'item_no') {
+                        $query->orWhereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                            $q->where('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%');
+                        });
                     } else {
-                        $query->where($category, 'ilike', $params->kueri);
+                        $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                            ->orWhere('order_no', 'like', '%' . $kueri . '%')
+                            ->orWhere('cust_item_no', 'like', '%' . $kueri . '%')
+                            ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                            ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
                     }
                 }
 
@@ -279,11 +295,18 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     public static function getActualContainer($params) {
         $data = RegularFixedActualContainer::where(function ($query) use ($params){
             $category = $params->category ?? null;
-            if($category) {
-                if($category == 'cust_name'){
-                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+            $kueri = $params->kueri ?? null;
+        
+            if ($category && $kueri) {
+                if ($category == 'cust_name') {
+                    $query->orWhereHas('refConsignee', function ($q) use ($kueri) {
+                        $q->where('nick_name', 'like', '%' . $kueri . '%');
+                    });
                 } else {
-                    $query->where($category, 'ilike', $params->value);
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                        ->orWhere('no_packaging', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
                 }
             }
 
@@ -1087,11 +1110,18 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     {
         $data = RegularFixedActualContainer::where(function ($query) use ($params){
             $category = $params->category ?? null;
-            if($category) {
-                if($category == 'cust_name'){
-                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+            $kueri = $params->kueri ?? null;
+        
+            if ($category && $kueri) {
+                if ($category == 'cust_name') {
+                    $query->orWhereHas('refConsignee', function ($q) use ($kueri) {
+                        $q->where('nick_name', 'like', '%' . $kueri . '%');
+                    });
                 } else {
-                    $query->where($category, 'ilike', $params->value);
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                        ->orWhere('no_packaging', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
                 }
             }
 

@@ -34,7 +34,7 @@ class QueryStockConfirmationHistory extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            if (explode('-',$id) > 1) {
+            if (count(explode('-',$id)) > 1) {
                 $id_box = explode('-',$id)[0];
                 $total_item = explode('-',$id)[1];
 
@@ -642,7 +642,39 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function tracking($request)
     {
-        $data = RegularStokConfirmation::paginate($request->limit ?? null);
+        $data = RegularStokConfirmation::where(function ($query) use ($request) {
+            $category = $request->category ?? null;
+            $kueri = $request->kueri ?? null;
+        
+            if ($category && $kueri) {
+                if ($category == 'cust_name') {
+                    $query->orWhereHas('refConsignee', function ($q) use ($kueri) {
+                        $q->where('nick_name', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'item_name') {
+                    $query->orWhereHas('refRegularDeliveryPlan.refPart', function ($q) use ($kueri) {
+                        $q->where('description', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'item_no') {
+                    $query->orWhereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                        $q->where('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%');
+                    });
+                } elseif ($category == 'order_no') {
+                    $query->orWhereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                        $q->where('order_no', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'cust_item_no') {
+                    $query->orWhereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                        $q->where('cust_item_no', 'like', '%' . $kueri . '%');
+                    });
+                } else {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                }
+            }
+        })->paginate($request->limit ?? null);
+        
 
         if(!$data) throw new \Exception("Data not found", 400);
 
@@ -1335,7 +1367,7 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function outstockDeliveryNote($request)
     {
-        $stokTemp = RegularStokConfirmationTemp::where('id', $request->id_stock_confirmation)->get();
+        $stokTemp = RegularStokConfirmationTemp::whereIn('qr_key', $request->id_stock_confirmation)->get();
         $id_stock_confirmation = [];
         foreach ($stokTemp as $key => $value) {
             $id_stock_confirmation[] = $value->id_stock_confirmation;

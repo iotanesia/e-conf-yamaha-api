@@ -33,13 +33,20 @@ class QueryRegularFixedShippingInstruction extends Model {
     {
         $data = Model::where(function ($query) use ($params){
             $category = $params->category ?? null;
-            if($category) {
-                if($category == 'cust_name'){
-                    $consignee = MstConsignee::where('nick_name', $params->value)->first()->code ?? null;
-                    $query->with('refFixedActualContainerCreation')->whereRelation('refFixedActualContainerCreation', 'code_consignee', $consignee)->get();
-
+            $kueri = $params->kueri ?? null;
+        
+            if ($category && $kueri) {
+                if ($category == 'cust_name') {
+                    $query->orWhereHas('refFixedActualContainerCreation.refMstConsignee', function ($q) use ($kueri) {
+                        $q->where('nick_name', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'packaging_no') {
+                    $query->orWhereHas('refFixedActualContainerCreation.refFixedActualContainer', function ($q) use ($kueri) {
+                        $q->where('no_packaging', 'like', '%' . $kueri . '%');
+                    });
                 } else {
-                    $query->where($category, 'ilike', $params->value);
+                    $query->where('booking_date', 'like', '%' . $kueri . '%')
+                        ->orWhere('no_booking', 'like', '%' . $kueri . '%');
                 }
             }
 

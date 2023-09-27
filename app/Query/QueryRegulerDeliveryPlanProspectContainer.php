@@ -114,10 +114,26 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
                         DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
                         DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
-                        DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"))
-                        ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
+                        DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"),
+                        DB::raw("string_agg(DISTINCT c.nick_name::character varying, ',') as cust_name"),
+                        DB::raw("string_agg(DISTINCT d.description::character varying, ',') as item_name"))
+                        ->where(function($query) use($params) {
+                            $query->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id);
+
+                            if($params->kueri) $query->where('c.nick_name',"like", "%$params->kueri%")
+                                                    ->orWhere('a.cust_item_no',"like", "%$params->kueri%")
+                                                    ->orWhere('a.item_no',"like", '%' . str_replace('-', '', $params->kueri) . '%')
+                                                    ->orWhere('d.description',"like", "%$params->kueri%")
+                                                    ->orWhere('a.etd_ypmi',"like", "%$params->kueri%")
+                                                    ->orWhere('a.etd_jkt',"like", "%$params->kueri%")
+                                                    ->orWhere('a.etd_wh',"like", "%$params->kueri%")
+                                                    ->orWhere('a.qty',"like", "%$params->kueri%")
+                                                    ->orWhere('a.order_no',"like", "%$params->kueri%");
+                        })
                         ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
                         ->leftJoin('mst_box as b','a.item_no','b.item_no')
+                        ->leftJoin('mst_consignee as c','c.code','a.code_consignee')
+                        ->leftJoin('mst_part as d','d.code_consignee','c.code')
                         ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box','a.order_no')
                         ->paginate($params->limit ?? null);
         } else {
@@ -131,11 +147,26 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
                         DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
                         DB::raw("string_agg(DISTINCT b.qty::character varying, ',') as qty"),
-                        DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no")
+                        DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no"),
+                        DB::raw("string_agg(DISTINCT c.nick_name::character varying, ',') as cust_name"),
+                        DB::raw("string_agg(DISTINCT d.description::character varying, ',') as item_name")
                         )
-                        ->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id)
+                        ->where(function($query) use($params) {
+                            $query->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id);
+
+                            if($params->kueri) $query->where('c.nick_name',"like", "%$params->kueri%")
+                                                    ->orWhere('a.cust_item_no',"like", "%$params->kueri%")
+                                                    ->orWhere('b.item_no',"like", '%' . str_replace('-', '', $params->kueri) . '%')
+                                                    ->orWhere('d.description',"like", "%$params->kueri%")
+                                                    ->orWhere('a.etd_ypmi',"like", "%$params->kueri%")
+                                                    ->orWhere('a.etd_jkt',"like", "%$params->kueri%")
+                                                    ->orWhere('a.etd_wh',"like", "%$params->kueri%")
+                                                    ->orWhere('a.order_no',"like", "%$params->kueri%");
+                        })
                         ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
                         ->leftJoin('regular_delivery_plan_set as b','b.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
+                        ->leftJoin('mst_consignee as c','c.code','a.code_consignee')
+                        ->leftJoin('mst_part as d','d.code_consignee','c.code')
                         ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan')
                         ->paginate($params->limit ?? null);
         }
@@ -444,6 +475,26 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     public static function detail($params)
     {
         $data = RegularDeliveryPlanProspectContainerCreation::whereIn('id_prospect_container',$params->id)
+            ->where(function($query) use($params) {
+                $category = $params->category ?? null;
+                $kueri = $params->kueri ?? null;
+            
+                if ($category && $kueri) {
+                    if ($category == 'cust_name') {
+                        $query->orWhereHas('refMstConsignee', function ($q) use ($kueri) {
+                            $q->where('nick_name', 'like', '%' . $kueri . '%');
+                        });
+                    } elseif ($category == 'logistic_service_provider') {
+                        $query->orWhereHas('refMstLsp', function ($q) use ($kueri) {
+                            $q->where('name', 'like', '%' . $kueri . '%');
+                        });
+                    } else {
+                        $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                            ->orWhere('summary_box', 'like', '%' . $kueri . '%')
+                            ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                    }
+                }
+            })
             ->orderBy('iteration', 'asc')
             ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);

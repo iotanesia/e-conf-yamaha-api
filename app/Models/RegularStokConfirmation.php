@@ -42,4 +42,9 @@ class RegularStokConfirmation extends Model
     {
         return $this->hasMany(RegularDeliveryPlanBox::class,'id_regular_delivery_plan','id_regular_delivery_plan')->orderBy('id','asc');
     }
+
+    public function refConsignee()
+    {
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
 }

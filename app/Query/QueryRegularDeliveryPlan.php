@@ -162,11 +162,25 @@ class QueryRegularDeliveryPlan extends Model {
         $query = self::where('id_regular_order_entry',$id_regular_order_entry)
         ->where(function ($query) use ($params){
             $category = $params->category ?? null;
-            if($category) {
-                if($category == 'cust_name'){
-                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+            $kueri = $params->kueri ?? null;
+        
+            if ($category && $kueri) {
+                if ($category == 'cust_name') {
+                    $query->orWhereHas('refConsignee', function ($q) use ($kueri) {
+                        $q->where('nick_name', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'item_name') {
+                    $query->orWhereHas('refPart', function ($q) use ($kueri) {
+                        $q->where('description', 'like', '%' . $kueri . '%');
+                    });
                 } else {
-                    $query->where($category, 'ilike', $params->value);
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                        ->orWhere('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%')
+                        ->orWhere('order_no', 'like', '%' . $kueri . '%')
+                        ->orWhere('cust_item_no', 'like', '%' . $kueri . '%')
+                        ->orWhere('qty', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
                 }
             }
 
@@ -1164,8 +1178,15 @@ class QueryRegularDeliveryPlan extends Model {
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.datasource::character varying, ',') as datasource")
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_shipping_instruction_creation::character varying, ',') as id_shipping_instruction_creation")
             , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.etd_wh::character varying, ',') as etd_wh")
-            , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.etd_ypmi::character varying, ',') as etd_ypmi"))
+            , DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.etd_ypmi::character varying, ',') as etd_ypmi")
+            , DB::raw("string_agg(DISTINCT a.nick_name::character varying, ',') as cust_name"))
             ->where('regular_delivery_plan_prospect_container_creation.id_shipping_instruction', $id)
+            ->where(function($query) use($params) {
+                if($params->kueri) $query->where('regular_delivery_plan_prospect_container_creation.etd_jkt',"like", "%$params->kueri%")
+                                        ->orWhere('regular_delivery_plan_prospect_container_creation.etd_wh',"like", "%$params->kueri%")
+                                        ->orWhere('a.nick_name',"like", "%$params->kueri%");
+            })
+            ->leftJoin('mst_consignee as a','a.code','regular_delivery_plan_prospect_container_creation.code_consignee')
             ->groupBy('regular_delivery_plan_prospect_container_creation.code_consignee', 'regular_delivery_plan_prospect_container_creation.etd_jkt')
             ->paginate($params->limit ?? null);
 
@@ -1535,8 +1556,8 @@ class QueryRegularDeliveryPlan extends Model {
     {
         try {
             $data = RegularDeliveryPlanShippingInsructionCreation::find($id);
-            $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('D, M d, Y');
-            $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
+            $data->instruction_date = Carbon::parse($data->instruction_date)->subDay(2)->format('l, F d, Y');
+            $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('l, F d, Y');
             $data->eta_destination = Carbon::parse($data->eta_destination)->format('M d, Y');
             $data->etd_jkt = Carbon::parse($data->etd_jkt)->format('M d, Y');
             $filename = 'shipping-instruction-'.$id.'.pdf';

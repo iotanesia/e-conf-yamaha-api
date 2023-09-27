@@ -33,6 +33,24 @@ class QueryCategoryFilter extends Model {
             ];
     }
 
+    public static function getActualContainer()
+    {
+        $data = Model::select('value', 'label')
+            ->where('module', 'Actual Container')
+            ->get(10);
+
+            return [
+                'items' => $data,
+                'last_page' => null,
+                'attributes' => [
+                    'total' => count($data),
+                    'current_page' => null,
+                    'from' => null,
+                    'per_page' => null,
+                ]
+            ];
+    }
+
     public static function getPart()
     {
         $data = Model::select('value', 'label')

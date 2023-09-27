@@ -25,6 +25,17 @@ class CategoryFilterController extends Controller
         }
     }
 
+    public function getActualContainer()
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryCategoryFilter::getActualContainer()
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function getPart()
     {
         try {

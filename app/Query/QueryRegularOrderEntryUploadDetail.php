@@ -30,25 +30,25 @@ class QueryRegularOrderEntryUploadDetail extends Model {
           $category = $params->category ?? null;
             if($category) {
                 if($category == 'cust_name'){
-                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->kueri)->get();
-                } else {
-                    $query->where($category, 'ilike', $params->kueri);
+                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', 'like', "%".$params->kueri."%")->get();
+                } elseif ($category == 'item_name') {
+                    $query->with('refMstPart')->whereRelation('refMstPart', 'description', 'like', "%".str_replace('%20',' ',$params->kueri)."%")->get();
+                } 
+                else {
+                  $query->where('item_no', 'like', "%".str_replace('-','',$params->kueri)."%")
+                        ->orWhere('qty', 'like', "%$params->kueri%")
+                        ->orWhere('order_no', 'like', "%$params->kueri%")
+                        ->orWhere('etd_jkt', 'like', "%$params->kueri%")
+                        ->orWhere('etd_ypmi', 'like', "%$params->kueri%")
+                        ->orWhere('etd_wh', 'like', "%$params->kueri%")
+                        ->orWhere('cust_item_no', 'like', "%$params->kueri%");
                 }
             }
 
            $filterdate = Helper::filterDate($params);
            if($params->date_start || $params->date_finish) $query->whereBetween('etd_jkt',$filterdate);
 
-           if($params->search) $query->where('code_consignee', 'like', "'%$params->search%'")
-                        ->orWhere('model', 'like', "'%$params->search%'")
-                        ->orWhere('item_no', 'like', "'%$params->search%'")
-                        ->orWhere('disburse', 'like', "'%$params->search%'")
-                        ->orWhere('delivery', 'like', "'%$params->search%'")
-                        ->orWhere('qty', 'like', "'%$params->search%'")
-                        ->orWhere('status', 'like', "'%$params->search%'")
-                        ->orWhere('order_no', 'like', "'%$params->search%'")
-                        ->orWhere('cust_item_no', 'like', "'%$params->search%'");
-            });
+        });
 
         if($params->withTrashed == 'true') $query->withTrashed();
         if($params->dropdown == Constant::IS_ACTIVE) {

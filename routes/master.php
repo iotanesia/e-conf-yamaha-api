@@ -150,6 +150,7 @@ Route::prefix('v1/master')
     Route::group(['prefix' => 'filter'],function (){
         Route::group(['prefix' => 'plan'],function (){
             Route::get('/prospect-container',[CategoryFilterController::class,'getProspectContainer']);
+            Route::get('/actual-container',[CategoryFilterController::class,'getActualContainer']);
             Route::get('/part',[CategoryFilterController::class,'getPart']);
             Route::get('/inquiry',[CategoryFilterController::class,'getInquiry']);
         });

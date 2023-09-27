@@ -32,7 +32,7 @@ class MstPart extends Model
 
     public function refConsignee()
     {
-        return $this->belongsTo(MstConsignee::class,'id_consignee','id');
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
     }
 
     public function refGrooupProduct()
