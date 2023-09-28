@@ -230,7 +230,7 @@
             </table>
             <table>
                 <table style="border: 1px solid #000; border-top:hidden;">
-                    <table style="padding-right: 570px">
+                    <table style="padding-right: 570px"> 
                         @foreach ($actual_container as $key => $item)
                             @foreach ($box as $jml => $box_jml)
                                 @foreach ($box[$jml] as $box_item)
