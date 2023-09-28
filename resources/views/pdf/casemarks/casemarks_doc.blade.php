@@ -3,9 +3,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <style>
         body {
-            margin-top: 5px;
-            margin-left: 26px;
-            font-size: 9pt;
             font-size: 9pt;
         /* font-family: 'Times New Roman', Times, serif; */
         font-family: Arial, Helvetica, sans-serif;
@@ -67,40 +64,74 @@
     @if ($check == null) {{-- part set --}}
         @foreach ($box as $jml => $box_item)
             @for ($i=1; $i<=2; $i++)
-                <table style="margin-top: 30px; padding:50px;">
+                <table style="margin-top:35px;">
                     <tr>
-                        <td class="text-center" style="font-size: 30px; font-weight: 500; vertical-align=top;">
-                            YAMAHA <br>
-                            {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
-                            {{ $item->manyFixedQuantityConfirmation[0]->cust_item_no ?? null }} <br>
-                            {{ $item->refPartOfDischarge->port ?? null }} <br>
-                            MADE IN INDONESIA <br>
-                            INV.No. {{ $item->no_packaging }} <br>
-                            C/No. : {{ $jml+1 }}
+                        <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top;">
+                            <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->cust_item_no ?? null }}</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge->port ?? null }}</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $jml+1 }}</b></p>
                         </td>
-                        <td class="text-center" style="font-size: 20px; font-weight: 500; vertical-align=top;">
-                            CUSTOMER : <br>
-                            {{ $item->refConsignee->nick_name }}
+                        <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
+                            <p style="padding:0; margin: 0 0 10px 0;"><b>CUSTOMER :</b></p>
+                            <b>{{ $item->refConsignee->nick_name }}</b>
                             <hr>
-                            PART NO. <br>
+                            <p style="padding:0; margin: 0 0 10px 0;"><b>PART NO.</b></p>
                             @foreach ($box_item['item_no_series'] as $item_no_series)
-                            {{ substr($item_no_series,0,-3) }} <br>
+                            <b>{{ substr($item_no_series,0,-3) }}</b> <br>
                             @endforeach
                             <hr>
                             <table>
                                 <tr>
-                                    <td class="no-bl no-bt no-bb text-center">QTY</td>
-                                    <td class="no-br no-bt no-bb text-center">GW</td>
+                                    <td class="no-bl no-bt no-bb text-center"><b>QTY</b></td>
+                                    <td class="no-br no-bt no-bb text-center"><b>GW</b></td>
                                 </tr>
                                 <tr>
-                                    <td class="no-bl text-center">{{ $box_item['qty_pcs_box'][$jml] ?? null }}</td>
-                                    <td class="no-br text-center">{{ round($box_item['total_gross_weight'],1) }}</td>
+                                    <td class="no-bl text-center"><b>{{ $box_item['qty_pcs_box'][$jml] ?? null }}</b></td>
+                                    <td class="no-br text-center"><b>{{ round($box_item['total_gross_weight'],1) }}</b></td>
                                 </tr>
                                 <tr>
-                                    <td class="no-bl no-bb text-center">PCS</td>
-                                    <td class="no-br no-bb text-center">KG</td>
+                                    <td class="no-bl no-bb text-center"><b>SET</b></td>
+                                    <td class="no-br no-bb text-center"><b>KG</b></td>
                                 </tr>
                             </table>
+                        </td>
+                    </tr>
+                </table>
+            @endfor
+        @endforeach
+    @elseif ($item->refConsignee->nick_name == 'YMC') {{-- YMC --}}
+        @foreach ($box as $jml => $box_item)
+            @for ($i=1; $i<=2; $i++)
+                <table style="margin-top:35px;">
+                    <tr>
+                        <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top;">
+                            <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}</b></p>  
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->cust_item_no ?? null }}</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge->port ?? null }}</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $jml+1 }}</b></p>
+                        </td>
+                        <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
+                            <p style="text-align: left; padding:0; margin:0 0 15px 0; font-weight:400;"><b><u>PART NO. :</u></b></p>
+                            <p style="text-align: left; padding:0; margin:0 0 35px 0; font-size: 40px;"><b>{{ substr($box_item['ref_box']['item_no_series'],0,-3) }}</b></p>
+                            <table>
+                                <tr>
+                                    <td class="no-bl no-bt no-bb" style="font-weight:400;"><b><u>QTY :</u></b></td>
+                                    <td class="no-br no-bt no-bb" style="font-weight:400;"><b><u>GW :</u></b></td>
+                                </tr>
+                                <tr>
+                                    <td class="no-bl text-center"><p style="font-size: 28px;"><b>{{ $box_item['qty_pcs_box'] ?? null }} PCS</b></p></td>
+                                    <td class="no-br text-center"><p style="font-size: 28px;"><b>{{ round($box_item['ref_box']['total_gross_weight'],1) }} KG</b></p></td>
+                                </tr>
+                            </table>
+                            <p style="margin:15px 0 0 0; padding:0; font-weight:400;"><b><u>CUSTOMER :</u></b></p>
+                            <p style="font-size: 40px;"><b>{{ $item->refConsignee->nick_name }}</b></p>
                         </td>
                     </tr>
                 </table>
@@ -109,39 +140,39 @@
     @elseif (substr($box[0]['ref_box']['item_no_series'],13,2) !== 00) {{-- wheel cast --}}
         @foreach ($box as $jml => $box_item)
             @for ($i=1; $i<=2; $i++)
-                <table style="margin-top: 0px; padding:50px;">
+                <table style="margin-top:35px;">
                     <tr>
-                        <td class="text-center" style="font-size: 30px; font-weight: 500; vertical-align=top;">
-                            YAMAHA <br>
-                            {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
-                            {{ $item->manyFixedQuantityConfirmation[0]->cust_item_no ?? null }} <br>
-                            {{ $item->refPartOfDischarge->port ?? null }} <br>
-                            MADE IN INDONESIA <br>
-                            INV.No. {{ $item->no_packaging }} <br>
-                            C/No. : {{ $jml+1 }}
+                        <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top;" width="420px">
+                            <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}</b></p>  
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->cust_item_no ?? null }}</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge->port ?? null }}</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $jml+1 }}</b></p>
                         </td>
-                        <td class="text-center" style="font-size: 20px; font-weight: 500; vertical-align=top;">
-                            <p style="text-align: left; padding-bottom:0; margin:0;"><u>PART NAME. :</u></p> 
-                            <p style="text-align: left; padding-bottom:0; margin:0;">{{ $box_item['ref_box']['ref_part']['description'] }}</p>
+                        <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
+                            <p style="text-align: left; padding:0; margin:0 0 15px 0;"><b><u>PART NAME. :</u></b></p> 
+                            <p style="text-align: left; padding:0; margin:0 0 0 0;"><b>{{ $box_item['ref_box']['ref_part']['description'] }}</b></p>
                             <br> 
-                            <p style="text-align: left; padding-bottom:0; margin:0;"><u>PART NO.</u></p>
-                            <p style="text-align: left; padding-bottom:0; margin:0;">{{ substr($box_item['ref_box']['item_no_series'],0,-3) }}</p>
+                            <p style="text-align: left; padding:0; margin:0 0 15px 0;"><b><u>PART NO.</u></b></p>
+                            <p style="text-align: left; padding:0; margin:0 0 15px 0;"><b>{{ substr($box_item['ref_box']['item_no_series'],0,-3) }}</b></p>
                             <hr>
-                            <u>CUSTOMER :</u> <br>
-                            {{ $item->refConsignee->nick_name }}
+                            <p style="margin:0 0 5px 0; padding:0; font-weight:400; font-size:20px;"><b><u>CUSTOMER :</u></b></p>
+                            <b>{{ $item->refConsignee->nick_name }}</b>
                             <hr>
                             <table>
                                 <tr>
-                                    <td class="no-bl no-bt no-bb text-center">QTY</td>
-                                    <td class="no-br no-bt no-bb text-center">GW</td>
+                                    <td class="no-bl no-bt no-bb text-center"><b>QTY</b></td>
+                                    <td class="no-br no-bt no-bb text-center"><b>GW</b></td>
                                 </tr>
                                 <tr>
-                                    <td class="no-bl text-center">{{ $box_item['qty_pcs_box'] ?? null }}</td>
-                                    <td class="no-br text-center">{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
+                                    <td class="no-bl text-center"><b>{{ $box_item['qty_pcs_box'] ?? null }}</b></td>
+                                    <td class="no-br text-center"><b>{{ round($box_item['ref_box']['total_gross_weight'],1) }}</b></td>
                                 </tr>
                                 <tr>
-                                    <td class="no-bl no-bb text-center">PCS</td>
-                                    <td class="no-br no-bb text-center">KG</td>
+                                    <td class="no-bl no-bb text-center"><b>PCS</b></td>
+                                    <td class="no-br no-bb text-center"><b>KG</b></td>
                                 </tr>
                             </table>
                         </td>
@@ -152,36 +183,36 @@
     @else
         @foreach ($box as $jml => $box_item)
             @for ($i=1; $i<=2; $i++)
-                <table style="margin-top: 30px; padding:50px;">
+                <table style="margin-top:35px;">
                     <tr>
-                        <td class="text-center" style="font-size: 30px; font-weight: 500; vertical-align=top;">
-                            YAMAHA <br>
-                            {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
-                            {{ $item->manyFixedQuantityConfirmation[0]->cust_item_no ?? null }} <br>
-                            {{ $item->refPartOfDischarge->port ?? null }} <br>
-                            MADE IN INDONESIA <br>
-                            INV.No. {{ $item->no_packaging }} <br>
-                            C/No. : {{ $jml+1 }}
+                        <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top;" width="420px">
+                            <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}</b></p>  
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->cust_item_no ?? null }}</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge->port ?? null }}</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p> 
+                            <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $jml+1 }}</b></p>
                         </td>
-                        <td class="text-center" style="font-size: 20px; font-weight: 500; vertical-align=top;">
-                            CUSTOMER : <br>
-                            {{ $item->refConsignee->nick_name }}
+                        <td class="text-center" style="font-size: 30px; font-weight: 500; vertical-align=top;">
+                            <p style="padding:0; margin:0 0 15px 0;"><b>CUSTOMER :</b></p> 
+                            <p style="padding:0; margin:0 0 15px 0;"><b>{{ $item->refConsignee->nick_name }}</b></p> 
                             <hr>
-                            PART NO. <br>
-                            {{ substr($box_item['ref_box']['item_no_series'],0,-3) }}
+                            <p style="padding:0; margin:0 0 15px 0;"><b>PART NO.</b></p> 
+                            <p style="padding:0; margin:0 0 15px 0;"><b>{{ substr($box_item['ref_box']['item_no_series'],0,-3) }}</b></p> 
                             <hr>
                             <table>
                                 <tr>
-                                    <td class="no-bl no-bt no-bb text-center">QTY</td>
-                                    <td class="no-br no-bt no-bb text-center">GW</td>
+                                    <td class="no-bl no-bt no-bb text-center"><b>QTY</b></td>
+                                    <td class="no-br no-bt no-bb text-center"><b>GW</b></td>
                                 </tr>
                                 <tr>
-                                    <td class="no-bl text-center">{{ $box_item['qty_pcs_box'] ?? null }}</td>
-                                    <td class="no-br text-center">{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
+                                    <td class="no-bl text-center"><b>{{ $box_item['qty_pcs_box'] ?? null }}</b></td>
+                                    <td class="no-br text-center"><b>{{ round($box_item['ref_box']['total_gross_weight'],1) }}</b></td>
                                 </tr>
                                 <tr>
-                                    <td class="no-bl no-bb text-center">PCS</td>
-                                    <td class="no-br no-bb text-center">KG</td>
+                                    <td class="no-bl no-bb text-center"><b>PCS</b></td>
+                                    <td class="no-br no-bb text-center"><b>KG</b></td>
                                 </tr>
                             </table>
                         </td>
