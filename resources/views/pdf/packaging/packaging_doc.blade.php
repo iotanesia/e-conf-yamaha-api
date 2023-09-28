@@ -3,9 +3,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <style>
         body {
-            margin-top: 5px;
-            margin-left: 26px;
-            font-size: 9pt;
             font-size: 9pt;
         /* font-family: 'Times New Roman', Times, serif; */
         font-family: Arial, Helvetica, sans-serif;
@@ -114,7 +111,6 @@
                 </tr>
                 
                     <tr>
-                        {{-- rowspan mengikuti jumlah baris  --}}
                         <td class="text-center" style="vertical-align: top;" rowspan="{{ (count($box) * $set_count) + 1 }}" width="140">
                             YAMAHA <br>
                             {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
@@ -135,8 +131,25 @@
                 @foreach ($box as $key => $box_item)
                     @for ($i = 0; $i < count($box_item['item_no_series']); $i++)
                         <tr>
+                            {{-- @if ($key == 0 && $i == 0)
+                            <td class="text-center no-bb" style="vertical-align: top;" width="140">
+                                YAMAHA <br>
+                                {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
+                                999999-9999 <br>
+                                {{ $item->refPartOfDischarge->port ?? null }} <br>
+                                MADE IN INDONESIA <br>
+                                INV. No. {{ $item->no_packaging }} <br>
+                                C/No. : 1 - {{ count($box) }}
+                            </td>
+                            @else
+                                @if ($loop->last && $i == count($box_item['item_no_series']) - 1)
+                                    <td></td>
+                                @else
+                                    <td class="no-bb"></td>
+                                @endif
+                            @endif --}}
                             @if ($i % 2 == 0)
-                                <td style='border-top:0px; padding-bottom:5px;' class='text-center' rowspan="{{ count($box_item['item_no_series']) }}">{{ $key+1 }}</td>
+                                <td style='border-top:0px; padding-bottom:5px;' class='text-center' rowspan="{{ $check == null ? (count($box_item['item_no_series']) / 2) : count($box_item['item_no_series']) }}">{{ $key+1 }}</td>
                             @endif
                             <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
                             <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'][$i] }}</td>

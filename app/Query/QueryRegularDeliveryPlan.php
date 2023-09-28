@@ -166,11 +166,11 @@ class QueryRegularDeliveryPlan extends Model {
         
             if ($category && $kueri) {
                 if ($category == 'cust_name') {
-                    $query->orWhereHas('refConsignee', function ($q) use ($kueri) {
+                    $query->whereHas('refConsignee', function ($q) use ($kueri) {
                         $q->where('nick_name', 'like', '%' . $kueri . '%');
                     });
                 } elseif ($category == 'item_name') {
-                    $query->orWhereHas('refPart', function ($q) use ($kueri) {
+                    $query->whereHas('refPart', function ($q) use ($kueri) {
                         $q->where('description', 'like', '%' . $kueri . '%');
                     });
                 } else {

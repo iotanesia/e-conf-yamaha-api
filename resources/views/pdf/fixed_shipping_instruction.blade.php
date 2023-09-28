@@ -3,9 +3,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <style>
         body {
-            margin-top: 5px;
-            margin-left: 26px;
-            font-size: 9pt;
             font-size: 9pt;
         /* font-family: 'Times New Roman', Times, serif; */
         font-family: Arial, Helvetica, sans-serif;
@@ -57,35 +54,35 @@
 <body>
         <table>
             <tr>
-                <td class="text-center no-bo" style="font-size: 14px;" colspan="4"><b>SHIPPING INSTRUCTION</b> <br> <p style="font-size: 12px;">PT Yamaha Motor Parts Manufacturing Indonesia</p></td>
+                <td class="text-center no-bo" style="font-size: 20px;" colspan="4"><b>SHIPPING INSTRUCTION</b> <br> <p style="font-size: 12px; padding: 0; margin: 0;">PT Yamaha Motor Parts Manufacturing Indonesia</p></td>
             </tr>
             <tr>
-                <td class="no-bo" width="10">To:</td>
-                <td class="no-bo" width="100">{{$data->to}}</td>
-                <td class="no-bo" width="10">CC</td>
-                <td class="no-bo" width="100">{{$data->cc}}</td>
+                <td class="no-bo" style="padding: 0; margin: 0;" width="10">To:</td>
+                <td class="no-bo" style="padding: 0; margin: 0;" width="100">{{$data->to}}</td>
+                <td class="no-bo" style="padding: 0; margin: 0;" width="10">CC</td>
+                <td class="no-bo" style="padding: 0; margin: 0;" width="100">{{$data->cc}}</td>
             </tr>
             <tr>
-                <td class="no-bo">Attn:</td>
-                <td class="no-bo">{{$data->attn_to}}</td>
-                <td class="no-bo">Attn</td>
-                <td class="no-bo">{{$data->attn_cc}}</td>
+                <td class="no-bo" style="padding: 0; margin: 0;">Attn:</td>
+                <td class="no-bo" style="padding: 0; margin: 0;">{{$data->attn_to}}</td>
+                <td class="no-bo" style="padding: 0; margin: 0;">Attn</td>
+                <td class="no-bo" style="padding: 0; margin: 0;">{{$data->attn_cc}}</td>
             </tr>
         </table>
         
-        <table>
+        <table style="margin-top: 15px;">
             <tr>
                 <td style="padding: 3px;" class="no-bo">Please arrange our Shipment as per below Details</td>
-                <td style="padding: 3px;" class="no-bo text-right">Date : {{$data->instruction_date}}</td>
+                <td style="padding: 3px;" class="no-bo text-right">Date : <b>{{$data->instruction_date}}</b></td>
             </tr>
         </table>
         <table>
             <tr>
-                <td rowspan="2" width="240"><u>Shipper :</u> <br> {{$data->shipper}}</td>
-                <td><u>Si Number :</u> <br> {{$data->si_number}}</td>
+                <td style="vertical-align: top;" rowspan="2" width="240"><u>Shipper :</u> <br> {{$data->shipper}}</td>
+                <td style="vertical-align: top;"><u>Si Number :</u> <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;{{$data->si_number}}</td>
             </tr>
             <tr>
-                <td><u>Invoice No :</u> <br> {{$data->invoice_no}}</td>
+                <td style="vertical-align: top;"><u>Invoice No :</u> <br> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;{{$data->invoice_no}}</td>
             </tr>
             <tr>
                 <td style="vertical-align: top;"><u>Consignee:</u> 
@@ -98,115 +95,173 @@
                 <td style="vertical-align: top;"><u>Notify Part:</u> <br> {{$data->notify_part}}</td>
             </tr>
         </table>
-        <br>
-        <table>
+        <table class="no-bt no-bb">
             <tr>
-                <td class="no-bo"><b><i><u>SHIPMENT INFORMATION</u></i></b></td>
-                <td class="no-bo"></td>
+                <td>
+                    <b><i><u>SHIPMENT INFORMATION</u></i></b>
+                </td>
             </tr>
-            <table>
-                <tr>
-                    <td width="80" class="no-bo">Stuffing Date </td>
-                    <td class="no-bo" colspan="2"> : {{$data->etd_wh}}</td>
-                </tr>
-                <tr>
-                    <td class="no-bo">Shipped By </td>
-                    <td class="no-bo" colspan="2"> : {{$data->shipped_by}}</td>
-                </tr>
-                <tr>
-                    <td class="no-bo">CONTAINER </td>
-                    <td class="no-bo"> : {{$data->container_count}} x {{ $data->container_value }}</td>
-                    <td width="80" class="no-bo">DO No</td>
-                    <td class="no-bo"> : {{$data->do_no}}</td>
-                </tr>
-                </br>
-                <tr>
-                    <td class="no-bo">Port of Loading </td>
-                    <td class="no-bo"> : {{$data->port_of_loading}}</td>
-                    <td class="no-bo">Feeder Vessel</td>
-                    <td class="no-bo"> : {{$data->feeder_vessel}}</td>
-                </tr>
-                <tr>
-                    <td class="no-bo">Via </td>
-                    <td class="no-bo"> : {{$data->via}}</td>
-                    <td class="no-bo">Connecting Vessel</td>
-                    <td class="no-bo"> : {{$data->connecting_vessel}}</td>
-                </tr>
-                <tr>
-                    <td class="no-bo">Port of Destination </td>
-                    <td class="no-bo"> : {{$data->port_of_discharge}}</td>
-                    <td class="no-bo"></td>
-                    <td class="no-bo"></td>
-                </tr>
-                <tr>
-                    <td class="no-bo"></td>
-                    <td class="no-bo"></td>
-                    <td class="no-bo">ETD Jakarta</td>
-                    <td class="no-bo"> : {{$data->etd_jkt}}</td>
-                </tr>
-                <tr>
-                    <td class="no-bo">Freight Charge</td>
-                    <td class="no-bo"> : {{$data->freight_charge}}</td>
-                    <td class="no-bo"></td>
-                    <td class="no-bo"></td>
-                </tr>
-                <tr>
-                    <td class="no-bo">Incoterm</td>
-                    <td class="no-bo"> : {{$data->incoterm}}</td>
-                    <td class="no-bo">ETA Destination</td>
-                    <td class="no-bo"> : {{$data->eta_destination}}</td>
-                </tr>
+        </table>
+        <table>
+            <table style="border: 1px solid #000; border-top:hidden;">
+                <table>
+                    <tr>
+                        <td width="80" class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Stuffing Date </td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" colspan="2"> : <b>{{$data->etd_wh}}</b></td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Shipped By </td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" colspan="2"> : {{$data->shipped_by}}</td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">CONTAINER </td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->container_count}} x {{ $data->container_value }}</td>
+                        <td width="80" class="no-bo" style="padding: 0 0 0 5px; margin: 0;">DO No</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->do_no}}</td>
+                    </tr>
+                    </br>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Port of Loading </td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->pol}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Feeder Vessel</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->feeder_vessel}}</td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Via </td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->via}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Connecting Vessel</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->connecting_vessel}}</td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Port of Destination </td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->pod}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">ETD Jakarta</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->etd_jkt}}</td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Freight Charge</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->freight_charge}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Incoterm</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->incoterm}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">ETA Destination</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->eta_destination}}</td>
+                    </tr>
+    
+                </table>
+            </table>
+            
+            <table style="border: 1px solid #000; border-top:hidden; border-bottom:hidden;">
+                <table>
+                    <tr>
+                        <td class="no-bo" colspan="4"><i><b><u>BL Information</u></b></i></td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" colspan="4">Description of Goods :</td>
+                    </tr>
+                </table>
+            </table>
 
+            <table style="border: 1px solid #000; border-top:hidden; border-bottom:hidden;">
+                <table>
+                    <tr>
+                        <td class="no-bo" colspan="2"><b>{{$data->description_of_goods_1}} {{$data->description_of_goods_1_detail}}</b> &nbsp; &nbsp; <b>{{$data->description_of_goods_2}}</b></td>
+                        <td class="no-bo" colspan="2"><b>{{$data->description_of_goods_2_detail}}</b></td>
+                        {{-- <td class="no-bo" colspan="2">CARTON BOXES &nbsp; &nbsp; {{$data->description_of_goods_2}}</td>
+                        <td class="no-bo" colspan="2">OF PRODUCTION PARTS FOR YAMAHA OUTBOARD MOTORS</td> --}}
+                    </tr>
+                </table>
             </table>
-            </br>
+
+            <table style="border: 1px solid #000; border-top:hidden;">
+                <table>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Carton Box Qty</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->description_of_goods_1}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="80">Carton Boxes</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Net Weight</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{round($data->net_weight,2)}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Kgs</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">PEB No.</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->peb}}</td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Gross Weight </td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{round($data->gross_weight,2)}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Kgs</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">NOPEN</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->no_open}}</td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Measurement </td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{round($data->measurement,2)}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Kgs</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Container//Seal No.//Qty//GW//M3</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->seal_no}}</td>
+                    </tr>
+                    <tr>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">B/L </td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" colspan="2"> : {{$data->bl}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">HS CODE</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->hs_code}}</td>
+                    </tr>
+                </table>
+            </table>
+
+            <table class="no-bt no-bb">
+                <tr>
+                    <td>
+                        <b>CASE MARKS</b>
+                    </td>
+                </tr>
+            </table>
             <table>
-                <tr>
-                    <td class="no-bo" colspan="4"><i><b><u>BL Information</u></b></i></td>
-                </tr>
-                <tr>
-                    <td class="no-bo" colspan="4">Description of Goods :</td>
-                </tr>
-                <tr>
-                    <td class="no-bo" colspan="2">{{$data->description_of_goods_1}} {{$data->description_of_goods_1_detail}} &nbsp; &nbsp; {{$data->description_of_goods_2}}</td>
-                    <td class="no-bo" colspan="2">{{$data->description_of_goods_2_detail}}</td>
-                    {{-- <td class="no-bo" colspan="2">CARTON BOXES &nbsp; &nbsp; {{$data->description_of_goods_2}}</td>
-                    <td class="no-bo" colspan="2">OF PRODUCTION PARTS FOR YAMAHA OUTBOARD MOTORS</td> --}}
-                </tr>
-                <tr>
-                    <td class="no-bo">Carton Box Qty</td>
-                    <td class="no-bo"> : {{$data->description_of_goods_1}}</td>
-                    <td class="no-bo" width="80">Carton Boxes</td>
-                    <td class="no-bo"></td>
-                    <td class="no-bo"></td>
-                </tr>
-                <tr>
-                    <td class="no-bo">Net Weight</td>
-                    <td class="no-bo"> : {{round($data->net_weight,2)}}</td>
-                    <td class="no-bo">Kgs</td>
-                    <td class="no-bo">PEB No.</td>
-                    <td class="no-bo"> : {{$data->peb}}</td>
-                </tr>
-                <tr>
-                    <td class="no-bo">Gross Weight </td>
-                    <td class="no-bo"> : {{round($data->gross_weight,2)}}</td>
-                    <td class="no-bo">Kgs</td>
-                    <td class="no-bo">NOPEN</td>
-                    <td class="no-bo"> : {{$data->no_open}}</td>
-                </tr>
-                <tr>
-                    <td class="no-bo">Measurement </td>
-                    <td class="no-bo"> : {{round($data->measurement,2)}}</td>
-                    <td class="no-bo">Kgs</td>
-                    <td class="no-bo">Container//Seal No.//Qty//GW//M3</td>
-                    <td class="no-bo"> : {{$data->seal_no}}</td>
-                </tr>
-                <tr>
-                    <td class="no-bo">B/L </td>
-                    <td class="no-bo" colspan="2"> : {{$data->bl}}</td>
-                    <td class="no-bo">HS CODE</td>
-                    <td class="no-bo"> : {{$data->hs_code}}</td>
-                </tr>
-            </table>
+                <table style="border: 1px solid #000; border-top:hidden;">
+                    <table style="padding-right: 570px">
+                        @foreach ($actual_container as $key => $item)
+                            @foreach ($box as $jml => $box_jml)
+                                @foreach ($box[$jml] as $box_item)
+                                    <tr>
+                                        <td width="80" class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">999999-9999</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->refPartOfDischarge->port ?? null }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $item->no_packaging }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $loop->iteration }}</td>
+                                    </tr>
+                                @endforeach
+                            @endforeach
+                        @endforeach 
+                        <br>
+                    </table>
+                </table>
+            
             {{-- <table>
                 <tr>
                     <td>CASE MARKS</td>

@@ -37,11 +37,11 @@ class QueryRegularFixedShippingInstruction extends Model {
         
             if ($category && $kueri) {
                 if ($category == 'cust_name') {
-                    $query->orWhereHas('refFixedActualContainerCreation.refMstConsignee', function ($q) use ($kueri) {
+                    $query->whereHas('refFixedActualContainerCreation.refMstConsignee', function ($q) use ($kueri) {
                         $q->where('nick_name', 'like', '%' . $kueri . '%');
                     });
                 } elseif ($category == 'packaging_no') {
-                    $query->orWhereHas('refFixedActualContainerCreation.refFixedActualContainer', function ($q) use ($kueri) {
+                    $query->whereHas('refFixedActualContainerCreation.refFixedActualContainer', function ($q) use ($kueri) {
                         $q->where('no_packaging', 'like', '%' . $kueri . '%');
                     });
                 } else {

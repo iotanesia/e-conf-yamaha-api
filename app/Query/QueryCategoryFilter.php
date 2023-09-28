@@ -87,6 +87,24 @@ class QueryCategoryFilter extends Model {
         ];
     }
 
+    public static function getTracking()
+    {
+        $data = Model::select('value', 'label')
+            ->where('module', 'Tracking')
+            ->get(10);
+
+        return [
+            'items' => $data,
+            'last_page' => null,
+            'attributes' => [
+                'total' => count($data),
+                'current_page' => null,
+                'from' => null,
+                'per_page' => null,
+            ]
+        ];
+    }
+
     public static function byId($id)
     {
         return self::find($id);

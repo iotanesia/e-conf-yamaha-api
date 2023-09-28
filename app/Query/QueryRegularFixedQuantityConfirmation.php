@@ -42,15 +42,15 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             
                 if ($category && $kueri) {
                     if ($category == 'cust_name') {
-                        $query->orWhereHas('refConsignee', function ($q) use ($kueri) {
+                        $query->whereHas('refConsignee', function ($q) use ($kueri) {
                             $q->where('nick_name', 'like', '%' . $kueri . '%');
                         });
                     } elseif ($category == 'item_name') {
-                        $query->orWhereHas('refRegularDeliveryPlan.refPart', function ($q) use ($kueri) {
+                        $query->whereHas('refRegularDeliveryPlan.refPart', function ($q) use ($kueri) {
                             $q->where('description', 'like', '%' . $kueri . '%');
                         });
                     } elseif ($category == 'item_no') {
-                        $query->orWhereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                        $query->whereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
                             $q->where('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%');
                         });
                     } else {
@@ -299,7 +299,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         
             if ($category && $kueri) {
                 if ($category == 'cust_name') {
-                    $query->orWhereHas('refConsignee', function ($q) use ($kueri) {
+                    $query->whereHas('refConsignee', function ($q) use ($kueri) {
                         $q->where('nick_name', 'like', '%' . $kueri . '%');
                     });
                 } else {
@@ -1114,7 +1114,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         
             if ($category && $kueri) {
                 if ($category == 'cust_name') {
-                    $query->orWhereHas('refConsignee', function ($q) use ($kueri) {
+                    $query->whereHas('refConsignee', function ($q) use ($kueri) {
                         $q->where('nick_name', 'like', '%' . $kueri . '%');
                     });
                 } else {

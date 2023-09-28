@@ -481,11 +481,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             
                 if ($category && $kueri) {
                     if ($category == 'cust_name') {
-                        $query->orWhereHas('refMstConsignee', function ($q) use ($kueri) {
+                        $query->whereHas('refMstConsignee', function ($q) use ($kueri) {
                             $q->where('nick_name', 'like', '%' . $kueri . '%');
                         });
                     } elseif ($category == 'logistic_service_provider') {
-                        $query->orWhereHas('refMstLsp', function ($q) use ($kueri) {
+                        $query->whereHas('refMstLsp', function ($q) use ($kueri) {
                             $q->where('name', 'like', '%' . $kueri . '%');
                         });
                     } else {

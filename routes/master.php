@@ -153,6 +153,7 @@ Route::prefix('v1/master')
             Route::get('/actual-container',[CategoryFilterController::class,'getActualContainer']);
             Route::get('/part',[CategoryFilterController::class,'getPart']);
             Route::get('/inquiry',[CategoryFilterController::class,'getInquiry']);
+            Route::get('/tracking',[CategoryFilterController::class,'getTracking']);
         });
     });
 

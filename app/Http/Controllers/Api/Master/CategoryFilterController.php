@@ -57,4 +57,15 @@ class CategoryFilterController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function getTracking()
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryCategoryFilter::getTracking()
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }
