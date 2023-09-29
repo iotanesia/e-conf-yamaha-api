@@ -1151,7 +1151,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     public static function printCasemarks($request,$id,$pathToFile,$filename)
     {
-        // try {
+        try {
             $data = RegularFixedActualContainer::where('id', $id)->get();
             $deliv_plan = RegularDeliveryPlan::find($data[0]->manyFixedQuantityConfirmation[0]->id_regular_delivery_plan);
 
@@ -1234,9 +1234,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->setPaper('A4','potrait')
             ->download($filename);
 
-        // } catch (\Throwable $th) {
-        //     return Helper::setErrorResponse($th);
-        // }
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
+        }
     }
 
     public static function printPackaging($request,$id,$pathToFile,$filename)
