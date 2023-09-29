@@ -221,8 +221,16 @@
                     <td class="text-center"> Meas. <br> (M3) </td>
                 </tr>
                 
-                    <tr>
-                        {{-- rowspan mengikuti jumlah baris  --}}
+                <p class="flying-text text-center">
+                    YAMAHA <br>
+                    {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
+                    999999-9999 <br>
+                    {{ $item->refPartOfDischarge->port ?? null }} <br>
+                    MADE IN INDONESIA <br>
+                    INV. No. {{ $item->no_packaging }} <br>
+                    C/No. : 1 - {{ count($box) }}
+                </p>
+                    {{-- <tr>
                         <td class="text-center" style="vertical-align: top;" rowspan="{{ count($box) + 1 }}" width="140">
                             YAMAHA <br>
                             {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
@@ -238,15 +246,20 @@
                         <td style="padding:0px; border-bottom:0px;"></td>
                         <td style="padding:0px; border-bottom:0px;"></td>
                         <td style="padding:0px; border-bottom:0px;"></td>
-                    </tr>
+                    </tr> --}}
                 @foreach ($box as $key => $box_item)
                     <tr>
-                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $key+1 }}</td>
-                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $box_item['ref_box']['item_no_series'] }}</td>
-                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'] ?? null }}</td>
-                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['unit_weight_kg'],1) }}</td>
-                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
-                        <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ round((($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000),3) }}</td>
+                        @if ($loop->last)
+                            <td></td>
+                        @else
+                            <td class="no-bb no-bt"></td>
+                        @endif
+                        <td style='padding-bottom:5px;' class='text-center'>{{ $key+1 }}</td>
+                        <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['ref_box']['item_no_series'] }}</td>
+                        <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'] ?? null }}</td>
+                        <td style='padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['unit_weight_kg'],1) }}</td>
+                        <td style='padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
+                        <td style='padding-bottom:5px;' class='text-center'>{{ round((($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000),3) }}</td>
                     </tr>
                 @endforeach
                 

@@ -151,6 +151,7 @@ Route::prefix('v1/master')
         Route::group(['prefix' => 'plan'],function (){
             Route::get('/prospect-container',[CategoryFilterController::class,'getProspectContainer']);
             Route::get('/actual-container',[CategoryFilterController::class,'getActualContainer']);
+            Route::get('/shipping-planing',[CategoryFilterController::class,'getShippingPlaning']);
             Route::get('/part',[CategoryFilterController::class,'getPart']);
             Route::get('/inquiry',[CategoryFilterController::class,'getInquiry']);
             Route::get('/tracking',[CategoryFilterController::class,'getTracking']);

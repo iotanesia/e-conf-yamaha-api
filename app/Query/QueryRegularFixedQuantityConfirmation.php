@@ -315,7 +315,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
 
         })
-        ->where('is_actual', $params->is_actual ?? 0)
+        // ->where('is_actual', $params->is_actual ?? 0)
             ->paginate($params->limit ?? null);
 
         $data->map(function ($item){

@@ -45,6 +45,9 @@ class QueryStockConfirmationHistory extends Model {
                                 ->orderBy('qty_pcs_perbox', 'desc')
                                 ->orderBy('id_regular_delivery_plan_box','asc')
                                 ->get();
+
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $id)->first();
+                $stokTemp->update(['is_reject' => 1]);
                 
                 foreach ($stock as $key => $val) {
                     if ($val->id_regular_delivery_plan_box === (int)$id_box) {
@@ -80,6 +83,9 @@ class QueryStockConfirmationHistory extends Model {
                 $stock = Model::where('id_regular_delivery_plan_box',$qty->id)->where('type',Constant::INSTOCK)->first();
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$qty->id_regular_delivery_plan)->first();
 
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $qty->id)->first();
+                $stokTemp->update(['is_reject' => 1]);
+
                 $update->update([
                     'production' => $update->production + $update->in_dc,
                     'in_dc' => $update->in_dc - $qty->qty_pcs_box,
@@ -110,6 +116,9 @@ class QueryStockConfirmationHistory extends Model {
                                 ->orderBy('qty_pcs_perbox', 'desc')
                                 ->orderBy('id_regular_delivery_plan_box','asc')
                                 ->get();
+
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $id)->first();
+                $stokTemp->update(['is_reject' => 1]);
                 
                 foreach ($stock as $key => $val) {
                     if ($val->id_regular_delivery_plan_box === (int)$id_box) {
@@ -150,6 +159,9 @@ class QueryStockConfirmationHistory extends Model {
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
                 $fix = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
                 $fix == null ? null : $fix->delete();
+
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $box->id)->first();
+                $stokTemp->update(['is_reject' => 1]);
 
                 $update->update([
                     'production' => $update->production + $update->in_wh,
@@ -345,7 +357,39 @@ class QueryStockConfirmationHistory extends Model {
     public static function getOutStock($request)
     {
         // $data = RegularStokConfirmation::where('status_outstock','=',2)->where('in_wh','>',0)->paginate($request->limit ?? null);
-        $data = RegularStokConfirmationTemp::where('status_outstock','=',2)->where('in_wh','>',0)->paginate($request->limit ?? null);
+        $data = RegularStokConfirmationTemp::where(function ($query) use ($request) {
+            $category = $request->category ?? null;
+            $kueri = $request->kueri ?? null;
+        
+            if ($category && $kueri) {
+                if ($category == 'cust_name') {
+                    $query->whereHas('refRegularDeliveryPlan.refConsignee', function ($q) use ($kueri) {
+                        $q->where('nick_name', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'item_name') {
+                    $query->whereHas('refRegularDeliveryPlan.refPart', function ($q) use ($kueri) {
+                        $q->where('description', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'item_no') {
+                    $query->whereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                        $q->where('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%');
+                    });
+                } elseif ($category == 'order_no') {
+                    $query->whereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                        $q->where('order_no', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'cust_item_no') {
+                    $query->whereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                        $q->where('cust_item_no', 'like', '%' . $kueri . '%');
+                    });
+                } else {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                }
+            }
+        })->where('status_outstock','=',2)->where('in_wh','>',0)->where('is_reject', null)->paginate($request->limit ?? null);
+
         if(!$data) throw new \Exception("Data not found", 400);
         
         // $result = [];
@@ -955,7 +999,7 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->save();
 
                 $stokTemp = RegularStokConfirmationTemp::where('qr_key', $params->id)->first();
-                $stokTemp->update(['status_instock' => 2]);
+                $stokTemp->update(['status_instock' => 2,'is_reject' => null]);
 
                 for ($i=0; $i < $total_item; $i++) { 
                     self::create([
@@ -987,7 +1031,7 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->save();
 
                 $stokTemp = RegularStokConfirmationTemp::where('qr_key', $delivery_plan_box->id)->first();
-                $stokTemp->update(['status_instock' => 2]);
+                $stokTemp->update(['status_instock' => 2,'is_reject' => null]);
 
                 self::create([
                     'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
@@ -1075,7 +1119,7 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->save();
 
                 $stokTemp = RegularStokConfirmationTemp::where('qr_key', $params->id)->first();
-                $stokTemp->update(['status_outstock' => 2]);
+                $stokTemp->update(['status_outstock' => 2,'is_reject' => null]);
 
                 for ($i=0; $i < $total_item; $i++) { 
                     self::create([
@@ -1111,7 +1155,7 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->save();
 
                 $stokTemp = RegularStokConfirmationTemp::where('qr_key', $delivery_plan_box->id)->first();
-                $stokTemp->update(['status_outstock' => 2]);
+                $stokTemp->update(['status_outstock' => 2,'is_reject' => null]);
 
                 self::create([
                     'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,

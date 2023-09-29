@@ -129,8 +129,8 @@ class QueryRegularFixedPackingCreation extends Model {
                             ->first();
 
         $ret['yth'] = $fixed_packing_creation->yth;
-        $ret['username'] = $fixed_packing_creation->username;
-        $ret['jenis_truck'] = $fixed_packing_creation->jenis_truck." HC";
+        $ret['username'] = $data->refConsignee->name;
+        $ret['jenis_truck'] = "LCL";
         $ret['surat_jalan'] = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first());
         $ret['delivery_date'] = date('d-m-Y');
         $ret['shipped'] = MstShipment::Where('is_active', 1)->first()->shipment ?? null;

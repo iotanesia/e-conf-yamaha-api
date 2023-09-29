@@ -33,6 +33,7 @@ class RegularStokConfirmationTemp extends Model
         "is_actual",
         "qty",
         "qr_key",
+        "is_reject",
     ];
 
     public function refRegularDeliveryPlan()

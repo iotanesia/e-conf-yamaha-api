@@ -36,6 +36,17 @@ class CategoryFilterController extends Controller
         }
     }
 
+    public function getShippingPlaning()
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryCategoryFilter::getShippingPlaning()
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function getPart()
     {
         try {
