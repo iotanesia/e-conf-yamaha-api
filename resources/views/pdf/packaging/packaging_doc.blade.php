@@ -51,6 +51,12 @@
         tr:nth-child(2) td.first-row{
             color: red;
         }
+        .flying-text {
+            position: absolute;
+            left: 25px;
+            top: 230px;
+            z-index: -1;
+        }
     </style>
 </head>
 
@@ -110,7 +116,16 @@
                     <td class="text-center"> Meas. <br> (M3) </td>
                 </tr>
                 
-                    <tr>
+                <p class="flying-text text-center">
+                    YAMAHA <br>
+                    {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
+                    999999-9999 <br>
+                    {{ $item->refPartOfDischarge->port ?? null }} <br>
+                    MADE IN INDONESIA <br>
+                    INV. No. {{ $item->no_packaging }} <br>
+                    C/No. : 1 - {{ count($box) }}
+                </p>
+                    {{-- <tr>
                         <td class="text-center" style="vertical-align: top;" rowspan="{{ (count($box) * $set_count) + 1 }}" width="140">
                             YAMAHA <br>
                             {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
@@ -126,36 +141,24 @@
                         <td style="padding:0px; border-bottom:0px;"></td>
                         <td style="padding:0px; border-bottom:0px;"></td>
                         <td style="padding:0px; border-bottom:0px;"></td>
-                    </tr>
+                    </tr> --}}
                 
                 @foreach ($box as $key => $box_item)
                     @for ($i = 0; $i < count($box_item['item_no_series']); $i++)
                         <tr>
-                            {{-- @if ($key == 0 && $i == 0)
-                            <td class="text-center no-bb" style="vertical-align: top;" width="140">
-                                YAMAHA <br>
-                                {{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}  <br>
-                                999999-9999 <br>
-                                {{ $item->refPartOfDischarge->port ?? null }} <br>
-                                MADE IN INDONESIA <br>
-                                INV. No. {{ $item->no_packaging }} <br>
-                                C/No. : 1 - {{ count($box) }}
-                            </td>
+                            @if ($loop->last && $i == count($box_item['item_no_series']) -1)
+                                <td></td>
                             @else
-                                @if ($loop->last && $i == count($box_item['item_no_series']) - 1)
-                                    <td></td>
-                                @else
-                                    <td class="no-bb"></td>
-                                @endif
-                            @endif --}}
-                            @if ($i % 2 == 0)
-                                <td style='border-top:0px; padding-bottom:5px;' class='text-center' rowspan="{{ $check == null ? (count($box_item['item_no_series']) / 2) : count($box_item['item_no_series']) }}">{{ $key+1 }}</td>
+                                <td class="no-bb no-bt"></td>
                             @endif
-                            <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
-                            <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'][$i] }}</td>
-                            <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ round($box_item['unit_weight_kg'][$i],1) }}</td>
-                            <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 ? round($box_item['total_gross_weight'],1) : null }}</td>
-                            <td style='border-top:0px; padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 ? round((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000),3) : null }}</td>
+                            @if ($i % 2 == 0)
+                                <td style='padding-bottom:5px;' class='text-center' rowspan="{{ $check == null ? (count($box_item['item_no_series']) / 2) : count($box_item['item_no_series']) }}">{{ $key+1 }}</td>
+                            @endif
+                            <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'][$i] }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ round($box_item['unit_weight_kg'][$i],1) }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 ? round($box_item['total_gross_weight'],1) : null }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 ? round((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000),3) : null }}</td>
                         </tr>
                     @endfor
                 @endforeach
