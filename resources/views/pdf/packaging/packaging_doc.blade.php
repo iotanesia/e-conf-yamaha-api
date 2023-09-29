@@ -57,6 +57,9 @@
             top: 230px;
             z-index: -1;
         }
+        td.count {
+            height: 40px;
+        }
     </style>
 </head>
 
@@ -151,14 +154,21 @@
                             @else
                                 <td class="no-bb no-bt"></td>
                             @endif
-                            @if ($i % 2 == 0)
-                                <td style='padding-bottom:5px;' class='text-center' rowspan="{{ $check == null ? (count($box_item['item_no_series']) / 2) : count($box_item['item_no_series']) }}">{{ $key+1 }}</td>
+
+                            @if ($i % 2 == 0 && $i == 0)
+                                <td style='padding-bottom:5px;' class='text-center'>{{ $key+1 }}</td>
+                            @else
+                                @if ($loop->last && $i == count($box_item['item_no_series']) -1)
+                                    <td class="no-bt"></td>
+                                @else
+                                    <td class="no-bt"></td>
+                                @endif
                             @endif
                             <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'][$i] }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ round($box_item['unit_weight_kg'][$i],1) }}</td>
-                            <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 ? round($box_item['total_gross_weight'],1) : null }}</td>
-                            <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 ? round((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000),3) : null }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ? round($box_item['total_gross_weight'],1) : null }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ? round((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000),3) : null }}</td>
                         </tr>
                     @endfor
                 @endforeach
@@ -254,12 +264,39 @@
                         @else
                             <td class="no-bb no-bt"></td>
                         @endif
-                        <td style='padding-bottom:5px;' class='text-center'>{{ $key+1 }}</td>
-                        <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['ref_box']['item_no_series'] }}</td>
-                        <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'] ?? null }}</td>
-                        <td style='padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['unit_weight_kg'],1) }}</td>
-                        <td style='padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
-                        <td style='padding-bottom:5px;' class='text-center'>{{ round((($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000),3) }}</td>
+
+                        @if (count($box) < 5)
+                            @if (count($box) == 2)
+                                <td style='padding-bottom:5px;' class='text-center' height="100px">{{ $key+1 }}</td>
+                                <td style='padding-bottom:5px;' class='text-center' height="100px">{{ $box_item['ref_box']['item_no_series'] }}</td>
+                                <td style='padding-bottom:5px;' class='text-center' height="100px">{{ $box_item['qty_pcs_box'] ?? null }}</td>
+                                <td style='padding-bottom:5px;' class='text-center' height="100px">{{ round($box_item['ref_box']['unit_weight_kg'],1) }}</td>
+                                <td style='padding-bottom:5px;' class='text-center' height="100px">{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
+                                <td style='padding-bottom:5px;' class='text-center' height="100px">{{ round((($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000),3) }}</td>
+                            @endif
+                            @if (count($box) == 1)
+                                <td style='padding-bottom:5px;' class='text-center' height="120px">{{ $key+1 }}</td>
+                                <td style='padding-bottom:5px;' class='text-center' height="120px">{{ $box_item['ref_box']['item_no_series'] }}</td>
+                                <td style='padding-bottom:5px;' class='text-center' height="120px">{{ $box_item['qty_pcs_box'] ?? null }}</td>
+                                <td style='padding-bottom:5px;' class='text-center' height="120px">{{ round($box_item['ref_box']['unit_weight_kg'],1) }}</td>
+                                <td style='padding-bottom:5px;' class='text-center' height="120px">{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
+                                <td style='padding-bottom:5px;' class='text-center' height="120px">{{ round((($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000),3) }}</td>
+                            @else
+                                <td style='padding-bottom:5px;' class='text-center count'>{{ $key+1 }}</td>
+                                <td style='padding-bottom:5px;' class='text-center count'>{{ $box_item['ref_box']['item_no_series'] }}</td>
+                                <td style='padding-bottom:5px;' class='text-center count'>{{ $box_item['qty_pcs_box'] ?? null }}</td>
+                                <td style='padding-bottom:5px;' class='text-center count'>{{ round($box_item['ref_box']['unit_weight_kg'],1) }}</td>
+                                <td style='padding-bottom:5px;' class='text-center count'>{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
+                                <td style='padding-bottom:5px;' class='text-center count'>{{ round((($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000),3) }}</td>
+                            @endif
+                        @else
+                            <td style='padding-bottom:5px;' class='text-center'>{{ $key+1 }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['ref_box']['item_no_series'] }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'] ?? null }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['unit_weight_kg'],1) }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ round($box_item['ref_box']['total_gross_weight'],1) }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ round((($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000),3) }}</td>
+                        @endif
                     </tr>
                 @endforeach
                 
