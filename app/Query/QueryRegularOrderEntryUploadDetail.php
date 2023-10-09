@@ -71,7 +71,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
                 if ($item->item_no == null) {
                   $item_no_set = RegularOrderEntryUploadDetailSet::where('id_detail', $item->id)->get()->pluck('item_no');
-                  $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get()->pluck('item_no_series');
+                  $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get();
                   $mst_part = MstPart::select('mst_part.item_no',
                                         DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
                                         ->whereIn('mst_part.item_no', $item_no_set->toArray())
@@ -116,14 +116,14 @@ class QueryRegularOrderEntryUploadDetail extends Model {
               }
                 
                 $set["id"] = $item->id;
-                $set["id_box"] = $item_no_series->id;
-                $set["no_box"] = $item_no_series->no_box;
+                $set["id_box"] = $item->item_no == null ? $item_no_series->pluck('id')->toArray() : $item_no_series->id;
+                $set["no_box"] = $item->item_no == null ? $item_no_series->pluck('no_box')->toArray() : $item_no_series->no_box;
                 $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
                 $set["code_consignee"] = $item->code_consignee;
                 $set["cust_name"] = $custname;
                 $set["model"] = $item->model;
                 $set["item_name"] = $item->item_no == null ? $item_name : $itemname;
-                $set["item_no"] = $item->item_no == null ? $item_no_series->toArray() : $item_no_series->item_no_series;
+                $set["item_no"] = $item->item_no == null ? $item_no_series->pluck('item_no_series')->toArray() : $item_no_series->item_no_series;
                 $set["disburse"] = $item->disburse;
                 $set["delivery"] = $item->delivery;
                 $set["qty"] = $item->qty;
