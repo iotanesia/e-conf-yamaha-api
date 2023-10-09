@@ -6,6 +6,7 @@ use App\Jobs\OrderEntryBox;
 use App\Jobs\OrderEntryBoxSet;
 use App\Jobs\OrderEntryDetail;
 use App\Models\MstBox;
+use App\Models\MstConsignee;
 use App\Models\MstPart;
 use App\Query\QueryMstBox;
 use App\Query\QueryRegularOrderEntryUpload;
@@ -60,30 +61,31 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
             foreach ($collection->chunk(10000) as $i => $chunk) {
                 $filteredData = collect($chunk)->filter(function ($row){
                     $fillter_yearmonth = $this->params['year'].$this->params['month'];
-                    $deliver_yearmonth = Carbon::parse(trim($row[14]))->format('Ym'); // etd_jkt
-                    return in_array($row[7],['940E']) && $fillter_yearmonth == $deliver_yearmonth;
+                    $deliver_yearmonth = Carbon::parse(trim($row[16]))->format('Ym'); // etd_jkt
+                    // return in_array($row[7],['940E']) && $fillter_yearmonth == $deliver_yearmonth;
+                    return $fillter_yearmonth == $deliver_yearmonth;
                 });
 
                 //check mst part
                 $mst_part_false =  $filteredData->map(function ($row) use ($id_regular_order_entry_upload) {
-                    $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
-                        ? '999999-9999'
-                        : trim(substr_replace($row[23],'-',6).substr($row[23],6));
-
-                    $check = MstPart::where('item_no',trim($row[5]))->first() ? null : [
+                    // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
+                    //     ? '999999-9999'
+                    //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
+                    $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
+                    $check = MstPart::where('item_no',(trim($row[10]).trim($row[11])))->first() ? null : [
                         'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
-                        'code_consignee' => trim($row[1]),
-                        'model' => trim($row[4]),
-                        'item_no' => trim($row[5]),
-                        'disburse' => trim($row[12]),
-                        'delivery' => trim($row[14]),
-                        'etd_jkt' => trim($row[14]),
-                        'etd_wh' => Carbon::parse(trim($row[14]))->subDays(2)->format('Ymd'),
-                        'etd_ypmi' => Carbon::parse(trim($row[14]))->subDays(4)->format('Ymd'),
-                        'qty' => trim($row[15]),
-                        'status' => trim($row[20]),
-                        'order_no' => trim($row[22]),
-                        'cust_item_no' => $cust_item_no,
+                        'code_consignee' => $consignee->code,
+                        // 'model' => trim($row[4]),
+                        'item_no' => (trim($row[10]).trim($row[11])),
+                        // 'disburse' => trim($row[12]),
+                        'delivery' => trim($row[16]),
+                        'etd_jkt' => trim($row[16]),
+                        'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
+                        'etd_ypmi' => Carbon::parse(trim($row[16]))->subDays(4)->format('Ymd'),
+                        'qty' => trim($row[17]),
+                        'status' => 'FIXED',
+                        'order_no' => trim($row[0]),
+                        'cust_item_no' => (trim($row[7])."-".trim($row[8])),
                         'uuid' => (string) Str::uuid(),
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -101,24 +103,25 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
 
                 //check mst box
                 $mst_box_false =  $filteredData->map(function ($row) use ($id_regular_order_entry_upload) {
-                    $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
-                        ? '999999-9999'
-                        : trim(substr_replace($row[23],'-',6).substr($row[23],6));
-
-                    $check = MstBox::where('item_no',trim($row[5]))->first() ? null : [
+                    // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
+                    //     ? '999999-9999'
+                    //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
+                    
+                    $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
+                    $check = MstBox::where('item_no',(trim($row[10]).trim($row[11])))->first() ? null : [
                         'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
-                        'code_consignee' => trim($row[1]),
-                        'model' => trim($row[4]),
-                        'item_no' => trim($row[5]),
-                        'disburse' => trim($row[12]),
-                        'delivery' => trim($row[14]),
-                        'etd_jkt' => trim($row[14]),
-                        'etd_wh' => Carbon::parse(trim($row[14]))->subDays(2)->format('Ymd'),
-                        'etd_ypmi' => Carbon::parse(trim($row[14]))->subDays(4)->format('Ymd'),
-                        'qty' => trim($row[15]),
-                        'status' => trim($row[20]),
-                        'order_no' => trim($row[22]),
-                        'cust_item_no' => $cust_item_no,
+                        'code_consignee' => $consignee->code,
+                        // 'model' => trim($row[4]),
+                        'item_no' => (trim($row[10]).trim($row[11])),
+                        // 'disburse' => trim($row[12]),
+                        'delivery' => trim($row[16]),
+                        'etd_jkt' => trim($row[16]),
+                        'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
+                        'etd_ypmi' => Carbon::parse(trim($row[16]))->subDays(4)->format('Ymd'),
+                        'qty' => trim($row[17]),
+                        'status' => 'FIXED',
+                        'order_no' => trim($row[0]),
+                        'cust_item_no' => (trim($row[7])."-".trim($row[8])),
                         'uuid' => (string) Str::uuid(),
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -136,24 +139,25 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
 
                 if(count($filter_mst_part_false) == 0 && count($filter_mst_box_false) == 0) {
                     $filteredData->each(function ($row) use ($id_regular_order_entry_upload) {
-                        $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
-                            ? '999999-9999'
-                            : trim(substr_replace($row[23],'-',6).substr($row[23],6));
-
+                        // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
+                        //     ? '999999-9999'
+                        //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
+                        
+                        $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
                         QueryRegularOrderEntryUploadDetail::created([
                             'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
-                            'code_consignee' => trim($row[1]),
-                            'model' => trim($row[4]),
-                            'item_no' => trim($row[5]),
-                            'disburse' => trim($row[12]),
-                            'delivery' => trim($row[14]),
-                            'etd_jkt' => trim($row[14]),
-                            'etd_wh' => Carbon::parse(trim($row[14]))->subDays(2)->format('Ymd'),
-                            'etd_ypmi' => Carbon::parse(trim($row[14]))->subDays(4)->format('Ymd'),
-                            'qty' => trim($row[15]),
-                            'status' => trim($row[20]),
-                            'order_no' => trim($row[22]),
-                            'cust_item_no' => $cust_item_no,
+                            'code_consignee' => $consignee->code,
+                            // 'model' => trim($row[4]),
+                            'item_no' => (trim($row[10]).trim($row[11])),
+                            // 'disburse' => trim($row[12]),
+                            'delivery' => trim($row[16]),
+                            'etd_jkt' => trim($row[16]),
+                            'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
+                            'etd_ypmi' => Carbon::parse(trim($row[16]))->subDays(4)->format('Ymd'),
+                            'qty' => trim($row[17]),
+                            'status' => 'FIXED',
+                            'order_no' => trim($row[0]),
+                            'cust_item_no' => (trim($row[7])."-".trim($row[8])),
                             'uuid' => (string) Str::uuid(),
                             'created_at' => now(),
                             'updated_at' => now(),
