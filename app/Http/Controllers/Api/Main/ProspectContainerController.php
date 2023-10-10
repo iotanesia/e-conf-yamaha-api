@@ -60,15 +60,16 @@ class ProspectContainerController extends Controller
 
     public static function creation(Request $request)
     {
-        try {
+        return $request->all();
+        // try {
 
-            return ResponseInterface::responseData(
-                QueryRegulerDeliveryPlanProspectContainer::creationCalculation($request)
-            );
+        //     return ResponseInterface::responseData(
+        //         QueryRegulerDeliveryPlanProspectContainer::creationCalculation($request)
+        //     );
 
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
+        // } catch (\Throwable $th) {
+        //     return ResponseInterface::setErrorResponse($th);
+        // }
     }
 
     public static function creationDelete(Request $request, $id)
