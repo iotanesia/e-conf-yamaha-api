@@ -44,7 +44,7 @@ class OrderEntryDetail implements ShouldQueue
 
             //upload temp ke detail
             $data = RegularOrderEntryUploadDetailTemp::
-            select('regular_order_entry_upload_detail_temp.etd_jkt','a.id_box','a.part_set',
+            select('regular_order_entry_upload_detail_temp.etd_jkt','regular_order_entry_upload_detail_temp.order_no','a.id_box','a.part_set',
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.id::character varying, ',') as id_regular_order_entry_upload_detail_temp"),
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.code_consignee::character varying, ',') as code_consignee"),
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.item_no::character varying, ',') as item_no"),
@@ -54,7 +54,6 @@ class OrderEntryDetail implements ShouldQueue
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.delivery::character varying, ',') as delivery"),
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.qty::character varying, ',') as qty"),
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.status::character varying, ',') as status"),
-            DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.order_no::character varying, ',') as order_no"),
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.cust_item_no::character varying, ',') as cust_item_no"),
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.uuid::character varying, ',') as uuid"),
             DB::raw("string_agg(DISTINCT regular_order_entry_upload_detail_temp.etd_wh::character varying, ',') as etd_wh"),
@@ -64,7 +63,7 @@ class OrderEntryDetail implements ShouldQueue
             )
             ->where('id_regular_order_entry_upload', $params['id_regular_order_entry_upload'])
             ->leftJoin('mst_box as a','regular_order_entry_upload_detail_temp.item_no','a.item_no')
-            ->groupBy('a.part_set','a.id_box','regular_order_entry_upload_detail_temp.etd_jkt')
+            ->groupBy('a.part_set','a.id_box','regular_order_entry_upload_detail_temp.etd_jkt','regular_order_entry_upload_detail_temp.order_no')
             ->orderBy('id_regular_order_entry_upload_detail_temp','asc')
             ->get();
 
