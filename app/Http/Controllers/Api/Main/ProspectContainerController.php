@@ -60,7 +60,7 @@ class ProspectContainerController extends Controller
 
     public static function creation(Request $request)
     {
-        return $request->all();
+        return '<script>alert('.$request->all().')</script>';
         // try {
 
         //     return ResponseInterface::responseData(
