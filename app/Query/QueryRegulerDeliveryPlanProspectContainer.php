@@ -820,8 +820,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function creationCalculation($params)
     {
-        DB::beginTransaction();
-        try {
+        // DB::beginTransaction();
+        // try {
 dd($params->all());
             $prospect_container = Model::find($params->id);
             $lsp = MstLsp::where('code_consignee',$prospect_container->code_consignee)
@@ -997,10 +997,10 @@ dd($params->all());
 
            ContainerPlan::dispatch($set);
 
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
-        }
+        // } catch (\Throwable $th) {
+        //     DB::rollBack();
+        //     throw $th;
+        // }
     }
 
     public static function creationDelete($params, $id)
