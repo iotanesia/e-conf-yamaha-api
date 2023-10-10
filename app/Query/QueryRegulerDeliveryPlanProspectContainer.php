@@ -822,7 +822,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     {
         DB::beginTransaction();
         try {
-
+dd($params->all());
             $prospect_container = Model::find($params->id);
             $lsp = MstLsp::where('code_consignee',$prospect_container->code_consignee)
                 ->where('id_type_delivery', 1)
