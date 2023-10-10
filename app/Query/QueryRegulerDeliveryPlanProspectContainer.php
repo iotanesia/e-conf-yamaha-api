@@ -923,14 +923,14 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 ->orderBy('id_deliv_plan_set','asc')->get();
 
                 $item_no_set = [];
-                $qty_set = [];
                 foreach ($set as $key => $value) {
                     $item_no_set[] = explode(',',$value->item_no);
-                    $qty_set[] = explode(',',$value->qty);
                 }
                 
                 $max_qty = [];
                 foreach ($item_no_set as $key => $value) {
+                    $qty_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan)->whereIn('item_no', $value)->get()->pluck('qty');
+                    
                     $mst_box = MstBox::where('part_set', 'set')
                                 ->whereIn('item_no', $value)
                                 ->orderBy('id','asc')
@@ -940,7 +940,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                             });
                             
                     $qty = [];
-                    foreach ($qty_set[$key] as $i => $value) {
+                    foreach ($qty_set as $i => $value) {
                         $qty[] = $value / $mst_box->toArray()[$i];
                     }
                     $max_qty[] = (int)ceil(max($qty));
