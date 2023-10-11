@@ -186,17 +186,31 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $mst_box = MstBox::where('part_set', 'set')
                                 ->whereIn('item_no', $item_no)
                                 ->get()->map(function ($item){
-                                $qty =  $item->qty;
-                                return $qty;
+                                    $qty = [
+                                        $item->item_no => $item->qty
+                                    ];
+                                
+                                    return array_merge($qty);
                             });
 
+                $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $check->refRegularDeliveryPlan->id)->get();
+                $qty_per_item_no = [];
+                $qty_set = [];
+                foreach ($deliv_plan_set as $key => $value) {
+                    $qty_per_item_no[] = [
+                        $value->item_no => $value->qty
+                    ];
+                    $qty_set[] = $value->qty;
+                }
+
                 $qty = [];
-                foreach (explode(',', $item->qty) as $key => $value) {
-                    $qty[] = $value / $mst_box->toArray()[$key];
+                foreach ($mst_box as $key => $value) {
+                    $arary_key = array_keys($value)[0];
+                    $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
                 }
         
                 $box = [
-                    'qty' =>  array_sum($mst_box->toArray())." x ".(int)ceil(max($qty)),
+                    'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty)),
                     'length' =>  "",
                     'width' =>  "",
                     'height' =>  "",
@@ -214,7 +228,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
 
             $qty_result = explode(',',$item->qty);
-            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = (count(explode(',',$item->qty)) == 1 ? $qty_order : explode(',',$item->qty));
+            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = array_sum($qty_set);
 
             $item->item_name = $itemname;
             $item->item_no = $item_no;
@@ -948,19 +962,28 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 
                 $max_qty = [];
                 foreach ($item_no_set as $key => $value) {
-                    $qty_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan)->whereIn('item_no', $value)->orderBy('qty','asc')->get()->pluck('qty');
-                    
                     $mst_box = MstBox::where('part_set', 'set')
                                 ->whereIn('item_no', $value)
-                                ->orderBy('qty','asc')
                                 ->get()->map(function ($item){
-                                $qty =  $item->qty;
-                                return $qty;
-                            });
+                                    $qty = [
+                                        $item->item_no => $item->qty
+                                    ];
+                                
+                                    return array_merge($qty);
+                                });
+
+                    $deliv_plan_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan)->whereIn('item_no', $value)->get();
+                    $qty_per_item_no = [];
+                    foreach ($deliv_plan_set as $key => $value) {
+                        $qty_per_item_no[] = [
+                            $value->item_no => $value->qty
+                        ];
+                    }
                             
                     $qty = [];
-                    foreach ($qty_set as $i => $value) {
-                        $qty[] = $value / $mst_box->toArray()[$i];
+                    foreach ($mst_box as $key => $value) {
+                        $arary_key = array_keys($value)[0];
+                        $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
                     }
                     $max_qty[] = (int)ceil(max($qty));
                 }
