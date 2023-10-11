@@ -850,8 +850,17 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 if ($item_no[0] == null) {
                     $count_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->count();
                     $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refBox->length * (int)ceil(($item->count_box / $count_set) / 4));
+                    $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
+                                                    ->where('id_box', $item->id_box)
+                                                    ->whereNull('id_prospect_container_creation')
+                                                    ->orderBy('id', 'asc')
+                                                    ->get();
                 } else {
                     $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
+                    $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
+                                                    ->whereNull('id_prospect_container_creation')
+                                                    ->orderBy('id', 'asc')
+                                                    ->get();
                 }
 
                 return [
@@ -868,10 +877,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'row' => (int)ceil($item->count_box / 4),
                     'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
                     'row_length' => $row_length,
-                    'box' => RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
-                                ->whereNull('id_prospect_container_creation')
-                                ->orderBy('id', 'asc')
-                                ->get()
+                    'box' => $box
                 ];
             });
 
