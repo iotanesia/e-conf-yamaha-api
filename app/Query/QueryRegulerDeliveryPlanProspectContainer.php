@@ -938,6 +938,9 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 ->groupBy('regular_delivery_plan_set.id_delivery_plan')
                 ->orderBy('id_deliv_plan_set','asc')->get();
 
+                $count_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan)->count();
+                $sum_row_length = $sum_row_length / $count_set;
+
                 $item_no_set = [];
                 foreach ($set as $key => $value) {
                     $item_no_set[] = explode(',',$value->item_no);
