@@ -850,6 +850,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 if ($item_no[0] == null) {
                     $count_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->count();
                     $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refBox->length * (int)ceil(($item->count_box / $count_set) / 4));
+                    $count_box = $item->count_box / $count_set;
                     $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
                                                     ->where('id_box', $item->id_box)
                                                     ->whereNull('id_prospect_container_creation')
@@ -857,6 +858,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                                                     ->get();
                 } else {
                     $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
+                    $count_box = $item->count_box;
                     $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
                                                     ->whereNull('id_prospect_container_creation')
                                                     ->orderBy('id', 'asc')
@@ -869,12 +871,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'label' => $item->refBox->no_box,
                     'width' =>  $item->refBox->width,
                     'length' => $item->refBox->length,
-                    'count_box' => $item->count_box,
+                    'count_box' => $count_box,
                     'sum_qty' => $item->sum_qty,
                     'priority' => $index + 1,
                     'forkside' => $item->refBox->fork_side,
                     'stackingCapacity' => $item->refBox->stack_capacity,
-                    'row' => (int)ceil($item->count_box / 4),
+                    'row' => (int)ceil($count_box / 4),
                     'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
                     'row_length' => $row_length,
                     'box' => $box
