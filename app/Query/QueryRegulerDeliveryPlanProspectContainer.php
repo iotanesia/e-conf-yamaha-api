@@ -228,7 +228,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
 
             $qty_result = explode(',',$item->qty);
-            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = array_sum($qty_set);
+            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = [array_sum($qty_set)];
 
             $item->item_name = $itemname;
             $item->item_no = $item_no;
