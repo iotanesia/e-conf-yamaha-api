@@ -984,13 +984,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 if ($sum_row_length < 5905) {
                     $creation['id_container'] = 1;
                     $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-                    $creation['summary_box'] = $sum_count_box;
+                    $creation['summary_box'] = (int)floor($sum_count_box);
                     $creation['iteration'] = $i;
                     $creation['space'] = 5905 - $sum_row_length;
                 } else {
                     $creation['id_container'] = 2;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                    $creation['summary_box'] = $send_summary_box;
+                    $creation['summary_box'] = (int)floor($send_summary_box);
                     $creation['iteration'] = $i;
                     $creation['space'] = $space;
                 }
