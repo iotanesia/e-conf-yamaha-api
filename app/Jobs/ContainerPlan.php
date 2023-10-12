@@ -51,22 +51,43 @@ class ContainerPlan implements ShouldQueue
             foreach ($value['box'] as $val) {
                 $fill = RegularDeliveryPlanBox::find($val['id']);
                 if ($fill->id_prospect_container_creation == null) {
-                    $id_prop = RegularProspectContainerCreation::where('id_prospect_container', $params['id'])
-                    ->where('iteration', $iteration)
-                    ->orderBy('id', 'asc')
-                    ->first();
 
-                    $fill = RegularDeliveryPlanBox::find($val['id']);
-                    $fill->id_prospect_container_creation = $id_prop->id;
-                    $fill->save();
-
-                    if($counter < $countSummaryBox) {
-                        if ($index == $arrSummaryBox[$counter]) {
-                            $iteration = $iteration + 1;
-                            $counter = $counter + 1;
+                    if ($fill->refRegularDeliveryPlan->item_no == null) {
+                        $persentase = max($arrSummaryBox->toArray()) / array_sum($arrSummaryBox->toArray());
+                        $jml_box_update = (int)($params['box_set_count'] * $persentase);
+                        $box_update = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $fill->refRegularDeliveryPlan->id)
+                                                            ->whereNull('id_prospect_container_creation')->get();
+                        $sisa = count($box_update) - $jml_box_update;
+                        
+                        for ($i=0; $i < $countSummaryBox; $i++) { 
+                            foreach ($box_update->take($jml_box_update) as $value_box) {
+                                $id_prop = RegularProspectContainerCreation::where('id_prospect_container', $params['id'])
+                                                                            ->where('iteration', ($i+1))
+                                                                            ->orderBy('id', 'asc')
+                                                                            ->first();
+                                
+                                $value_box->update(['id_prospect_container_creation' => $id_prop->id]);
+                            }
+                            $jml_box_update = $sisa;
                         }
+                    } else {
+                        $id_prop = RegularProspectContainerCreation::where('id_prospect_container', $params['id'])
+                                                                    ->where('iteration', $iteration)
+                                                                    ->orderBy('id', 'asc')
+                                                                    ->first();
+
+                        $fill = RegularDeliveryPlanBox::find($val['id']);
+                        $fill->id_prospect_container_creation = $id_prop->id;
+                        $fill->save();
+
+                        if($counter < $countSummaryBox) {
+                            if ($index == $arrSummaryBox[$counter]) {
+                                $iteration = $iteration + 1;
+                                $counter = $counter + 1;
+                            }
+                        }
+                        $index = $index + 1;
                     }
-                    $index = $index + 1;
                 }
             }
         }

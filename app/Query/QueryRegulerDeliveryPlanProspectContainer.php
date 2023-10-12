@@ -870,6 +870,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                                                     ->whereNull('id_prospect_container_creation')
                                                     ->orderBy('id', 'asc')
                                                     ->get();
+                    $box_set_count = count($box);
                 } else {
                     $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
                     $count_box = $item->count_box;
@@ -877,6 +878,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                                                     ->whereNull('id_prospect_container_creation')
                                                     ->orderBy('id', 'asc')
                                                     ->get();
+                    $box_set_count = count($box);
                 }
 
                 return [
@@ -893,10 +895,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'row' => (int)ceil($count_box / 4),
                     'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
                     'row_length' => $row_length,
-                    'box' => $box
+                    'box' => $box,
+                    'box_set_count' => $box_set_count
                 ];
             });
 
+            $box_set_count = 0;
             $sum_row_length = 0;
             $sum_count_box = 0;
             $sum_qty_box = [];
@@ -907,6 +911,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $count_box = [];
             $big_row_length = [];
             foreach ($delivery_plan_box as $key => $value) {
+                $box_set_count += $value['box_set_count'];
                 $sum_row_length += $value['row_length'];
                 $sum_count_box += $value['count_box'];
                 $sum_qty_box[] = $value['sum_qty'];
@@ -987,9 +992,19 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     }
                     $max_qty[] = (int)ceil(max($qty));
                 }
-                
+
+                if ($sum_row_length > 12031) {
+                    while ($sum_row_length > 12031) {
+                        $sum_row_length -= 12031;
+                    }
+
+                    $persentase = $sum_row_length / 12031;
+                    $summary_box = (int)floor(array_sum($max_qty) * $persentase);
+                } else {
+                    $summary_box = array_sum($max_qty);   
+                }
+
                 $sum_count_box = array_sum($max_qty);
-                $summary_box = $sum_count_box;
             }
 
             $creation = [
@@ -1025,6 +1040,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 RegularProspectContainerCreation::create($creation);
                 $sum_row_length = $sum_row_length - 12031;
                 $send_summary_box = $sum_count_box - $summary_box;
+
+                if ($sum_row_length < 5905) {
+                    $sum_count_box = $send_summary_box;
+                }
             }
 
             $upd = RegularProspectContainer::find($params->id);
@@ -1034,6 +1053,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $set = [
                 'id' => $params->id,
                 'colis' => $delivery_plan_box,
+                'box_set_count' => $box_set_count
             ];
 
            DB::commit();
