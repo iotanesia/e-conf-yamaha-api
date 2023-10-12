@@ -63,7 +63,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                     $fillter_yearmonth = $this->params['year'].$this->params['month'];
                     $deliver_yearmonth = Carbon::parse(trim($row[16]))->format('Ym'); // etd_jkt
                     // return in_array($row[7],['940E']) && $fillter_yearmonth == $deliver_yearmonth;
-                    return $fillter_yearmonth == $deliver_yearmonth;
+                    return $fillter_yearmonth == $deliver_yearmonth && trim($row[16]) !== "";
                 });
 
                 //check mst part
@@ -74,7 +74,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                     $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
                     $check = MstPart::where('item_no',(trim($row[10]).trim($row[11])))->first() ? null : [
                         'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
-                        'code_consignee' => $consignee->code,
+                        'code_consignee' => $consignee == null ? null : $consignee->code,
                         // 'model' => trim($row[4]),
                         'item_no' => (trim($row[10]).trim($row[11])),
                         // 'disburse' => trim($row[12]),
@@ -82,7 +82,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                         'etd_jkt' => trim($row[16]),
                         'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
                         'etd_ypmi' => Carbon::parse(trim($row[16]))->subDays(4)->format('Ymd'),
-                        'qty' => trim($row[17]),
+                        'qty' => (int)trim($row[17]),
                         'status' => 'fixed',
                         'order_no' => trim($row[0]),
                         'cust_item_no' => (trim($row[7])."-".trim($row[8])),
@@ -110,7 +110,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                     $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
                     $check = MstBox::where('item_no',(trim($row[10]).trim($row[11])))->first() ? null : [
                         'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
-                        'code_consignee' => $consignee->code,
+                        'code_consignee' => $consignee == null ? null : $consignee->code,
                         // 'model' => trim($row[4]),
                         'item_no' => (trim($row[10]).trim($row[11])),
                         // 'disburse' => trim($row[12]),
@@ -118,7 +118,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                         'etd_jkt' => trim($row[16]),
                         'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
                         'etd_ypmi' => Carbon::parse(trim($row[16]))->subDays(4)->format('Ymd'),
-                        'qty' => trim($row[17]),
+                        'qty' => (int)trim($row[17]),
                         'status' => 'fixed',
                         'order_no' => trim($row[0]),
                         'cust_item_no' => (trim($row[7])."-".trim($row[8])),
@@ -146,7 +146,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                         $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
                         QueryRegularOrderEntryUploadDetail::created([
                             'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
-                            'code_consignee' => $consignee->code,
+                            'code_consignee' => $consignee == null ? null : $consignee->code,
                             // 'model' => trim($row[4]),
                             'item_no' => (trim($row[10]).trim($row[11])),
                             // 'disburse' => trim($row[12]),
@@ -154,7 +154,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                             'etd_jkt' => trim($row[16]),
                             'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
                             'etd_ypmi' => Carbon::parse(trim($row[16]))->subDays(4)->format('Ymd'),
-                            'qty' => trim($row[17]),
+                            'qty' => (int)trim($row[17]),
                             'status' => 'fixed',
                             'order_no' => trim($row[0]),
                             'cust_item_no' => (trim($row[7])."-".trim($row[8])),
