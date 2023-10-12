@@ -108,7 +108,8 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                     //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
                     
                     $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
-                    $check = MstBox::where('item_no',(trim($row[10]).trim($row[11])))->first() ? null : [
+                    $check_consignee = $consignee == null ? null : $consignee->code;
+                    $check = MstBox::where('item_no',(trim($row[10]).trim($row[11])))->where('code_consignee', $check_consignee)->first() ? null : [
                         'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                         'code_consignee' => $consignee == null ? null : $consignee->code,
                         // 'model' => trim($row[4]),
