@@ -1006,7 +1006,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
                     
                     $qr_name = (string) Str::uuid().'.png';
-                    $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
+                    $qr_key = implode('-',$id). " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
                     QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
 
                     $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->refRegularDeliveryPlan->id)
