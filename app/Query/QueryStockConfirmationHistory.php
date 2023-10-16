@@ -999,7 +999,7 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
 
-                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $params->id)->first();
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $id.'-'.$total_item)->first();
                 $stokTemp->update(['status_instock' => 2,'is_reject' => null]);
 
                 for ($i=0; $i < $total_item; $i++) { 
@@ -1120,7 +1120,7 @@ class QueryStockConfirmationHistory extends Model {
                 $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
 
-                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $params->id)->first();
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $id.'-'.$total_item)->first();
                 $stokTemp->update(['status_outstock' => 2,'is_reject' => null]);
 
                 for ($i=0; $i < $total_item; $i++) { 
