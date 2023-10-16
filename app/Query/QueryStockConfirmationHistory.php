@@ -1378,7 +1378,7 @@ class QueryStockConfirmationHistory extends Model {
                 'id'
             ]);
 
-            $stokTemp = RegularStokConfirmationTemp::whereIn('id',$params->id)->get();
+            $stokTemp = RegularStokConfirmationTemp::whereIn('qr_key',$params->id)->get();
             $id_stock_confirmation = [];
             foreach ($stokTemp as $key => $value) {
                 $id_stock_confirmation[] = $value->id_stock_confirmation;
