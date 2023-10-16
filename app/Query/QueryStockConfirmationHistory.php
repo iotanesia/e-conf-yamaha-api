@@ -1433,7 +1433,7 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function outstockDeliveryNoteItems($request)
     {
-        $stokTemp = RegularStokConfirmationTemp::where('qr_key', $request->id_stock_confirmation)->get();
+        $stokTemp = RegularStokConfirmationTemp::whereIn('qr_key', $request->id_stock_confirmation)->get();
         $id_stock_confirmation = [];
         foreach ($stokTemp as $key => $value) {
             $id_stock_confirmation[] = $value->id_stock_confirmation;
