@@ -945,7 +945,8 @@ class QueryStockConfirmationHistory extends Model {
 
             if (count(explode('-',$params->id)) > 1) {
                 $id = explode('-',$params->id)[0];
-                $total_item = explode('-',$params->id)[1];
+                $qr_detail = explode('-',$params->id)[1];
+                $total_item = explode(' | ',$qr_detail)[0];
 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
@@ -1061,7 +1062,8 @@ class QueryStockConfirmationHistory extends Model {
 
             if (count(explode('-',$params->id)) > 1) {
                 $id = explode('-',$params->id)[0];
-                $total_item = explode('-',$params->id)[1];
+                $qr_detail = explode('-',$params->id)[1];
+                $total_item = explode(' | ',$qr_detail)[0];
 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
