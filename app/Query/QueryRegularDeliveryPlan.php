@@ -358,7 +358,7 @@ class QueryRegularDeliveryPlan extends Model {
             ->where(function ($query) use ($params){
                 $category = $params->category ?? null;
                 $kueri = $params->kueri ?? null;
-            
+                
                 if ($category && $kueri) {
                     if ($category == 'cust_name') {
                         $query->whereHas('refConsignee', function ($q) use ($kueri) {
@@ -368,6 +368,20 @@ class QueryRegularDeliveryPlan extends Model {
                         $query->whereHas('refPart', function ($q) use ($kueri) {
                             $q->where('description', 'like', '%' . $kueri . '%');
                         });
+                    } elseif ($category == 'item_no') {
+                        $query->whereHas('manyRegularDeliveryPlanSet', function ($q) use ($kueri) {
+                            $q->where('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%');
+                        });
+
+                        if ($query->count() == 0) {
+                            $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                            ->orWhere('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%')
+                            ->orWhere('order_no', 'like', '%' . $kueri . '%')
+                            ->orWhere('cust_item_no', 'like', '%' . $kueri . '%')
+                            ->orWhere('qty', 'like', '%' . $kueri . '%')
+                            ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                            ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                        }
                     } else {
                         $query->where('etd_jkt', 'like', '%' . $kueri . '%')
                             ->orWhere('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%')

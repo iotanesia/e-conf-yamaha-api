@@ -820,7 +820,8 @@ class QueryStockConfirmationHistory extends Model {
 
             if (count(explode('-',$params->qr_code)) > 1) {
                 $id = explode('-',$params->qr_code)[0];
-                $total_item = explode('-',$params->qr_code)[1];
+                $qr_detail = explode('-',$params->qr_code)[1];
+                $total_item = explode(' | ',$qr_detail)[0];
                 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if(!$delivery_plan_box) throw new \Exception("data not found", 400);
@@ -836,7 +837,7 @@ class QueryStockConfirmationHistory extends Model {
                     $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
 
                     $qr_name = (string) Str::uuid().'.png';
-                    $qr_key = $item->id. " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
+                    $qr_key = ($item->id.'-'.$total_item). " | ".$item->id_box. " | ".$datasource. " | ".$item->refRegularDeliveryPlan->etd_jkt. " | ".$item->qty_pcs_box;
                     QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
 
                     $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->refRegularDeliveryPlan->id)
