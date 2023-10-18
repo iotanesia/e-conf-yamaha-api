@@ -55,10 +55,10 @@
 </head>
 
 <body>
-    <h4 class="text-center">DELIVERY NOTE</h4>
+    <h4 class="text-center" style="font-size: 18px;">DELIVERY NOTE</h4>
     <table>
         <tr>
-            <td class="no-bo" width='70'>{{ $data->shipper }}</td>
+            <td class="no-bo" width='70'>{{ $data->shipperFirstWords }} <br><br> {{ $data->shipperLastWords }}</td>
             <td class="no-bo" width='5'></td>
             <td class="no-bo text-right" width='100'>
                 Kepada Yth, <br>
@@ -69,7 +69,7 @@
             <td class="no-bo" width='70'></td>
             <td class="no-bo" width='5'></td>
             <td class="no-bo text-right" width='100'>
-                User Name, <br>
+                CUSTOMER NAME : <br>
                 {{ $data->consignee }}
             </td>
         </tr>
@@ -139,6 +139,25 @@
                     <td class="text-center">{{ $item->no_packing }}</td>
                 </tr>
             @endforeach
+        </tbody>
+    </table>
+
+    <table style="margin-top: 80px;">
+        <thead>
+            <tr>
+                <th class="text-center"> Receipt Sign</th>
+                <th class="text-center"> Logistic Provide</th>
+                <th class="text-center"> Approval</th>
+                <th class="text-center"> Operator </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center" style="padding: 30px;"> </td>
+                <td class="text-center" style="padding: 30px;"> </td>
+                <td class="text-center" style="padding: 30px;"> </td>
+                <td class="text-center" style="padding: 30px;"> </td>
+            </tr>
         </tbody>
     </table>
 </body>

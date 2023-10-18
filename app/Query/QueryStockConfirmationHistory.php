@@ -1116,7 +1116,7 @@ class QueryStockConfirmationHistory extends Model {
                 $in_wh_total = $in_stock_wh + $qty_pcs_box_res;
                 $in_dc_total = $stock_confirmation->in_dc - $qty_pcs_box_res;
 
-                $stock_confirmation->in_wh = $in_wh_total;
+                // $stock_confirmation->in_wh = $in_wh_total;
                 $stock_confirmation->in_dc = $in_dc_total;
                 $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
@@ -1152,7 +1152,7 @@ class QueryStockConfirmationHistory extends Model {
                 $in_stock_wh = $stock_confirmation->in_wh;
                 $in_wh_total = $in_stock_wh + $delivery_plan_box->qty_pcs_box;
                 $in_dc_total = $stock_confirmation->in_dc - $delivery_plan_box->qty_pcs_box;
-                $stock_confirmation->in_wh = $in_wh_total;
+                // $stock_confirmation->in_wh = $in_wh_total;
                 $stock_confirmation->in_dc = $in_dc_total;
                 $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
@@ -1384,12 +1384,12 @@ class QueryStockConfirmationHistory extends Model {
             foreach ($stokTemp as $key => $value) {
                 $id_stock_confirmation[] = $value->id_stock_confirmation;
                 $update = RegularStokConfirmationTemp::where('id',$value->id)->first();
-                $update->update(['status_outstock' => 3]);
+                // $update->update(['status_outstock' => 3]);
             }
 
             $data = RegularStokConfirmation::whereIn('id',$id_stock_confirmation)->get()->map(function ($item){
-                    $item->status_outstock = 3;
-                    $item->save();
+                    // $item->status_outstock = 3;
+                    // $item->save();
                     return $item;
             });
 
