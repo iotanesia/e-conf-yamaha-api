@@ -130,8 +130,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'id',
             ]);
 
-            $check = Model::select('etd_jkt','code_consignee','datasource')->whereIn('id',$params->id)
-                ->groupBy('etd_jkt','code_consignee','datasource')
+            $check = Model::select('code_consignee','datasource')->whereIn('id',$params->id)
+                ->groupBy('code_consignee','datasource')
                 ->get()
                 ->toArray();
 
@@ -501,7 +501,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             }
     
             $quantityConfirmationBox = RegularFixedQuantityConfirmationBox::select('id_fixed_quantity_confirmation',
-                'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as sum_qty"))
+                'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as sum_qty"),DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"))
             ->whereIn('id_fixed_quantity_confirmation',$id_fixed_quantity)
             ->groupBy('id_box', 'id_fixed_quantity_confirmation')
             ->orderBy('count_box','desc')
@@ -513,7 +513,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $row_length = $item->refMstBox->fork_side == 'Width' ? ($item->refMstBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refMstBox->length * (int)ceil(($item->count_box / $count_set) / 4));
                     $count_box = $item->count_box / $count_set;
                     $box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
-                                                                ->where('id_box', $item->id_box)                                            
+                                                                ->where('id_box', $item->id_box)   
+                                                                ->where('qrcode','!=',null)                                         
                                                                 ->whereNull('id_prospect_container_creation')
                                                                 ->orderBy('id', 'asc')
                                                                 ->get();
@@ -523,6 +524,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $count_box = $item->count_box;
                     $box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
                                                                 ->whereNull('id_prospect_container_creation')
+                                                                ->where('qrcode','!=',null)
                                                                 ->orderBy('id', 'asc')
                                                                 ->get();
                     $box_set_count = count($box);
@@ -1292,13 +1294,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     {
         try {
             $data = RegularFixedActualContainer::where('id',$id)->get();
-            $deliv_plan = RegularDeliveryPlan::find($data[0]->manyFixedQuantityConfirmation[0]->id_regular_delivery_plan);
+            $deliv_plan = RegularDeliveryPlan::with('manyFixedQuantityConfirmationBox.refMstBox')->find($data[0]->manyFixedQuantityConfirmation[0]->id_regular_delivery_plan);
 
             $box = [];
-            foreach ($data[0]->manyFixedQuantityConfirmation as $key => $item) {
-                $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
+            foreach ($deliv_plan->manyFixedQuantityConfirmationBox as $key => $item) {
+                if ($item->qrcode !== null) {
+                    $box[] = $item->toArray();
+                }
             }
-            $box = array_merge(...$box);
 
             $count_qty = 0;
             $count_net_weight = 0;
@@ -1306,14 +1309,15 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $count_meas = 0;
             foreach ($box as $box_item){
                 $count_qty += $box_item['qty_pcs_box'];
-                $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
-                $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
-                $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
+                $count_net_weight += $box_item['ref_mst_box']['unit_weight_kg'];
+                $count_gross_weight += $box_item['ref_mst_box']['total_gross_weight'];
+                $count_meas += (($box_item['ref_mst_box']['length'] * $box_item['ref_mst_box']['width'] * $box_item['ref_mst_box']['height']) / 1000000000);
             }
 
             if ($deliv_plan->item_no == null) {
                 $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_plan->id)->get();
-                $deliv_plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$deliv_plan->id)
+                $deliv_plan_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan',$deliv_plan->id)
+                                                    ->where('qrcode','!=',null)
                                                     ->orderBy('qty_pcs_box','desc')
                                                     ->orderBy('id','asc')
                                                     ->get();
@@ -1372,12 +1376,16 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
                 $res_qty = [];
                 foreach ($set_qty as $key => $value) {
-                    if ($value == max($set_qty)) {
-                        $val = array_sum($qty_pcs_box[$key]) / count($item_no);
+                    if (count($qty_pcs_box) >= count($set_qty)) {
+                        if ($value == max($set_qty)) {
+                            $val = array_sum($qty_pcs_box[$key]) / count($item_no);
+                        } else {
+                            $val = null;
+                        }
                     } else {
                         $val = null;
                     }
-
+                    
                     $res_qty[] = $val;
                 }
     

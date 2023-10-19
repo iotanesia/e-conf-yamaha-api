@@ -8,7 +8,9 @@ use App\Models\RegularFixedQuantityConfirmation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\MstPart;
 use App\Models\MstShipment;
+use App\Models\RegularDeliveryPlanSet;
 use App\Models\RegularFixedActualContainer;
 use App\Models\RegularFixedPackingCreationNote;
 use App\Models\RegularFixedPackingCreationNoteDetail;
@@ -148,7 +150,13 @@ class QueryRegularFixedPackingCreation extends Model {
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
-                $item->item_name = trim($item->refRegularDeliveryPlan->refPart->description);
+
+                if ($item->refRegularDeliveryPlan->item_no == null) {
+                    $part_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+                    $mst_part = MstPart::whereIn('item_no', $part_set->toArray())->get()->pluck('description');
+                }
+
+                $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $mst_part->toArray() : trim($item->refRegularDeliveryPlan->refPart->description);
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;
                 unset(

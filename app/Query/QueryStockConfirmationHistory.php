@@ -120,15 +120,15 @@ class QueryStockConfirmationHistory extends Model {
                 $stokTemp = RegularStokConfirmationTemp::where('qr_key', $id)->first();
                 $stokTemp->update(['is_reject' => 1]);
                 
-                foreach ($stock as $key => $val) {
-                    if ($val->id_regular_delivery_plan_box === (int)$id_box) {
-                        for ($i=0; $i < $total_item; $i++) { 
-                            $history = Model::query();
-                            $history->where('id_regular_delivery_plan_box',$stock[$key+$i]->id_regular_delivery_plan_box)->where('type',Constant::INSTOCK)->first()->delete();
-                            $history->where('id_regular_delivery_plan_box', $stock[$key+$i]->id_regular_delivery_plan_box)->where('type',Constant::OUTSTOCK)->first()->delete();
-                        }
-                    }
-                }
+                // foreach ($stock as $key => $val) {
+                //     if ($val->id_regular_delivery_plan_box === (int)$id_box) {
+                //         for ($i=0; $i < $total_item; $i++) { 
+                //             $history = Model::query();
+                //             $history->where('id_regular_delivery_plan_box',$stock[$key+$i]->id_regular_delivery_plan_box)->where('type',Constant::INSTOCK)->first()->delete();
+                //             $history->where('id_regular_delivery_plan_box', $stock[$key+$i]->id_regular_delivery_plan_box)->where('type',Constant::OUTSTOCK)->first()->delete();
+                //         }
+                //     }
+                // }
 
                 $fix = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
                 $fix == null ? null : $fix->delete();
@@ -169,7 +169,7 @@ class QueryStockConfirmationHistory extends Model {
                     'status_outstock'=> $update->in_wh == 0 ? Constant::STS_STOK : 2
                 ]);
 
-                Model::where('id_regular_delivery_plan_box',$box->id)->where('type',Constant::INSTOCK)->delete();
+                // Model::where('id_regular_delivery_plan_box',$box->id)->where('type',Constant::INSTOCK)->delete();
                 $stock_out->delete();
             }
 
@@ -212,7 +212,7 @@ class QueryStockConfirmationHistory extends Model {
                         $group_qty[] = $val->qty_pcs_box;
                         $group_id_planbox[] = $val->id;
                         $group_arr[] = [
-                            'id' => $value->id,
+                            // 'id' => $value->id,
                             'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
                             'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
@@ -269,7 +269,7 @@ class QueryStockConfirmationHistory extends Model {
                     if (count($result_qty[$i]) !== 0) {
                         $merge_qty = [
                             'in_dc' => (array_sum($result_qty[$i]) / count($plan_set->toArray())),
-                            'id_regular_delivery_plan_box' => $result_id_planbox[$i][0].','.count($result_id_planbox[$i]),
+                            'id' => $result_id_planbox[$i][0].'-'.count($result_id_planbox[$i]),
                         ];
                         $result_merge[] = array_merge($merge_qty,$result_arr[$i]);
                     }
@@ -288,8 +288,8 @@ class QueryStockConfirmationHistory extends Model {
                     if (in_array($val->id,$check_scan->toArray())) {
                         $group_qty[] = $val->qty_pcs_box;
                         $group_arr[] = [
-                            'id' => $value->id,
-                            'id_regular_delivery_plan_box' => $val->id,
+                            // 'id' => $value->id,
+                            'id' => $val->id,
                             'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
                             'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
