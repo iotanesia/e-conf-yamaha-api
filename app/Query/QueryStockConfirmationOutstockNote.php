@@ -49,23 +49,12 @@ class QueryStockConfirmationOutstockNote extends Model {
                     $total_item = explode('-',$id_params)[1];
     
                     $delivery_plan_box = RegularDeliveryPlanBox::find($id);
-                    $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)->where('type',Constant::OUTSTOCK)->get()->pluck('id_regular_delivery_plan_box');
-                    $query = RegularDeliveryPlanBox::query();
-                    if (count($check_scan) > 1) {
-                        $box = $query->where('id_regular_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)
-                                                    ->whereNotIn('id',$check_scan->toArray())
+                    $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)
                                                     ->whereNotNull('qrcode')
                                                     ->orderBy('qty_pcs_box', 'desc')
                                                     ->orderBy('id', 'asc')
                                                     ->get();
-                    } else {
-                        $box = $query->where('id_regular_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)
-                                                    ->whereNotNull('qrcode')
-                                                    ->orderBy('qty_pcs_box', 'desc')
-                                                    ->orderBy('id', 'asc')
-                                                    ->get();
-                    }
-    
+
                     $qty_pcs_box = [];
                     $id_plan_box = [];
                     $id_box = [];
