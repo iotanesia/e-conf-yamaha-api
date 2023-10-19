@@ -120,15 +120,15 @@ class QueryStockConfirmationHistory extends Model {
                 $stokTemp = RegularStokConfirmationTemp::where('qr_key', $id)->first();
                 $stokTemp->update(['is_reject' => 1]);
                 
-                // foreach ($stock as $key => $val) {
-                //     if ($val->id_regular_delivery_plan_box === (int)$id_box) {
-                //         for ($i=0; $i < $total_item; $i++) { 
-                //             $history = Model::query();
-                //             $history->where('id_regular_delivery_plan_box',$stock[$key+$i]->id_regular_delivery_plan_box)->where('type',Constant::INSTOCK)->first()->delete();
-                //             $history->where('id_regular_delivery_plan_box', $stock[$key+$i]->id_regular_delivery_plan_box)->where('type',Constant::OUTSTOCK)->first()->delete();
-                //         }
-                //     }
-                // }
+                foreach ($stock as $key => $val) {
+                    if ($val->id_regular_delivery_plan_box === (int)$id_box) {
+                        for ($i=0; $i < $total_item; $i++) { 
+                            $history = Model::query();
+                            // $history->where('id_regular_delivery_plan_box',$stock[$key+$i]->id_regular_delivery_plan_box)->where('type',Constant::INSTOCK)->first()->delete();
+                            $history->where('id_regular_delivery_plan_box', $stock[$key+$i]->id_regular_delivery_plan_box)->where('type',Constant::OUTSTOCK)->first()->delete();
+                        }
+                    }
+                }
 
                 $fix = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
                 $fix == null ? null : $fix->delete();
