@@ -85,8 +85,10 @@ class QueryStockConfirmationOutstockNote extends Model {
     
                     $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
                     $in_stock_wh = $stock_confirmation->in_wh;
+                    $in_dc_total = $stock_confirmation->in_dc - $qty_pcs_box_res;
                     $in_wh_total = $in_stock_wh + $qty_pcs_box_res;
     
+                    $stock_confirmation->in_dc = $in_dc_total;
                     $stock_confirmation->in_wh = $in_wh_total;
                     $stock_confirmation->save();
     
@@ -96,6 +98,9 @@ class QueryStockConfirmationOutstockNote extends Model {
                     $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
                     $in_stock_wh = $stock_confirmation->in_wh;
                     $in_wh_total = $in_stock_wh + $delivery_plan_box->qty_pcs_box;
+                    $in_dc_total = $stock_confirmation->in_dc - $delivery_plan_box->qty_pcs_box;
+
+                    $stock_confirmation->in_dc = $in_dc_total;
                     $stock_confirmation->in_wh = $in_wh_total;
                     $stock_confirmation->save();
                 }

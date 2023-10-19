@@ -1117,7 +1117,7 @@ class QueryStockConfirmationHistory extends Model {
                 $in_dc_total = $stock_confirmation->in_dc - $qty_pcs_box_res;
 
                 // $stock_confirmation->in_wh = $in_wh_total;
-                $stock_confirmation->in_dc = $in_dc_total;
+                // $stock_confirmation->in_dc = $in_dc_total;
                 $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
 
@@ -1153,7 +1153,7 @@ class QueryStockConfirmationHistory extends Model {
                 $in_wh_total = $in_stock_wh + $delivery_plan_box->qty_pcs_box;
                 $in_dc_total = $stock_confirmation->in_dc - $delivery_plan_box->qty_pcs_box;
                 // $stock_confirmation->in_wh = $in_wh_total;
-                $stock_confirmation->in_dc = $in_dc_total;
+                // $stock_confirmation->in_dc = $in_dc_total;
                 $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
 
