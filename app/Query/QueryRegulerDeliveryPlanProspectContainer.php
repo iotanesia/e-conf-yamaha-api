@@ -1022,6 +1022,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
             $count_container = (int)ceil($sum_row_length / 12031);
             $send_summary_box = $summary_box;
+            $sum_send_summary_box = 0;
             for ($i=1; $i <= $count_container; $i++) { 
                 if ($sum_row_length < 5905) {
                     $creation['id_container'] = 1;
@@ -1039,7 +1040,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
                 RegularProspectContainerCreation::create($creation);
                 $sum_row_length = $sum_row_length - 12031;
-                $send_summary_box = $sum_count_box - $summary_box;
+                $send_summary_box = $send_summary_box;
+                $sum_send_summary_box += $send_summary_box;
+                $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
+
+                if ($send_summary_box > $remaining_send_summary_box) {
+                    $send_summary_box = $remaining_send_summary_box;
+                }
 
                 if ($sum_row_length < 5905) {
                     $sum_count_box = $send_summary_box;
