@@ -1031,6 +1031,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
 
             //calculation part single
+            if (count($delivery_plan) !== 0) {
+
             $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
                 'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
             ->whereIn('id_regular_delivery_plan',$delivery_plan)
@@ -1157,6 +1159,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 if ($sum_row_length < 5905) {
                     $sum_count_box = $send_summary_box;
                 }
+            }
+
             }
 
             $upd = RegularProspectContainer::find($params->id);
