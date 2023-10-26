@@ -62,7 +62,7 @@ class ContainerPlan implements ShouldQueue
                         for ($i=0; $i < $countSummaryBox; $i++) { 
                             foreach ($box_update->take($jml_box_update) as $value_box) {
                                 $id_prop = RegularProspectContainerCreation::where('id_prospect_container', $params['id'])
-                                                                            ->where('iteration', ($i+1))
+                                                                            ->where('iteration', ($i+100))
                                                                             ->orderBy('id', 'asc')
                                                                             ->first();
                                 
