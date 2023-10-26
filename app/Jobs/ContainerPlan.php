@@ -84,6 +84,7 @@ class ContainerPlan implements ShouldQueue
                             if ($index == $arrSummaryBox[$counter]) {
                                 $iteration = $iteration + 1;
                                 $counter = $counter + 1;
+                                $index = 0;
                             }
                         }
                         $index = $index + 1;
