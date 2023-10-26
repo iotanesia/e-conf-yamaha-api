@@ -1022,7 +1022,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $set = [
                     'id' => $params->id,
                     'colis' => $delivery_plan_box_set,
-                    'box_set_count' => $box_set_count
+                    'box_set_count' => $box_set_count,
+                    'check' => 'set'
                 ];
     
                ContainerPlan::dispatch($set);
@@ -1165,7 +1166,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $set = [
                 'id' => $params->id,
                 'colis' => $delivery_plan_box,
-                'box_set_count' => $box_set_count
+                'box_set_count' => $box_set_count,
+                'check' => 'single'
             ];
 
            DB::commit();

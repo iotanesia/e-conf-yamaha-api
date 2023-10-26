@@ -37,12 +37,23 @@ class ContainerPlan implements ShouldQueue
     {
         //distributed data algorithm
         $params = $this->params;
-        $arrSummaryBox = RegularProspectContainerCreation::where('id_prospect_container', $params['id'])
-            ->orderBy('id', 'asc')
-            ->get()
-            ->map(function ($item){
-                return $item->summary_box;
-            });
+        if ($params['check'] == 'set') {
+            $arrSummaryBox = RegularProspectContainerCreation::where('id_prospect_container', $params['id'])
+                ->orderBy('id', 'asc')
+                ->get()
+                ->map(function ($item){
+                    return $item->summary_box;
+                });
+        } else {
+            $arrSummaryBox = RegularProspectContainerCreation::where('id_prospect_container', $params['id'])
+                ->where('iteration','<',100)
+                ->orderBy('id', 'asc')
+                ->get()
+                ->map(function ($item){
+                    return $item->summary_box;
+                });
+        }
+        
         $iteration = 1;
         $index = 1;
         $countSummaryBox = count($arrSummaryBox);
