@@ -846,40 +846,205 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 ->where('id_prospect_container', $params->id)
                 ->orderBy('id', 'asc')
                 ->get();
+
             $delivery_plan = [];
-            $item_no = [];
+            $delivery_plan_set = [];
             foreach ($plan as $item){
-                $delivery_plan[] = $item->id;
-                $item_no[] = $item->item_no;
+                if ($item->item_no == null) {
+                    $delivery_plan_set[] = $item->id;
+                } else {
+                    $delivery_plan[] = $item->id;
+                }
             }
 
+            //calculation part set
+            if (count($delivery_plan_set) > 0) {
+                $delivery_plan_box_set = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
+                'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
+                ->whereIn('id_regular_delivery_plan',$delivery_plan_set)
+                ->groupBy('id_box', 'id_regular_delivery_plan')
+                ->orderBy('count_box','desc')
+                ->get()
+                ->map(function ($item, $index){
+                    
+                    if ($item->refRegularDeliveryPlan->item_no == null) {
+                        $count_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->count();
+                        $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refBox->length * (int)ceil(($item->count_box / $count_set) / 4));
+                        $count_box = $item->count_box / $count_set;
+                        $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
+                                                        ->where('id_box', $item->id_box)
+                                                        ->whereNull('id_prospect_container_creation')
+                                                        ->orderBy('id', 'asc')
+                                                        ->get();
+                        $box_set_count = count($box);
+                    } 
+
+                    return [
+                        'id_delivery_plan' => $item->id_regular_delivery_plan,
+                        'item_no' => $item->refBox->item_no,
+                        'label' => $item->refBox->no_box,
+                        'width' =>  $item->refBox->width,
+                        'length' => $item->refBox->length,
+                        'count_box' => $count_box,
+                        'sum_qty' => $item->sum_qty,
+                        'priority' => $index + 1,
+                        'forkside' => $item->refBox->fork_side,
+                        'stackingCapacity' => $item->refBox->stack_capacity,
+                        'row' => (int)ceil($count_box / 4),
+                        'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
+                        'row_length' => $row_length,
+                        'box' => $box,
+                        'box_set_count' => $box_set_count
+                    ];
+                });
+
+                $box_set_count = 0;
+                $sum_row_length = 0;
+                $sum_count_box = 0;
+                $sum_qty_box = [];
+                $first_row_length = [];
+                $first_row = [];
+                $first_count_box = [];
+                $row_length = [];
+                $count_box = [];
+                $big_row_length = [];
+                foreach ($delivery_plan_box_set as $key => $value) {
+                    $box_set_count += $value['box_set_count'];
+                    $sum_row_length += $value['row_length'];
+                    $sum_count_box += $value['count_box'];
+                    $sum_qty_box[] = $value['sum_qty'];
+                    $first_row_length[] = $delivery_plan_box_set[$key]['first_row_length'];
+                    $first_row[] = $delivery_plan_box_set[$key]['row'];
+                    $first_count_box[] = $delivery_plan_box_set[$key]['count_box'];
+                    $row_length[] = $delivery_plan_box_set[$key]['row_length'];
+                    $count_box[] = $delivery_plan_box_set[$key]['count_box'];
+                    $big_row_length[] = $delivery_plan_box_set[$key]['first_row_length'] * $delivery_plan_box_set[$key]['row'];
+                }
+
+                $set = RegularDeliveryPlanSet::select('regular_delivery_plan_set.id_delivery_plan',
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.id::character varying, ',') as id_deliv_plan_set"),
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.item_no::character varying, ',') as item_no"),
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.qty::character varying, ',') as qty")
+                )
+                ->whereIn('id_delivery_plan', $delivery_plan_set)
+                ->groupBy('regular_delivery_plan_set.id_delivery_plan')
+                ->orderBy('id_deliv_plan_set','asc')->get();
+
+                $count_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan_set)->count();
+                $sum_row_length = $sum_row_length / $count_set;
+
+                $item_no_set = [];
+                foreach ($set as $key => $value) {
+                    $item_no_set[] = explode(',',$value->item_no);
+                }
+                
+                $max_qty = [];
+                foreach ($item_no_set as $key => $value) {
+                    $mst_box = MstBox::where('part_set', 'set')
+                                ->whereIn('item_no', $value)
+                                ->get()->map(function ($item){
+                                    $qty = [
+                                        $item->item_no => $item->qty
+                                    ];
+                                
+                                    return array_merge($qty);
+                                });
+
+                    $deliv_plan_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan_set)->whereIn('item_no', $value)->get();
+                    $qty_per_item_no = [];
+                    foreach ($deliv_plan_set as $key => $value) {
+                        $qty_per_item_no[] = [
+                            $value->item_no => $value->qty
+                        ];
+                    }
+                            
+                    $qty = [];
+                    foreach ($mst_box as $key => $value) {
+                        $arary_key = array_keys($value)[0];
+                        $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
+                    }
+                    $max_qty[] = (int)ceil(max($qty));
+                }
+
+                if ($sum_row_length > 12031) {
+                    while ($sum_row_length > 12031) {
+                        $sum_row_length -= 12031;
+                    }
+
+                    $persentase = $sum_row_length / 12031;
+                    $summary_box = (int)floor(array_sum($max_qty) * $persentase);
+                } else {
+                    $summary_box = array_sum($max_qty);   
+                }
+
+                $sum_count_box = array_sum($max_qty);
+
+                $creation = [
+                    'id_type_delivery' => $lsp->id_type_delivery,
+                    'id_mot' => $lsp->refTypeDelivery->id_mot,
+                    'id_lsp' => $lsp->id,
+                    'code_consignee' => $prospect_container->code_consignee,
+                    'etd_jkt' => $prospect_container->etd_jkt,
+                    'etd_ypmi' => $prospect_container->etd_ypmi,
+                    'etd_wh' => $prospect_container->etd_wh,
+                    'id_prospect_container' => $params->id,
+                    'status_bml' => 0,
+                    'datasource' => $params->datasource,
+                ];
+    
+                $count_container = (int)ceil($sum_row_length / 12031);
+                $send_summary_box = $summary_box;
+                $sum_send_summary_box = 0;
+                for ($i=1; $i <= $count_container; $i++) { 
+                    if ($sum_row_length < 5905) {
+                        $creation['id_container'] = 1;
+                        $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
+                        $creation['summary_box'] = (int)floor($sum_count_box);
+                        $creation['iteration'] = $i;
+                        $creation['space'] = 5905 - (int)$sum_row_length;
+                    } else {
+                        $creation['id_container'] = 2;
+                        $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
+                        $creation['summary_box'] = (int)floor($send_summary_box);
+                        $creation['iteration'] = $i;
+                        $creation['space'] = 12031 - (int)$sum_row_length;
+                    }
+    
+                    RegularProspectContainerCreation::create($creation);
+                    $sum_row_length = $sum_row_length - 12031;
+                    $send_summary_box = $sum_count_box - $summary_box;
+                    
+                    if ($sum_row_length < 5905) {
+                        $sum_count_box = $send_summary_box;
+                    }
+                }
+
+                $set = [
+                    'id' => $params->id,
+                    'colis' => $delivery_plan_box_set,
+                    'box_set_count' => $box_set_count
+                ];
+    
+               ContainerPlan::dispatch($set);
+            } 
+
+
+            //calculation part single
             $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
                 'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
             ->whereIn('id_regular_delivery_plan',$delivery_plan)
             ->groupBy('id_box', 'id_regular_delivery_plan')
             ->orderBy('count_box','desc')
             ->get()
-            ->map(function ($item, $index) use($item_no){
+            ->map(function ($item, $index){
                 
-                if ($item_no[0] == null) {
-                    $count_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->count();
-                    $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refBox->length * (int)ceil(($item->count_box / $count_set) / 4));
-                    $count_box = $item->count_box / $count_set;
-                    $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
-                                                    ->where('id_box', $item->id_box)
-                                                    ->whereNull('id_prospect_container_creation')
-                                                    ->orderBy('id', 'asc')
-                                                    ->get();
-                    $box_set_count = count($box);
-                } else {
-                    $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
-                    $count_box = $item->count_box;
-                    $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
-                                                    ->whereNull('id_prospect_container_creation')
-                                                    ->orderBy('id', 'asc')
-                                                    ->get();
-                    $box_set_count = count($box);
-                }
+                $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
+                $count_box = $item->count_box;
+                $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
+                                                ->whereNull('id_prospect_container_creation')
+                                                ->orderBy('id', 'asc')
+                                                ->get();
+                $box_set_count = count($box);
 
                 return [
                     'id_delivery_plan' => $item->id_regular_delivery_plan,
@@ -947,66 +1112,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 }
             }
 
-            if ($item_no[0] == null) {
-                $set = RegularDeliveryPlanSet::select('regular_delivery_plan_set.id_delivery_plan',
-                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.id::character varying, ',') as id_deliv_plan_set"),
-                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.item_no::character varying, ',') as item_no"),
-                    DB::raw("string_agg(DISTINCT regular_delivery_plan_set.qty::character varying, ',') as qty")
-                )
-                ->whereIn('id_delivery_plan', $delivery_plan)
-                ->groupBy('regular_delivery_plan_set.id_delivery_plan')
-                ->orderBy('id_deliv_plan_set','asc')->get();
-
-                $count_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan)->count();
-                $sum_row_length = $sum_row_length / $count_set;
-
-                $item_no_set = [];
-                foreach ($set as $key => $value) {
-                    $item_no_set[] = explode(',',$value->item_no);
-                }
-                
-                $max_qty = [];
-                foreach ($item_no_set as $key => $value) {
-                    $mst_box = MstBox::where('part_set', 'set')
-                                ->whereIn('item_no', $value)
-                                ->get()->map(function ($item){
-                                    $qty = [
-                                        $item->item_no => $item->qty
-                                    ];
-                                
-                                    return array_merge($qty);
-                                });
-
-                    $deliv_plan_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan)->whereIn('item_no', $value)->get();
-                    $qty_per_item_no = [];
-                    foreach ($deliv_plan_set as $key => $value) {
-                        $qty_per_item_no[] = [
-                            $value->item_no => $value->qty
-                        ];
-                    }
-                            
-                    $qty = [];
-                    foreach ($mst_box as $key => $value) {
-                        $arary_key = array_keys($value)[0];
-                        $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
-                    }
-                    $max_qty[] = (int)ceil(max($qty));
-                }
-
-                if ($sum_row_length > 12031) {
-                    while ($sum_row_length > 12031) {
-                        $sum_row_length -= 12031;
-                    }
-
-                    $persentase = $sum_row_length / 12031;
-                    $summary_box = (int)floor(array_sum($max_qty) * $persentase);
-                } else {
-                    $summary_box = array_sum($max_qty);   
-                }
-
-                $sum_count_box = array_sum($max_qty);
-            }
-
             $creation = [
                 'id_type_delivery' => $lsp->id_type_delivery,
                 'id_mot' => $lsp->refTypeDelivery->id_mot,
@@ -1038,20 +1143,14 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     $creation['space'] = (int)$space;
                 }
 
-                if ($item_no[0] == null) {
-                    RegularProspectContainerCreation::create($creation);
-                    $sum_row_length = $sum_row_length - 12031;
-                    $send_summary_box = $sum_count_box - $summary_box;
-                } else {
-                    RegularProspectContainerCreation::create($creation);
-                    $sum_row_length = $sum_row_length - 12031;
-                    $send_summary_box = $send_summary_box;
-                    $sum_send_summary_box += $send_summary_box;
-                    $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
+                RegularProspectContainerCreation::create($creation);
+                $sum_row_length = $sum_row_length - 12031;
+                $send_summary_box = $send_summary_box;
+                $sum_send_summary_box += $send_summary_box;
+                $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
 
-                    if ($send_summary_box > $remaining_send_summary_box) {
-                        $send_summary_box = $remaining_send_summary_box;
-                    }
+                if ($send_summary_box > $remaining_send_summary_box) {
+                    $send_summary_box = $remaining_send_summary_box;
                 }
                 
                 if ($sum_row_length < 5905) {
