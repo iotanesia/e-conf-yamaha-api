@@ -1038,16 +1038,22 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     $creation['space'] = $space;
                 }
 
-                RegularProspectContainerCreation::create($creation);
-                $sum_row_length = $sum_row_length - 12031;
-                $send_summary_box = $send_summary_box;
-                $sum_send_summary_box += $send_summary_box;
-                $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
+                if ($item_no[0] == null) {
+                    RegularProspectContainerCreation::create($creation);
+                    $sum_row_length = $sum_row_length - 12031;
+                    $send_summary_box = $sum_count_box - $summary_box;
+                } else {
+                    RegularProspectContainerCreation::create($creation);
+                    $sum_row_length = $sum_row_length - 12031;
+                    $send_summary_box = $send_summary_box;
+                    $sum_send_summary_box += $send_summary_box;
+                    $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
 
-                if ($send_summary_box > $remaining_send_summary_box) {
-                    $send_summary_box = $remaining_send_summary_box;
+                    if ($send_summary_box > $remaining_send_summary_box) {
+                        $send_summary_box = $remaining_send_summary_box;
+                    }
                 }
-
+                
                 if ($sum_row_length < 5905) {
                     $sum_count_box = $send_summary_box;
                 }
