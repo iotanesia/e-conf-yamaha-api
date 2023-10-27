@@ -70,6 +70,8 @@ class QueryMstPart extends Model {
         try {
 
             $params = $request->all();
+            $params['item_serial'] = substr($params['item_no'], 0, 3).'-'.substr($params['item_no'], 3, 5).'-'.substr($params['item_no'], 8, 2).'-'.substr($params['item_no'], 10);
+            $params['customer_use'] = $params['code_consignee'];
             self::create($params);
 
             if($is_transaction) DB::commit();
