@@ -76,7 +76,7 @@ class QueryMstBox extends Model {
             ]);
 
             $params = $request->all();
-            $id_box = Model::orderByDesc('id')->first()->id_box;
+            $id_box = Model::where('id_box', Model::max('id_box'))->first()->id_box;
 
             for ($i=0; $i < count($params['item_no']); $i++) { 
                 $mst_part = MstPart::where('item_no', $params['item_no'][$i])->get();
