@@ -149,10 +149,11 @@ class QueryMstBox extends Model {
             $item->part_item_no = $part_item_no;
             $item->part_description = $part_description;
             $item->id_mst_box = explode(',',$item->id_mst_box);
+            $item->id_group_product = explode(',',$item->id_group_product);
             $item->id_part = explode(',',$item->id_part);
             $item->item_no = explode(',',$item->item_no);
             $item->item_no_series = explode(',',$item->item_no_series);
-            $item->group_product = MstGroupProduct::whereIn('id', explode(',',$item->id_group_product))->get()->pluck('group_product') ?? null;
+            $item->group_product = MstGroupProduct::whereIn('id', $item->id_group_product)->get()->pluck('group_product') ?? null;
             
             return $item;
         });
