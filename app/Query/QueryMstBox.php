@@ -271,7 +271,10 @@ class QueryMstBox extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
-            self::destroy($id);
+            $data = self::whereIn('id',explode(',',$id))->get();
+            foreach ($data as $key => $delete) {
+                $delete->delete();
+            }
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
