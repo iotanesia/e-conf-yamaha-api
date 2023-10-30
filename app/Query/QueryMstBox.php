@@ -83,7 +83,6 @@ class QueryMstBox extends Model {
                     $item->id_part = explode(',',$item->id_part);
                     $item->item_no = explode(',',$item->item_no);
                     $item->item_no_series = explode(',',$item->item_no_series);
-                    $item->id = explode(',',$item->id_mst_box);
                     
                     return $item;
                 }),
