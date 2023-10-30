@@ -60,7 +60,8 @@ class QueryMstBox extends Model {
             $result->part_description = $result->refPart->description ?? null;
             $result->group_product = $result->refGroupProduct->group_product ?? null;
             unset(
-                $result->refPart
+                $result->refPart,
+                $result->refGroupProduct
             );
         }
         return $result;
