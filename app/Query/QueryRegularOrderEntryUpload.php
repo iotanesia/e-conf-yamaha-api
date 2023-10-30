@@ -613,12 +613,24 @@ class QueryRegularOrderEntryUpload extends Model {
 
             $upload_detail_set = RegularOrderEntryUploadDetailSet::where('id_regular_order_entry', $upload->id_regular_order_entry)->get()->toArray();
             foreach ($upload_detail_set as $key => $value) {
-                RegularDeliveryPlanSet::create([
-                    "id_delivery_plan" => $value['id_detail'],
-                    "item_no" => $value['item_no'],
-                    "id_regular_order_entry" => $value['id_regular_order_entry'],
-                    "qty" => $value['qty'],
-                ]);
+
+                $check_set = RegularDeliveryPlanSet::where('item_no', $value['item_no'])
+                                                    ->where('id_regular_order_entry', $value['id_regular_order_entry'])
+                                                    ->where('qty', $value['qty'])->first();
+                $created_at = Carbon::parse($check_set->created_at);
+                $currentTime = Carbon::now();
+
+                // Calculate the time difference
+                $diffInMinutes = $created_at->diffInMinutes($currentTime);
+                if ($diffInMinutes < 1) {
+                    RegularDeliveryPlanSet::create([
+                        "id_delivery_plan" => $value['id_detail'],
+                        "item_no" => $value['item_no'],
+                        "id_regular_order_entry" => $value['id_regular_order_entry'],
+                        "qty" => $value['qty'],
+                    ]);
+                }
+
             }
 
             $deliv_plan_set = RegularDeliveryPlanSet::select('regular_delivery_plan_set.id_delivery_plan',
