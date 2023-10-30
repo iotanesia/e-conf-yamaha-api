@@ -20,7 +20,34 @@ class QueryMstBox extends Model {
     {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
-            $query = self::where(function ($query) use ($params){
+            $query = self::select('mst_box.id_box','mst_box.part_set',
+            DB::raw("string_agg(DISTINCT mst_box.id::character varying, ',') as id_mst_box"),
+            DB::raw("string_agg(DISTINCT mst_box.no_box::character varying, ',') as no_box"),
+            DB::raw("string_agg(DISTINCT mst_box.id_group_product::character varying, ',') as id_group_product"),
+            DB::raw("string_agg(DISTINCT mst_box.id_consignee::character varying, ',') as id_consignee"),
+            DB::raw("string_agg(DISTINCT mst_box.id_part::character varying, ',') as id_part"),
+            DB::raw("string_agg(DISTINCT mst_box.item_no::character varying, ',') as item_no"),
+            DB::raw("string_agg(DISTINCT mst_box.item_no_series::character varying, ',') as item_no_series"),
+            DB::raw("string_agg(DISTINCT mst_box.qty::character varying, ',') as qty"),
+            DB::raw("string_agg(DISTINCT mst_box.unit_weight_gr::character varying, ',') as unit_weight_gr"),
+            DB::raw("string_agg(DISTINCT mst_box.unit_weight_kg::character varying, ',') as unit_weight_kg"),
+            DB::raw("string_agg(DISTINCT mst_box.outer_carton_weight::character varying, ',') as outer_carton_weight"),
+            DB::raw("string_agg(DISTINCT mst_box.total_gross_weight::character varying, ',') as total_gross_weight"),
+            DB::raw("string_agg(DISTINCT mst_box.length::character varying, ',') as length"),
+            DB::raw("string_agg(DISTINCT mst_box.width::character varying, ',') as width"),
+            DB::raw("string_agg(DISTINCT mst_box.height::character varying, ',') as height"),
+            DB::raw("string_agg(DISTINCT mst_box.ratio::character varying, ',') as ratio"),
+            DB::raw("string_agg(DISTINCT mst_box.fork_length::character varying, ',') as fork_length"),
+            DB::raw("string_agg(DISTINCT mst_box.row_qty::character varying, ',') as row_qty"),
+            DB::raw("string_agg(DISTINCT mst_box.box_in_cont::character varying, ',') as box_in_cont"),
+            DB::raw("string_agg(DISTINCT mst_box.qty_in_cont::character varying, ',') as qty_in_cont"),
+            DB::raw("string_agg(DISTINCT mst_box.fork_side::character varying, ',') as fork_side"),
+            DB::raw("string_agg(DISTINCT mst_box.code_consignee::character varying, ',') as code_consignee"),
+            DB::raw("string_agg(DISTINCT mst_box.stack_capacity::character varying, ',') as stack_capacity"),
+            DB::raw("string_agg(DISTINCT mst_box.size::character varying, ',') as size"),
+            DB::raw("string_agg(DISTINCT mst_box.volume::character varying, ',') as volume"),
+            DB::raw("string_agg(DISTINCT mst_box.num_set::character varying, ',') as num_set"),
+            )->where(function ($query) use ($params){
                if($params->kueri) $query->where('no_box',"like", "%$params->kueri%")
                                         ->orWhere('item_no',"like", "%$params->kueri%")
                                         ->orWhere('item_no_series',"like", "%$params->kueri%")
@@ -30,15 +57,33 @@ class QueryMstBox extends Model {
             });
             if($params->withTrashed == 'true') $query->withTrashed();
             $data = $query
-            ->orderBy('id','asc')
+            ->groupBy('part_set','id_box')
+            ->orderBy('id_mst_box','asc')
             ->paginate($params->limit ?? null);
             return [
                 'items' => $data->getCollection()->transform(function($item){
-                    $item->part_item_no = $item->refPart->item_no ?? null;
-                    $item->part_description = $item->refPart->description ?? null;
-                    unset(
-                        $item->refPart
-                    );
+
+                    if (count(explode(',',$item->id_part)) > 1) {
+                        $part = MstPart::whereIn('id', explode(',',$item->id_part))->get();
+                        $part_item_no = $part->pluck('item_no') ?? null;
+                        $part_description = $part->pluck('description') ?? null;
+                    } else {
+                        $part_item_no = [$item->refPart->item_no] ?? null;
+                        $part_description = [$item->refPart->description] ?? null;
+
+                        unset(
+                            $item->refPart
+                        );
+                    }
+                    
+                    $item->part_item_no = $part_item_no;
+                    $item->part_description = $part_description;
+                    $item->id_mst_box = explode(',',$item->id_mst_box);
+                    $item->id_group_product = explode(',',$item->id_group_product);
+                    $item->id_part = explode(',',$item->id_part);
+                    $item->item_no = explode(',',$item->item_no);
+                    $item->item_no_series = explode(',',$item->item_no_series);
+                    
                     return $item;
                 }),
                 'attributes' => [
@@ -54,17 +99,76 @@ class QueryMstBox extends Model {
 
     public static function byId($id)
     {
-        $result = self::find($id);
-        if($result) {
-            $result->part_item_no = $result->refPart->item_no ?? null;
-            $result->part_description = $result->refPart->description ?? null;
-            $result->group_product = $result->refGroupProduct->group_product ?? null;
-            unset(
-                $result->refPart,
-                $result->refGroupProduct
-            );
-        }
-        return $result;
+        // $result = self::find($id);
+        // if($result) {
+        //     $result->part_item_no = $result->refPart->item_no ?? null;
+        //     $result->part_description = $result->refPart->description ?? null;
+        //     $result->group_product = $result->refGroupProduct->group_product ?? null;
+        //     unset(
+        //         $result->refPart,
+        //         $result->refGroupProduct
+        //     );
+        // }
+
+        $query = self::select('mst_box.id_box','mst_box.part_set',
+            DB::raw("string_agg(DISTINCT mst_box.id::character varying, ',') as id_mst_box"),
+            DB::raw("string_agg(DISTINCT mst_box.no_box::character varying, ',') as no_box"),
+            DB::raw("string_agg(DISTINCT mst_box.id_group_product::character varying, ',') as id_group_product"),
+            DB::raw("string_agg(DISTINCT mst_box.id_consignee::character varying, ',') as id_consignee"),
+            DB::raw("string_agg(DISTINCT mst_box.id_part::character varying, ',') as id_part"),
+            DB::raw("string_agg(DISTINCT mst_box.item_no::character varying, ',') as item_no"),
+            DB::raw("string_agg(DISTINCT mst_box.item_no_series::character varying, ',') as item_no_series"),
+            DB::raw("string_agg(DISTINCT mst_box.qty::character varying, ',') as qty"),
+            DB::raw("string_agg(DISTINCT mst_box.unit_weight_gr::character varying, ',') as unit_weight_gr"),
+            DB::raw("string_agg(DISTINCT mst_box.unit_weight_kg::character varying, ',') as unit_weight_kg"),
+            DB::raw("string_agg(DISTINCT mst_box.outer_carton_weight::character varying, ',') as outer_carton_weight"),
+            DB::raw("string_agg(DISTINCT mst_box.total_gross_weight::character varying, ',') as total_gross_weight"),
+            DB::raw("string_agg(DISTINCT mst_box.length::character varying, ',') as length"),
+            DB::raw("string_agg(DISTINCT mst_box.width::character varying, ',') as width"),
+            DB::raw("string_agg(DISTINCT mst_box.height::character varying, ',') as height"),
+            DB::raw("string_agg(DISTINCT mst_box.ratio::character varying, ',') as ratio"),
+            DB::raw("string_agg(DISTINCT mst_box.fork_length::character varying, ',') as fork_length"),
+            DB::raw("string_agg(DISTINCT mst_box.row_qty::character varying, ',') as row_qty"),
+            DB::raw("string_agg(DISTINCT mst_box.box_in_cont::character varying, ',') as box_in_cont"),
+            DB::raw("string_agg(DISTINCT mst_box.qty_in_cont::character varying, ',') as qty_in_cont"),
+            DB::raw("string_agg(DISTINCT mst_box.fork_side::character varying, ',') as fork_side"),
+            DB::raw("string_agg(DISTINCT mst_box.code_consignee::character varying, ',') as code_consignee"),
+            DB::raw("string_agg(DISTINCT mst_box.stack_capacity::character varying, ',') as stack_capacity"),
+            DB::raw("string_agg(DISTINCT mst_box.size::character varying, ',') as size"),
+            DB::raw("string_agg(DISTINCT mst_box.volume::character varying, ',') as volume"),
+            DB::raw("string_agg(DISTINCT mst_box.num_set::character varying, ',') as num_set"),
+            )->whereIn('id',explode(',',$id))
+            ->groupBy('part_set','id_box')
+            ->orderBy('id_mst_box','asc')
+            ->paginate(1);
+
+        $data = $query->getCollection()->transform(function($item){
+
+            if (count(explode(',',$item->id_part)) > 1) {
+                $part = MstPart::whereIn('id', explode(',',$item->id_part))->get();
+                $part_item_no = $part->pluck('item_no') ?? null;
+                $part_description = $part->pluck('description') ?? null;
+            } else {
+                $part_item_no = [$item->refPart->item_no] ?? null;
+                $part_description = [$item->refPart->description] ?? null;
+
+                unset(
+                    $item->refPart
+                );
+            }
+            
+            $item->part_item_no = $part_item_no;
+            $item->part_description = $part_description;
+            $item->id_mst_box = explode(',',$item->id_mst_box);
+            $item->id_group_product = explode(',',$item->id_group_product);
+            $item->id_part = explode(',',$item->id_part);
+            $item->item_no = explode(',',$item->item_no);
+            $item->item_no_series = explode(',',$item->item_no_series);
+            
+            return $item;
+        });
+
+        return $data[0] ?? null;
     }
 
     public static function store($request,$is_transaction = true)
@@ -105,7 +209,7 @@ class QueryMstBox extends Model {
                     "code_consignee" => $params['code_consignee'] ?? null,
                     "size" => $params['size'] ?? null,
                     "volume" => (float)substr((($params['length'] * $params['width'] * $params['height']) / 1000000000),0,4),
-                    "part_set" => $params['part_set'] ?? null,
+                    "part_set" => count($params['item_no']) > 1 ? 'set' : 'single',
                     "id_box" => $id_box == null ? 1 : $id_box +1
                 ]);
                 
@@ -132,10 +236,39 @@ class QueryMstBox extends Model {
             ]);
 
             $params = $request->all();
-            $update = self::find($params['id']);
-            if(!$update) throw new \Exception("id tida ditemukan", 400);
-            $update->fill($params);
-            $update->save();
+            $update = self::whereIn('id', explode(',',$params['id']))->get();
+            if(count($update) == 0) throw new \Exception("data tidak ditemukan", 400);
+
+            $params = $request->all();
+            foreach ($update as $i => $update_data) {
+                $mst_part = MstPart::where('item_no', $params['item_no'][$i])->get();
+                $update_data->update([
+                    "no_box" => $params['no_box'] ?? null,
+                    "id_group_product" => $params['id_group_product'][$i] ?? null,
+                    "id_part" => $mst_part[0]->id ?? null,
+                    "item_no" => $params['item_no'][$i] ?? null,
+                    "item_no_series" => $mst_part[0]->item_serial ?? null,
+                    "qty" => $params['qty'][$i] ?? null,
+                    "unit_weight_gr" => $params['unit_weight_gr'][$i] ?? null,
+                    "unit_weight_kg" => $params['unit_weight_kg'][$i] ?? null,
+                    "outer_carton_weight" => $params['outer_carton_weight'] ?? null,
+                    "total_gross_weight" => $params['total_gross_weight'] ?? null,
+                    "length" => $params['length'] ?? null,
+                    "width" => $params['width'] ?? null,
+                    "height" => $params['height'] ?? null,
+                    "ratio" => $params['ratio'][$i] ?? null,
+                    "fork_length" => $params['fork_length'] ?? null,
+                    "row_qty" => $params['row_qty'][$i] ?? null,
+                    "box_in_cont" => $params['box_in_cont'][$i] ?? null,
+                    "qty_in_cont" => $params['qty_in_cont'][$i] ?? null,
+                    "fork_side" => $params['fork_side'] ?? null,
+                    "code_consignee" => $params['code_consignee'] ?? null,
+                    "size" => $params['size'] ?? null,
+                    "volume" => (float)substr((($params['length'] * $params['width'] * $params['height']) / 1000000000),0,4),
+                    "part_set" => count($params['item_no']) > 1 ? 'set' : 'single',
+                ]);
+            }
+
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
