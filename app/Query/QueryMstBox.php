@@ -128,8 +128,7 @@ class QueryMstBox extends Model {
 
             Helper::requireParams([
                 'id',
-                'no_box',
-                'id_part'
+                'no_box'
             ]);
 
             $params = $request->all();
