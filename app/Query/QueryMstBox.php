@@ -58,6 +58,7 @@ class QueryMstBox extends Model {
         if($result) {
             $result->part_item_no = $result->refPart->item_no ?? null;
             $result->part_description = $result->refPart->description ?? null;
+            $result->group_product = $result->refGroupProduct->group_product ?? null;
             unset(
                 $result->refPart
             );
