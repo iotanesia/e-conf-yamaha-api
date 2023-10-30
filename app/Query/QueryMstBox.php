@@ -7,6 +7,7 @@ use App\Models\MstBox AS Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
+use App\Models\MstGroupProduct;
 use App\Models\MstPart;
 use Illuminate\Support\Facades\Cache;
 
@@ -98,17 +99,6 @@ class QueryMstBox extends Model {
 
     public static function byId($id)
     {
-        // $result = self::find($id);
-        // if($result) {
-        //     $result->part_item_no = $result->refPart->item_no ?? null;
-        //     $result->part_description = $result->refPart->description ?? null;
-        //     $result->group_product = $result->refGroupProduct->group_product ?? null;
-        //     unset(
-        //         $result->refPart,
-        //         $result->refGroupProduct
-        //     );
-        // }
-
         $query = self::select('mst_box.id_box','mst_box.part_set',
             DB::raw("string_agg(DISTINCT mst_box.id::character varying, ',') as id_mst_box"),
             DB::raw("string_agg(DISTINCT mst_box.no_box::character varying, ',') as no_box"),
@@ -163,6 +153,7 @@ class QueryMstBox extends Model {
             $item->id_part = explode(',',$item->id_part);
             $item->item_no = explode(',',$item->item_no);
             $item->item_no_series = explode(',',$item->item_no_series);
+            $item->group_product = MstGroupProduct::whereIn('id', explode(',',$item->id_group_product))->get()->pluck('group_product') ?? null;
             
             return $item;
         });
