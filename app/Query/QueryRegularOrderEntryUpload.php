@@ -613,6 +613,14 @@ class QueryRegularOrderEntryUpload extends Model {
 
             $upload_detail_set = RegularOrderEntryUploadDetailSet::where('id_regular_order_entry', $upload->id_regular_order_entry)->get()->toArray();
             foreach ($upload_detail_set as $key => $value) {
+
+                $check_set = RegularDeliveryPlanSet::where('id_delivery_plan', $value['id_detail'])->get();
+                if (count($check_set) > 0) {
+                    foreach ($check_set as $del_set) {
+                        $del_set->delete();
+                    }
+                }
+
                 RegularDeliveryPlanSet::create([
                     "id_delivery_plan" => $value['id_detail'],
                     "item_no" => $value['item_no'],

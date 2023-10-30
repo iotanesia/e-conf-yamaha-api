@@ -146,7 +146,7 @@
         <thead>
             <tr>
                 <th class="text-center"> Receipt Sign</th>
-                <th class="text-center"> Logistic Provide</th>
+                <th class="text-center"> Logistic Provider</th>
                 <th class="text-center"> Approval</th>
                 <th class="text-center"> Operator </th>
             </tr>
