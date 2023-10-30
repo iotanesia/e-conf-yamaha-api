@@ -226,7 +226,7 @@ class QueryMstBox extends Model {
             ]);
 
             $params = $request->all();
-            $update = self::whereIn('id', explode(',',$params['id']))->get();
+            $update = self::whereIn('id', $params['id'])->get();
             if(count($update) == 0) throw new \Exception("data tidak ditemukan", 400);
 
             $params = $request->all();
