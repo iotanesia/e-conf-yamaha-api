@@ -232,9 +232,11 @@ class QueryStockConfirmationOutstockNote extends Model {
             $data->shipperFirstWords = str_replace("JL.", " ",implode(' ', array_slice($words, 0, 13)));
             $data->shipperLastWords = str_replace("LTD", " ",implode(' ', array_slice($words, -23)));
 
-            if ($data->manyRegularStockConfirmationOutstockNoteDetail[0]->item_no == null) {
-                $data->item_no = RegularDeliveryPlanSet::where('id_delivery_plan', $stokTemp->id_regular_delivery_plan)->pluck('item_no');
-                $data->description = MstPart::whereIn('item_no', $data->item_no)->pluck('description');
+            foreach ($data->manyRegularStockConfirmationOutstockNoteDetail as $check_item_no) {
+                if ($check_item_no->item_no == null) {
+                    $data->item_no = RegularDeliveryPlanSet::where('id_delivery_plan', $stokTemp->id_regular_delivery_plan)->pluck('item_no');
+                    $data->description = MstPart::whereIn('item_no', $data->item_no)->pluck('description');
+                }
             }
 
             Pdf::loadView('pdf.stock-confirmation.outstock.delivery_note',[

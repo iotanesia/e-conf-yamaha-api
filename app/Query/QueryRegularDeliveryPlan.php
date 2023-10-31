@@ -872,8 +872,8 @@ class QueryRegularDeliveryPlan extends Model {
             $request = $params->all();
 
             foreach ($request['data'] as $validasi) {
-                if(!$validasi['packing_date']) throw new \Exception("Please input packing date", 400);
-                if(!$validasi['lot_packing']) throw new \Exception("Please input lot packing", 400);
+                if(!$validasi['packing_date']) throw new \Exception("Please input packing date", 500);
+                if(!$validasi['lot_packing']) throw new \Exception("Please input lot packing", 500);
             }
 
             $id = [];
