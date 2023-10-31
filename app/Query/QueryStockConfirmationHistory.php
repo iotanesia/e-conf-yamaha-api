@@ -1245,8 +1245,8 @@ class QueryStockConfirmationHistory extends Model {
         $items->transform(function ($item) use($items){
             
             $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$item->id_deliv_plan)->orderBy('qty_pcs_box','desc')->orderBy('id','asc')->get();
-            foreach ($items as $check) {
-                if($check->item_number == null) {
+            
+                if($item->item_number == null) {
                     $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->id_deliv_plan)->get()->pluck('item_no');
                     $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan',$item->id_deliv_plan)->where('type','OUTSTOCK')->get()->pluck('id_regular_delivery_plan_box');
     
@@ -1310,7 +1310,6 @@ class QueryStockConfirmationHistory extends Model {
                     $item_name = $mst_part->description;
                     $in_wh = $plan_box[0]->qty_pcs_box;
                 }
-            }
             
             $item->item_number = $item_no;
             $item->item_name = $item_name;
