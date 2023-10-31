@@ -614,15 +614,16 @@ class QueryRegularOrderEntryUpload extends Model {
             $upload_detail_set = RegularOrderEntryUploadDetailSet::where('id_regular_order_entry', $upload->id_regular_order_entry)->get()->toArray();
             foreach ($upload_detail_set as $key => $value) {
 
-                $check_set = RegularDeliveryPlanSet::where('item_no', $value['item_no'])
+                $data_set = RegularDeliveryPlanSet::where('item_no', $value['item_no'])
                                                     ->where('id_regular_order_entry', $value['id_regular_order_entry'])
                                                     ->where('qty', $value['qty'])->first();
-                $created_at = Carbon::parse($check_set->created_at);
+                $check_set = $data_set !== null ? $data_set->created_at : '1945-08-17';
+                $created_at = Carbon::parse($check_set);
                 $currentTime = Carbon::now();
 
                 // Calculate the time difference
                 $diffInMinutes = $created_at->diffInMinutes($currentTime);
-                if ($diffInMinutes < 1) {
+                if ($data_set == null || $diffInMinutes < 1) {
                     RegularDeliveryPlanSet::create([
                         "id_delivery_plan" => $value['id_detail'],
                         "item_no" => $value['item_no'],
