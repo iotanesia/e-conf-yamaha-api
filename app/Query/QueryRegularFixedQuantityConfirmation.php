@@ -321,10 +321,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             if($params->date_start || $params->date_finish)
                 $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
 
+            if($params->is_actual == 0)
+                $query->whereIn('is_actual', [0,99]);
+            else
+                $query->where('is_actual', $params->is_actual);
 
-        })
-        ->where('is_actual', $params->is_actual ?? 0)
-            ->paginate($params->limit ?? null);
+
+        })->paginate($params->limit ?? null);
 
         $data->map(function ($item){
             $item->cust_name = $item->refConsignee->nick_name ?? null;
