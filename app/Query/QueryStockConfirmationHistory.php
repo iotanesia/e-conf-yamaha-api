@@ -1305,7 +1305,7 @@ class QueryStockConfirmationHistory extends Model {
                         $item_name[] = $value->description;
                     }
                 } else {
-                    $mst_part = MstPart::where('item_no', $items[0]->item_number)->first();
+                    $mst_part = MstPart::where('item_no', $item->item_number)->first();
                     $item_no = $mst_part->item_no;
                     $item_name = $mst_part->description;
                     $in_wh = $plan_box[0]->qty_pcs_box;
