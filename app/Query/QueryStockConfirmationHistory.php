@@ -556,8 +556,8 @@ class QueryStockConfirmationHistory extends Model {
                 // }
 
                 if (Carbon::now() <= Carbon::parse($item->refRegularDeliveryPlan->etd_ypmi)) {
-                    if ($item->qty !== $item->in_wh) $status = 'In Process';
-                    if ($item->qty == $item->in_wh) $status = 'Finish Production';
+                    if ($item->refRegularDeliveryPlan->qty !== $item->in_wh) $status = 'In Process';
+                    if ($item->refRegularDeliveryPlan->qty == $item->in_wh) $status = 'Finish Production';
                 } else {
                     $status = 'Out Of Date';
                 }
