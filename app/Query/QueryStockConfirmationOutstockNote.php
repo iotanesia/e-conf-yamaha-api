@@ -6,6 +6,7 @@ use App\Constants\Constant;
 use App\Models\RegularStokConfirmationOutstockNote AS Model;
 use App\Models\RegularStokConfirmation;
 use App\ApiHelper as Helper;
+use App\Models\MstBox;
 use App\Models\MstPart;
 use App\Models\MstShipment;
 use App\Models\RegularDeliveryPlan;
@@ -171,25 +172,95 @@ class QueryStockConfirmationOutstockNote extends Model {
                 ];
             });
 
-            $dataSendDetail = RegularStokConfirmation::select(
-                DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),
-                DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
-                DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-                DB::raw("string_agg(DISTINCT a.id_prospect_container::character varying, ',') as id_prospect_container"),
-                DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as qty")
-            )
-            ->whereIn('regular_stock_confirmation.id',$stokTemp->toArray())
-            ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
-            ->groupBy('a.id')
-            ->get();
+            // $dataSendDetail = RegularStokConfirmation::select(
+            //     DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),
+            //     DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
+            //     DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+            //     DB::raw("string_agg(DISTINCT a.id_prospect_container::character varying, ',') as id_prospect_container"),
+            //     DB::raw("SUM(CAST(regular_stock_confirmation.in_wh as INT)) as qty")
+            // )
+            // ->whereIn('regular_stock_confirmation.id',$stokTemp->toArray())
+            // ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
+            // ->groupBy('a.id')
+            // ->get();
+
+            $dataSendDetail = RegularStokConfirmationTemp::whereIn('qr_key', $request->id)->get();
 
             $dataSendDetail->transform(function($item){
+
+                $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$item->id_regular_delivery_plan)->orderBy('qty_pcs_box','desc')->orderBy('id','asc')->get();
+            
+                if($item->refRegularDeliveryPlan->item_no == null) {
+                    $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->id_regular_delivery_plan)->get()->pluck('item_no');
+                    $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan',$item->id_regular_delivery_plan)->where('type','OUTSTOCK')->get()->pluck('id_regular_delivery_plan_box');
+    
+                    $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->toArray())->get();
+                    $sum_qty = [];
+                    foreach ($mst_box as $key => $value_box) {
+                        $sum_qty[] = $value_box->qty;
+                    }
+    
+                    $result_qty = [];
+                    $result_id_planbox = [];
+                    $result_arr = [];
+                    $qty = 0;
+                    $group_qty = [];
+                    $group_id_planbox = [];
+                    $group_arr = [];
+                    foreach ($plan_box as $key => $val) {
+                        $qty += $val->qty_pcs_box;
+                        if (in_array($val->id,$check_scan->toArray())) {
+                            $group_qty[] = $val->qty_pcs_box;
+                            $group_id_planbox[] = $val->id;
+                        }
+    
+                        if ($qty >= (array_sum($sum_qty) * count($plan_set->toArray()))) {
+                            $result_qty[] = $group_qty;
+                            $result_id_planbox[] = $group_id_planbox;
+                            $result_arr[] = $group_arr[0] ?? [];
+                            $qty = 0;
+                            $group_qty = [];
+                            $group_id_planbox = [];
+                            $group_arr = [];
+                        }
+                    }
+    
+                    if (!empty($group_qty)) {
+                        $result_qty[] = $group_qty;
+                    }
+                    if (!empty($group_id_planbox)) {
+                        $result_id_planbox[] = $group_id_planbox;
+                    }
+                    if (!empty($group_arr)) {
+                        $result_arr[] = $group_arr[0];
+                    }
+                    
+                    for ($i=0; $i < count($result_qty); $i++) { 
+                        if (count($result_qty[$i]) !== 0) {
+                            $in_wh = (array_sum($result_qty[$i]) / count($plan_set->toArray()));
+                        }
+                    }
+                        
+                    $mst_part = MstPart::whereIn('item_no', $plan_set->toArray())->get();
+                    $item_no = [];
+                    $item_name = [];
+                    foreach ($mst_part as $key => $value) {
+                        $item_no[] = $value->item_no;
+                        $item_name[] = $value->description;
+                    }
+                } else {
+                    $mst_part = MstPart::where('item_no', $item->refRegularDeliveryPlan->item_no)->first();
+                    $item_no = $mst_part->item_no;
+                    $item_name = $mst_part->description;
+                    $in_wh = $plan_box[0]->qty_pcs_box;
+                }
+
                 $prospect = RegularDeliveryPlanProspectContainer::where('id', $item->id_prospect_container)->first();
                 return [
                     'id_stock_confirmation' => $item->id_stock_confirmation,
-                    'item_no' => $item->item_no,
-                    'order_no' => $item->order_no,
-                    'qty' => $item->qty,
+                    'item_no' => $item->refRegularDeliveryPlan->item_no,
+                    'order_no' => $item->refRegularDeliveryPlan->order_no,
+                    'qty' => $in_wh,
                     'no_packing' => $prospect == null ? null : $prospect->no_packing
                 ];
             });
