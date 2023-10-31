@@ -548,9 +548,16 @@ class QueryStockConfirmationHistory extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item){
 
+                // if (Carbon::now() <= Carbon::parse($item->refRegularDeliveryPlan->etd_ypmi)) {
+                //     if ($item->status_instock == 1 || $item->status_instock == 2 && $item->status_outstock == 1 || $item->status_outstock == 2 && $item->in_dc == 0 && $item->in_wh == 0) $status = 'In Process';
+                //     if ($item->status_instock == 3 && $item->status_outstock == 3) $status = 'Finish Production';
+                // } else {
+                //     $status = 'Out Of Date';
+                // }
+
                 if (Carbon::now() <= Carbon::parse($item->refRegularDeliveryPlan->etd_ypmi)) {
-                    if ($item->status_instock == 1 || $item->status_instock == 2 && $item->status_outstock == 1 || $item->status_outstock == 2 && $item->in_dc == 0 && $item->in_wh == 0) $status = 'In Process';
-                    if ($item->status_instock == 3 && $item->status_outstock == 3) $status = 'Finish Production';
+                    if ($item->qty !== $item->in_wh) $status = 'In Process';
+                    if ($item->qty == $item->in_wh) $status = 'Finish Production';
                 } else {
                     $status = 'Out Of Date';
                 }
