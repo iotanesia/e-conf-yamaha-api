@@ -1227,28 +1227,15 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function outstockDeliveryNoteItems($request)
     {
-        $stokTemp = RegularStokConfirmationTemp::whereIn('qr_key', $request->id_stock_confirmation)->get();
-        $id_stock_confirmation = [];
-        foreach ($stokTemp as $key => $value) {
-            $id_stock_confirmation[] = $value->id_stock_confirmation;
-        }
-        $items = RegularStokConfirmation::select(
-            DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_number"),
-            DB::raw("string_agg(DISTINCT a.id::character varying, ',') as id_deliv_plan"),
-            DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-        )
-        ->whereIn('regular_stock_confirmation.id',$id_stock_confirmation)
-        ->join('regular_delivery_plan as a','a.id','regular_stock_confirmation.id_regular_delivery_plan')
-        ->groupBy('a.id')
-        ->get();
+        $items = RegularStokConfirmationTemp::whereIn('qr_key', $request->id_stock_confirmation)->get();
 
         $items->transform(function ($item) use($items){
             
-            $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$item->id_deliv_plan)->orderBy('qty_pcs_box','desc')->orderBy('id','asc')->get();
+            $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$item->id_regular_delivery_plan)->orderBy('qty_pcs_box','desc')->orderBy('id','asc')->get();
             
-                if($item->item_number == null) {
-                    $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->id_deliv_plan)->get()->pluck('item_no');
-                    $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan',$item->id_deliv_plan)->where('type','OUTSTOCK')->get()->pluck('id_regular_delivery_plan_box');
+                if($item->refRegularDeliveryPlan->item_no == null) {
+                    $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$item->id_regular_delivery_plan)->get()->pluck('item_no');
+                    $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan',$item->id_regular_delivery_plan)->where('type','OUTSTOCK')->get()->pluck('id_regular_delivery_plan_box');
     
                     $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->toArray())->get();
                     $sum_qty = [];
@@ -1305,7 +1292,7 @@ class QueryStockConfirmationHistory extends Model {
                         $item_name[] = $value->description;
                     }
                 } else {
-                    $mst_part = MstPart::where('item_no', $item->item_number)->first();
+                    $mst_part = MstPart::where('item_no', $item->refRegularDeliveryPlan->item_no)->first();
                     $item_no = $mst_part->item_no;
                     $item_name = $mst_part->description;
                     $in_wh = $plan_box[0]->qty_pcs_box;
@@ -1314,6 +1301,11 @@ class QueryStockConfirmationHistory extends Model {
             $item->item_number = $item_no;
             $item->item_name = $item_name;
             $item->quantity = $in_wh;
+            $item->order_no = $item->refRegularDeliveryPlan->order_no;
+
+            unset(
+                $item->refRegularDeliveryPlan
+            );
 
             return $item;
         });
