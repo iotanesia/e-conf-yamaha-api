@@ -137,8 +137,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'id',
             ]);
 
-            $check = Model::select('code_consignee','datasource')->whereIn('id',$params->id)
-                ->groupBy('code_consignee','datasource')
+            $check = Model::select('code_consignee','etd_jkt','datasource')->whereIn('id',$params->id)
+                ->groupBy('code_consignee','datasource','etd_jkt')
                 ->get()
                 ->toArray();
 
