@@ -196,7 +196,9 @@ class QueryStockConfirmationOutstockNote extends Model {
 
             if(isset($dataSend[0])) {
                 $insert = Model::create($dataSend[0]);
-                $insert->manyRegularStockConfirmationOutstockNoteDetail()->createMany(self::getParamDetail($dataSendDetail[0],$insert));
+                foreach ($dataSendDetail as $value) {
+                    $insert->manyRegularStockConfirmationOutstockNoteDetail()->createMany(self::getParamDetail($value,$insert));
+                }
             }
             if($is_transaction) DB::commit();
             return ['items'=>$dataSend];
