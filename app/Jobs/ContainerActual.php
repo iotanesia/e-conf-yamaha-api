@@ -40,12 +40,23 @@ class ContainerActual implements ShouldQueue
     {
         //distributed data algorithm
         $params = $this->params;
-        $arrSummaryBox = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
-            ->orderBy('id', 'asc')
-            ->get()
-            ->map(function ($item){
-                return $item->summary_box;
-            });
+        if ($params['check'] == 'set') {
+            $arrSummaryBox = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
+                ->orderBy('id', 'asc')
+                ->get()
+                ->map(function ($item){
+                    return $item->summary_box;
+                });
+        } else {
+            $arrSummaryBox = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
+                ->where('iteration','<',100)
+                ->orderBy('id', 'asc')
+                ->get()
+                ->map(function ($item){
+                    return $item->summary_box;
+                });
+        }
+        
         $iteration = 1;
         $index = 1;
         $countSummaryBox = count($arrSummaryBox);
@@ -65,7 +76,7 @@ class ContainerActual implements ShouldQueue
                         for ($i=0; $i < $countSummaryBox; $i++) { 
                             foreach ($box_update->take($jml_box_update) as $value_box) {
                                 $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
-                                                                            ->where('iteration', ($i+1))
+                                                                            ->where('iteration', ($i+100))
                                                                             ->orderBy('id', 'asc')
                                                                             ->first();
                                 
