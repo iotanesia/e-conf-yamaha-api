@@ -548,6 +548,8 @@ class QueryStockConfirmationHistory extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item){
 
+                $in_dc = $item->in_dc;
+
                 if (Carbon::now() <= Carbon::parse($item->refRegularDeliveryPlan->etd_ypmi)) {
                     if ($item->status_instock == 1 || $item->status_instock == 2 && $item->status_outstock == 1 || $item->status_outstock == 2 && $item->in_dc = 0 && $item->in_wh == 0) $status = 'In Process';
                     if ($item->status_instock == 3 && $item->status_outstock == 3) $status = 'Finish Production';
@@ -610,6 +612,7 @@ class QueryStockConfirmationHistory extends Model {
                     ];
                 }
 
+                $item->in_dc = $in_dc;
                 $item->status_tracking = $status ?? null;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_serial_set : $item->refRegularDeliveryPlan->refPart->item_serial;
