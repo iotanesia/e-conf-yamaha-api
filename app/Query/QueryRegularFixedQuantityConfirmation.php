@@ -503,7 +503,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $delivery_plan_set = [];
             foreach ($fixedQuantity as $item){
                 if ($item->refRegularDeliveryPlan->item_no == null) {
-                    $delivery_plan_set[] = $item->id;
+                    $delivery_plan_set[] = $item->refRegularDeliveryPlan->id;
                 } else {
                     $id_fixed_quantity[] = $item->id;
                 }
@@ -513,7 +513,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             if (count($delivery_plan_set) > 0) {
                 $quantityConfirmationBox = RegularFixedQuantityConfirmationBox::select('id_fixed_quantity_confirmation',
                     'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as sum_qty"),DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"))
-                ->whereIn('id_fixed_quantity_confirmation',$id_fixed_quantity)
+                ->whereIn('id_regular_delivery_plan',$delivery_plan_set)
                 ->groupBy('id_box', 'id_fixed_quantity_confirmation')
                 ->orderBy('count_box','desc')
                 ->get()
