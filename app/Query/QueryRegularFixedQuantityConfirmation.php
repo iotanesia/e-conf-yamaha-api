@@ -973,7 +973,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             'items' => $data->getCollection()->transform(function($item){
                 $item->item_name = trim($item->refRegularDeliveryPlan->refPart->description);
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
-                $item->box = self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null;
+                $item->box = self::getCountBox($item->id)[0] ?? null;
 
                 unset(
                     $item->refRegularDeliveryPlan,
@@ -990,15 +990,16 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     }
 
     public static function getCountBox($id){
-        $data = RegularDeliveryPlanBox::select('id_box', DB::raw('count(*) as jml'))
-                ->where('id_regular_delivery_plan', $id)
+        $data = RegularFixedQuantityConfirmationBox::select('id_box', DB::raw('count(*) as jml'))
+                ->where('id_fixed_quantity_confirmation', $id)
+                ->whereNotNull('qrcode')
                 ->groupBy('id_box')
                 ->get();
         return
             $data->map(function ($item){
                 $set['id'] = 0;
                 $set['id_box'] = $item->id_box;
-                $set['qty'] =  $item->refBox->qty." x ".$item->jml." pcs";
+                $set['qty'] =  $item->refMstBox->qty." x ".$item->jml." pcs";
                 $set['length'] =  "";
                 $set['width'] =  "";
                 $set['height'] =  "";
@@ -1211,7 +1212,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             }
 
-            $box_result = self::getCountBox($item->id_delivery_plan, $item->id_prospect_container_creation);
+            $box_result = self::getCountBox($item->id_fixed_quantity_confirmation);
             if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
 
             $qty_scan = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
