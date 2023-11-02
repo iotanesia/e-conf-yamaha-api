@@ -533,7 +533,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $count_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->count();
                     $row_length = $item->refMstBox->fork_side == 'Width' ? ($item->refMstBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refMstBox->length * (int)ceil(($item->count_box / $count_set) / 4));
                     $count_box = $item->count_box / $count_set;
-                    $box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
+                    $box = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id')
+                                                                ->where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
                                                                 ->where('id_box', $item->id_box) 
                                                                 ->whereNotNull('qrcode')                                       
                                                                 ->whereNull('id_prospect_container_creation')
@@ -720,7 +721,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
                     $row_length = $item->refMstBox->fork_side == 'Width' ? ($item->refMstBox->width * (int)ceil($item->count_box / 4)) : ($item->refMstBox->length * (int)ceil($item->count_box / 4));
                     $count_box = $item->count_box;
-                    $box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
+                    $box = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id')
+                                                                ->where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
                                                                 ->whereNull('id_prospect_container_creation')
                                                                 ->whereNotNull('qrcode')
                                                                 ->whereNotNull('a.id_fixed_actual_container')
