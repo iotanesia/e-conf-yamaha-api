@@ -157,10 +157,15 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             if ($check_no_packaging == null) {
                 $iteration = 'P01';
-            } elseif (substr($check_no_packaging->no_packaging,-2) == '10') {
-                $iteration = 'P01';
             } else {
-                $iteration = 'P0'.(int)substr($check_no_packaging->no_packaging,-2) + 1;
+                $last_two_digits = (int)substr($check_no_packaging->no_packaging, -2);
+                $new_number = $last_two_digits + 1;
+
+                if ($new_number >= 10) {
+                    $iteration = 'P' . $new_number;
+                } else {
+                    $iteration = 'P0' . $new_number;
+                }
             }
 
             $no_packaging = $data[0]['order_no'].$iteration;
@@ -603,24 +608,33 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                 ->whereIn('item_no', $value)
                                 ->get()->map(function ($item){
                                     $qty = [
-                                        $item->item_no => $item->qty
+                                        $item->id.'id' => $item->qty
                                     ];
                                 
                                     return array_merge($qty);
                                 });
 
-                    $deliv_plan_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan_set)->whereIn('item_no', $value)->get();
-                    $qty_per_item_no = [];
-                    foreach ($deliv_plan_set as $key => $value) {
-                        $qty_per_item_no[] = [
-                            $value->item_no => $value->qty
-                        ];
-                    }
-                            
+                    // $deliv_plan_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan_set)->whereIn('item_no', $value)->get();
+
+                    $box_scan = RegularFixedQuantityConfirmationBox::select(DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
+                                                                DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty"),
+                                                                )
+                                                                ->whereIn('id_fixed_quantity_confirmation', $fixedQuantity->pluck('id'))
+                                                                ->whereNotNull('qrcode')
+                                                                ->groupBy('regular_fixed_quantity_confirmation_box.id_box')
+                                                                ->get()->map(function ($item){
+                                                                    $qty = [
+                                                                        $item->id_box.'id' => $item->qty
+                                                                    ];
+                                                                
+                                                                    return array_merge($qty);
+                                                                });
+  
                     $qty = [];
                     foreach ($mst_box as $key => $value) {
                         $arary_key = array_keys($value)[0];
-                        $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
+                        $box_scan_per_id = array_merge(...$box_scan)[$arary_key] ?? 0;
+                        $qty[] = $box_scan_per_id / $value[$arary_key];
                     }
                     $max_qty[] = (int)ceil(max($qty));
                 }
