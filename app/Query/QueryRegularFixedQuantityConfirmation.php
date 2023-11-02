@@ -517,6 +517,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $quantityConfirmationBox = RegularFixedQuantityConfirmationBox::select('id_fixed_quantity_confirmation',
                     'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as sum_qty"),DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"))
                 ->whereIn('id_regular_delivery_plan',$delivery_plan_set)
+                ->whereNotNull('qrcode')
                 ->groupBy('id_box', 'id_fixed_quantity_confirmation')
                 ->orderBy('count_box','desc')
                 ->get()
@@ -687,6 +688,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $quantityConfirmationBox = RegularFixedQuantityConfirmationBox::select('id_fixed_quantity_confirmation',
                     'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as sum_qty"),DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"))
                 ->whereIn('id_fixed_quantity_confirmation',$id_fixed_quantity)
+                ->whereNotNull('qrcode')
                 ->groupBy('id_box', 'id_fixed_quantity_confirmation')
                 ->orderBy('count_box','desc')
                 ->get()
