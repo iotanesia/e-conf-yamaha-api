@@ -1137,7 +1137,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
                         DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
                         DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-                        DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty"),
+                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty"),
                         DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
                         DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
                         DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
@@ -1161,7 +1161,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
                         DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
                         DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
-                        DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty"),
+                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty"),
                         DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no")
                         )
                         ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $params->id)
@@ -1220,7 +1220,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $item->item_no = $item_no;
             $item->item_name = $itemname;
             $item->cust_name = $custname;
-            $item->qty = $qty_result;
+            $item->qty = [array_sum($qty_result)];
             $item->box = $box_result;
             unset(
                 $item->refRegularDeliveryPlan,
