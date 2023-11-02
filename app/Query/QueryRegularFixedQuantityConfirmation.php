@@ -526,8 +526,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $row_length = $item->refMstBox->fork_side == 'Width' ? ($item->refMstBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refMstBox->length * (int)ceil(($item->count_box / $count_set) / 4));
                     $count_box = $item->count_box / $count_set;
                     $box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
-                                                                ->where('id_box', $item->id_box)   
-                                                                ->where('qrcode','!=',null)                                         
+                                                                ->where('id_box', $item->id_box) 
+                                                                ->whereNotNull('qrcode')                                       
                                                                 ->whereNull('id_prospect_container_creation')
                                                                 ->orderBy('id', 'asc')
                                                                 ->get();
@@ -696,7 +696,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $count_box = $item->count_box;
                     $box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
                                                                 ->whereNull('id_prospect_container_creation')
-                                                                ->where('qrcode','!=',null)
+                                                                ->whereNotNull('qrcode')
                                                                 ->orderBy('id', 'asc')
                                                                 ->get();
                     $box_set_count = count($box);
@@ -1145,6 +1145,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
                         DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"))
                         ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $params->id)
+                        ->whereNotNull('regular_fixed_quantity_confirmation_box.qrcode')
                         ->leftJoin('regular_delivery_plan as a','a.id','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
                         ->leftJoin('mst_box as b','a.item_no','b.item_no')
                         ->groupBy('regular_fixed_quantity_confirmation_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box')
@@ -1164,6 +1165,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no")
                         )
                         ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $params->id)
+                        ->whereNotNull('regular_fixed_quantity_confirmation_box.qrcode')
                         ->leftJoin('regular_delivery_plan as a','a.id','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
                         ->leftJoin('regular_delivery_plan_set as b','b.id_delivery_plan','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
                         ->groupBy('regular_fixed_quantity_confirmation_box.id_prospect_container_creation','b.id_delivery_plan')
