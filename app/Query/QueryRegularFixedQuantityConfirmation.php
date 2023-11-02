@@ -691,6 +691,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
                 }
 
+                $upd = RegularFixedActualContainer::where('id',$params->id)->first();
+                $upd->is_actual = 99;
+                $upd->save();
+
                 $set = [
                     'id' => $params->id,
                     'colis' => $quantityConfirmationBox,
@@ -836,22 +840,22 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $sum_count_box = $send_summary_box;
                     }
                 }
+                
+                $upd = RegularFixedActualContainer::where('id',$params->id)->first();
+                $upd->is_actual = 99;
+                $upd->save();
+
+                $set = [
+                    'id' => $params->id,
+                    'colis' => $quantityConfirmationBox,
+                    'box_set_count' => $box_set_count,
+                    'check' => 'single'
+                ];
+
+                ContainerActual::dispatch($set);
             }
             
-            $upd = RegularFixedActualContainer::where('id',$params->id)->first();
-            $upd->is_actual = 99;
-            $upd->save();
-
-            $set = [
-                'id' => $params->id,
-                'colis' => $quantityConfirmationBox,
-                'box_set_count' => $box_set_count,
-                'check' => 'single'
-            ];
-
            DB::commit();
-
-           ContainerActual::dispatch($set);
 
         } catch (\Throwable $th) {
             DB::rollBack();
