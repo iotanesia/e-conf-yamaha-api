@@ -516,8 +516,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             if (count($delivery_plan_set) > 0) {
                 $quantityConfirmationBox = RegularFixedQuantityConfirmationBox::select('id_fixed_quantity_confirmation',
                     'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as sum_qty"),DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"))
-                ->whereIn('id_regular_delivery_plan',$delivery_plan_set)
+                ->whereIn('regular_fixed_quantity_confirmation_box.id_regular_delivery_plan',$delivery_plan_set)
                 ->whereNotNull('qrcode')
+                ->whereNotNull('a.id_fixed_actual_container')
+                ->leftJoin('regular_fixed_quantity_confirmation as a','a.id','regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation')
                 ->groupBy('id_box', 'id_fixed_quantity_confirmation')
                 ->orderBy('count_box','desc')
                 ->get()
@@ -530,7 +532,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                                                 ->where('id_box', $item->id_box) 
                                                                 ->whereNotNull('qrcode')                                       
                                                                 ->whereNull('id_prospect_container_creation')
-                                                                ->orderBy('id', 'asc')
+                                                                ->whereNotNull('a.id_fixed_actual_container')
+                                                                ->leftJoin('regular_fixed_quantity_confirmation as a','a.id','regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation')
+                                                                ->orderBy('regular_fixed_quantity_confirmation_box.id', 'asc')
                                                                 ->get();
                     $box_set_count = count($box);
 
@@ -689,6 +693,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as sum_qty"),DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"))
                 ->whereIn('id_fixed_quantity_confirmation',$id_fixed_quantity)
                 ->whereNotNull('qrcode')
+                ->whereNotNull('a.id_fixed_actual_container')
+                ->leftJoin('regular_fixed_quantity_confirmation as a','a.id','regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation')
                 ->groupBy('id_box', 'id_fixed_quantity_confirmation')
                 ->orderBy('count_box','desc')
                 ->get()
@@ -699,7 +705,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
                                                                 ->whereNull('id_prospect_container_creation')
                                                                 ->whereNotNull('qrcode')
-                                                                ->orderBy('id', 'asc')
+                                                                ->whereNotNull('a.id_fixed_actual_container')
+                                                                ->leftJoin('regular_fixed_quantity_confirmation as a','a.id','regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation')
+                                                                ->orderBy('regular_fixed_quantity_confirmation_box.id', 'asc')
                                                                 ->get();
                     $box_set_count = count($box);
 
