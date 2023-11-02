@@ -1019,6 +1019,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     }
                 }
 
+                $upd = RegularProspectContainer::find($params->id);
+                $upd->is_prospect = 99;
+                $upd->save();
+
                 $set = [
                     'id' => $params->id,
                     'colis' => $delivery_plan_box_set,
@@ -1160,9 +1164,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     $sum_count_box = $send_summary_box;
                 }
             }
-
-            }
-
+            
             $upd = RegularProspectContainer::find($params->id);
             $upd->is_prospect = 99;
             $upd->save();
@@ -1174,9 +1176,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 'check' => 'single'
             ];
 
-           DB::commit();
+                
+            ContainerPlan::dispatch($set);
 
-           ContainerPlan::dispatch($set);
+            }
+
+
+           DB::commit();
 
         } catch (\Throwable $th) {
             DB::rollBack();
