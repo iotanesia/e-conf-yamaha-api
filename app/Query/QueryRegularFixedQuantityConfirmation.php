@@ -655,7 +655,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
                         $creation['summary_box'] = $sum_count_box;
                         $creation['iteration'] = ($i - 1) + 100;
-                        $creation['space'] = 5905 - $sum_row_length;
+                        $creation['space'] = 5905 - (int)$sum_row_length;
                     } else {
                         $creation['id_container'] = 2;
                         $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
@@ -791,13 +791,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
                         $creation['summary_box'] = $sum_count_box;
                         $creation['iteration'] = $i;
-                        $creation['space'] = 5905 - $sum_row_length;
+                        $creation['space'] = 5905 - (int)$sum_row_length;
                     } else {
                         $creation['id_container'] = 2;
                         $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
                         $creation['summary_box'] = $send_summary_box;
                         $creation['iteration'] = $i;
-                        $creation['space'] = $space;
+                        $creation['space'] = (int)$space;
                     }
     
                     RegularFixedActualContainerCreation::create($creation);
