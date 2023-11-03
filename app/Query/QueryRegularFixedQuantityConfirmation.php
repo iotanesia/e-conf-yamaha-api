@@ -624,9 +624,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                                                 ->whereIn('id_fixed_quantity_confirmation', $fixedQuantity->pluck('id'))
                                                                 ->whereNotNull('qrcode')
                                                                 ->groupBy('regular_fixed_quantity_confirmation_box.qrcode')
-                                                                ->get()->map(function ($item){
+                                                                ->get()->map(function ($item) use($count_set){
                                                                     $qty = [
-                                                                        $item->id_box.'id' => $item->qty
+                                                                        $item->id_box.'id' => ($item->qty / $count_set) ?? 0
                                                                     ];
                                                                 
                                                                     return array_merge($qty);
