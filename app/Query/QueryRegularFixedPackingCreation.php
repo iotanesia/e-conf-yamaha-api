@@ -156,6 +156,7 @@ class QueryRegularFixedPackingCreation extends Model {
                     $mst_part = MstPart::whereIn('item_no', $part_set->toArray())->get()->pluck('description');
                 }
 
+                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $part_set : [$item->item_no];
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $mst_part->toArray() : trim($item->refRegularDeliveryPlan->refPart->description);
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;
