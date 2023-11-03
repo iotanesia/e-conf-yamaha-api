@@ -614,23 +614,23 @@ class QueryRegularOrderEntryUpload extends Model {
             $upload_detail_set = RegularOrderEntryUploadDetailSet::where('id_regular_order_entry', $upload->id_regular_order_entry)->get()->toArray();
             foreach ($upload_detail_set as $key => $value) {
 
-                // $data_set = RegularDeliveryPlanSet::where('item_no', $value['item_no'])
-                //                                     ->where('id_regular_order_entry', $value['id_regular_order_entry'])
-                //                                     ->where('qty', $value['qty'])->first();
-                // $check_set = $data_set !== null ? $data_set->created_at : '1945-08-17';
-                // $created_at = Carbon::parse($check_set);
-                // $currentTime = Carbon::now();
+                $data_set = RegularDeliveryPlanSet::where('item_no', $value['item_no'])
+                                                    ->where('id_regular_order_entry', $value['id_regular_order_entry'])
+                                                    ->where('qty', $value['qty'])->first();
+                $check_set = $data_set !== null ? $data_set->created_at : '1945-08-17';
+                $created_at = Carbon::parse($check_set);
+                $currentTime = Carbon::now();
 
-                // // Calculate the time difference
-                // $diffInMinutes = $created_at->diffInMinutes($currentTime);
-                // if ($data_set == null || $diffInMinutes < 1) {
+                // Calculate the time difference
+                $diffInMinutes = $created_at->diffInMinutes($currentTime);
+                if ($data_set == null || $diffInMinutes < 1) {
                     RegularDeliveryPlanSet::create([
                         "id_delivery_plan" => $value['id_detail'],
                         "item_no" => $value['item_no'],
                         "id_regular_order_entry" => $value['id_regular_order_entry'],
                         "qty" => $value['qty'],
                     ]);
-                // }
+                }
 
             }
 
@@ -647,8 +647,11 @@ class QueryRegularOrderEntryUpload extends Model {
                 for ($i=0; $i < count($id_deliv_plan); $i++) { 
                     if ($value->sum_qty == $id_deliv_plan[$i]['qty']) {
                         foreach (explode(',',$value->id_plan_set) as $key => $id_update) {
-                            $upd = RegularDeliveryPlanSet::find($id_update);
-                            $upd->update(['id_delivery_plan' => $id_deliv_plan[$i]['id']]);
+                            $check_update = RegularDeliveryPlanSet::where('id_delivery_plan', $id_deliv_plan[$i]['id'])->count();
+                            if ($check_update !== count(explode(',',$value->id_plan_set))) {
+                                $upd = RegularDeliveryPlanSet::find($id_update);
+                                $upd->update(['id_delivery_plan' => $id_deliv_plan[$i]['id']]);
+                            }
                         }
                     }
                 }
