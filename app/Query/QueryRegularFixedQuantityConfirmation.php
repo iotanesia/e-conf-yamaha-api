@@ -1019,7 +1019,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     public static function getCountBox($id){
         $data = RegularFixedQuantityConfirmationBox::select('id_box', DB::raw('count(*) as jml'))
-                ->where('id_fixed_quantity_confirmation', $id)
+                ->whereIn('id_fixed_quantity_confirmation', explode(',',$id))
                 ->whereNotNull('qrcode')
                 ->groupBy('id_box')
                 ->get();
@@ -1243,7 +1243,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $box_result = self::getCountBox($item->id_fixed_quantity_confirmation);
             if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
 
-            $qty_scan = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
+            $qty_scan = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', explode(',',$item->id_fixed_quantity_confirmation))
                                                 ->where('id_prospect_container_creation', $item->id_prospect_container_creation)
                                                 ->whereNotNull('qrcode')->get()->pluck('qty_pcs_box');
 
