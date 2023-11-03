@@ -238,7 +238,7 @@ class QueryRegularFixedPackingCreation extends Model {
 
             $data = RegularFixedActualContainer::
                     select(DB::raw("string_agg(DISTINCT d.name::character varying, ',') as yth"),
-                                DB::raw("string_agg(DISTINCT e.nick_name::character varying, ',') as username"),
+                                DB::raw("string_agg(DISTINCT e.name::character varying, ',') as username"),
                                 DB::raw("string_agg(DISTINCT g.container_type::character varying, ',') as jenis_truck")
                     )->where('regular_fixed_actual_container.id',$id)
                         ->join('regular_fixed_quantity_confirmation as b','b.id_fixed_actual_container','regular_fixed_actual_container.id')
@@ -254,6 +254,7 @@ class QueryRegularFixedPackingCreation extends Model {
             $data->truck_type = $data->jenis_truck." HC";
             $data->yth = $data->yth;
             $data->nick_name = $data->username;
+            $data->shipper = MstShipment::Where('is_active', 1)->first()->shipment ?? null;
 
             Pdf::loadView('pdf.packing-creation.delivery_note',[
               'data' => $data,

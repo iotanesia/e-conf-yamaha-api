@@ -55,7 +55,7 @@
 </head>
 
 <body>
-    <h4 class="text-center">DELIVERY NOTE</h4>
+    <h2 class="text-center">DELIVERY NOTE</h2>
     <table>
         <tr>
             <td class="no-bo" width='70'>{{ $data->shipper }}</td>
