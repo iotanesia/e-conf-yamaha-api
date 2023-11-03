@@ -617,12 +617,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
                     // $deliv_plan_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', $delivery_plan_set)->whereIn('item_no', $value)->get();
 
-                    $box_scan = RegularFixedQuantityConfirmationBox::select(DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
+                    $box_scan = RegularFixedQuantityConfirmationBox::select(DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qrcode::character varying, ',') as qrcode"),
+                                                                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
                                                                 DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty"),
                                                                 )
                                                                 ->whereIn('id_fixed_quantity_confirmation', $fixedQuantity->pluck('id'))
                                                                 ->whereNotNull('qrcode')
-                                                                ->groupBy('regular_fixed_quantity_confirmation_box.id_box')
+                                                                ->groupBy('regular_fixed_quantity_confirmation_box.qrcode')
                                                                 ->get()->map(function ($item){
                                                                     $qty = [
                                                                         $item->id_box.'id' => $item->qty
@@ -637,7 +638,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $box_scan_per_id = array_merge(...$box_scan)[$arary_key] ?? 0;
                         $qty[] = $box_scan_per_id / $value[$arary_key];
                     }
-                    $max_qty[] = (int)ceil(max($qty));
+                    $max_qty[] = (int)ceil(max($qty)) / $count_set;
                 }
 
                 if ($sum_row_length > 12031) {
