@@ -673,13 +673,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     if ($sum_row_length < 5905) {
                         $creation['id_container'] = 1;
                         $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-                        $creation['summary_box'] = $sum_count_box;
+                        $creation['summary_box'] = (int)round($sum_count_box);
                         $creation['iteration'] = ($i - 1) + 100;
                         $creation['space'] = 5905 - (int)$sum_row_length;
                     } else {
                         $creation['id_container'] = 2;
                         $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                        $creation['summary_box'] = $send_summary_box;
+                        $creation['summary_box'] = (int)round($send_summary_box);
                         $creation['iteration'] = ($i - 1) + 100;
                         $creation['space'] = 12031 - (int)$sum_row_length;
                     }
