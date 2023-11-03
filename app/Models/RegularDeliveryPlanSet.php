@@ -26,4 +26,9 @@ class RegularDeliveryPlanSet extends Model
     public function refBox(){
         return $this->belongsTo(MstBox::class,'item_no','item_no');
     }
+    
+    public function refPart()
+    {
+        return $this->belongsTo(MstPart::class,'item_no','item_no');
+    }
 }

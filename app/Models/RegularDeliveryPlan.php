@@ -96,4 +96,9 @@ class RegularDeliveryPlan extends Model
     {
         return $this->hasMany(RegularFixedQuantityConfirmationBox::class,'id_regular_delivery_plan','id');
     }
+    
+    public function manyDeliveryPlanSet()
+    {
+        return $this->hasMany(RegularDeliveryPlanSet::class,'id_delivery_plan','id');
+    }
 }

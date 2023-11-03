@@ -116,10 +116,23 @@
             @foreach ($actual->manyFixedQuantityConfirmation as $item)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}.</td>
-                    <td class="text-center">{{ $item->item_no }}</td>
-                    <td class="text-center">{{ $item->refRegularDeliveryPlan->refPart->description }}</td>
+                    @if ($item->item_no == null)
+                        <td class="text-center">
+                            @foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $item_no)
+                                {{ $item_no->item_no }} <br>
+                            @endforeach
+                        </td>
+                        <td class="text-center">
+                            @foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $part)
+                                {{ $part->refPart->description }} <br>
+                            @endforeach
+                        </td>
+                    @else
+                        <td class="text-center">{{ $item->item_no }}</td>
+                        <td class="text-center">{{ $item->refRegularDeliveryPlan->refPart->description }}</td>
+                    @endif
                     <td class="text-center">{{ $item->order_no }}</td>
-                    <td class="text-center">{{ $item->qty }}</td>
+                    <td class="text-center">{{ $item->in_wh }}</td>
                     <td class="text-center">{{ $item->refFixedActualContainer->no_packaging }}</td>
                 </tr>
             @endforeach
