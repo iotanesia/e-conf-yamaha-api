@@ -122,7 +122,7 @@
                     </br>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Port of Loading </td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->pol}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->pol ?? $data->port_of_loading}}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Feeder Vessel</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->feeder_vessel}}</td>
                     </tr>
@@ -134,7 +134,7 @@
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Port of Destination </td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->pod}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->pod ?? $data->port_of_discharge}}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
                     </tr>
@@ -255,8 +255,11 @@
                                     <tr>
                                         <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $loop->iteration }}</td>
                                     </tr>
+                                @break
                                 @endforeach
+                            @break
                             @endforeach
+                        @break
                         @endforeach 
                         <br>
                     </table>
