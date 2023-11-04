@@ -148,13 +148,23 @@
                 @foreach ($box as $key => $box_item)
                     @for ($i = 0; $i < count($box_item['item_no_series']); $i++)
                         <tr>
-                            <td class="no-bb no-bt"></td>
+                            <td class="no-bt"></td>
                             @if ($i % 2 == 0 && $i == 0)
                                 <td style='padding-bottom:5px;' class='text-center'>{{ $key+1 }}</td>
                             @else
                                 <td class="no-bt"></td>
                             @endif
-                            <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
+                            @if ($count_data == 1)
+                                <td style='padding:55px 0 55px 0;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
+                            @elseif ($count_data == 2)
+                                <td style='padding:23px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
+                            @elseif ($count_data == 3)
+                                <td style='padding:15px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
+                            @elseif ($count_data == 4)
+                                <td style='padding:8px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
+                            @else
+                                <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
+                            @endif
                             <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['qty_pcs_box'][$i] }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['unit_weight_kg'][$i] }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ? round($box_item['total_gross_weight'],1) : null }}</td>

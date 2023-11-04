@@ -1448,7 +1448,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     public static function printPackaging($request,$id,$pathToFile,$filename)
     {
-        // try {
+        try {
             $data = RegularFixedActualContainer::where('id',$id)->get();
             $id_delivery_plan = [];
             foreach ($data[0]->manyFixedQuantityConfirmation as $id_delivery) {
@@ -1474,23 +1474,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 
                 $box_single = [];
                 foreach ($res as $key => $item) {
-                    if ($item['qrcode'] !== null) {
+                    if ($item['qrcode'] !== null && !in_array($item, $box_single)) {
                         $box_single[] = $item;
                     }
                 }
                 
                 $res_box_single[] = $box_single;
-
-                // $count_qty = 0;
-                // $count_net_weight = 0;
-                // $count_gross_weight = 0;
-                // $count_meas = 0;
-                // foreach ($box_single as $iteration => $box_item){
-                //     $count_qty += $box_item['qty_pcs_box'][$iteration];
-                //     $count_net_weight += $box_item['unit_weight_kg'][$iteration];
-                //     $count_gross_weight += $box_item['total_gross_weight'];
-                //     $count_meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000);
-                // }
 
                 if ($deliv_value->item_no == null) {
                     $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
@@ -1583,22 +1572,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
                     
                     $res_box_set[] = $box_set;
-                    
-                    // $count_qty = 0;
-                    // $count_net_weight = 0;
-                    // $count_gross_weight = 0;
-                    // $count_meas = 0;
-                    // foreach ($box_set as $box_item){
-                    //     $count_qty += array_sum($box_item['qty_pcs_box']);
-                    //     $count_net_weight += array_sum($box_item['unit_weight_kg']);
-                    //     $count_gross_weight += $box_item['total_gross_weight'];
-                    //     $count_meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000);
-                    // }
                 }
 
             }
             
-            $box = array_merge($res_box_set[0], $res_box_single[0]);
+            $box = array_merge(($res_box_set[0] ?? []), ($res_box_single[0] ?? []));
             $count_qty = 0;
             $count_net_weight = 0;
             $count_gross_weight = 0;
@@ -1610,9 +1588,15 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $count_meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000);
             }
 
+            $count_data = [];
+            foreach ($box as $key => $box_item){
+                for ($i = 0; $i < count($box_item['item_no_series']); $i++){
+                    $count_data[] = 'count';
+                }
+            }
+
             Pdf::loadView('pdf.packaging.packaging_doc',[
-                // 'check' => $deliv_plan->item_no,
-                // 'set_count' => $deliv_plan->item_no == null ? count($item_no) : 1,
+                'count_data' => count($count_data),
                 'data' => $data,
                 'box' => $box,
                 'count_qty' => $count_qty,
@@ -1624,9 +1608,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->setPaper('A4','potrait')
             ->download($filename);
 
-        //   } catch (\Throwable $th) {
-        //       return Helper::setErrorResponse($th);
-        //   }
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 
 }
