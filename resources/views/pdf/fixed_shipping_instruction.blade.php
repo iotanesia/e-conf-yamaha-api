@@ -327,7 +327,7 @@
             <tr>
                 <td class="text-center">{{ $data->issued }}</td>
                 <td class="text-center">{{ $data->checked }}</td>
-                <td class="text-center">{{ $data->rejected }}</td>
+                <td class="text-center">{{ $data->approved }}</td>
             </tr>
         </table>
     </body>

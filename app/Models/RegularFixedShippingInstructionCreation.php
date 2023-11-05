@@ -70,7 +70,7 @@ class RegularFixedShippingInstructionCreation extends Model
         "id_fixed_shipping_instruction",
         "issued",
         "checked",
-        "rejected",
+        "approved",
     ];
 
     public function refMstConsignee()
