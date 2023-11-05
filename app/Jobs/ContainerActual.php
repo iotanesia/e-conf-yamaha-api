@@ -70,6 +70,7 @@ class ContainerActual implements ShouldQueue
                         $persentase = max($arrSummaryBox->toArray()) / array_sum($arrSummaryBox->toArray());
                         $jml_box_update = (int)($params['box_set_count'] * $persentase);
                         $box_update = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $fill->refFixedQuantityConfirmation->id)
+                                                                            ->whereNotNull('qrcode') 
                                                                             ->whereNull('id_prospect_container_creation')->get();
                         $sisa = count($box_update) - $jml_box_update;
                         
