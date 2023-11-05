@@ -471,7 +471,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
                 $box = [];
                 foreach ($plan_box as $key => $val) {
-                    $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $val['id_regular_delivery_plan'])->get()->toArray();
+                    $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $val['id_regular_delivery_plan'])->whereNotNull('qrcode')->get()->toArray();
                 }
 
                 $count_qty = 0;
@@ -515,7 +515,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'port_of_loading' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
                     'count' => $item->summary_container,
-                    'summary_box' => $item->summary_box_sum,
+                    'summary_box' => count($summary_box->toArray()),
                     'to' => $item->refMstLsp->name ?? null,
                     'status' => $item->status ?? null,
                     'id_fixed_shipping_instruction_creation' => $item->id_fixed_shipping_instruction_creation ?? null,
@@ -532,7 +532,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'tel_notify_part' => '',
                     'fax_notify_part' => '',
                     'description_of_goods_1' => '',
-                    'description_of_goods_2' => '',
+                    'description_of_goods_2' => $count_qty,
                     'seal_no' => '',
                     'connecting_vessel' => '',
                     'carton_box_qty' => count($box)
