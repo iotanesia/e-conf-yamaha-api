@@ -583,7 +583,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ,DB::raw("SUM(f.gross_weight) as gross_weight")
         ,DB::raw("SUM(f.measurement) as measurement")
         ,DB::raw("SUM(regular_fixed_actual_container_creation.summary_box) as summary_box_sum"))
-        ->where('regular_fixed_actual_container_creation.id', $params->id)
+        ->whereIn('regular_fixed_actual_container_creation.id', explode(',',$params->id))
         ->where('regular_fixed_actual_container_creation.code_consignee', $params->code_consignee)
         ->where('regular_fixed_actual_container_creation.etd_jkt', $params->etd_jkt)
         ->where('regular_fixed_actual_container_creation.datasource', $params->datasource)
@@ -756,6 +756,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'id'
             ]);
             RegularFixedShippingInstruction::where('id', $request->id)->update(['status' => 5]);
+            RegularFixedShippingInstructionCreation::where('id_fixed_shipping_instruction', $request->id)->update(['approved' => $request->approved]);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
