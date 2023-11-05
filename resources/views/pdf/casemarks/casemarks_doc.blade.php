@@ -95,7 +95,7 @@
                                     <td class="no-br no-bt no-bb text-center"><p style="padding:0; margin:0 0 20px 0;"><b>GW</b></p> </td>
                                 </tr>
                                 <tr>
-                                    <td class="no-bl text-center"><b>{{ $box_item['qty_pcs_box'][$jml] ?? null }}</b></td>
+                                    <td class="no-bl text-center"><b>{{ $box_item['qty_pcs_box'][0] ?? null }}</b></td>
                                     <td class="no-br text-center"><b>{{ round($box_item['total_gross_weight'],1) }}</b></td>
                                 </tr>
                                 <tr>
