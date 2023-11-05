@@ -1248,15 +1248,17 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                                             });
 
                 $qty = [];
+                $qty_sum = [];
                 foreach ($mst_box as $key => $value) {
                     $arary_key = array_keys($value)[0];
                     $box_scan_per_id = array_merge(...$box_scan)[$arary_key] ?? 0;
                     $qty[] = $box_scan_per_id / $value[$arary_key];
+                    $qty_sum[] = $value[$arary_key];
                 }
                 $max_qty[] = (int)ceil(max($qty)) / count($item_no_set);
         
                 $box = [
-                    'qty' =>  array_sum($mst_box->toArray())." x ".(int)round(max($max_qty)),
+                    'qty' =>  array_sum($qty_sum)." x ".(int)round(max($max_qty)),
                     'length' =>  "",
                     'width' =>  "",
                     'height' =>  "",
