@@ -992,7 +992,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
 
         $ret['yth'] = $data->refMstLsp->name;
-        $ret['username'] = $data->refMstConsignee->nick_name;
+        $ret['username'] = $data->refMstConsignee->name;
         $ret['jenis_truck'] = $data->refMstContainer->container_type." HC";
         $ret['surat_jalan'] = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first());
         $ret['delivery_date'] = date('d-m-Y');
