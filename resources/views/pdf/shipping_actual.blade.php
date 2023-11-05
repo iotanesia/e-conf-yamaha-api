@@ -120,7 +120,7 @@
                 </br>
                 <tr>
                     <td class="no-bo">Port of Loading </td>
-                    <td class="no-bo"> : {{$data->pol}}</td>
+                    <td class="no-bo"> : {{$data->pol ?? $data->port_of_loading}}</td>
                     <td class="no-bo">Feeder Vessel</td>
                     <td class="no-bo"> : {{$data->feeder_vessel}}</td>
                 </tr>
@@ -132,7 +132,7 @@
                 </tr>
                 <tr>
                     <td class="no-bo">Port of Destination </td>
-                    <td class="no-bo"> : {{$data->pod}}</td>
+                    <td class="no-bo"> : {{$data->pod ?? $data->port_of_discharge}}</td>
                     <td class="no-bo"></td>
                     <td class="no-bo"></td>
                 </tr>
@@ -170,7 +170,7 @@
                 </tr>
                 <tr>
                     <td class="no-bo">Carton Box Qty</td>
-                    <td class="no-bo"> : {{$data->carton_box_qty}}</td>
+                    <td class="no-bo"> : {{$data->description_of_goods_1}}</td>
                     <td class="no-bo" width="80">Carton Boxes</td>
                     <td class="no-bo"></td>
                     <td class="no-bo"></td>
@@ -194,7 +194,7 @@
                     <td class="no-bo"> : {{round($data->measurement,2)}}</td>
                     <td class="no-bo">Kgs</td>
                     <td class="no-bo">Container//Seal No.//Qty//GW//M3</td>
-                    <td class="no-bo"> : {{$data->container}}</td>
+                    <td class="no-bo"> : {{$data->seal_no}}</td>
                 </tr>
                 <tr>
                     <td class="no-bo">B/L </td>
