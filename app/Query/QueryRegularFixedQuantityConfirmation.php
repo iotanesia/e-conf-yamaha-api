@@ -1220,20 +1220,43 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             }
 
             if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) {
+                $item_no_set = $check->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no');
+
                 $mst_box = MstBox::where('part_set', 'set')
-                                ->whereIn('item_no', $item_no)
-                                ->get()->map(function ($item){
-                                $qty =  $item->qty;
-                                return $qty;
+                            ->whereIn('item_no', $item_no_set)
+                            ->get()->map(function ($item){
+                                $qty = [
+                                    $item->id.'id' => $item->qty
+                                ];
+                            
+                                return array_merge($qty);
                             });
 
+                $box_scan = RegularFixedQuantityConfirmationBox::select(DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qrcode::character varying, ',') as qrcode"),
+                                                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
+                                                            DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty"),
+                                                            )
+                                                            ->where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
+                                                            ->whereNotNull('qrcode')
+                                                            ->groupBy('regular_fixed_quantity_confirmation_box.qrcode')
+                                                            ->get()->map(function ($item) use($item_no_set){
+                                                                $qty = [
+                                                                    $item->id_box.'id' => ($item->qty / count($item_no_set)) ?? 0
+                                                                ];
+                                                            
+                                                                return array_merge($qty);
+                                                            });
+
                 $qty = [];
-                foreach (explode(',', $item->qty) as $key => $value) {
-                    $qty[] = $value / $mst_box->toArray()[$key];
+                foreach ($mst_box as $key => $value) {
+                    $arary_key = array_keys($value)[0];
+                    $box_scan_per_id = array_merge(...$box_scan)[$arary_key] ?? 0;
+                    $qty[] = $box_scan_per_id / $value[$arary_key];
                 }
+                $max_qty[] = (int)ceil(max($qty)) / count($item_no_set);
         
                 $box = [
-                    'qty' =>  array_sum($mst_box->toArray())." x ".(int)ceil(max($qty)),
+                    'qty' =>  array_sum($mst_box->toArray())." x ".(int)round(max($max_qty)),
                     'length' =>  "",
                     'width' =>  "",
                     'height' =>  "",
