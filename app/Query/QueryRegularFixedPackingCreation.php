@@ -24,32 +24,45 @@ class QueryRegularFixedPackingCreation extends Model {
 
     public static function getAll($params)
     {
-        try {
-            $key = self::cast.json_encode($params->query());
-            if($params->dropdown == Constant::IS_ACTIVE) $params->limit = Model::count();
+        $data = RegularFixedActualContainer::where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            $kueri = $params->kueri ?? null;
+        
+            if ($category && $kueri) {
+                if ($category == 'cust_name') {
+                    $query->whereHas('refConsignee', function ($q) use ($kueri) {
+                        $q->where('nick_name', 'like', '%' . $kueri . '%');
+                    });
+                } else {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                        ->orWhere('no_packaging', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                }
+            }
 
-            $query = self::where(function ($query) use ($params){
-                if($params->search) $query->where('name',"like", "%$params->search%")
-                                            ->orWHere('nickname',"like", "%$params->search%");
+            if($params->date_start || $params->date_finish)
+                $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
 
-             });
-             if($params->withTrashed == 'true') $query->withTrashed();
-             $data = $query
-             ->orderBy('id','asc')
-             ->paginate($params->limit ?? null);
-             return [
-                 'items' => $data->items(),
-                 'last_page' => $data->lastPage(),
-                 'attributes' => [
-                     'total' => $data->total(),
-                     'current_page' => $data->currentPage(),
-                     'from' => $data->currentPage(),
-                     'per_page' => (int) $data->perPage(),
-                 ]
-             ];
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+
+        })->paginate($params->limit ?? null);
+
+        $data->map(function ($item){
+            $item->cust_name = $item->refConsignee->nick_name ?? null;
+            $item->mot = $item->refMot->name ?? null;
+            $item->status_desc = 'Confirmed';
+
+            unset(
+                $item->refConsignee,
+                $item->refMot
+            );
+            return $item;
+        })->toArray();
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage()
+        ];
     }
 
     public static function byId($id)

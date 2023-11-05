@@ -14,7 +14,7 @@ class FixedPackingCreationController extends Controller
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularFixedQuantityConfirmation::getActualContainer($request)
+                QueryRegularFixedPackingCreation::getAll($request)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
