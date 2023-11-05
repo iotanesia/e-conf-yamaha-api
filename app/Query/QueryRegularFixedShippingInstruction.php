@@ -735,6 +735,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'id'
             ]);
             RegularFixedShippingInstruction::where('id', $request->id)->update(['status' => 4]);
+            RegularFixedShippingInstructionCreation::where('id_fixed_shipping_instruction', $request->id)->update(['checked' => $request->checked]);
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
