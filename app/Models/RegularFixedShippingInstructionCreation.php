@@ -67,7 +67,10 @@ class RegularFixedShippingInstructionCreation extends Model
         "updated_at",
         "updated_by",
         "deleted_at",
-        "id_fixed_shipping_instruction"
+        "id_fixed_shipping_instruction",
+        "issued",
+        "checked",
+        "rejected",
     ];
 
     public function refMstConsignee()

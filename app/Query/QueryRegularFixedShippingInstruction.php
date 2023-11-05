@@ -471,9 +471,6 @@ class QueryRegularFixedShippingInstruction extends Model {
             $data->etd_wh = Carbon::parse($data->etd_jkt)->subDay(2)->format('D, M d, Y');
             $data->eta_destination = Carbon::parse($data->eta_destination)->subDay(2)->format('M d, Y');
             $data->etd_jkt = Carbon::parse($data->etd_jkt)->subDay(2)->format('M d, Y');
-            $data->approved = MstSignature::where('type', 'APPROVED')->first()->name;
-            $data->checked = MstSignature::where('type', 'CHECKED')->first()->name;
-            $data->issued = MstSignature::where('type', 'ISSUED')->first()->name;
 
             $actual_container_creation = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->first();
             $actual_container = RegularFixedActualContainer::where('id', $actual_container_creation->id_fixed_actual_container)->get();
