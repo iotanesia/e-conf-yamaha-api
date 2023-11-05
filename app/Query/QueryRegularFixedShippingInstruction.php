@@ -1017,7 +1017,14 @@ class QueryRegularFixedShippingInstruction extends Model {
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
-                $item->item_name = trim($item->refRegularDeliveryPlan->refPart->description);
+
+                $item_name_set = [];
+                foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $key => $value) {
+                    $item_name_set[] = $value->refPart->description;
+                }
+
+                $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name_set : trim($item->refRegularDeliveryPlan->refPart->description);
+                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no') : $item->refRegularDeliveryPlan->item_no;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;
                 unset(
