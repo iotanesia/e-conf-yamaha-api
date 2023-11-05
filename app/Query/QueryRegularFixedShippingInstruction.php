@@ -164,7 +164,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $count_meas += (($box_item['ref_mst_box']['length'] * $box_item['ref_mst_box']['width'] * $box_item['ref_mst_box']['height']) / 1000000000);
                 }
 
-                $item->id_quantity_confirmation = $quantity_confirmation->id;
+                $item->id_actual_container_creation = $item->id;
+                $item->id = $quantity_confirmation->id;
                 $item->cust_name = $item->refMstConsignee->nick_name;
                 $item->id_type_delivery = $item->id_type_delivery;
                 $item->type_delivery = $item->refMstTypeDelivery->name;
