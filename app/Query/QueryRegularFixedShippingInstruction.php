@@ -993,8 +993,22 @@ class QueryRegularFixedShippingInstruction extends Model {
             $data->checked = MstSignature::where('type', 'CHECKED')->first()->name;
             $data->issued = MstSignature::where('type', 'ISSUED')->first()->name;
 
+            $actual_container_creation = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->first();
+            $actual_container = RegularFixedActualContainer::where('id', $actual_container_creation->id_fixed_actual_container)->get();
+
+            foreach ($actual_container as $key => $value) {
+                $tes = $value->manyFixedQuantityConfirmation;
+            }
+
+            $box = [];
+            foreach ($tes as $key => $item) {
+                $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
+            }
+
             Pdf::loadView('pdf.shipping_actual',[
-                'data' => $data
+                'data' => $data,
+                'actual_container' => $actual_container,
+                'box' => $box
             ])->save($pathToFile)
                 ->setPaper('A4','potrait')
                 ->download($filename);
