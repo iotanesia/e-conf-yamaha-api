@@ -223,6 +223,7 @@ Route::prefix('v1/regular')
             Route::get('/ccspv',[FixedShippingInstructionController::class,'shippingInstructionCcspv']);
             Route::get('/ccman',[FixedShippingInstructionController::class,'shippingInstructionCcman']);
             Route::get('/container/{id}',[FixedShippingInstructionController::class,'shippingInstructionContainer']);
+            Route::get('/container/{id}/detail',[FixedShippingInstructionController::class,'shippingInstructionContainerDetail']);
             Route::get('/packing/{id}',[FixedShippingInstructionController::class,'shippingInstructionPacking']);
             Route::get('/deliverynote/head/{id}',[FixedShippingInstructionController::class,'shippingInstructionDeliveryNoteHead']);
             Route::get('/deliverynote/part/{id}',[FixedShippingInstructionController::class,'shippingInstructionDeliveryNotePart']);

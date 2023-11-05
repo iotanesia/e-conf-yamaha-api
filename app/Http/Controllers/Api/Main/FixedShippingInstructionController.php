@@ -54,6 +54,17 @@ class FixedShippingInstructionController extends Controller
         }
     }
 
+    public function shippingInstructionContainerDetail(Request $request,$id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularFixedShippingInstruction::shippingContainerDetail($request,$id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function shippingInstructionStore(Request $request)
     {
         try {
