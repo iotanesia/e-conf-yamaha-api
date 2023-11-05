@@ -537,7 +537,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                                                 ->where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
                                                                 ->where('id_box', $item->id_box) 
                                                                 ->whereNotNull('qrcode')                                       
-                                                                // ->whereNull('id_prospect_container_creation')
+                                                                ->whereNull('id_prospect_container_creation')
                                                                 ->whereNotNull('a.id_fixed_actual_container')
                                                                 ->leftJoin('regular_fixed_quantity_confirmation as a','a.id','regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation')
                                                                 ->orderBy('regular_fixed_quantity_confirmation_box.id', 'asc')
