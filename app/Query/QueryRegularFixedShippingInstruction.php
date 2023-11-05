@@ -527,6 +527,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         $data = RegularFixedActualContainerCreation::select('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt'
         ,DB::raw('COUNT(regular_fixed_actual_container_creation.etd_jkt) AS summary_container')
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.code_consignee::character varying, ',') as code_consignee")
+        ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.id::character varying, ',') as id_actual_container_creation")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.datasource::character varying, ',') as datasource")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_wh::character varying, ',') as etd_wh")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_ypmi::character varying, ',') as etd_ypmi"))
@@ -537,6 +538,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
         $data->transform(function ($item) {
             return [
+                'id' => $item->id_actual_container_creation,
                 'cust_name' => $item->refMstConsignee->nick_name,
                 'etd_jkt' => $item->etd_jkt,
                 'etd_wh' => $item->etd_wh,
@@ -580,6 +582,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ,DB::raw("SUM(f.gross_weight) as gross_weight")
         ,DB::raw("SUM(f.measurement) as measurement")
         ,DB::raw("SUM(regular_fixed_actual_container_creation.summary_box) as summary_box_sum"))
+        ->where('regular_fixed_actual_container_creation.id', $params->id)
         ->where('regular_fixed_actual_container_creation.code_consignee', $params->code_consignee)
         ->where('regular_fixed_actual_container_creation.etd_jkt', $params->etd_jkt)
         ->where('regular_fixed_actual_container_creation.datasource', $params->datasource)
