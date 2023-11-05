@@ -61,7 +61,7 @@
 <body style="font-family: Arial, Helvetica, sans-serif !important;">
 
     @foreach ($data as $key => $item) 
-    @if ($check == null) {{-- part set --}}
+    {{-- @if ($check == null) part set --}}
         @foreach ($box as $jml => $box_item)
             @for ($i=1; $i<=2; $i++)
 
@@ -99,7 +99,7 @@
                                     <td class="no-br text-center"><b>{{ round($box_item['total_gross_weight'],1) }}</b></td>
                                 </tr>
                                 <tr>
-                                    <td class="no-bl no-bb text-center"><p style="padding:0; margin:15px 0 0 0;"><b>SET</b></p></td>
+                                    <td class="no-bl no-bb text-center"><p style="padding:0; margin:15px 0 0 0;"><b>{{ count($box_item['qty_pcs_box']) > 1 ? 'SET' : 'PCS' }}</b></p></td>
                                     <td class="no-br no-bb text-center"><p style="padding:0; margin:15px 0 0 0;"><b>KG</b></p></td>
                                 </tr>
                             </table>
@@ -108,7 +108,7 @@
                 </table>
             @endfor
         @endforeach
-    @elseif ($item->refConsignee->nick_name == 'YMC') {{-- YMC --}}
+    {{-- @elseif ($item->refConsignee->nick_name == 'YMC') YMC
         @foreach ($box as $jml => $box_item)
             @for ($i=1; $i<=2; $i++)
 
@@ -147,7 +147,7 @@
                 </table>
             @endfor
         @endforeach
-    @elseif (substr($box[0]['ref_box']['item_no_series'],13,2) !== 00) {{-- wheel cast --}}
+    @elseif (substr($box[0]['ref_box']['item_no_series'],13,2) !== 00) wheel cast
         @foreach ($box as $jml => $box_item)
             @for ($i=1; $i<=2; $i++)
 
@@ -189,7 +189,7 @@
                             </table>
                         </td>
                     </tr>
-                </table>
+                </table> --}}
 
                 {{-- <table style="margin-top:35px;">
                     <tr>
@@ -229,7 +229,7 @@
                         </td>
                     </tr>
                 </table> --}}
-            @endfor
+            {{-- @endfor
         @endforeach
     @else
         @foreach ($box as $jml => $box_item)
@@ -276,7 +276,7 @@
                 </table>
             @endfor
         @endforeach
-    @endif
+    @endif --}}
         
     @endforeach 
     
