@@ -367,7 +367,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             // $request->merge(['consignee'=>json_encode($consignee),'status'=>Constant::DRAFT]);
             $request1 = $request->except(['container_count','container_value','container_type']);
             $request2 = [
-                            'container_count' => implode(',',$request->container_count),
+                            'count_container' => implode(',',$request->container_count),
                             'container_value' => implode(',',$request->container_value),
                             'container_type' => implode(',',$request->container_type),
                         ];
@@ -377,12 +377,12 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'cc',
             ]);
 
-            $fixed_shipping_instruction_creation = RegularFixedShippingInstructionCreation::where('id', $request->id_fixed_shipping_instruction_creation)->first();
+            $fixed_shipping_instruction_creation = RegularFixedShippingInstructionCreation::where('id_fixed_shipping_instruction', $request->id_fixed_shipping_instruction)->first();
 
             if ($fixed_shipping_instruction_creation == null) {
                 $insert = RegularFixedShippingInstructionCreation::create($params);
                 $actual_container_creation = RegularFixedActualContainerCreation::query();
-                $update_actual = $actual_container_creation->where('datasource',$request->datasource)->where('code_consignee',$request->consignee)->where('etd_jkt',$request->etd_jkt)->get();
+                $update_actual = $actual_container_creation->whereIn('id',explode(',',$request->id_actual_container_creation))->where('datasource',$request->datasource)->where('code_consignee',$request->consignee)->where('etd_jkt',$request->etd_jkt)->get();
                 foreach ($update_actual as $key => $value) {
                     $value->update(['id_fixed_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
                 }
@@ -779,6 +779,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                                                                             });
 
                 return [
+                    'id_actual_container_creation' => $params->id,
                     'code_consignee' => $item->code_consignee,
                     'consignee_address' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax,
                     'customer_name' => $item->refMstConsignee->nick_name ?? null,
