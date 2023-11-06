@@ -115,7 +115,7 @@
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">CONTAINER </td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->description_of_goods_1}} x {{ $data->container_value }}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->container_count}} x {{ $data->container_value }}</td>
                         <td width="80" class="no-bo" style="padding: 0 0 0 5px; margin: 0;">DO No</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->do_no}}</td>
                     </tr>
