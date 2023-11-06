@@ -600,13 +600,14 @@ class QueryRegularFixedShippingInstruction extends Model {
         ->paginate(1);
         if(!$data) throw new \Exception("Data not found", 400);
 
-        $data->transform(function ($item) {
+        $data->transform(function ($item) use($params){
             if ($item->id_fixed_shipping_instruction_creation) {
                 $SI = RegularFixedShippingInstructionCreation::where('id',$item->id_fixed_shipping_instruction_creation)->paginate(1);
 
                 $summary_box = RegularFixedActualContainerCreation::where('code_consignee', $item->code_consignee)
                                                                             ->where('etd_jkt', $item->etd_jkt)
                                                                             ->where('datasource', $item->datasource)
+                                                                            ->whereIn('id',explode(',',$params->id))
                                                                             ->get()->map(function($q){
                                                                                 $items = $q->summary_box;
                                                                                 return $items;
@@ -771,6 +772,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $summary_box = RegularFixedActualContainerCreation::where('code_consignee', $item->code_consignee)
                                                                             ->where('etd_jkt', $item->etd_jkt)
                                                                             ->where('datasource', $item->datasource)
+                                                                            ->whereIn('id',explode(',',$params->id))
                                                                             ->get()->map(function($q){
                                                                                 $items = $q->summary_box;
                                                                                 return $items;
