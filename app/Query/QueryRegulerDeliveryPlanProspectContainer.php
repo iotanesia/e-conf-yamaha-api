@@ -187,18 +187,18 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                                 ->whereIn('item_no', $item_no)
                                 ->get()->map(function ($item){
                                     $qty = [
-                                        $item->item_no => $item->qty
+                                        $item->item_no.'id' => $item->qty
                                     ];
                                 
                                     return array_merge($qty);
                             });
 
-                $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $check->refRegularDeliveryPlan->id)->get();
+                $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_delivery_plan)->get();
                 $qty_per_item_no = [];
                 $qty_set = [];
                 foreach ($deliv_plan_set as $key => $value) {
                     $qty_per_item_no[] = [
-                        $value->item_no => $value->qty
+                        $value->item_no.'id' => $value->qty
                     ];
                     $qty_set[] = $value->qty;
                 }
