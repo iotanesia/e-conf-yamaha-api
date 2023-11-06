@@ -636,28 +636,30 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $res_box_single = [];
                 $res_box_set = [];
                 foreach ($deliv_plan as $key => $deliv_value) {
-                    $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) {
-                        $res['qrcode'] = $item->qrcode;
-                        $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
-                        $res['qty_pcs_box'] = [$item->qty_pcs_box];
-                        $res['item_no_series'] = [$item->refMstBox->item_no_series];
-                        $res['unit_weight_kg'] = [$item->refMstBox->unit_weight_kg];
-                        $res['total_gross_weight'] = $item->refMstBox->total_gross_weight;
-                        $res['length'] = $item->refMstBox->length;
-                        $res['width'] = $item->refMstBox->width;
-                        $res['height'] = $item->refMstBox->height;
-                        return $res;
-                    });
-                    
-                    $box_single = [];
-                    foreach ($res as $key => $item_res) {
-                        if ($item_res['qrcode'] !== null && !in_array($item_res, $box_single)) {
-                            $box_single[] = $item_res;
+                    if ($deliv_value->item_no !== null) {
+                        $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) {
+                            $res['qrcode'] = $item->qrcode;
+                            $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
+                            $res['qty_pcs_box'] = [$item->qty_pcs_box];
+                            $res['item_no_series'] = [$item->refMstBox->item_no_series];
+                            $res['unit_weight_kg'] = [$item->refMstBox->unit_weight_kg];
+                            $res['total_gross_weight'] = $item->refMstBox->total_gross_weight;
+                            $res['length'] = $item->refMstBox->length;
+                            $res['width'] = $item->refMstBox->width;
+                            $res['height'] = $item->refMstBox->height;
+                            return $res;
+                        });
+                        
+                        $box_single = [];
+                        foreach ($res as $key => $item_res) {
+                            if ($item_res['qrcode'] !== null && !in_array($item_res, $box_single)) {
+                                $box_single[] = $item_res;
+                            }
                         }
+                        
+                        $res_box_single[] = $box_single;
                     }
                     
-                    $res_box_single[] = $box_single;
-
                     if ($deliv_value->item_no == null) {
                         $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
                         $deliv_plan_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan',$deliv_value->id)
@@ -753,7 +755,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
                 }
                 
-                $box = array_merge(($res_box_set[0] ?? []), ($res_box_single[0] ?? []));
+                $box = array_merge((array_merge(...$res_box_set) ?? []), (array_merge(...$res_box_single) ?? []));
                 
                 $count_qty = 0;
                 $count_net_weight = 0;
@@ -953,28 +955,30 @@ class QueryRegularFixedShippingInstruction extends Model {
             $res_box_single = [];
             $res_box_set = [];
             foreach ($deliv_plan as $key => $deliv_value) {
-                $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) {
-                    $res['qrcode'] = $item->qrcode;
-                    $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
-                    $res['qty_pcs_box'] = [$item->qty_pcs_box];
-                    $res['item_no_series'] = [$item->refMstBox->item_no_series];
-                    $res['unit_weight_kg'] = [$item->refMstBox->unit_weight_kg];
-                    $res['total_gross_weight'] = $item->refMstBox->total_gross_weight;
-                    $res['length'] = $item->refMstBox->length;
-                    $res['width'] = $item->refMstBox->width;
-                    $res['height'] = $item->refMstBox->height;
-                    return $res;
-                });
-                
-                $box_single = [];
-                foreach ($res as $key => $item) {
-                    if ($item['qrcode'] !== null && !in_array($item, $box_single)) {
-                        $box_single[] = $item;
+                if ($deliv_value->item_no !== null) {
+                    $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) {
+                        $res['qrcode'] = $item->qrcode;
+                        $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
+                        $res['qty_pcs_box'] = [$item->qty_pcs_box];
+                        $res['item_no_series'] = [$item->refMstBox->item_no_series];
+                        $res['unit_weight_kg'] = [$item->refMstBox->unit_weight_kg];
+                        $res['total_gross_weight'] = $item->refMstBox->total_gross_weight;
+                        $res['length'] = $item->refMstBox->length;
+                        $res['width'] = $item->refMstBox->width;
+                        $res['height'] = $item->refMstBox->height;
+                        return $res;
+                    });
+                    
+                    $box_single = [];
+                    foreach ($res as $key => $item) {
+                        if ($item['qrcode'] !== null && !in_array($item, $box_single)) {
+                            $box_single[] = $item;
+                        }
                     }
+                    
+                    $res_box_single[] = $box_single;
                 }
                 
-                $res_box_single[] = $box_single;
-
                 if ($deliv_value->item_no == null) {
                     $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
                     $deliv_plan_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan',$deliv_value->id)
@@ -1070,7 +1074,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
             }
             
-            $box = array_merge(($res_box_set[0] ?? []), ($res_box_single[0] ?? []));
+            $box = array_merge((array_merge(...$res_box_set) ?? []), (array_merge(...$res_box_single) ?? []));
             $count_qty = 0;
             $count_net_weight = 0;
             $count_gross_weight = 0;
@@ -1176,28 +1180,30 @@ class QueryRegularFixedShippingInstruction extends Model {
             $res_box_single = [];
             $res_box_set = [];
             foreach ($deliv_plan as $key => $deliv_value) {
-                $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) {
-                    $res['qrcode'] = $item->qrcode;
-                    $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
-                    $res['qty_pcs_box'] = [$item->qty_pcs_box];
-                    $res['item_no_series'] = [$item->refMstBox->item_no_series];
-                    $res['unit_weight_kg'] = [$item->refMstBox->unit_weight_kg];
-                    $res['total_gross_weight'] = $item->refMstBox->total_gross_weight;
-                    $res['length'] = $item->refMstBox->length;
-                    $res['width'] = $item->refMstBox->width;
-                    $res['height'] = $item->refMstBox->height;
-                    return $res;
-                });
-                
-                $box_single = [];
-                foreach ($res as $key => $item) {
-                    if ($item['qrcode'] !== null && !in_array($item, $box_single)) {
-                        $box_single[] = $item;
+                if ($deliv_value->item_no == null) {
+                    $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) {
+                        $res['qrcode'] = $item->qrcode;
+                        $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
+                        $res['qty_pcs_box'] = [$item->qty_pcs_box];
+                        $res['item_no_series'] = [$item->refMstBox->item_no_series];
+                        $res['unit_weight_kg'] = [$item->refMstBox->unit_weight_kg];
+                        $res['total_gross_weight'] = $item->refMstBox->total_gross_weight;
+                        $res['length'] = $item->refMstBox->length;
+                        $res['width'] = $item->refMstBox->width;
+                        $res['height'] = $item->refMstBox->height;
+                        return $res;
+                    });
+                    
+                    $box_single = [];
+                    foreach ($res as $key => $item) {
+                        if ($item['qrcode'] !== null && !in_array($item, $box_single)) {
+                            $box_single[] = $item;
+                        }
                     }
+                    
+                    $res_box_single[] = $box_single;
                 }
                 
-                $res_box_single[] = $box_single;
-
                 if ($deliv_value->item_no == null) {
                     $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
                     $deliv_plan_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan',$deliv_value->id)
@@ -1293,7 +1299,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
             }
             
-            $box = array_merge(($res_box_set[0] ?? []), ($res_box_single[0] ?? []));
+            $box = array_merge((array_merge(...$res_box_set) ?? []), (array_merge(...$res_box_single) ?? []));
             $count_qty = 0;
             $count_net_weight = 0;
             $count_gross_weight = 0;

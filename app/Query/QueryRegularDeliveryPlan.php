@@ -1444,7 +1444,7 @@ class QueryRegularDeliveryPlan extends Model {
 
                 }
                 
-                $box = array_merge(($res_box_set[0] ?? []), ($res_box_single[0] ?? []));
+                $box = array_merge((array_merge(...$res_box_set) ?? []), (array_merge(...$res_box_single) ?? []));
                 
                 $count_qty = 0;
                 $count_net_weight = 0;
