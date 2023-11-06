@@ -1328,30 +1328,31 @@ class QueryRegularDeliveryPlan extends Model {
                 $res_box_single = [];
                 $res_box_set = [];
                 foreach ($deliv_plan as $key => $deliv_value) {
-                    $res = $deliv_value->manyDeliveryPlanBox->map(function($item) {
-                        $res['qrcode'] = $item->qrcode;
-                        $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
-                        $res['qty_pcs_box'] = [$item->qty_pcs_box];
-                        $res['item_no_series'] = [$item->refBox->item_no_series];
-                        $res['unit_weight_kg'] = [$item->refBox->unit_weight_kg];
-                        $res['total_gross_weight'] = $item->refBox->total_gross_weight;
-                        $res['length'] = $item->refBox->length;
-                        $res['width'] = $item->refBox->width;
-                        $res['height'] = $item->refBox->height;
-                        return $res;
-                    });
-                    
-                    $box_single = [];
-                    foreach ($res as $key => $item_res) {
-                        $box_single[] = $item_res;
+                    if ($deliv_value->item_no !== null) {
+                        $res = $deliv_value->manyDeliveryPlanBox->map(function($item) {
+                            $res['qrcode'] = $item->qrcode;
+                            $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
+                            $res['qty_pcs_box'] = [$item->qty_pcs_box];
+                            $res['item_no_series'] = [$item->refBox->item_no_series];
+                            $res['unit_weight_kg'] = [$item->refBox->unit_weight_kg];
+                            $res['total_gross_weight'] = $item->refBox->total_gross_weight;
+                            $res['length'] = $item->refBox->length;
+                            $res['width'] = $item->refBox->width;
+                            $res['height'] = $item->refBox->height;
+                            return $res;
+                        });
+                        
+                        $box_single = [];
+                        foreach ($res as $key => $item_res) {
+                            $box_single[] = $item_res;
+                        }
+                        
+                        $res_box_single[] = $box_single;
                     }
-                    
-                    $res_box_single[] = $box_single;
 
                     if ($deliv_value->item_no == null) {
                         $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
                         $deliv_plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$deliv_value->id)
-                                                            ->where('qrcode','!=',null)
                                                             ->orderBy('qty_pcs_box','desc')
                                                             ->orderBy('id','asc')
                                                             ->get();
