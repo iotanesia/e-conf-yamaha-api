@@ -115,14 +115,14 @@
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">CONTAINER </td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->container_count}} x {{ $data->container_value }}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->description_of_goods_1}} x {{ $data->container_value }}</td>
                         <td width="80" class="no-bo" style="padding: 0 0 0 5px; margin: 0;">DO No</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->do_no}}</td>
                     </tr>
                     </br>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Port of Loading </td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->pol}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->pol ?? $data->port_of_loading}}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Feeder Vessel</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->feeder_vessel}}</td>
                     </tr>
@@ -134,7 +134,7 @@
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Port of Destination </td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->pod}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->pod ?? $data->port_of_discharge}}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
                     </tr>
@@ -220,6 +220,50 @@
                     </tr>
                 </table>
             </table>
+
+            {{-- <table class="no-bt no-bb">
+                <tr>
+                    <td>
+                        <b>CASE MARKS</b>
+                    </td>
+                </tr>
+            </table>
+            <table>
+                <table style="border: 1px solid #000; border-top:hidden;">
+                    <table style="padding-right: 570px"> 
+                        @foreach ($actual_container as $key => $item)
+                            @foreach ($box as $jml => $box_jml)
+                                @foreach ($box[$jml] as $box_item)
+                                    <tr>
+                                        <td width="80" class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">999999-9999</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->refPartOfDischarge->port ?? null }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $item->no_packaging }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $loop->iteration }}</td>
+                                    </tr>
+                                @break
+                                @endforeach
+                            @break
+                            @endforeach
+                        @break
+                        @endforeach 
+                        <br>
+                    </table>
+                </table> --}}
             
             {{-- <table>
                 <tr>
@@ -282,8 +326,8 @@
             </tr>
             <tr>
                 <td class="text-center">{{ $data->issued }}</td>
-                <td class="text-center"></td>
-                <td class="text-center"></td>
+                <td class="text-center">{{ $data->checked }}</td>
+                <td class="text-center">{{ $data->approved }}</td>
             </tr>
         </table>
     </body>
