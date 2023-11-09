@@ -22,28 +22,7 @@ class InquiryExport implements FromCollection, WithHeadings
     */
     public function collection()
     {
-        $arr = [];
-        foreach ($this->data['items'] as $key => $value) {
-            $box = '';
-            foreach ($value->box->toArray() as $item) {
-                $box = $item['qty'];
-            }
-            $arr[] = [
-                'no' => $key +1,
-                'cust_name' => $value->cust_name,
-                'item_no' => $value->item_no,
-                'item_name' => $value->item_name,
-                'custemer_item_no' => $value->cust_item_no,
-                'custemer_order_no' => $value->order_no,
-                'quantity' => $value->qty,
-                'etd_ypmi' => date('d F Y', strtotime($value->etd_ypmi)),
-                'etd_wh' => date('d F Y', strtotime($value->etd_wh)),
-                'etd_jkt' => date('d F Y', strtotime($value->etd_jkt)),
-                'box' => $box
-            ];
-        }
-
-        return new Collection($arr);
+        return new Collection($this->data);
     }
 
     public function headings(): array

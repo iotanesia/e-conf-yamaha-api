@@ -598,9 +598,108 @@ class QueryRegularDeliveryPlan extends Model {
         ];
     }
 
-    public static function exportExcel($request,$id){
-        $data = self::detail($request, $id);
-        return Excel::download(new InquiryExport($data), 'inquiry.xlsx');
+    public static function exportExcel($params,$id)
+    {
+        $query = self::where('id_regular_order_entry',$id)
+        ->where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            $kueri = $params->kueri ?? null;
+
+            if ($category && $kueri) {
+                if ($category == 'cust_name') {
+                    $query->whereHas('refConsignee', function ($q) use ($kueri) {
+                        $q->where('nick_name', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'item_name') {
+                    $query->whereHas('refPart', function ($q) use ($kueri) {
+                        $q->where('description', 'like', '%' . $kueri . '%');
+                    });
+                } else {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                        ->orWhere('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%')
+                        ->orWhere('order_no', 'like', '%' . $kueri . '%')
+                        ->orWhere('cust_item_no', 'like', '%' . $kueri . '%')
+                        ->orWhere('qty', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                }
+            }
+
+            // $filterdate = Helper::filterDate($params);
+            $date_from = str_replace('-','',$params->date_from);
+            $date_to = str_replace('-','',$params->date_to);
+            if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
+        })
+        ->where('is_inquiry', 0)
+        ->orderBy('id','asc')
+        ->get();
+
+        $data = $query->map(function ($item){
+            $custname = self::getCustName($item->code_consignee);
+            $itemname = self::getPart($item->item_no);
+
+            $item_no_series = MstBox::where('item_no', $item->item_no)->first();
+
+            if ($item->item_no == null) {
+                $item_no_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id)->get()->pluck('item_no');
+                $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get()->pluck('item_no_series');
+                $mst_part = MstPart::select('mst_part.item_no',
+                                    DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
+                                    ->whereIn('mst_part.item_no', $item_no_set->toArray())
+                                    ->groupBy('mst_part.item_no')->get();
+                $item_name = [];
+                foreach ($mst_part as $value) {
+                $item_name[] = $value->description;
+                }
+
+                $mst_box = MstBox::whereIn('item_no', $item_no_set->toArray())
+                                ->get()->map(function ($item){
+                                    $qty = [
+                                        $item->item_no => $item->qty
+                                    ];
+                                
+                                    return array_merge($qty);
+                                });
+
+                $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id)->get();
+                $qty_per_item_no = [];
+                foreach ($deliv_plan_set as $key => $value) {
+                    $qty_per_item_no[] = [
+                        $value->item_no => $value->qty
+                    ];
+                }
+
+                $qty = [];
+                foreach ($mst_box as $key => $value) {
+                    $arary_key = array_keys($value)[0];
+                    $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
+                }
+                
+                $box = [
+                    'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty)),
+                    'length' =>  "",
+                    'width' =>  "",
+                    'height' =>  "",
+                ];
+            }
+
+            $set["no"] = $item->id;
+            $set["cust_name"] = $custname;
+            $set["item_no"] = $item->item_no == null ? $item_no_series->toArray() : $item_no_series->item_no_series;
+            $set["item_name"] = $item->item_no == null ? $item_name : $itemname;
+            $set["cust_item_no"] = $item->cust_item_no;
+            $set["order_no"] = $item->order_no;
+            $set["qty"] = $item->qty;
+            $set["etd_ypmi"] = date('d F Y', strtotime($item->etd_ypmi));
+            $set["etd_wh"] = date('d F Y', strtotime($item->etd_wh));
+            $set["etd_jkt"] = date('d F Y', strtotime($item->etd_jkt));
+            $set["box"] = $item->item_no == null ? $box['qty'].' pcs' : self::getCountBox($item->id)[0]['qty'].' pcs';
+
+            unset($item->refRegularOrderEntry);
+            return $set;
+        });
+
+        return Excel::download(new InquiryExport($data->toArray()), 'inquiry.xlsx');
     }
 
     public static function getCountBox($id){
