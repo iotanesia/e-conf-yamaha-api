@@ -87,7 +87,7 @@ class QueryStockConfirmationHistory extends Model {
                 $stokTemp->update(['is_reject' => 1]);
 
                 $update->update([
-                    'production' => $update->production + $update->in_dc,
+                    'production' => $update->production + $qty->qty_pcs_box,
                     'in_dc' => $update->in_dc - $qty->qty_pcs_box,
                     'status_instock'=> $update->in_dc == 0 ? Constant::STS_STOK : 2,
                 ]);
@@ -478,7 +478,7 @@ class QueryStockConfirmationHistory extends Model {
             $res['status_bml'] = $item->refRegularDeliveryPlan->status_bml;
             $res['cust_name'] = $item->refRegularDeliveryPlan->refConsignee->nick_name;
             $res['status_desc'] = 'Instock';
-            $res['in_wh'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh : $plan_box[0]->qty_pcs_box;
+            $res['in_wh'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh : $item->qty;
             $res['box'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh.' x 1 ' : $plan_box[0]->qty_pcs_box.' x 1 ';
 
             return $res;
@@ -534,10 +534,18 @@ class QueryStockConfirmationHistory extends Model {
                     $query->whereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
                         $q->where('cust_item_no', 'like', '%' . $kueri . '%');
                     });
-                } else {
-                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
-                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
-                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                } elseif ($category == 'etd_ypmi') {
+                    $query->whereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                        $q->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'etd_jkt') {
+                    $query->whereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                        $q->where('etd_jkt', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'etd_wh') {
+                    $query->whereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
+                        $q->where('etd_wh', 'like', '%' . $kueri . '%');
+                    });
                 }
             }
         })->paginate($request->limit ?? null);
@@ -1302,12 +1310,11 @@ class QueryStockConfirmationHistory extends Model {
                     $mst_part = MstPart::where('item_no', $item->refRegularDeliveryPlan->item_no)->first();
                     $item_no = $mst_part->item_no;
                     $item_name = $mst_part->description;
-                    $in_wh = $plan_box[0]->qty_pcs_box;
                 }
             
             $item->item_number = $item_no;
             $item->item_name = $item_name;
-            $item->quantity = $in_wh;
+            $item->qty = $item->refRegularDeliveryPlan->item_no == null ? $in_wh : $item->qty;
             $item->order_no = $item->refRegularDeliveryPlan->order_no;
 
             unset(
