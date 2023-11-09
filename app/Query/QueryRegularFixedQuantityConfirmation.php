@@ -34,7 +34,29 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
-            $query = self::where(function ($query) use ($params){
+            $query = self::select('id_regular_delivery_plan',
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id::character varying, ',') as id_fixed_quantity"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container_creation::character varying, ',') as id_fixed_actual_container_creation"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container_creation::character varying, ',') as id_fixed_actual_container_creation"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.code_consignee::character varying, ',') as code_consignee"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.model::character varying, ',') as model"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_serial::character varying, ',') as item_serial"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.disburse::character varying, ',') as disburse"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.delivery::character varying, ',') as delivery"),
+                DB::raw('MAX(regular_fixed_quantity_confirmation.qty) as qty'),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.cust_item_no::character varying, ',') as cust_item_no"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.etd_ypmi::character varying, ',') as etd_ypmi"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.etd_wh::character varying, ',') as etd_wh"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.etd_jkt::character varying, ',') as etd_jkt"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.is_actual::character varying, ',') as is_actual"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.status::character varying, ',') as status"),
+                DB::raw('MAX(regular_fixed_quantity_confirmation.in_dc) as in_dc'),
+                DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
+                DB::raw('MAX(regular_fixed_quantity_confirmation.production) as production'),
+            )->where(function ($query) use ($params){
 
                 $query->where('is_actual',Constant::IS_NOL);
                 $category = $params->category ?? null;
@@ -62,7 +84,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
                 }
 
-            });
+            })->groupBy('id_regular_delivery_plan');
 
             if($params->withTrashed == 'true') $query->withTrashed();
             if($params->dropdown == Constant::IS_ACTIVE) {
