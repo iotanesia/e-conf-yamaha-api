@@ -1242,7 +1242,14 @@ class QueryStockConfirmationHistory extends Model {
 
     public static function outstockDeliveryNoteItems($request)
     {
-        $items = RegularStokConfirmationTemp::whereIn('qr_key', $request->id_stock_confirmation)->get();
+        $items = RegularStokConfirmationTemp::select(
+                    'id_stock_confirmation', 'qty',
+                    DB::raw("string_agg(DISTINCT regular_stock_confirmation_temp.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
+                    DB::raw("string_agg(DISTINCT regular_stock_confirmation_temp.id::character varying, ',') as id_stok_temp"),
+                )
+                ->whereIn('qr_key', $request->id_stock_confirmation)
+                ->groupBy('id_stock_confirmation', 'qty')
+                ->get();
 
         $items->transform(function ($item) use($items){
             
@@ -1314,8 +1321,9 @@ class QueryStockConfirmationHistory extends Model {
             
             $item->item_number = $item_no;
             $item->item_name = $item_name;
-            $item->qty = $item->refRegularDeliveryPlan->item_no == null ? $in_wh : $item->qty;
+            $item->qty = $item->refRegularDeliveryPlan->item_no == null ? count(explode(',', $item->id_stok_temp)).' x '.$in_wh : count(explode(',', $item->id_stok_temp)).' x '.$item->qty;
             $item->order_no = $item->refRegularDeliveryPlan->order_no;
+            $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
 
             unset(
                 $item->refRegularDeliveryPlan
