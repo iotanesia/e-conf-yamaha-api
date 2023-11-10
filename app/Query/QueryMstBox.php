@@ -247,7 +247,7 @@ class QueryMstBox extends Model {
                     "item_no_series" => $mst_part[0]->item_serial ?? null,
                     "qty" => $params['qty'][$i] ?? null,
                     "unit_weight_gr" => $params['unit_weight_gr'][$i] ?? null,
-                    "unit_weight_kg" => $params['unit_weight_kg'][$i] ?? null,
+                    "unit_weight_kg" => ($params['unit_weight_gr'][$i]/1000) ?? null,
                     "outer_carton_weight" => $params['outer_carton_weight'] ?? null,
                     "total_gross_weight" => $params['total_gross_weight'] ?? null,
                     "length" => $params['length'] ?? null,
