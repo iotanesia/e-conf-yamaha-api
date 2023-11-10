@@ -33,11 +33,18 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
     public static function getAll($params) {
         $data = Model::where(function ($query) use ($params){
             $category = $params->category ?? null;
+            $kueri = $params->kueri ?? null;
             if($category) {
                 if($category == 'cust_name'){
-                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+                    $query->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $kueri)->get();
+                }elseif ($category == 'etd_ypmi') {
+                    $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_wh') {
+                    $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_jkt') {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%');
                 } else {
-                    $query->where($category, 'ilike', $params->value);
+                    $query->where($category, 'ilike', $kueri);
                 }
             }
 
