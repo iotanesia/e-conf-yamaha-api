@@ -58,7 +58,7 @@
     <h2 class="text-center">DELIVERY NOTE</h2>
     <table>
         <tr>
-            <td class="no-bo" width='70'>{{ $data->shipper }}</td>
+            <td class="no-bo" width='70'> {!! nl2br($data->shipper) !!}</td>
             <td class="no-bo" width='5'></td>
             <td class="no-bo text-right" width='100'>
                 Kepada Yth, <br>

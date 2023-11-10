@@ -51,4 +51,8 @@ class MstBox extends Model
         return $this->belongsTo(MstGroupProduct::class,'id_group_product','id');
     }
 
+    public function refConsignee(){
+        return $this->belongsTo(MstConsignee::class,'code_consignee','code');
+    }
+
 }
