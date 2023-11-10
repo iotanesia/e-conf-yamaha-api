@@ -18,6 +18,7 @@ use App\Models\RegularStokConfirmationHistory;
 use App\Models\RegularStokConfirmationTemp;
 use App\Models\RegularFixedQuantityConfirmation;
 use App\Models\RegularFixedQuantityConfirmationBox;
+use App\Models\RegularStokConfirmationOutstockNoteDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -294,7 +295,7 @@ class QueryStockConfirmationOutstockNote extends Model {
 
     public static function downloadOutStockNote($request,$pathToFile,$filename)
     {
-        // try {
+        try {
             $stokTemp = RegularStokConfirmationTemp::whereIn('qr_key',$request->id)->get();
             $data = Model::whereJsonContains('id_stock_confirmation',[$stokTemp[0]->id_stock_confirmation])->orderBy('id','desc')->first();
             
@@ -308,15 +309,25 @@ class QueryStockConfirmationOutstockNote extends Model {
                     $data->description = MstPart::whereIn('item_no', $data->item_no)->pluck('description');
                 }
             }
+            
+            $items = RegularStokConfirmationOutstockNoteDetail::select('id_stock_confirmation', 'qty',
+                                                                DB::raw("string_agg(DISTINCT regular_stock_confirmation_outstock_note_detail.id::character varying, ',') as id_note_detail"),
+                                                                DB::raw("string_agg(DISTINCT regular_stock_confirmation_outstock_note_detail.item_no::character varying, ',') as item_no"),
+                                                                DB::raw("string_agg(DISTINCT regular_stock_confirmation_outstock_note_detail.order_no::character varying, ',') as order_no"),
+                                                                DB::raw("string_agg(DISTINCT regular_stock_confirmation_outstock_note_detail.no_packing::character varying, ',') as no_packing"),
+                                                            )->where('id_stock_confirmation_outstock_note', $data->id)
+                                                            ->groupBy('id_stock_confirmation', 'qty')
+                                                            ->get();
 
             Pdf::loadView('pdf.stock-confirmation.outstock.delivery_note',[
-              'data' => $data
+              'data' => $data,
+              'items' => $items,
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
-        //   } catch (\Throwable $th) {
-        //       return Helper::setErrorResponse($th);
-        //   }
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 }

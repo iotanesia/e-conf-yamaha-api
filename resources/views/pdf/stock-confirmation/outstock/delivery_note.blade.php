@@ -113,7 +113,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($data->manyRegularStockConfirmationOutstockNoteDetail as $item)
+            @foreach ($items as $item)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}.</td>
                     <td class="text-center">
@@ -135,7 +135,7 @@
                         @endif
                     </td>
                     <td class="text-center">{{ $item->order_no }}</td>
-                    <td class="text-center">{{ $item->qty }}</td>
+                    <td class="text-center">{{ count(explode(',', $item->id_note_detail)).' x '.$item->qty }}</td>
                     <td class="text-center">{{ $item->no_packing }}</td>
                 </tr>
             @endforeach
