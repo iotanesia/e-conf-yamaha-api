@@ -163,17 +163,22 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         try {
 
             Helper::requireParams([
-                'id',
+                'id_fixed_quantity',
             ]);
 
-            $check = Model::select('code_consignee','etd_jkt','datasource')->whereIn('id',$params->id)
+            $id_fixed_quantity = [];
+            foreach ($params->id_fixed_quantity as $value) {
+                $id_fixed_quantity[] = explode(',',$value);
+            }
+
+            $check = Model::select('code_consignee','etd_jkt','datasource')->whereIn('id',array_merge(...$id_fixed_quantity))
                 ->groupBy('code_consignee','datasource','etd_jkt')
                 ->get()
                 ->toArray();
 
             if(count($check) > 1) throw new \Exception("ETD JKT and Customer name not same", 400);
 
-            $data = Model::select(DB::raw('count(order_no) as total'),'order_no')->whereIn('id',$params->id)
+            $data = Model::select(DB::raw('count(order_no) as total'),'order_no')->whereIn('id',array_merge(...$id_fixed_quantity))
                 ->groupBy('order_no')
                 ->orderBy('total','desc')
                 ->get()
@@ -203,7 +208,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             return [
                 "items" => [
-                    'id' => $params->id,
+                    'id' => array_merge(...$id_fixed_quantity),
                     'no_packaging' => $no_packaging,
                     'etd_jkt' => date('Y-m-d', strtotime($tanggal)),
                     'code_consignee' => $code_consignee,
@@ -219,7 +224,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     public static function inquiryProcess($params, $is_trasaction = true)
     {
         Helper::requireParams([
-            'id',
+            'id_fixed_quantity',
             'no_packaging',
             'etd_jkt',
             'code_consignee',
@@ -275,8 +280,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             
             $id_container_creation = $params->id_mot == 2 ? $container_creation->id : null;
 
-           self::where(function ($query) use ($params){
-                   $query->whereIn('id',$params->id);
+            $id_fixed_quantity = [];
+            foreach ($params->id_fixed_quantity as $value) {
+                $id_fixed_quantity[] = explode(',',$value);
+            }
+
+           self::where(function ($query) use ($params,$id_fixed_quantity){
+                   $query->whereIn('id',array_merge(...$id_fixed_quantity));
                    $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
                    $query->where('datasource','PYMAC');
@@ -305,7 +315,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         try {
 
             Helper::requireParams([
-                'id',
+                'id_fixed_quantity',
                 'etd_jkt'
             ]);
 
@@ -316,16 +326,23 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $chek = RegularOrderEntry::where('year', $tahun)->where('month', $bulan_str)->first();
             if($chek == null) throw new \Exception("Data not deliver yet", 400);
 
-            $data = self::find($params->id);
+            $id_fixed_quantity = [];
+            foreach ($params->id_fixed_quantity as $value_id) {
+                $id_fixed_quantity[] = explode(',',$value_id);
+            }
+
+            $data = self::whereIn('id',array_merge(...$id_fixed_quantity))->get();
             if(!$data) throw new \Exception("Data not found", 400);
             $request = $params->all();
             $request['etd_jkt'] = Carbon::parse($params->etd_jkt)->format('Ymd');
             $request['etd_ypmi'] =Carbon::parse($params->etd_jkt)->subDays(4)->format('Ymd');
             $request['etd_wh'] =Carbon::parse($params->etd_jkt)->subDays(2)->format('Ymd');
-            $data->fill($request);
-            $data->is_actual = 1;
-            $data->save();
-
+            foreach ($data as $value) {
+                $value->fill($request);
+                $value->is_actual = 1;
+                $value->save();
+            }
+            
             if($is_trasaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_trasaction) DB::rollBack();

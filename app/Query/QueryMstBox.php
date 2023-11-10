@@ -77,12 +77,19 @@ class QueryMstBox extends Model {
                         );
                     }
                     
+                    $item->consignee = $item->refConsignee->nick_name ?? null;
+                    $item->division = $item->refGroupProduct->group_product ?? null;
                     $item->part_item_no = $part_item_no;
                     $item->part_description = $part_description;
                     $item->id_group_product = explode(',',$item->id_group_product);
                     $item->id_part = explode(',',$item->id_part);
                     $item->item_no = explode(',',$item->item_no);
                     $item->item_no_series = explode(',',$item->item_no_series);
+
+                    unset(
+                        $item->refConsignee,
+                        $item->refGroupProduct,
+                    );
                     
                     return $item;
                 }),
@@ -184,7 +191,7 @@ class QueryMstBox extends Model {
                     "item_no_series" => $mst_part[0]->item_serial ?? null,
                     "qty" => $params['qty'][$i] ?? null,
                     "unit_weight_gr" => $params['unit_weight_gr'][$i] ?? null,
-                    "unit_weight_kg" => $params['unit_weight_kg'][$i] ?? null,
+                    "unit_weight_kg" => ($params['unit_weight_gr'][$i] / 1000) ?? null,
                     "outer_carton_weight" => $params['outer_carton_weight'] ?? null,
                     "total_gross_weight" => $params['total_gross_weight'] ?? null,
                     "length" => $params['length'] ?? null,
@@ -240,7 +247,7 @@ class QueryMstBox extends Model {
                     "item_no_series" => $mst_part[0]->item_serial ?? null,
                     "qty" => $params['qty'][$i] ?? null,
                     "unit_weight_gr" => $params['unit_weight_gr'][$i] ?? null,
-                    "unit_weight_kg" => $params['unit_weight_kg'][$i] ?? null,
+                    "unit_weight_kg" => ($params['unit_weight_gr'][$i]/1000) ?? null,
                     "outer_carton_weight" => $params['outer_carton_weight'] ?? null,
                     "total_gross_weight" => $params['total_gross_weight'] ?? null,
                     "length" => $params['length'] ?? null,

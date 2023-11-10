@@ -166,6 +166,7 @@ class User {
             $update = Model::find($id);
             if(!$update) throw new \Exception("id tidak ditemukan.");
             $update->fill($params->all());
+            $update->password = Hash::make($params->password);
             $update->save();
             $update->refUserRole ? $update->refUserRole()->update(['id_roles'=>$params->id_roles,'id_position'=>$params->id_position]) : $update->refUserRole()->create(self::setParamUserRole($params,$id));
             DB::commit();
