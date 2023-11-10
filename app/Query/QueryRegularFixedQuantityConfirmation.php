@@ -360,6 +360,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $query->whereHas('refConsignee', function ($q) use ($kueri) {
                         $q->where('nick_name', 'like', '%' . $kueri . '%');
                     });
+                }elseif ($category == 'etd_ypmi') {
+                    $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_wh') {
+                    $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_jkt') {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%');
                 } else {
                     $query->where('etd_jkt', 'like', '%' . $kueri . '%')
                         ->orWhere('no_packaging', 'like', '%' . $kueri . '%')
@@ -1394,6 +1400,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $query->whereHas('refConsignee', function ($q) use ($kueri) {
                         $q->where('nick_name', 'like', '%' . $kueri . '%');
                     });
+                }elseif ($category == 'etd_ypmi') {
+                    $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_wh') {
+                    $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_jkt') {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%');
                 } else {
                     $query->where('etd_jkt', 'like', '%' . $kueri . '%')
                         ->orWhere('no_packaging', 'like', '%' . $kueri . '%')
