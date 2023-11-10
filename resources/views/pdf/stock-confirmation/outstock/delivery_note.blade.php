@@ -58,7 +58,7 @@
     <h4 class="text-center" style="font-size: 18px;">DELIVERY NOTE</h4>
     <table>
         <tr>
-            <td class="no-bo" width='70'>{{ $data->shipperFirstWords }} <br><br> {{ $data->shipperLastWords }}</td>
+            <td class="no-bo" width='70'>{{ $data->shipperFirstWords }} <br><br> JL. {{ $data->shipperLastWords }}</td>
             <td class="no-bo" width='5'></td>
             <td class="no-bo text-right" width='100'>
                 Kepada Yth, <br>
