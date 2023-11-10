@@ -509,6 +509,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         $query->whereHas('refMstLsp', function ($q) use ($kueri) {
                             $q->where('name', 'like', '%' . $kueri . '%');
                         });
+                    }elseif ($category == 'etd_ypmi') {
+                        $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                    }elseif ($category == 'etd_wh') {
+                        $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                    }elseif ($category == 'etd_jkt') {
+                        $query->where('etd_jkt', 'like', '%' . $kueri . '%');
                     } else {
                         $query->where('etd_jkt', 'like', '%' . $kueri . '%')
                             ->orWhere('summary_box', 'like', '%' . $kueri . '%')

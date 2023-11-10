@@ -69,9 +69,17 @@ class QueryRegularDeliveryPlan extends Model {
             })
             ->whereHas('refRegularOrderEntry',function ($query) use ($params){
                 $category = $params->category ?? null;
+                $kueri = $params->kueri ?? null;
                 if($category) {
-                    $query->where($category, 'ilike', $params->kueri);
+                    $query->where($category, 'ilike', $kueri);
+                }elseif ($category == 'etd_ypmi') {
+                    $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_wh') {
+                    $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_jkt') {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%');
                 }
+
             });
 
             if($params->withTrashed == 'true') $query->withTrashed();

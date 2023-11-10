@@ -75,6 +75,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $query->whereHas('refRegularDeliveryPlan', function ($q) use ($kueri) {
                             $q->where('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%');
                         });
+                    }elseif ($category == 'etd_ypmi') {
+                        $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                    }elseif ($category == 'etd_wh') {
+                        $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                    }elseif ($category == 'etd_jkt') {
+                        $query->where('etd_jkt', 'like', '%' . $kueri . '%');
                     } else {
                         $query->where('etd_jkt', 'like', '%' . $kueri . '%')
                             ->orWhere('order_no', 'like', '%' . $kueri . '%')
