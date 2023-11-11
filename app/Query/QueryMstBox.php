@@ -152,7 +152,8 @@ class QueryMstBox extends Model {
                     $item->refPart
                 );
             }
-            
+
+            $item->consignee = $item->refConsignee->nick_name ?? null;
             $item->part_item_no = $part_item_no;
             $item->part_description = $part_description;
             $item->id_mst_box = explode(',',$item->id_mst_box);
@@ -162,6 +163,10 @@ class QueryMstBox extends Model {
             $item->item_no_series = explode(',',$item->item_no_series);
             $item->group_product = MstGroupProduct::whereIn('id', $item->id_group_product)->get()->pluck('group_product') ?? null;
             
+            unset(
+                $item->refConsignee,
+            );
+
             return $item;
         });
 

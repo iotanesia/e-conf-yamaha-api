@@ -69,9 +69,17 @@ class QueryRegularDeliveryPlan extends Model {
             })
             ->whereHas('refRegularOrderEntry',function ($query) use ($params){
                 $category = $params->category ?? null;
+                $kueri = $params->kueri ?? null;
                 if($category) {
-                    $query->where($category, 'ilike', $params->kueri);
+                    $query->where($category, 'ilike', $kueri);
+                }elseif ($category == 'etd_ypmi') {
+                    $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_wh') {
+                    $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_jkt') {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%');
                 }
+
             });
 
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -173,6 +181,12 @@ class QueryRegularDeliveryPlan extends Model {
                     $query->whereHas('refPart', function ($q) use ($kueri) {
                         $q->where('description', 'like', '%' . $kueri . '%');
                     });
+                }elseif ($category == 'etd_ypmi') {
+                    $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_wh') {
+                    $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_jkt') {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%');
                 } else {
                     $query->where('etd_jkt', 'like', '%' . $kueri . '%')
                         ->orWhere('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%')
@@ -292,13 +306,20 @@ class QueryRegularDeliveryPlan extends Model {
         $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $id)
         ->where(function ($query) use ($params){
             $category = $params->category ?? null;
+            $kueri = $params->kueri ?? null;
             if($category) {
                 if($category == 'cust_name'){
-                    $query->whereHas('refRegularDeliveryPlan', function($q) use($params) {
-                        return $q->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $params->value)->get();
+                    $query->whereHas('refRegularDeliveryPlan', function($q) use($kueri) {
+                        return $q->with('refConsignee')->whereRelation('refConsignee', 'nick_name', $kueri)->get();
                     });
+                }elseif ($category == 'etd_ypmi') {
+                    $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_wh') {
+                    $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_jkt') {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%');
                 } else {
-                    $query->where($category, 'ilike', $params->value);
+                    $query->where($category, 'ilike', $kueri);
                 }
             }
 
@@ -364,6 +385,12 @@ class QueryRegularDeliveryPlan extends Model {
                         $query->whereHas('refConsignee', function ($q) use ($kueri) {
                             $q->where('nick_name', 'like', '%' . $kueri . '%');
                         });
+                    }elseif ($category == 'etd_ypmi') {
+                        $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                    }elseif ($category == 'etd_wh') {
+                        $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                    }elseif ($category == 'etd_jkt') {
+                        $query->where('etd_jkt', 'like', '%' . $kueri . '%');
                     } elseif ($category == 'item_name') {
                         $query->whereHas('refPart', function ($q) use ($kueri) {
                             $q->where('description', 'like', '%' . $kueri . '%');
