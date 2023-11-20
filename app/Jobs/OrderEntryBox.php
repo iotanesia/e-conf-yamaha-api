@@ -50,7 +50,7 @@ class OrderEntryBox implements ShouldQueue
                 $request = $item->toArray();
 
                 $detail_set = RegularOrderEntryUploadDetailSet::where('id_detail', $request['id'])->get();
-                if ($detail_set) {
+                if (count($detail_set) > 0) {
                     foreach ($detail_set as $key => $value) {
                         $box = QueryMstBox::byItemNoCdConsigneeSet($value->item_no,$request['code_consignee']);
                         if($box) {
@@ -82,38 +82,38 @@ class OrderEntryBox implements ShouldQueue
                             }
                         }
                     }
-                } else {
-                    $box = QueryMstBox::byItemNoCdConsignee($request['item_no'],$request['code_consignee']);
-                    if($box) {
-                        $box = $box->toArray();
-                        $box_capacity = $box['qty'];
-                        $qty = $request['qty'];
-                        $loops = (int) ceil($qty / $box_capacity);
-                        $ext = [];
-                        for ($i=0; $i < $loops ; $i++) {
-                            if($qty > $box_capacity)
-                                $qty_pcs_box = $box_capacity;
-                            else
-                                $qty_pcs_box = $qty;
-                            $ext[] = [
-                                'uuid' => (string) Str::uuid(),
-                                'id_regular_order_entry_upload_detail' => $request['id'],
-                                'uuid_regular_order_entry_upload_detail' => $request['uuid'],
-                                'id_box' => $box['id'],
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                                'qty_pcs_box' => $qty_pcs_box
-                            ];
-                            $sum = $qty - $box_capacity;
-                            $qty = $sum;
-                        }
+                } 
 
-                        foreach (array_chunk($ext,10000) as $chunk) {
-                            RegularOrderEntryUploadDetailBox::insert($chunk);
-                        }
+                $box = QueryMstBox::byItemNoCdConsignee($request['item_no'],$request['code_consignee']);
+                if($box && count($detail_set) == 0) {
+                    $box = $box->toArray();
+                    $box_capacity = $box['qty'];
+                    $qty = $request['qty'];
+                    $loops = (int) ceil($qty / $box_capacity);
+                    $ext = [];
+                    for ($i=0; $i < $loops ; $i++) {
+                        if($qty > $box_capacity)
+                            $qty_pcs_box = $box_capacity;
+                        else
+                            $qty_pcs_box = $qty;
+                        $ext[] = [
+                            'uuid' => (string) Str::uuid(),
+                            'id_regular_order_entry_upload_detail' => $request['id'],
+                            'uuid_regular_order_entry_upload_detail' => $request['uuid'],
+                            'id_box' => $box['id'],
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                            'qty_pcs_box' => $qty_pcs_box
+                        ];
+                        $sum = $qty - $box_capacity;
+                        $qty = $sum;
+                    }
+
+                    foreach (array_chunk($ext,10000) as $chunk) {
+                        RegularOrderEntryUploadDetailBox::insert($chunk);
                     }
                 }
-                
+                 
             });
        } catch (\Throwable $th) {
             Log::debug('jobs-insert-to-box'.json_encode($th->getMessage()));
