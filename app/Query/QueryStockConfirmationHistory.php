@@ -479,7 +479,7 @@ class QueryStockConfirmationHistory extends Model {
             $res['cust_name'] = $item->refRegularDeliveryPlan->refConsignee->nick_name;
             $res['status_desc'] = 'Instock';
             $res['in_wh'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh : $item->qty;
-            $res['box'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh.' x 1 ' : $plan_box[0]->qty_pcs_box.' x 1 ';
+            $res['box'] = $item->refRegularDeliveryPlan->item_no == null ? $in_wh.' x 1 ' : $item->qty.' x 1 ';
 
             return $res;
         });
