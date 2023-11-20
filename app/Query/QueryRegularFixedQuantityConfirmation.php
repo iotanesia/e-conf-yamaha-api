@@ -1287,7 +1287,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                                             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
                                                             DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty"),
                                                             )
-                                                            ->where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
+                                                            ->whereIn('id_fixed_quantity_confirmation', explode(',', $item->id_fixed_quantity_confirmation))
                                                             ->whereNotNull('qrcode')
                                                             ->groupBy('regular_fixed_quantity_confirmation_box.qrcode')
                                                             ->get()->map(function ($item) use($item_no_set){

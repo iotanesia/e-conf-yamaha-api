@@ -252,7 +252,7 @@ class QueryStockConfirmationOutstockNote extends Model {
                     $mst_part = MstPart::where('item_no', $item->refRegularDeliveryPlan->item_no)->first();
                     $item_no = $mst_part->item_no;
                     $item_name = $mst_part->description;
-                    $in_wh = $plan_box[0]->qty_pcs_box;
+                    $in_wh = $item->qty;
                 }
 
                 $prospect = RegularDeliveryPlanProspectContainer::where('id', $item->id_prospect_container)->first();
