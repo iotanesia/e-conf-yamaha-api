@@ -1152,7 +1152,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $part_no = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
                     
                     $qr_name = (string) Str::uuid().'.png';
-                    $qr_key = implode('-',$id). " | ".implode(',', $part_no). " | ".$item->refRegularDeliveryPlan->order_no. " | ".$item->refRegularDeliveryPlan->refConsignee->nick_name. " | ".$item->lot_packing. " | ".date('d-m-Y', strtotime($item->packing_date)). " | ".$item->qty_pcs_box;
+                    $qr_key = implode('-',$id). " | ".implode(',', $part_no). " | ".$item->refRegularDeliveryPlan->order_no. " | ".$item->refRegularDeliveryPlan->refConsignee->nick_name. " | ".$item->lot_packing. " | ".date('d/m/Y', strtotime($item->packing_date)). " | ".$item->qty_pcs_box;
                     QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
 
                     $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->refRegularDeliveryPlan->id)
@@ -1212,7 +1212,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
 
                     $qr_name = (string) Str::uuid().'.png';
-                    $qr_key = $item->id. " | ".$item->refRegularDeliveryPlan->item_no. " | ".$item->refRegularDeliveryPlan->order_no. " | ".$item->refRegularDeliveryPlan->refConsignee->nick_name. " | ".$item->lot_packing. " | ".date('d-m-Y', strtotime($item->packing_date)). " | ".$item->qty_pcs_box;
+                    $qr_key = $item->id. " | ".$item->refRegularDeliveryPlan->item_no. " | ".$item->refRegularDeliveryPlan->order_no. " | ".$item->refRegularDeliveryPlan->refConsignee->nick_name. " | ".$item->lot_packing. " | ".date('d/m/Y', strtotime($item->packing_date)). " | ".$item->qty_pcs_box;
                     QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
 
                     $item->qrcode = $qr_name;
