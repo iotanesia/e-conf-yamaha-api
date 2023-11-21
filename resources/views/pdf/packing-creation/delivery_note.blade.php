@@ -113,7 +113,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($actual->manyFixedQuantityConfirmation as $item)
+            @foreach ($items as $item)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}.</td>
                     @if ($item->item_no == null)
