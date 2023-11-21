@@ -158,8 +158,8 @@ class QueryStockConfirmationOutstockNote extends Model {
 
             $dataSend =  $deliveryPlan->transform(function($item) use($lastData,$request,$stokTemp){
                 $creation = RegularDeliveryPlanProspectContainerCreation::where('id', $item->id_prospect_container_creation)->first();
-                $lsp = $creation == null ? null : $creation->refMstLsp->name;
-                $truck = $creation == null ? null : $creation->refMstTypeDelivery->name;
+                $lsp = $creation == null ? null : ($creation->refMstLsp->name ?? null);
+                $truck = $creation == null ? null : ($creation->refMstTypeDelivery->name ?? null);
                 return [
                     'shipper'=>MstShipment::where('is_active',Constant::IS_ACTIVE)->first()->shipment ?? null,
                     'yth'=> $request->yth ?? $lsp,
