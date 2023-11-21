@@ -37,7 +37,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $query = self::select('id_regular_delivery_plan',
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id::character varying, ',') as id_fixed_quantity"),
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
-                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container_creation::character varying, ',') as id_fixed_actual_container_creation"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container_creation::character varying, ',') as id_fixed_actual_container_creation"),
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.code_consignee::character varying, ',') as code_consignee"),
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.model::character varying, ',') as model"),
