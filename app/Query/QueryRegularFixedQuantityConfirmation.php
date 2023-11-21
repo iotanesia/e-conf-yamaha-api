@@ -1309,7 +1309,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $max_qty[] = (int)ceil(max($qty)) / count($item_no_set);
         
                 $box = [
-                    'qty' =>  array_sum($qty_sum)." x ".(int)round(max($max_qty)),
+                    'qty' =>  array_sum($qty_sum)." x ".count($box_scan),
                     'length' =>  "",
                     'width' =>  "",
                     'height' =>  "",
@@ -1325,7 +1325,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                                 ->whereNotNull('qrcode')->get()->pluck('qty_pcs_box');
 
             $qty_result = array_sum($qty_scan->toArray());
-            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = array_sum($qty_scan->toArray()) / count($check->refRegularDeliveryPlan->manyRegularDeliveryPlanSet);
+            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = (array_sum($qty_scan->toArray()) / count($check->refRegularDeliveryPlan->manyRegularDeliveryPlanSet)) / count($box_scan);
 
             $item->item_no = $item_no;
             $item->item_name = $itemname;
