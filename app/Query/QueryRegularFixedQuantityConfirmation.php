@@ -1210,7 +1210,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     public static function byIdProspectContainer($params,$id)
     {
-        $check = RegularFixedQuantityConfirmationBox::where('id_prospect_container_creation', $params->id)->first();
+        $check = RegularFixedQuantityConfirmationBox::where('id_prospect_container_creation', $id)->first();
 
         if ($check->refRegularDeliveryPlan->item_no !== null) {
             $data = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', 'a.id',
@@ -1226,7 +1226,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty"),
                         DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no")
                         )
-                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $params->id)
+                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $id)
                         ->whereNotNull('regular_fixed_quantity_confirmation_box.qrcode')
                         ->whereNotNull('c.id_fixed_actual_container')
                         ->leftJoin('regular_delivery_plan as a', 'a.id', 'regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
@@ -1249,7 +1249,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty"),
                         DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no")
                         )
-                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $params->id)
+                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $id)
                         ->whereNotNull('regular_fixed_quantity_confirmation_box.qrcode')
                         ->whereNotNull('c.id_fixed_actual_container')
                         ->leftJoin('regular_delivery_plan as a','a.id','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')

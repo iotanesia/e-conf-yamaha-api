@@ -164,8 +164,6 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $count_meas += (($box_item['ref_mst_box']['length'] * $box_item['ref_mst_box']['width'] * $box_item['ref_mst_box']['height']) / 1000000000);
                 }
 
-                $item->id_actual_container_creation = $item->id;
-                $item->id = $quantity_confirmation->id;
                 $item->cust_name = $item->refMstConsignee->nick_name;
                 $item->id_type_delivery = $item->id_type_delivery;
                 $item->type_delivery = $item->refMstTypeDelivery->name;
@@ -196,8 +194,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function shippingContainerDetail($params,$id)
     {
-        $check = RegularFixedQuantityConfirmation::where('id', $id)->first();
-        $id_prospect = RegularFixedQuantityConfirmationBox::whereNotNull('qrcode')->where('id_fixed_quantity_confirmation', $check->id)->first();
+        $check = RegularFixedQuantityConfirmationBox::whereNotNull('qrcode')->where('id_prospect_container_creation', $id)->first();
 
         if ($check->refRegularDeliveryPlan->item_no !== null) {
             $data = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id_prospect_container_creation',
@@ -214,7 +211,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                         DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
                         DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
                         DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"))
-                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $id_prospect->id_prospect_container_creation)
+                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $id)
                         ->whereNotNull('regular_fixed_quantity_confirmation_box.qrcode')
                         ->whereNotNull('c.id_fixed_actual_container')
                         ->leftJoin('regular_delivery_plan as a','a.id','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
@@ -236,7 +233,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty"),
                         DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no")
                         )
-                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $id_prospect->id_prospect_container_creation)
+                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $id)
                         ->whereNotNull('regular_fixed_quantity_confirmation_box.qrcode')
                         ->whereNotNull('c.id_fixed_actual_container')
                         ->leftJoin('regular_delivery_plan as a','a.id','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
