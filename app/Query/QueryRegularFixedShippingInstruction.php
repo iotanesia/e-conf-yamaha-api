@@ -1220,7 +1220,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             $res_box_single = [];
             $res_box_set = [];
             foreach ($deliv_plan as $key => $deliv_value) {
-                if ($deliv_value->item_no == null) {
+                if ($deliv_value->item_no !== null) {
                     $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) {
                         $res['qrcode'] = $item->qrcode;
                         $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
