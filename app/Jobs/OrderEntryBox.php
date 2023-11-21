@@ -85,7 +85,7 @@ class OrderEntryBox implements ShouldQueue
                 } 
 
                 $box = QueryMstBox::byItemNoCdConsignee($request['item_no'],$request['code_consignee']);
-                if($box && count($detail_set) == 0) {
+                if($box) {
                     $box = $box->toArray();
                     $box_capacity = $box['qty'];
                     $qty = $request['qty'];

@@ -299,7 +299,8 @@ class QueryMstBox extends Model {
     {
         // echo 'item no : '.$itemNo." consignee : ".$consingee;
         // die();
-        $tes = self::where('item_no',trim($itemNo))
+        $tes = self::where('part_set', 'single')
+            ->where('item_no',trim($itemNo))
             ->where('code_consignee',trim($consingee))
             ->first() ?? null;
 
