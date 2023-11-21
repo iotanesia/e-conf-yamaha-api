@@ -1016,19 +1016,19 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $count_meas += (($box_item['ref_mst_box']['length'] * $box_item['ref_mst_box']['width'] * $box_item['ref_mst_box']['height']) / 1000000000);
                 }
 
-                $item->cust_name = $item->refMstConsignee->nick_name;
+                $item->cust_name = $item->refMstConsignee->nick_name ?? null;
                 $item->id_type_delivery = $item->id_type_delivery;
-                $item->type_delivery = $item->refMstTypeDelivery->name;
-                $item->lsp = $item->refMstLsp->name;
+                $item->type_delivery = $item->refMstTypeDelivery->name ?? null;
+                $item->lsp = $item->refMstLsp->name ?? null;
                 $item->net_weight = round($count_net_weight,1);
                 $item->gross_weight = round($count_gross_weight,1);
                 $item->measurement = round($count_meas,3);
-                $item->container_type = $item->refMstContainer->container_type;
-                $item->load_extension_length = $item->refMstContainer->long;
-                $item->load_extension_width = $item->refMstContainer->wide;
-                $item->load_extension_height = $item->refMstContainer->height;
+                $item->container_type = $item->refMstContainer->container_type ?? null;
+                $item->load_extension_length = $item->refMstContainer->long ?? null;
+                $item->load_extension_width = $item->refMstContainer->wide ?? null;
+                $item->load_extension_height = $item->refMstContainer->height ?? null;
                 $item->load_qty = "100";
-                $item->container_name = $item->refMstContainer->container_type." ".$item->refMstContainer->container_value;
+                $item->container_name = ($item->refMstContainer->container_type ?? null)." ".($item->refMstContainer->container_value ?? null);
 
                 unset(
                     $item->refMstConsignee,
