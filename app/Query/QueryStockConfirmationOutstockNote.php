@@ -140,7 +140,7 @@ class QueryStockConfirmationOutstockNote extends Model {
                     $fixed_quantity_confirmation_box->id_regular_delivery_plan_box = $item_box->id;
                     $fixed_quantity_confirmation_box->id_box = $item_box->id_box;
                     $fixed_quantity_confirmation_box->qty_pcs_box = $item_box->qty_pcs_box;
-                    if ($selisihMenit < 1) {
+                    if ($selisihMenit <= 1) {
                         $fixed_quantity_confirmation_box->id_proc = $check_scan_out == null ? null : $item_box->id_proc;
                         $fixed_quantity_confirmation_box->lot_packing = $check_scan_out == null ? null : $item_box->lot_packing;
                         $fixed_quantity_confirmation_box->packing_date = $check_scan_out == null ? null : $item_box->packing_date;
