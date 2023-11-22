@@ -674,9 +674,9 @@ class QueryRegularFixedShippingInstruction extends Model {
                         });
                         
                         $box_single = [];
-                        foreach ($res as $key => $item) {
-                            if ($item['qrcode'] !== null && !in_array($item, $box_single)) {
-                                $box_single[] = $item;
+                        foreach ($res as $key => $item_res) {
+                            if ($item_res['qrcode'] !== null && !in_array($item_res, $box_single)) {
+                                $box_single[] = $item_res;
                             }
                         }
                         
@@ -685,28 +685,20 @@ class QueryRegularFixedShippingInstruction extends Model {
                     
                     if ($deliv_value->item_no == null) {
                         $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
-                        $deliv_plan_box = RegularFixedQuantityConfirmationBox::select(
-                            'id_fixed_quantity_confirmation', 
-                            DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty_pcs_box"),
-                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qrcode::character varying, ',') as qrcode"),
-                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id::character varying, ',') as id_quantity_confirmation_box"),
-                            )
-                            ->where('id_regular_delivery_plan',$deliv_value->id)
-                            ->where('qrcode','!=',null)
-                            ->groupBy('id_fixed_quantity_confirmation')
-                            ->orderBy('qty_pcs_box','desc')
-                            ->orderBy('id_quantity_confirmation_box','asc')
-                            ->get();
-    
+                        $deliv_plan_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan',$deliv_value->id)
+                                                            ->where('qrcode','!=',null)
+                                                            ->orderBy('qty_pcs_box','desc')
+                                                            ->orderBy('id','asc')
+                                                            ->get();
                         $item_no = [];
                         $set_qty = [];
+                        $item_no_series = [];
                         foreach ($plan_set as $key => $value) {
                             $item_no[] = $value->item_no;
                             $set_qty[] = $value->qty;
+                            $item_no_series[] = $value->refBox->item_no_series;
                         }
-    
-                        $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no'))->get()->pluck('item_no_series');
-    
+
                         $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
                         $qty_box = [];
                         $sum_qty = [];
