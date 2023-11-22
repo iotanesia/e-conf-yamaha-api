@@ -130,7 +130,7 @@ class QueryStockConfirmationOutstockNote extends Model {
                     $check_scan_out = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $item_box->id)->first();
                     
                     $timestamp1 = strtotime(now());
-                    $timestamp2 = strtotime($check_scan_out->created_at);
+                    $timestamp2 = strtotime(($check_scan_out->created_at ?? "2012-12-12 12:00:00"));
                     $selisihDetik = abs($timestamp2 - $timestamp1);
                     $selisihMenit = round($selisihDetik / 60, 0);
 
