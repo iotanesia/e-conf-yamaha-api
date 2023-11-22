@@ -126,16 +126,17 @@ class QueryStockConfirmationOutstockNote extends Model {
                 $fixed_quantity_confirmation->save();
 
                 foreach ($fixed_quantity_confirmation->refRegularDeliveryPlan->manyDeliveryPlanBox as $item_box) {
+                    $check_scan_out = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $item_box->id)->first();
                     $fixed_quantity_confirmation_box = new RegularFixedQuantityConfirmationBox;
                     $fixed_quantity_confirmation_box->id_fixed_quantity_confirmation = $fixed_quantity_confirmation->id;
                     $fixed_quantity_confirmation_box->id_regular_delivery_plan = $fixed_quantity_confirmation->id_regular_delivery_plan;
                     $fixed_quantity_confirmation_box->id_regular_delivery_plan_box = $item_box->id;
                     $fixed_quantity_confirmation_box->id_box = $item_box->id_box;
-                    $fixed_quantity_confirmation_box->id_proc = $item_box->id_proc;
+                    $fixed_quantity_confirmation_box->id_proc = $check_scan_out == null ? null : $item_box->id_proc;
                     $fixed_quantity_confirmation_box->qty_pcs_box = $item_box->qty_pcs_box;
-                    $fixed_quantity_confirmation_box->lot_packing = $item_box->lot_packing;
-                    $fixed_quantity_confirmation_box->packing_date = $item_box->packing_date;
-                    $fixed_quantity_confirmation_box->qrcode = $item_box->qrcode;
+                    $fixed_quantity_confirmation_box->lot_packing = $check_scan_out == null ? null : $item_box->lot_packing;
+                    $fixed_quantity_confirmation_box->packing_date = $check_scan_out == null ? null : $item_box->packing_date;
+                    $fixed_quantity_confirmation_box->qrcode = $check_scan_out == null ? null : $item_box->qrcode;
                     $fixed_quantity_confirmation_box->is_labeling = $item_box->is_labeling;
                     $fixed_quantity_confirmation_box->save();
                 }

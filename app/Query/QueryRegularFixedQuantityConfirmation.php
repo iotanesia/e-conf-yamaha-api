@@ -1016,15 +1016,15 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item){
 
-                $quantity_confirmation = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $item->id_fixed_actual_container)->first();
+                $quantity_confirmation = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $item->id_fixed_actual_container)->orderBy('id', 'desc')->first();
                 $box = RegularFixedQuantityConfirmationBox::with('refMstBox')->where('id_fixed_quantity_confirmation', $quantity_confirmation->id)->get()->toArray();
 
                 $count_net_weight = 0;
-                $count_gross_weight = 0;
+                $count_outer_carton_weight = 0;
                 $count_meas = 0;
                 foreach ($box as $box_item){
-                    $count_net_weight += $box_item['ref_mst_box']['unit_weight_kg'];
-                    $count_gross_weight += $box_item['ref_mst_box']['total_gross_weight'];
+                    $count_net_weight += $box_item['ref_mst_box']['unit_weight_gr'];
+                    $count_outer_carton_weight += $box_item['ref_mst_box']['outer_carton_weight'];
                     $count_meas += (($box_item['ref_mst_box']['length'] * $box_item['ref_mst_box']['width'] * $box_item['ref_mst_box']['height']) / 1000000000);
                 }
 
@@ -1032,8 +1032,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $item->id_type_delivery = $item->id_type_delivery;
                 $item->type_delivery = $item->refMstTypeDelivery->name ?? null;
                 $item->lsp = $item->refMstLsp->name ?? null;
-                $item->net_weight = round($count_net_weight,1);
-                $item->gross_weight = round($count_gross_weight,1);
+                $item->net_weight = round(($count_net_weight * $quantity_confirmation->in_wh)/1000, 1);
+                $item->gross_weight = round((($count_net_weight * $quantity_confirmation->in_wh)/1000) + $count_outer_carton_weight, 1);
                 $item->measurement = round($count_meas,3);
                 $item->container_type = $item->refMstContainer->container_type ?? null;
                 $item->load_extension_length = $item->refMstContainer->long ?? null;
