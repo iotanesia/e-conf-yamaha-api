@@ -1036,9 +1036,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $item->id_type_delivery = $item->id_type_delivery;
                 $item->type_delivery = $item->refMstTypeDelivery->name ?? null;
                 $item->lsp = $item->refMstLsp->name ?? null;
-                $item->net_weight = round($total_net_weight, 1);
-                $item->gross_weight = round($total_gross_weight, 1);
-                $item->measurement = round($count_meas,3);
+                $item->net_weight = number_format($total_net_weight, 2);
+                $item->gross_weight = number_format($total_gross_weight, 2);
+                $item->measurement = number_format($count_meas,3);
                 $item->container_type = $item->refMstContainer->container_type ?? null;
                 $item->load_extension_length = $item->refMstContainer->long ?? null;
                 $item->load_extension_width = $item->refMstContainer->wide ?? null;

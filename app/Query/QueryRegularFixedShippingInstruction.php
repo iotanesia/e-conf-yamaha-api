@@ -152,25 +152,29 @@ class QueryRegularFixedShippingInstruction extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item){
 
-                $quantity_confirmation = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $item->id_fixed_actual_container)->first();
-                $box = RegularFixedQuantityConfirmationBox::with('refMstBox')->where('id_fixed_quantity_confirmation', $quantity_confirmation->id)->get()->toArray();
+                $quantity_confirmation = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $item->id_fixed_actual_container)->get();
+                $box = RegularFixedQuantityConfirmationBox::with('refMstBox')->whereIn('id_fixed_quantity_confirmation', $quantity_confirmation->pluck('id')->toArray())->whereNotNull('qrcode')->get()->toArray();
 
                 $count_net_weight = 0;
-                $count_gross_weight = 0;
+                $count_outer_carton_weight = 0;
                 $count_meas = 0;
+                $total_net_weight = 0;
+                $total_gross_weight = 0;
                 foreach ($box as $box_item){
-                    $count_net_weight += $box_item['ref_mst_box']['unit_weight_kg'];
-                    $count_gross_weight += $box_item['ref_mst_box']['total_gross_weight'];
+                    $count_net_weight = $box_item['ref_mst_box']['unit_weight_gr'];
+                    $count_outer_carton_weight = $box_item['ref_mst_box']['outer_carton_weight'];
                     $count_meas += (($box_item['ref_mst_box']['length'] * $box_item['ref_mst_box']['width'] * $box_item['ref_mst_box']['height']) / 1000000000);
+                    $total_net_weight += ($count_net_weight * $box_item['qty_pcs_box'])/1000;
+                    $total_gross_weight += (($count_net_weight * $box_item['qty_pcs_box'])/1000) + $count_outer_carton_weight;
                 }
 
                 $item->cust_name = $item->refMstConsignee->nick_name;
                 $item->id_type_delivery = $item->id_type_delivery;
                 $item->type_delivery = $item->refMstTypeDelivery->name;
                 $item->lsp = $item->refMstLsp->name;
-                $item->net_weight = round($count_net_weight,1);
-                $item->gross_weight = round($count_gross_weight,1);
-                $item->measurement = round($count_meas,3);
+                $item->net_weight = number_format($total_net_weight, 2);
+                $item->gross_weight = number_format($total_gross_weight, 2);
+                $item->measurement = number_format($count_meas,3);
                 $item->container_type = $item->refMstContainer->container_type;
                 $item->load_extension_length = $item->refMstContainer->long;
                 $item->load_extension_width = $item->refMstContainer->wide;
