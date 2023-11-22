@@ -1017,14 +1017,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             'items' => $data->getCollection()->transform(function($item){
 
                 $quantity_confirmation = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $item->id_fixed_actual_container)->orderBy('id', 'desc')->first();
-                $box = RegularFixedQuantityConfirmationBox::with('refMstBox')->where('id_fixed_quantity_confirmation', $quantity_confirmation->id)->get()->toArray();
+                $box = RegularFixedQuantityConfirmationBox::with('refMstBox')->where('id_fixed_quantity_confirmation', $quantity_confirmation->id)->whereNotNull('qrcode')->get()->toArray();
 
                 $count_net_weight = 0;
                 $count_outer_carton_weight = 0;
                 $count_meas = 0;
                 foreach ($box as $box_item){
-                    $count_net_weight += $box_item['ref_mst_box']['unit_weight_gr'];
-                    $count_outer_carton_weight += $box_item['ref_mst_box']['outer_carton_weight'];
+                    $count_net_weight = $box_item['ref_mst_box']['unit_weight_gr'];
+                    $count_outer_carton_weight = $box_item['ref_mst_box']['outer_carton_weight'];
                     $count_meas += (($box_item['ref_mst_box']['length'] * $box_item['ref_mst_box']['width'] * $box_item['ref_mst_box']['height']) / 1000000000);
                 }
 
