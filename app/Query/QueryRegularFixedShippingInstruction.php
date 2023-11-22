@@ -665,8 +665,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                             $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
                             $res['qty_pcs_box'] = [$item->qty_pcs_box];
                             $res['item_no_series'] = [$item->refMstBox->item_no_series];
-                            $res['unit_weight_kg'] = [$item->refMstBox->unit_weight_kg];
-                            $res['total_gross_weight'] = $item->refMstBox->total_gross_weight;
+                            $res['unit_weight_kg'] = [($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000];
+                            $res['total_gross_weight'] = (($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight;
                             $res['length'] = $item->refMstBox->length;
                             $res['width'] = $item->refMstBox->width;
                             $res['height'] = $item->refMstBox->height;
@@ -674,9 +674,9 @@ class QueryRegularFixedShippingInstruction extends Model {
                         });
                         
                         $box_single = [];
-                        foreach ($res as $key => $item_res) {
-                            if ($item_res['qrcode'] !== null && !in_array($item_res, $box_single)) {
-                                $box_single[] = $item_res;
+                        foreach ($res as $key => $item) {
+                            if ($item['qrcode'] !== null && !in_array($item, $box_single)) {
+                                $box_single[] = $item;
                             }
                         }
                         
@@ -685,33 +685,45 @@ class QueryRegularFixedShippingInstruction extends Model {
                     
                     if ($deliv_value->item_no == null) {
                         $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
-                        $deliv_plan_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan',$deliv_value->id)
-                                                            ->where('qrcode','!=',null)
-                                                            ->orderBy('qty_pcs_box','desc')
-                                                            ->orderBy('id','asc')
-                                                            ->get();
+                        $deliv_plan_box = RegularFixedQuantityConfirmationBox::select(
+                            'id_fixed_quantity_confirmation', 
+                            DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty_pcs_box"),
+                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qrcode::character varying, ',') as qrcode"),
+                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id::character varying, ',') as id_quantity_confirmation_box"),
+                            )
+                            ->where('id_regular_delivery_plan',$deliv_value->id)
+                            ->where('qrcode','!=',null)
+                            ->groupBy('id_fixed_quantity_confirmation')
+                            ->orderBy('qty_pcs_box','desc')
+                            ->orderBy('id_quantity_confirmation_box','asc')
+                            ->get();
+    
                         $item_no = [];
                         $set_qty = [];
-                        $item_no_series = [];
                         foreach ($plan_set as $key => $value) {
                             $item_no[] = $value->item_no;
                             $set_qty[] = $value->qty;
-                            $item_no_series[] = $value->refBox->item_no_series;
                         }
-
+    
+                        $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no'))->get()->pluck('item_no_series');
+    
                         $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
                         $qty_box = [];
                         $sum_qty = [];
                         $unit_weight_kg = [];
                         $total_gross_weight = '';
+                        $count_outer_carton_weight = 0;
                         $length = '';
                         $width = '';
                         $height = '';
+                        $count_net_weight = 0;
                         foreach ($mst_box as $key => $value) {
                             $qty_box[] = $value->qty;
                             $sum_qty[] = $value->qty;
-                            $unit_weight_kg[] = $value->unit_weight_kg;
-                            $total_gross_weight = $value->total_gross_weight;
+                            $count_net_weight = $value->unit_weight_gr;
+                            $count_outer_carton_weight = $value->outer_carton_weight;
+                            $unit_weight_kg[] = ($count_net_weight * $value->qty)/1000;
+                            $total_gross_weight = (($count_net_weight * $value->qty)/1000) + $count_outer_carton_weight;
                             $length = $value->length;
                             $width = $value->width;
                             $height = $value->height;
