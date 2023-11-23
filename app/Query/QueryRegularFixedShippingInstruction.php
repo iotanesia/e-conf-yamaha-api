@@ -641,7 +641,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
                 $SI->transform(function ($si_item) use ($summary_box) {
                     $si_item->container_value = explode(',', $si_item->container_value);
-                    $si_item->container_count = explode(',', $si_item->container_count);
+                    $si_item->container_count = explode(',', $si_item->count_container);
                     $si_item->container_type = explode(',', $si_item->container_type);
                     $si_item->summary_box = array_sum($summary_box->toArray());
 
