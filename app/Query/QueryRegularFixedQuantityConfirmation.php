@@ -1021,7 +1021,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             'items' => $data->getCollection()->transform(function($item){
 
                 $quantity_confirmation = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $item->id_fixed_actual_container)->get();
-                $box = RegularFixedQuantityConfirmationBox::with('refMstBox')->whereIn('id_fixed_quantity_confirmation', $quantity_confirmation->pluck('id')->toArray())->whereNotNull('qrcode')->get()->toArray();
+                $box = RegularFixedQuantityConfirmationBox::with('refMstBox', 'refRegularDeliveryPlan')->whereIn('id_fixed_quantity_confirmation', $quantity_confirmation->pluck('id')->toArray())
+                                                            ->where('id_prospect_container_creation', $item->id)
+                                                            ->whereNotNull('qrcode')->get();
 
                 $count_net_weight = 0;
                 $count_outer_carton_weight = 0;
@@ -1029,11 +1031,18 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $total_net_weight = 0;
                 $total_gross_weight = 0;
                 foreach ($box as $box_item){
-                    $count_net_weight = $box_item['ref_mst_box']['unit_weight_gr'];
-                    $count_outer_carton_weight = $box_item['ref_mst_box']['outer_carton_weight'];
-                    $count_meas += (($box_item['ref_mst_box']['length'] * $box_item['ref_mst_box']['width'] * $box_item['ref_mst_box']['height']) / 1000000000);
-                    $total_net_weight += ($count_net_weight * $box_item['qty_pcs_box'])/1000;
-                    $total_gross_weight += (($count_net_weight * $box_item['qty_pcs_box'])/1000) + $count_outer_carton_weight;
+                    if ($box_item->refRegularDeliveryPlan->item_no == null) {
+                        foreach ($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet as $set) {
+                            $total_net_weight += ((($set->refBox->unit_weight_gr * $box_item->qty_pcs_box)/1000) * $item->summary_box) / count($box);
+                            $total_gross_weight += (((($set->refBox->unit_weight_gr * $box_item->qty_pcs_box)/1000) + $set->refBox->outer_carton_weight) * $item->summary_box) / count($box);
+                        } 
+                    } else {
+                        $count_net_weight = $box_item->refMstBox->unit_weight_gr;
+                        $count_outer_carton_weight = $box_item->refMstBox->outer_carton_weight;
+                        $count_meas += (($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) / 1000000000);
+                        $total_net_weight += ($count_net_weight * $box_item->qty_pcs_box)/1000;
+                        $total_gross_weight += (($count_net_weight * $box_item->qty_pcs_box)/1000) + $count_outer_carton_weight;
+                    }
                 }
 
                 $item->cust_name = $item->refMstConsignee->nick_name ?? null;
