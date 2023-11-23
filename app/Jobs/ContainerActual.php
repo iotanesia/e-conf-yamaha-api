@@ -81,7 +81,10 @@ class ContainerActual implements ShouldQueue
                                                                             ->orderBy('id', 'asc')
                                                                             ->first();
                                 
-                                $value_box->update(['id_prospect_container_creation' => $id_prop->id]);
+                                $value_box->update([
+                                    'id_prospect_container_creation' => $id_prop->id,
+                                    'is_labeling' => 1
+                                ]);
                             }
                             $jml_box_update = $sisa;
                         }
@@ -93,6 +96,7 @@ class ContainerActual implements ShouldQueue
 
                         $fill = RegularFixedQuantityConfirmationBox::where('id',$val['id'])->first();
                         $fill->id_prospect_container_creation = $id_prop->id;
+                        $fill->is_labeling = 1;
                         $fill->save();
 
                         if($counter < $countSummaryBox) {
