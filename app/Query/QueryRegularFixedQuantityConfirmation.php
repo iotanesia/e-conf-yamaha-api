@@ -249,11 +249,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ]);
 
             if ($params->id_mot == 2) {
-                $store->update(['id_type_delivery' => 1]);
+                $store->update(['id_type_delivery' => 2]);
 
                 $container_creation = RegularFixedActualContainerCreation::create([
                         "id_fixed_actual_container" => $store->id,
-                        "id_type_delivery" => 1,
+                        "id_type_delivery" => 2,
                         "id_mot" => 2,
                         "code_consignee" => $params->code_consignee,
                         "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
@@ -551,7 +551,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             $actual_container = RegularFixedActualContainer::where('id',$params->id)->first();
             $lsp = MstLsp::where('code_consignee',$actual_container->code_consignee)
-                ->where('id_type_delivery', 1)
+                ->where('id_type_delivery', ($actual_container->id_type_delivery ?? 1))
                 ->first();
             
             $fixedQuantity = RegularFixedQuantityConfirmation::select('id','code_consignee','item_no','id_regular_delivery_plan')
@@ -1043,7 +1043,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $item->net_weight = number_format($total_net_weight, 2);
                 $item->gross_weight = number_format($total_gross_weight, 2);
                 $item->measurement = number_format($count_meas,3);
-                $item->container_type = $item->refMstContainer->container_type ?? null;
+                $item->container_type = $item->id_mot == 2 ? null : ($item->refMstContainer->container_type ?? null);
                 $item->load_extension_length = $item->refMstContainer->long ?? null;
                 $item->load_extension_width = $item->refMstContainer->wide ?? null;
                 $item->load_extension_height = $item->refMstContainer->height ?? null;
