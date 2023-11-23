@@ -103,26 +103,29 @@ class QueryStockConfirmationOutstockNote extends Model {
                 $stock_confirmation->status_instock = 3;
                 $stock_confirmation->save();
 
-                $fixed_quantity_confirmation = new RegularFixedQuantityConfirmation;
+                $fixed_quantity_confirmation = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $stock_confirmation->id_regular_delivery_plan)->first();
+                if(!$fixed_quantity_confirmation) $fixed_quantity_confirmation = new RegularFixedQuantityConfirmation;
                 $fixed_quantity_confirmation->id_regular_delivery_plan = $stock_confirmation->id_regular_delivery_plan;
-                $fixed_quantity_confirmation->datasource = $fixed_quantity_confirmation->refRegularDeliveryPlan->datasource;
-                $fixed_quantity_confirmation->code_consignee = $fixed_quantity_confirmation->refRegularDeliveryPlan->code_consignee;
-                $fixed_quantity_confirmation->model = $fixed_quantity_confirmation->refRegularDeliveryPlan->model;
-                $fixed_quantity_confirmation->item_no = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no;
-                $fixed_quantity_confirmation->item_serial = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no == null ? null : $fixed_quantity_confirmation->refRegularDeliveryPlan->refPart->item_serial;
-                $fixed_quantity_confirmation->disburse = $fixed_quantity_confirmation->refRegularDeliveryPlan->disburse;
-                $fixed_quantity_confirmation->delivery = $fixed_quantity_confirmation->refRegularDeliveryPlan->delivery;
-                $fixed_quantity_confirmation->qty = $fixed_quantity_confirmation->refRegularDeliveryPlan->qty;
-                $fixed_quantity_confirmation->order_no = $fixed_quantity_confirmation->refRegularDeliveryPlan->order_no;
-                $fixed_quantity_confirmation->cust_item_no = $fixed_quantity_confirmation->refRegularDeliveryPlan->cust_item_no;
-                $fixed_quantity_confirmation->etd_ypmi = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_ypmi;
-                $fixed_quantity_confirmation->etd_wh = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_wh;
-                $fixed_quantity_confirmation->etd_jkt = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_jkt;
-                $fixed_quantity_confirmation->in_dc = $stock_confirmation->in_dc;
-                $fixed_quantity_confirmation->in_wh = $stock_confirmation->in_wh;
-                $fixed_quantity_confirmation->production = $stock_confirmation->production;
-                $fixed_quantity_confirmation->is_actual = 0;
-                $fixed_quantity_confirmation->status = 1;
+                $attr['id_regular_delivery_plan'] = $stock_confirmation->id_regular_delivery_plan;
+                $attr['datasource'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->datasource;
+                $attr['code_consignee'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->code_consignee;
+                $attr['model'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->model;
+                $attr['item_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no;
+                $attr['item_serial'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no == null ? null : $fixed_quantity_confirmation->refRegularDeliveryPlan->refPart->item_serial;
+                $attr['disburse'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->disburse;
+                $attr['delivery'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->delivery;
+                $attr['qty'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->qty;
+                $attr['order_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->order_no;
+                $attr['cust_item_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->cust_item_no;
+                $attr['etd_ypmi'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_ypmi;
+                $attr['etd_wh'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_wh;
+                $attr['etd_jkt'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_jkt;
+                $attr['in_dc'] = $stock_confirmation->in_dc;
+                $attr['in_wh'] = $stock_confirmation->in_wh;
+                $attr['production'] = $stock_confirmation->production;
+                $attr['is_actual'] = 0;
+                $attr['status'] = 1;
+                $fixed_quantity_confirmation->fill($attr);
                 $fixed_quantity_confirmation->save();
 
                 foreach ($fixed_quantity_confirmation->refRegularDeliveryPlan->manyDeliveryPlanBox as $item_box) {
