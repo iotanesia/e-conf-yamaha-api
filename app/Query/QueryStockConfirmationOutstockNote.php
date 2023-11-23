@@ -140,7 +140,7 @@ class QueryStockConfirmationOutstockNote extends Model {
                     $attr['lot_packing'] = $item_box->lot_packing;
                     $attr['packing_date'] = $item_box->packing_date;
                     $attr['qrcode'] = $item_box->qrcode;
-                    $attr['is_labeling'] = $item_box->is_labeling;
+                    $attr['is_labeling'] = $fixed_quantity_confirmation_box == null ? $item_box->is_labeling : $fixed_quantity_confirmation_box->is_labeling;
                     $fixed_quantity_confirmation_box->fill($attr);
                     $fixed_quantity_confirmation_box->save();
                 }
