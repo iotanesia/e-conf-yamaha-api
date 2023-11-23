@@ -129,7 +129,7 @@ class QueryStockConfirmationOutstockNote extends Model {
                 $fixed_quantity_confirmation->save();
 
                 foreach ($fixed_quantity_confirmation->refRegularDeliveryPlan->manyDeliveryPlanBox as $item_box) {
-                    $fixed_quantity_confirmation_box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $fixed_quantity_confirmation->id)->first();
+                    $fixed_quantity_confirmation_box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $fixed_quantity_confirmation->id)->where('id_regular_delivery_plan_box', $item_box->id)->first();
                     if(!$fixed_quantity_confirmation_box) $fixed_quantity_confirmation_box = new RegularFixedQuantityConfirmationBox;
                     $attr['id_fixed_quantity_confirmation'] = $fixed_quantity_confirmation->id;
                     $attr['id_regular_delivery_plan'] = $fixed_quantity_confirmation->id_regular_delivery_plan;
