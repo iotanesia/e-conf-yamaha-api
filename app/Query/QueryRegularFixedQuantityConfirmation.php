@@ -271,7 +271,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 ]);
 
                 $id_delivery_plan = $container_creation->manyFixedQuantityConfirmation()->pluck('id_regular_delivery_plan');
-                $summary_box = RegularFixedQuantityConfirmationBox::whereIn('id_regular_delivery_plan', $id_delivery_plan)->get();
+                $summary_box = RegularFixedQuantityConfirmationBox::whereIn('id_regular_delivery_plan', $id_delivery_plan->toArray())->get();
                 $container_creation->update([
                     'id_fixed_shipping_instruction' => $shipping->id,
                     'summary_box' => count($summary_box)
