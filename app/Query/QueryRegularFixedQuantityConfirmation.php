@@ -1033,8 +1033,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 foreach ($box as $box_item){
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
                         foreach ($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet as $set) {
-                            $total_net_weight += ((($set->refBox->unit_weight_gr * $box_item->qty_pcs_box)/1000) * $item->summary_box) / count($box);
-                            $total_gross_weight += (((($set->refBox->unit_weight_gr * $box_item->qty_pcs_box)/1000) + $set->refBox->outer_carton_weight) * $item->summary_box) / count($box);
+                            $total_net_weight += ((($set->refBox->unit_weight_gr * (array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000) * $item->summary_box) / count($box);
+                            $total_gross_weight += (((($set->refBox->unit_weight_gr * (array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000) + $set->refBox->outer_carton_weight) * $item->summary_box) / count($box);
                             $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000) / count($box);
                         } 
                     } else {
