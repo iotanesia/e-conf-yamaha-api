@@ -719,8 +719,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                             $sum_qty[] = $value->qty;
                             $count_net_weight = $value->unit_weight_gr;
                             $count_outer_carton_weight = $value->outer_carton_weight;
-                            $unit_weight_kg[] = ($count_net_weight * (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray())/count($plan_set)/count($mst_box)))/1000;
-                            $total_gross_weight[] = (($count_net_weight * (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray())/count($plan_set)/count($mst_box)))/1000) + $count_outer_carton_weight;
+                            $unit_weight_kg[] = ($count_net_weight * (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($plan_set)))/1000;
+                            $total_gross_weight[] = (($count_net_weight * (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($plan_set)))/1000) + $count_outer_carton_weight;
                             $length = $value->length;
                             $width = $value->width;
                             $height = $value->height;
