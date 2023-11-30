@@ -223,7 +223,7 @@ class FixedQuantityConfirmationController extends Controller
     public function printPackaging(Request $request, $id)
     {
         try {
-            $filename = 'casemarks-'.$id.'.pdf';
+            $filename = 'packaging-'.$id.'.pdf';
             $pathToFile =  storage_path().'/app/casemarks/'.$filename;
             $data = QueryRegularFixedQuantityConfirmation::printPackaging($request,$id,$pathToFile,$filename);
             return ResponseInterface::responseViewFile($pathToFile,$filename);

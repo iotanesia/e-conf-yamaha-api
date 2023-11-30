@@ -1006,7 +1006,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $res['qty_pcs_box'] = [$item->qty_pcs_box];
                         $res['item_no_series'] = [$item->refMstBox->item_no_series];
                         $res['unit_weight_kg'] = [($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000];
-                        $res['total_gross_weight'] = (($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight;
+                        $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
                         $res['length'] = $item->refMstBox->length;
                         $res['width'] = $item->refMstBox->width;
                         $res['height'] = $item->refMstBox->height;
@@ -1134,11 +1134,13 @@ class QueryRegularFixedShippingInstruction extends Model {
             $count_net_weight = 0;
             $count_gross_weight = 0;
             $count_meas = 0;
+            $gross_weight_per_part = [];
             foreach ($box as $box_item){
                 $count_qty += array_sum($box_item['qty_pcs_box']);
                 $count_net_weight += array_sum($box_item['unit_weight_kg']);
                 $count_gross_weight += array_sum($box_item['total_gross_weight']);
                 $count_meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000);
+                $gross_weight_per_part[] = $box_item['total_gross_weight'];
             }
 
             $count_data = [];
@@ -1152,6 +1154,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'count_data' => count($count_data),
                 'data' => $data,
                 'box' => $box,
+                'gross_weight_per_part' => $gross_weight_per_part,
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
                 'count_gross_weight' => $count_gross_weight,
@@ -1250,7 +1253,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $res['qty_pcs_box'] = [$item->qty_pcs_box];
                         $res['item_no_series'] = [$item->refMstBox->item_no_series];
                         $res['unit_weight_kg'] = [($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000];
-                        $res['total_gross_weight'] = (($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight;
+                        $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
                         $res['length'] = $item->refMstBox->length;
                         $res['width'] = $item->refMstBox->width;
                         $res['height'] = $item->refMstBox->height;
@@ -1295,7 +1298,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $qty_box = [];
                     $sum_qty = [];
                     $unit_weight_kg = [];
-                    $total_gross_weight = '';
+                    $total_gross_weight = [];
                     $count_outer_carton_weight = 0;
                     $length = '';
                     $width = '';
@@ -1306,8 +1309,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $sum_qty[] = $value->qty;
                         $count_net_weight = $value->unit_weight_gr;
                         $count_outer_carton_weight = $value->outer_carton_weight;
-                        $unit_weight_kg[] = ($count_net_weight * $value->qty)/1000;
-                        $total_gross_weight = (($count_net_weight * $value->qty)/1000) + $count_outer_carton_weight;
+                        $unit_weight_kg[] = ($count_net_weight * (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($plan_set)))/1000;
+                        $total_gross_weight[] = (($count_net_weight * (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($plan_set)))/1000) + $count_outer_carton_weight;
                         $length = $value->length;
                         $width = $value->width;
                         $height = $value->height;
@@ -1379,11 +1382,13 @@ class QueryRegularFixedShippingInstruction extends Model {
             $count_net_weight = 0;
             $count_gross_weight = 0;
             $count_meas = 0;
+            $gross_weight_per_part = [];
             foreach ($box as $box_item){
                 $count_qty += array_sum($box_item['qty_pcs_box']);
                 $count_net_weight += array_sum($box_item['unit_weight_kg']);
-                $count_gross_weight += $box_item['total_gross_weight'];
+                $count_gross_weight += array_sum($box_item['total_gross_weight']);
                 $count_meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000);
+                $gross_weight_per_part[] = $box_item['total_gross_weight'];
             }
 
             $count_data = [];
