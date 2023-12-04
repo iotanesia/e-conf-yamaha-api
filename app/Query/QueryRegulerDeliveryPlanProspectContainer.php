@@ -528,15 +528,27 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item) use($params){
 
-                $box = RegularDeliveryPlanBox::with('refBox')->where('id_prospect_container_creation', $item->id)->get()->toArray();
+                $box = RegularDeliveryPlanBox::with('refBox')->where('id_prospect_container_creation', $item->id)->get();
 
                 $count_net_weight = 0;
-                $count_gross_weight = 0;
                 $count_meas = 0;
+                $total_net_weight = 0;
+                $total_gross_weight = 0;
+                $total_outer_carton_weight = 0;
                 foreach ($box as $box_item){
-                    $count_net_weight += $box_item['ref_box']['unit_weight_kg'];
-                    $count_gross_weight += $box_item['ref_box']['total_gross_weight'];
-                    $count_meas += (($box_item['ref_box']['length'] * $box_item['ref_box']['width'] * $box_item['ref_box']['height']) / 1000000000);
+                    if ($box_item->refRegularDeliveryPlan->item_no == null) {
+                        foreach ($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet as $set) {
+                            $total_net_weight += ((($set->refBox->unit_weight_gr * $box_item->qty_pcs_box)/1000) * $item->summary_box) / count($box);
+                            $total_outer_carton_weight += (($set->refBox->outer_carton_weight)) / count($box);
+                            $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000) / count($box);
+                        } 
+                    } else {
+                        $count_net_weight = $box_item->refMstBox->unit_weight_gr;
+                        $count_outer_carton_weight = $box_item->refMstBox->outer_carton_weight;
+                        $count_meas += (($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) / 1000000000);
+                        $total_net_weight += ($count_net_weight * $box_item->qty_pcs_box)/1000;
+                        $total_gross_weight += (($count_net_weight * $box_item->qty_pcs_box)/1000) + $count_outer_carton_weight;
+                    }
                 }
 
                 $item->cust_name = $item->refRegularDeliveryPlanPropspectContainer->refConsignee->nick_name;
@@ -544,8 +556,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $item->type_delivery = $item->refMstTypeDelivery->name;
                 $item->lsp = $item->refMstLsp->name;
                 $item->id_mot = $item->refMstMot->id;
-                $item->net_weight = round($count_net_weight,1);
-                $item->gross_weight = round($count_gross_weight,1);
+                $item->net_weight = round($total_net_weight,1);
+                $item->gross_weight = round($total_net_weight + $total_outer_carton_weight,1);
                 $item->measurement = round($count_meas,3);
                 $item->container_type = $item->refMstContainer->container_type;
 
