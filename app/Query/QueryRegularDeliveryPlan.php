@@ -1461,8 +1461,8 @@ class QueryRegularDeliveryPlan extends Model {
                             $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
                             $res['qty_pcs_box'] = [$item->qty_pcs_box];
                             $res['item_no_series'] = [$item->refBox->item_no_series];
-                            $res['unit_weight_kg'] = [$item->refBox->unit_weight_kg];
-                            $res['total_gross_weight'] = $item->refBox->total_gross_weight;
+                            $res['unit_weight_kg'] = ($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000;
+                            $res['total_gross_weight'] = (($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight;
                             $res['length'] = $item->refBox->length;
                             $res['width'] = $item->refBox->width;
                             $res['height'] = $item->refBox->height;
@@ -1495,16 +1495,12 @@ class QueryRegularDeliveryPlan extends Model {
                         $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
                         $qty_box = [];
                         $sum_qty = [];
-                        $unit_weight_kg = [];
-                        $total_gross_weight = '';
                         $length = '';
                         $width = '';
                         $height = '';
                         foreach ($mst_box as $key => $value) {
                             $qty_box[] = $value->qty;
                             $sum_qty[] = $value->qty;
-                            $unit_weight_kg[] = $value->unit_weight_kg;
-                            $total_gross_weight = $value->total_gross_weight;
                             $length = $value->length;
                             $width = $value->width;
                             $height = $value->height;
@@ -1515,7 +1511,13 @@ class QueryRegularDeliveryPlan extends Model {
                         $qty = 0;
                         $group = [];
                         $group_qty = [];
+                        $unit_weight_kg = 0;
+                        $total_gross_weight = 0;
+                        $total_outer_carton_weight = 0;
                         foreach ($deliv_plan_box as $key => $value) {
+                            $unit_weight_kg += (($value->refBox->unit_weight_gr * $value->qty_pcs_box)/1000) / (count($deliv_plan_box)/count($plan_set));
+                            $total_outer_carton_weight += ($value->refBox->outer_carton_weight / (count($deliv_plan_box)/count($plan_set)));
+
                             $qty += $value->qty_pcs_box;
                             $group[] = $value->id;
                             $group_qty[] = $value->qty_pcs_box;
@@ -1551,6 +1553,7 @@ class QueryRegularDeliveryPlan extends Model {
                             $res_qty[] = $val;
                         }
             
+                        $total_gross_weight = $unit_weight_kg + ($total_outer_carton_weight/count($id_deliv_box));
                         $box_set = [];
                         for ($i=0; $i < count($id_deliv_box); $i++) { 
                             $check = array_sum($qty_pcs_box[0]) / count($item_no);
@@ -1579,7 +1582,7 @@ class QueryRegularDeliveryPlan extends Model {
                 $count_meas = 0;
                 foreach ($box as $box_item){
                     $count_qty += array_sum($box_item['qty_pcs_box']);
-                    $count_net_weight += array_sum($box_item['unit_weight_kg']);
+                    $count_net_weight += $box_item['unit_weight_kg'];
                     $count_gross_weight += $box_item['total_gross_weight'];
                     $count_meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000);
                 }
