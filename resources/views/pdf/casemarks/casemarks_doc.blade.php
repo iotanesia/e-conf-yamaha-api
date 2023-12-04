@@ -96,7 +96,7 @@
                                 </tr>
                                 <tr>
                                     <td class="no-bl text-center"><b>{{ $box_item['qty_pcs_box'][0] ?? null }}</b></td>
-                                    <td class="no-br text-center"><b>{{ round($box_item['total_gross_weight'],1) }}</b></td>
+                                    <td class="no-br text-center"><b>{{ round(array_sum($box_item['total_gross_weight']),1) }}</b></td>
                                 </tr>
                                 <tr>
                                     <td class="no-bl no-bb text-center"><p style="padding:0; margin:15px 0 0 0;"><b>{{ count($box_item['qty_pcs_box']) > 1 ? 'SET' : 'PCS' }}</b></p></td>
