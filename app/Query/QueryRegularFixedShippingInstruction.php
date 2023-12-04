@@ -680,7 +680,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                             $res['qty_pcs_box'] = [$item->qty_pcs_box];
                             $res['item_no_series'] = [$item->refMstBox->item_no_series];
                             $res['unit_weight_kg'] = [($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000];
-                            $res['total_gross_weight'] = (($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight;
+                            $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
                             $res['length'] = $item->refMstBox->length;
                             $res['width'] = $item->refMstBox->width;
                             $res['height'] = $item->refMstBox->height;
@@ -700,7 +700,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     if ($deliv_value->item_no == null) {
                         $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
                         $deliv_plan_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan',$deliv_value->id)
-                                                            ->where('id_prospect_container_creation', $params->id)
+                                                            ->whereIn('id_prospect_container_creation', explode(',', $params->id))
                                                             ->where('qrcode','!=',null)
                                                             ->orderBy('qty_pcs_box','desc')
                                                             ->orderBy('id','asc')
