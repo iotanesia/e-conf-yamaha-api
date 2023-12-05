@@ -1447,13 +1447,13 @@ class QueryRegularDeliveryPlan extends Model {
                 $res_box_set = [];
                 foreach ($deliv_plan as $key => $deliv_value) {
                     if ($deliv_value->item_no !== null) {
-                        $res = $deliv_value->manyDeliveryPlanBox->map(function($item) {
+                        $res = $deliv_value->manyDeliveryPlanBox->map(function($item) use($deliv_value) {
                             $res['qrcode'] = $item->qrcode;
                             $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
                             $res['qty_pcs_box'] = [$item->qty_pcs_box];
                             $res['item_no_series'] = [$item->refBox->item_no_series];
                             $res['unit_weight_kg'] = ($item->refBox->unit_weight_gr * $item->qty_pcs_box)/1000;
-                            $res['total_gross_weight'] = (($item->refBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refBox->outer_carton_weight;
+                            $res['total_gross_weight'] = (($item->refBox->unit_weight_gr * $item->qty_pcs_box)/1000) + ($item->refBox->outer_carton_weight/count($deliv_value->manyDeliveryPlanBox));
                             $res['length'] = $item->refBox->length;
                             $res['width'] = $item->refBox->width;
                             $res['height'] = $item->refBox->height;
