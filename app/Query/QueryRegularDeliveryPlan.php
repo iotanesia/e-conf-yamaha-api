@@ -1291,10 +1291,17 @@ class QueryRegularDeliveryPlan extends Model {
         return [
             'items' => $data->getCollection()->transform(function($item){
 
-                $prospect = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction', $item->id)->first();
+                $prospect = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction', $item->id)->get();
 
-                $item->no_packaging = $prospect->refRegularDeliveryPlanPropspectContainer->no_packaging ?? null;
-                $item->cust_name = $prospect->refMstConsignee->nick_name ?? null;
+                $no_packaging = [];
+                $cust_name = [];
+                foreach ($prospect as $value) {
+                    $no_packaging[] = $value->refRegularDeliveryPlanPropspectContainer->no_packaging;
+                    $cust_name[] = $value->refMstConsignee->nick_name;
+                }
+
+                $item->no_packaging = array_unique($no_packaging) ?? null;
+                $item->cust_name = array_unique($cust_name) ?? null;
                 $item->mot = $item->refMot->name ?? null;
 
                 unset(
