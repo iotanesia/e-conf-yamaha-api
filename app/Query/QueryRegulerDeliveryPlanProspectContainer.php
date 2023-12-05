@@ -530,10 +530,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
                 $box = RegularDeliveryPlanBox::with('refBox')->where('id_prospect_container_creation', $item->id)->get();
 
-                $count_net_weight = 0;
                 $count_meas = 0;
                 $total_net_weight = 0;
-                $total_gross_weight = 0;
                 $total_outer_carton_weight = 0;
                 foreach ($box as $box_item){
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
@@ -543,11 +541,9 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                             $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000) / count($box);
                         } 
                     } else {
-                        $count_net_weight = $box_item->refBox->unit_weight_gr;
-                        $count_outer_carton_weight = $box_item->refBox->outer_carton_weight;
                         $count_meas += (($box_item->refBox->length * $box_item->refBox->width * $box_item->refBox->height) / 1000000000);
-                        $total_net_weight += ($count_net_weight * $box_item->qty_pcs_box)/1000;
-                        $total_gross_weight += (($count_net_weight * $box_item->qty_pcs_box)/1000) + $count_outer_carton_weight;
+                        $total_net_weight += ($box_item->refBox->unit_weight_gr * $box_item->qty_pcs_box)/1000;
+                        $total_outer_carton_weight += $box_item->refBox->outer_carton_weight;
                     }
                 }
 
