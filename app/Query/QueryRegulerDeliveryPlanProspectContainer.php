@@ -536,7 +536,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 foreach ($box as $box_item){
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
                         foreach ($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet as $set) {
-                            $total_net_weight += ((($set->refBox->unit_weight_gr * $box_item->qty_pcs_box)/1000) * $item->summary_box) / count($box);
+                            $total_net_weight += (($set->refBox->unit_weight_gr * $set->qty)/1000) / count($box);
                             $total_outer_carton_weight += (($set->refBox->outer_carton_weight)) / count($box);
                             $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000) / count($box);
                         } 
@@ -552,8 +552,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $item->type_delivery = $item->refMstTypeDelivery->name;
                 $item->lsp = $item->refMstLsp->name;
                 $item->id_mot = $item->refMstMot->id;
-                $item->net_weight = round($total_net_weight,1);
-                $item->gross_weight = round($total_net_weight + $total_outer_carton_weight,1);
+                $item->net_weight = round($total_net_weight,2);
+                $item->gross_weight = round($total_net_weight + $total_outer_carton_weight,2);
                 $item->measurement = round($count_meas,3);
                 $item->container_type = $item->refMstContainer->container_type;
 
