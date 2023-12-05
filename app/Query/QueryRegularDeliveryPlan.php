@@ -1496,19 +1496,13 @@ class QueryRegularDeliveryPlan extends Model {
                             $width = $value->width;
                             $height = $value->height;
                         }
-            
+
                         $id_deliv_box = [];
                         $qty_pcs_box = [];
                         $qty = 0;
                         $group = [];
                         $group_qty = [];
-                        $unit_weight_kg = 0;
-                        $total_gross_weight = 0;
-                        $total_outer_carton_weight = 0;
                         foreach ($deliv_plan_box as $key => $value) {
-                            $unit_weight_kg += (($value->refBox->unit_weight_gr * $value->qty_pcs_box)/1000) / (count($deliv_plan_box)/count($plan_set));
-                            $total_outer_carton_weight += ($value->refBox->outer_carton_weight / (count($deliv_plan_box)/count($plan_set)));
-
                             $qty += $value->qty_pcs_box;
                             $group[] = $value->id;
                             $group_qty[] = $value->qty_pcs_box;
@@ -1543,8 +1537,17 @@ class QueryRegularDeliveryPlan extends Model {
                             
                             $res_qty[] = $val;
                         }
+
+                        
+                        $total_gross_weight = 0;
+                        $total_outer_carton_weight = 0;
+                        $unit_weight_kg = 0;
+                        foreach ($plan_set as $set) {
+                            $unit_weight_kg += (($set->refBox->unit_weight_gr * $set->qty)/1000) / count($id_deliv_box);
+                            $total_outer_carton_weight += $set->refBox->outer_carton_weight / count($id_deliv_box);
+                        }
+                        $total_gross_weight = $unit_weight_kg + $total_outer_carton_weight;
             
-                        $total_gross_weight = $unit_weight_kg + ($total_outer_carton_weight/count($id_deliv_box));
                         $box_set = [];
                         for ($i=0; $i < count($id_deliv_box); $i++) { 
                             $check = array_sum($qty_pcs_box[0]) / count($item_no);
