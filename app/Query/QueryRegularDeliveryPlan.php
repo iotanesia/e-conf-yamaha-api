@@ -1288,34 +1288,13 @@ class QueryRegularDeliveryPlan extends Model {
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
-        $id_shipping_instruction = [];
-        foreach ($data as $value) {
-            $id_shipping_instruction[] = $value->id;
-        }
-
-        $crontainer_creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id_shipping_instruction', $id_shipping_instruction)->get();
-
-        $no_packaging = [];
-        $cust_name = [];
-        foreach ($crontainer_creation as $value) {
-            $no_packaging[] = $value->refRegularDeliveryPlanPropspectContainer->no_packaging;
-            $cust_name[] = $value->refMstConsignee->nick_name;
-        }
-
-        $no_packaging_unique = [];
-        foreach (array_unique($no_packaging) as $value) {
-            $no_packaging_unique[] = $value;
-        }
-
-        $cust_name_unique = [];
-        foreach (array_unique($cust_name) as $value) {
-            $cust_name_unique[] = $value;
-        }
-
         return [
-            'items' => $data->getCollection()->transform(function($item) use ($no_packaging_unique,$cust_name_unique){
-                $item->no_packaging = $no_packaging_unique ?? null;
-                $item->cust_name = $cust_name_unique ?? null;
+            'items' => $data->getCollection()->transform(function($item){
+
+                $prospect = RegularDeliveryPlanProspectContainerCreation::where('id_shipping_instruction', $item->id)->first();
+
+                $item->no_packaging = $prospect->refRegularDeliveryPlanPropspectContainer->no_packaging ?? null;
+                $item->cust_name = $prospect->refMstConsignee->nick_name ?? null;
                 $item->mot = $item->refMot->name ?? null;
 
                 unset(
