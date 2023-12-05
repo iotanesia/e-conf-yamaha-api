@@ -110,7 +110,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
         if ($check->refRegularDeliveryPlan->item_no !== null) {
             $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
-                        'b.part_set','b.id_box',
+                        'b.part_set',
                         DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
                         DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
                         DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
@@ -141,7 +141,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         ->leftJoin('mst_box as b','a.item_no','b.item_no')
                         ->leftJoin('mst_consignee as c','c.code','a.code_consignee')
                         ->leftJoin('mst_part as d','d.code_consignee','c.code')
-                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','b.id_box','a.order_no')
+                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','a.order_no')
                         ->paginate($params->limit ?? null);
         } else {
             $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan',
