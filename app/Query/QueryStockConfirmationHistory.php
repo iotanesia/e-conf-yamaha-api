@@ -814,7 +814,7 @@ class QueryStockConfirmationHistory extends Model {
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
 
-                $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->where('type',Constant::INSTOCK)->first();
+                $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->whereIn('type',[Constant::INSTOCK, Constant::OUTSTOCK])->first();
                 if($stock_confirmation_history) throw new \Exception("QR Code Done Scan", 400);
 
                 $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan', $delivery_plan_box->refRegularDeliveryPlan->id)->get()->pluck('id_regular_delivery_plan_box');
@@ -880,7 +880,7 @@ class QueryStockConfirmationHistory extends Model {
                 $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
                 if(!$delivery_plan_box) throw new \Exception("Data not found", 400);
 
-                $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->where('type',Constant::INSTOCK)->first();
+                $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->whereIn('type',[Constant::INSTOCK, Constant::OUTSTOCK])->first();
                 if($stock_confirmation_history) throw new \Exception("QR Code Done Scan", 400);
 
                 $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
