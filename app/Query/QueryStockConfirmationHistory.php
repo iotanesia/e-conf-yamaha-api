@@ -38,6 +38,8 @@ class QueryStockConfirmationHistory extends Model {
                 $id_box = explode('-',$id)[0];
                 $total_item = explode('-',$id)[1];
 
+                if(count(explode(',', $id_box)) > 1) throw new \Exception("Can only delete one data", 400);
+
                 $box = RegularDeliveryPlanBox::find($id_box);
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
                 $stock = Model::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)
@@ -79,6 +81,7 @@ class QueryStockConfirmationHistory extends Model {
                     'status_instock'=> $update->in_dc == 0 ? Constant::STS_STOK : 2,
                 ]);
             } else {
+                if(count(explode(',', $id)) > 1) throw new \Exception("Can only delete one data", 400);
                 $qty = RegularDeliveryPlanBox::find($id);
                 $stock = Model::where('id_regular_delivery_plan_box',$qty->id)->where('type',Constant::INSTOCK)->first();
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$qty->id_regular_delivery_plan)->first();
@@ -108,6 +111,8 @@ class QueryStockConfirmationHistory extends Model {
             if (count(explode('-',$id)) > 1) {
                 $id_box = explode('-',$id)[0];
                 $total_item = explode('-',$id)[1];
+
+                if(count(explode(',', $id_box)) > 1) throw new \Exception("Can only delete one data", 400);
 
                 $box = RegularDeliveryPlanBox::find($id_box);
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
@@ -158,6 +163,7 @@ class QueryStockConfirmationHistory extends Model {
                     'status_outstock'=> $update->in_wh == 0 ? Constant::STS_STOK : 2
                 ]);
             } else {
+                if(count(explode(',', $id)) > 1) throw new \Exception("Can only delete one data", 400);
                 $box = RegularDeliveryPlanBox::find($id);
                 $stock_out = Model::where('id_regular_delivery_plan_box',$box->id)->where('type',Constant::OUTSTOCK)->first();
                 $update = RegularStokConfirmation::where('id_regular_delivery_plan',$box->id_regular_delivery_plan)->first();
