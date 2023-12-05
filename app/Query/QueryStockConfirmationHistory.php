@@ -118,7 +118,10 @@ class QueryStockConfirmationHistory extends Model {
                                 ->get();
 
                 $stokTemp = RegularStokConfirmationTemp::where('qr_key', $id)->first();
-                $stokTemp->update(['is_reject' => 1]);
+                $stokTemp->update([
+                    'is_reject' => 1,
+                    'status_outstock' => 1
+                ]);
                 
                 foreach ($stock as $key => $val) {
                     if ($val->id_regular_delivery_plan_box === (int)$id_box) {
@@ -162,7 +165,10 @@ class QueryStockConfirmationHistory extends Model {
                 $fix == null ? null : $fix->delete();
 
                 $stokTemp = RegularStokConfirmationTemp::where('qr_key', $box->id)->first();
-                $stokTemp->update(['is_reject' => 1]);
+                $stokTemp->update([
+                    'is_reject' => 1,
+                    'status_outstock' => 1
+                ]);
 
                 $update->update([
                     'production' => $update->production + $update->in_dc,
