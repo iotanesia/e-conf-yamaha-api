@@ -76,7 +76,7 @@ class QueryStockConfirmationHistory extends Model {
                 $qty_pcs_box = array_sum($qty_pcs_box) / count($plan_set->toArray());
 
                 $update->update([
-                    'production' => $update->production + $update->in_dc,
+                    'production' => $update->production + $qty_pcs_box,
                     'in_dc' => $update->in_dc - $qty_pcs_box,
                     'status_instock'=> $update->in_dc == 0 ? Constant::STS_STOK : 2,
                 ]);
