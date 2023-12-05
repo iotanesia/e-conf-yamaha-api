@@ -861,10 +861,15 @@ class QueryRegularDeliveryPlan extends Model {
 
             if ($check_no_packaging == null) {
                 $iteration = 'P01';
-            } elseif (substr($check_no_packaging->no_packaging,-2) == '10') {
-                $iteration = 'P01';
             } else {
-                $iteration = 'P0'.(int)substr($check_no_packaging->no_packaging,-2) + 1;
+                $last_two_digits = (int)substr($check_no_packaging->no_packaging, -2);
+                $new_number = $last_two_digits + 1;
+
+                if ($new_number >= 10) {
+                    $iteration = 'P' . $new_number;
+                } else {
+                    $iteration = 'P0' . $new_number;
+                }
             }
 
             $no_packaging = $data[0]['order_no'].$iteration;
@@ -1799,7 +1804,10 @@ class QueryRegularDeliveryPlan extends Model {
                 $item->save();
             });
 
-            RegularDeliveryPlanProspectContainer::where('id', $request->id)->update(['is_prospect' => 2]);
+            $update_is_prospect = RegularDeliveryPlanProspectContainer::whereIn('id', $request->id)->get();
+            foreach ($update_is_prospect as $update) {
+                $update->update(['is_prospect' => 2]);
+            }
 
             if($is_transaction) DB::commit();
             return ['items'=> $data];
