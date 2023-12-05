@@ -860,7 +860,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
             $prospect_container = Model::find($params->id);
             $lsp = MstLsp::where('code_consignee',$prospect_container->code_consignee)
-                ->where('id_type_delivery', 1)
+                ->where('id_type_delivery', ($prospect_container->id_type_delivery ?? 1))
                 ->first();
             
             $plan = RegularDeliveryPlan::select('id','code_consignee','item_no')

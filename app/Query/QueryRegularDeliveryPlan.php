@@ -776,11 +776,11 @@ class QueryRegularDeliveryPlan extends Model {
             ]);
 
             if ($params->id_mot == 2) {
-                $store->update(['id_type_delivery' => 1]);
+                $store->update(['id_type_delivery' => 2]);
 
                 $container_creation = RegularDeliveryPlanProspectContainerCreation::create([
                         "id_prospect_container" => $store->id,
-                        "id_type_delivery" => 1,
+                        "id_type_delivery" => 2,
                         "id_mot" => 2,
                         "code_consignee" => $params->code_consignee,
                         "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),

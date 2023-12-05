@@ -28,6 +28,7 @@ class RegularDeliveryPlanProspectContainer extends Model
         "uuid",
         "is_prospect",
         "id_mot",
+        "id_type_delivery",
     ];
 
     public static function boot()
