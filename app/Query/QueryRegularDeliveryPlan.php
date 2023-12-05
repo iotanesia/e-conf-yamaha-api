@@ -1792,7 +1792,7 @@ class QueryRegularDeliveryPlan extends Model {
                 $item->save();
             });
 
-            RegularDeliveryPlanProspectContainer::where('id', $request->id)->update(['id_prospect' => 2]);
+            RegularDeliveryPlanProspectContainer::where('id', $request->id)->update(['is_prospect' => 2]);
 
             if($is_transaction) DB::commit();
             return ['items'=> $data];
