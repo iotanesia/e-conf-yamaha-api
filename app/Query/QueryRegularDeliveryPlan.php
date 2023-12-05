@@ -1440,8 +1440,8 @@ class QueryRegularDeliveryPlan extends Model {
                             $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
                             $res['qty_pcs_box'] = [$item->qty_pcs_box];
                             $res['item_no_series'] = [$item->refBox->item_no_series];
-                            $res['unit_weight_kg'] = ($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000;
-                            $res['total_gross_weight'] = (($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight;
+                            $res['unit_weight_kg'] = ($item->refBox->unit_weight_gr * $item->qty_pcs_box)/1000;
+                            $res['total_gross_weight'] = (($item->refBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refBox->outer_carton_weight;
                             $res['length'] = $item->refBox->length;
                             $res['width'] = $item->refBox->width;
                             $res['height'] = $item->refBox->height;
