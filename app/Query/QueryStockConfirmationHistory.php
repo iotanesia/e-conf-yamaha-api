@@ -743,6 +743,7 @@ class QueryStockConfirmationHistory extends Model {
                         'lot_packing' => $item->lot_packing,
                         'packing_date' => $item->packing_date,
                         'no_box' => $item->refBox->no_box ?? null,
+                        'qr_name' => $qr_key
                     ];
                 });
             } else {
@@ -781,6 +782,7 @@ class QueryStockConfirmationHistory extends Model {
                         'lot_packing' => $item->lot_packing,
                         'packing_date' => $item->packing_date,
                         'no_box' => $item->refBox->no_box ?? null,
+                        'qr_name' => $qr_key
                     ];
                 });
             }
