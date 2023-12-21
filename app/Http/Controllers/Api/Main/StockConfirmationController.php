@@ -110,6 +110,18 @@ class StockConfirmationController extends Controller
         }
     }
 
+    public function editTracking(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryStockConfirmationHistory::editTrackingDate($request)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+
     public function fixedQuantity(Request $request)
     {
         try {

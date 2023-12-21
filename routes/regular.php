@@ -147,6 +147,7 @@ Route::prefix('v1/regular')
     // tracking ss
     Route::group(['prefix' => 'tracking'],function (){
         Route::get('/',[StockConfirmationController::class,'tracking']);
+        Route::post('/edit', [StockConfirmationController::class, 'editTracking']);
     });
 
     // stock confirmation
