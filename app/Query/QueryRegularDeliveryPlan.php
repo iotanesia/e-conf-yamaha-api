@@ -1011,6 +1011,7 @@ class QueryRegularDeliveryPlan extends Model {
             foreach ($request['data'] as $key => $item) {
                 if (count(explode('-',$item['id'])) > 1) {
                     $check = RegularDeliveryPlanBox::find(explode('-',$item['id'])[0]);
+                    $id_for_update = [];
                     if($check) {
                         $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
                                                         ->where('qrcode', null)
@@ -1025,11 +1026,21 @@ class QueryRegularDeliveryPlan extends Model {
                                     throw new \Exception("qty exceeds maximum.", 400);
                                 }
                                 for ($i=0; $i < explode('-',$item['id'])[1]; $i++) { 
+
+                                    $id_for_update[] = $upd[$key+$i]->id;
+                                    $qty_formula = ($item['qty_pcs_box'] * count($check->refRegularDeliveryPlan->manyDeliveryPlanSet)) / explode('-',$item['id'])[1];
+                                    $remain_from_formula = ($item['qty_pcs_box'] * count($check->refRegularDeliveryPlan->manyDeliveryPlanSet)) - (floor($qty_formula) * explode('-',$item['id'])[1]);
+                                    if ($i+1 <= $remain_from_formula) {
+                                        $qty_condition = floor($qty_formula) + 1;
+                                    } else {
+                                        $qty_condition = floor($qty_formula);
+                                    }
+                                    
                                     $upd[$key+$i]->update([
                                         'id_proc' => $item['id_proc'],
                                         'packing_date' => $item['packing_date'],
                                         'lot_packing' => $item['lot_packing'],
-                                        'qty_pcs_box' => ($item['qty_pcs_box'] * count($check->refRegularDeliveryPlan->manyDeliveryPlanSet)) / explode('-',$item['id'])[1],
+                                        'qty_pcs_box' => $qty_condition,
                                     ]);
                                 }
                             }
@@ -1092,19 +1103,12 @@ class QueryRegularDeliveryPlan extends Model {
             }
 
             if (count($id) > 1) {
-                $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
-                                                        ->orderBy('qty_pcs_box', 'desc')
-                                                        ->orderBy('id','asc')
-                                                        ->get();
-                
+                $box = RegularDeliveryPlanBox::whereIn('id', $id_for_update)->get();
                 $qty_pcs_box = [];
                 foreach ($box as $key => $val) {
-                    if ($val->id === $check->id) {
-                        for ($i=0; $i < $id[1]; $i++) { 
-                            $qty_pcs_box[] = $box[$key+$i]->qty_pcs_box;
-                        }
-                    }
+                    $qty_pcs_box[] = $box[$key]->qty_pcs_box;
                 } 
+                
                 $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $check->refRegularDeliveryPlan->id)->get()->pluck('item_no');
                 $qty_pcs_box = array_sum($qty_pcs_box) / count($deliv_plan_set);
             }
