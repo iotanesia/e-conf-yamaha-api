@@ -1028,7 +1028,7 @@ class QueryRegularDeliveryPlan extends Model {
                                         'id_proc' => $item['id_proc'],
                                         'packing_date' => $item['packing_date'],
                                         'lot_packing' => $item['lot_packing'],
-                                        'qty_pcs_box' => $item['qty_pcs_box'] / count($check->refRegularDeliveryPlan->manyDeliveryPlanSet),
+                                        'qty_pcs_box' => ($item['qty_pcs_box'] * count($check->refRegularDeliveryPlan->manyDeliveryPlanSet)) / explode('-',$item['id'])[1],
                                     ]);
                                 }
                             }
