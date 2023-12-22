@@ -1017,10 +1017,11 @@ class QueryRegularDeliveryPlan extends Model {
                                                         ->orderBy('qty_pcs_box', 'desc')
                                                         ->orderBy('id','asc')
                                                         ->get();
+                        $qty_done = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)->whereNotNull('qrcode')->get()->pluck('qty_pcs_box')->toArray();
                             
                         foreach ($upd as $key => $val) {
                             if ($val->id === $check->id) {
-                                if ($item['qty_pcs_box'] / count($check->refRegularDeliveryPlan->manyDeliveryPlanSet) > $val->refBox->qty) {
+                                if ($item['qty_pcs_box'] / count($check->refRegularDeliveryPlan->manyDeliveryPlanSet) > ($check->refRegularDeliveryPlan->qty - array_sum($qty_done))) {
                                     throw new \Exception("qty exceeds maximum.", 400);
                                 }
                                 for ($i=0; $i < explode('-',$item['id'])[1]; $i++) { 
@@ -1037,8 +1038,9 @@ class QueryRegularDeliveryPlan extends Model {
                     $id = explode('-',$item['id']);
                 } else {
                     $check = RegularDeliveryPlanBox::find($item['id']);
+                    $qty_done = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)->whereNotNull('qrcode')->get()->pluck('qty_pcs_box')->toArray();
                     if($check) {
-                        if ($item['qty_pcs_box'] > $check->refBox->qty) {
+                        if ($item['qty_pcs_box'] > ($check->refRegularDeliveryPlan->qty - array_sum($qty_done))) {
                             throw new \Exception("qty exceeds maximum.", 400);
                         }
                         $check->fill($item);
