@@ -1003,8 +1003,8 @@ class QueryRegularDeliveryPlan extends Model {
             $request = $params->all();
 
             foreach ($request['data'] as $validasi) {
-                if(!$validasi['packing_date']) throw new \Exception("Please input packing date", 500);
-                if(!$validasi['lot_packing']) throw new \Exception("Please input lot packing", 500);
+                if(!$validasi['packing_date']) throw new \Exception("Please input packing date", 400);
+                if(!$validasi['lot_packing']) throw new \Exception("Please input lot packing", 400);
             }
 
             $id = [];
@@ -1020,11 +1020,15 @@ class QueryRegularDeliveryPlan extends Model {
                             
                         foreach ($upd as $key => $val) {
                             if ($val->id === $check->id) {
+                                if ($item['qty_pcs_box'] / count($check->refRegularDeliveryPlan->manyDeliveryPlanSet) > $val->refBox->qty) {
+                                    throw new \Exception("qty exceeds maximum.", 400);
+                                }
                                 for ($i=0; $i < explode('-',$item['id'])[1]; $i++) { 
                                     $upd[$key+$i]->update([
                                         'id_proc' => $item['id_proc'],
                                         'packing_date' => $item['packing_date'],
                                         'lot_packing' => $item['lot_packing'],
+                                        'qty_pcs_box' => $item['qty_pcs_box'] / count($check->refRegularDeliveryPlan->manyDeliveryPlanSet),
                                     ]);
                                 }
                             }
@@ -1034,6 +1038,9 @@ class QueryRegularDeliveryPlan extends Model {
                 } else {
                     $check = RegularDeliveryPlanBox::find($item['id']);
                     if($check) {
+                        if ($item['qty_pcs_box'] > $check->refBox->qty) {
+                            throw new \Exception("qty exceeds maximum.", 400);
+                        }
                         $check->fill($item);
                         $check->save();
                     }
