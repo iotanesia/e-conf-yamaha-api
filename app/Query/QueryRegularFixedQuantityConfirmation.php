@@ -59,6 +59,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             )->where(function ($query) use ($params){
 
                 $query->where('is_actual',Constant::IS_NOL);
+                $query->where('datasource',$params->datasource);
                 $category = $params->category ?? null;
                 $kueri = $params->kueri ?? null;
             
