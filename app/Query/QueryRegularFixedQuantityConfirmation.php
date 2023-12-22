@@ -374,8 +374,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 }
             }
 
-            if($params->date_start || $params->date_finish)
-                $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
+            $date_from = str_replace('-','',$params->date_from);
+            $date_to = str_replace('-','',$params->date_to);
+            if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
 
             if($params->is_actual == 0)
                 $query->whereIn('is_actual', [0,99]);
@@ -1004,6 +1005,38 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     public static function creationDetail($params)
     {
         $data = RegularFixedActualContainerCreation::whereIn('id_fixed_actual_container',$params->id)
+
+                ->where(function($query) use($params) {
+                    $category = $params->category ?? null;
+                    $kueri = $params->kueri ?? null;
+                
+                    if ($category && $kueri) {
+                        if ($category == 'cust_name') {
+                            $query->whereHas('refMstConsignee', function ($q) use ($kueri) {
+                                $q->where('nick_name', 'like', '%' . $kueri . '%');
+                            });
+                        } elseif ($category == 'logistic_service_provider') {
+                            $query->whereHas('refMstLsp', function ($q) use ($kueri) {
+                                $q->where('name', 'like', '%' . $kueri . '%');
+                            });
+                        }elseif ($category == 'etd_ypmi') {
+                            $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                        }elseif ($category == 'etd_wh') {
+                            $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                        }elseif ($category == 'etd_jkt') {
+                            $query->where('etd_jkt', 'like', '%' . $kueri . '%');
+                        } else {
+                            $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                                ->orWhere('summary_box', 'like', '%' . $kueri . '%')
+                                ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                        }
+                    }
+
+                    $date_from = str_replace('-','',$params->date_from);
+                    $date_to = str_replace('-','',$params->date_to);
+                    if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
+                })
+
             ->orderBy('iteration', 'asc')
             ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
@@ -1434,8 +1467,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 }
             }
 
-            if($params->date_start || $params->date_finish)
-                $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
+            $date_from = str_replace('-','',$params->date_from);
+            $date_to = str_replace('-','',$params->date_to);
+            if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
 
 
         })->paginate($params->limit ?? null);

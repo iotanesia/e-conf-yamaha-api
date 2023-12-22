@@ -49,8 +49,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             }
 
             //$filterdate = Helper::filterDate($params);
-            if($params->date_start || $params->date_finish)
-                $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
+            // if($params->date_start || $params->date_finish)
+            //     $query->whereBetween('etd_jkt',[$params->date_start, $params->date_finish]);
+
+
+            $date_from = str_replace('-','',$params->date_from);
+            $date_to = str_replace('-','',$params->date_to);
+            if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
 
             if($params->is_prospect == 0)
                 $query->whereIn('is_prospect', [0,99]);
@@ -521,7 +526,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                             ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
                     }
                 }
+
+                $date_from = str_replace('-','',$params->date_from);
+                $date_to = str_replace('-','',$params->date_to);
+                if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
             })
+            
             ->orderBy('iteration', 'asc')
             ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
