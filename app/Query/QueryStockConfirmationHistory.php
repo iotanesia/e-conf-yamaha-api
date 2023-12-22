@@ -694,12 +694,13 @@ class QueryStockConfirmationHistory extends Model
             }
 
             $requestData = [
-                'etd_ypmi' => Carbon::parse($request->etd_ypmi)->format('Y-m-d'),
-                'etd_wh' => Carbon::parse($request->etd_wh)->format('Y-m-d'),
-                'etd_jkt' => Carbon::parse($request->etd_jkt)->format('Y-m-d'),
+                'etd_ypmi' => Carbon::parse($request->etd_ypmi)->format('Ymd'),
+                'etd_wh' => Carbon::parse($request->etd_wh)->format('Ymd'),
+                'etd_jkt' => Carbon::parse($request->etd_jkt)->format('Ymd'),
             ];
 
             $confirmation->fill($requestData);
+            $confirmation->refRegularDeliveryPlan()->update($requestData);
             $confirmation->save();
 
             if ($is_transaction) {
