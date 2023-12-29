@@ -376,15 +376,15 @@ class QueryStockConfirmationHistory extends Model
         $page = Paginator::resolveCurrentPage('page') ?: 1;
         $paginatedData = $collection->slice(($page - 1) * $perPage, $perPage)->all();
 
-        // Calculate the total number of pages
-        $totalItems = count($collection);
-        $totalPages = ceil($totalItems / $perPage);
-
         // Create a Paginator instance manually
         $paginator = new Paginator($paginatedData, count($collection), $perPage, [$page], [
             'path' => Paginator::resolveCurrentPath(),
             'pageName' => 'page',
         ]);
+
+        // Calculate the total number of pages
+        $totalItems = count($collection);
+        $totalPages = ceil($totalItems / $perPage);
 
         return [
             'items' => $paginator->items() ?? [],
