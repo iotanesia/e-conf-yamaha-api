@@ -369,7 +369,7 @@ class QueryStockConfirmationHistory extends Model
             $result[] = $result_merge;
         }
 
-        $collection = array_merge(...$result);
+        $collection = new Collection(array_merge(...$result));
 
         // Paginate the collection
         $perPage = $request->limit;
