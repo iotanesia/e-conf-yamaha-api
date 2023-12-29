@@ -1011,7 +1011,6 @@ class QueryRegularDeliveryPlan extends Model {
             foreach ($request['data'] as $key => $item) {
                 if (count(explode('-',$item['id'])) > 1) {
                     $check = RegularDeliveryPlanBox::find(explode('-',$item['id'])[0]);
-                    $id_for_update = [];
                     if($check) {
                         $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
                                                         ->where('qrcode', null)
@@ -1027,7 +1026,6 @@ class QueryRegularDeliveryPlan extends Model {
                                 }
                                 for ($i=0; $i < explode('-',$item['id'])[1]; $i++) { 
 
-                                    $id_for_update[] = $upd[$key+$i]->id;
                                     $qty_formula = ($item['qty_pcs_box'] * count($check->refRegularDeliveryPlan->manyDeliveryPlanSet)) / explode('-',$item['id'])[1];
                                     $remain_from_formula = ($item['qty_pcs_box'] * count($check->refRegularDeliveryPlan->manyDeliveryPlanSet)) - (floor($qty_formula) * explode('-',$item['id'])[1]);
                                     if ($i+1 <= $remain_from_formula) {
@@ -1102,31 +1100,21 @@ class QueryRegularDeliveryPlan extends Model {
                 }
             }
 
-            if (count($id) > 1) {
-                $box = RegularDeliveryPlanBox::whereIn('id', $id_for_update)->get();
-                $qty_pcs_box = [];
-                foreach ($box as $key => $val) {
-                    $qty_pcs_box[] = $box[$key]->qty_pcs_box;
-                } 
-                
-                $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $check->refRegularDeliveryPlan->id)->get()->pluck('item_no');
-                $qty_pcs_box = array_sum($qty_pcs_box) / count($deliv_plan_set);
-            }
 
             $queryStok = RegularStokConfirmation::query();
             $is_stok = $queryStok->where('id_regular_delivery_plan', $check->id_regular_delivery_plan)->first();
             if ($is_stok) {
                 $is_stok->update([
-                    'production' => count($id) > 1 ? $is_stok->production + $qty_pcs_box : $is_stok->production + $check->qty_pcs_box,
-                    'qty' => count($id) > 1 ? $is_stok->qty + $qty_pcs_box : $is_stok->qty + $check->qty_pcs_box,
+                    'production' => count($id) > 1 ? $is_stok->production + $request['data'][0]['qty_pcs_box'] : $is_stok->production + $check->qty_pcs_box,
+                    'qty' => count($id) > 1 ? $is_stok->qty + $request['data'][0]['qty_pcs_box'] : $is_stok->qty + $check->qty_pcs_box,
                 ]);
                 $id_stock = $is_stok->id;
             } else {
                 $createStock = $queryStok->create([
                     "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
                     "count_box" => $check->refRegularDeliveryPlan->manyDeliveryPlanBox->count() ?? 0,
-                    "production" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
-                    "qty" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
+                    "production" => count($id) > 1 ? $request['data'][0]['qty_pcs_box'] : $check->qty_pcs_box,
+                    "qty" => count($id) > 1 ? $request['data'][0]['qty_pcs_box'] : $check->qty_pcs_box,
                     "in_dc" => Constant::IS_NOL,
                     "in_wh" => Constant::IS_NOL,
                     "status_instock" => Constant::STS_STOK,
@@ -1143,10 +1131,10 @@ class QueryRegularDeliveryPlan extends Model {
                 "id_stock_confirmation" => $id_stock, 
                 "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
                 "count_box" => $check->refRegularDeliveryPlan->manyDeliveryPlanBox->count() ?? 0,
-                "production" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
-                "qty" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
-                "in_dc" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
-                "in_wh" => count($id) > 1 ? $qty_pcs_box : $check->qty_pcs_box,
+                "production" => count($id) > 1 ? $request['data'][0]['qty_pcs_box'] : $check->qty_pcs_box,
+                "qty" => count($id) > 1 ? $request['data'][0]['qty_pcs_box'] : $check->qty_pcs_box,
+                "in_dc" => count($id) > 1 ? $request['data'][0]['qty_pcs_box'] : $check->qty_pcs_box,
+                "in_wh" => count($id) > 1 ? $request['data'][0]['qty_pcs_box'] : $check->qty_pcs_box,
                 "status_instock" => Constant::STS_STOK,
                 "status_outstock" => Constant::STS_STOK,
                 "etd_ypmi" => $check->refRegularDeliveryPlan->etd_ypmi,
