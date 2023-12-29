@@ -373,22 +373,14 @@ class QueryStockConfirmationHistory extends Model
 
         // Paginate the collection
         $perPage = $request->limit;
-        $page = Paginator::resolveCurrentPage('page') ?: 1;
+        $page = Paginator::resolveCurrentPage('page') ?: $request->page;
         $paginatedData = $collection->slice(($page - 1) * $perPage, $perPage)->all();
 
-        // Create a Paginator instance manually
-        $paginator = new Paginator($paginatedData, count($collection), $perPage, [$page], [
-            'path' => Paginator::resolveCurrentPath(),
-            'pageName' => 'page',
-        ]);
-
-        // Calculate the total number of pages
-        $totalItems = count($collection);
-        $totalPages = ceil($totalItems / $perPage);
+        $last_page = ceil(count($collection) / $perPage);
 
         return [
-            'items' => $paginator->items() ?? [],
-            'last_page' => $totalPages
+            'items' => $paginatedData ?? [],
+            'last_page' => $last_page
         ];
     }
 
