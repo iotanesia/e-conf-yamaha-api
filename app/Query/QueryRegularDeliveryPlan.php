@@ -1022,7 +1022,7 @@ class QueryRegularDeliveryPlan extends Model {
                             
                         foreach ($upd as $key => $val) {
                             if ($val->id === $check->id) {
-                                if ($item['qty_pcs_box'] / count($check->refRegularDeliveryPlan->manyDeliveryPlanSet) > ($check->refRegularDeliveryPlan->qty - array_sum($qty_done))) {
+                                if ($item['qty_pcs_box'] / count($check->refRegularDeliveryPlan->manyDeliveryPlanSet) > ($check->refRegularDeliveryPlan->qty - (array_sum($qty_done) / count($check->refRegularDeliveryPlan->manyDeliveryPlanSet)))) {
                                     throw new \Exception("qty exceeds maximum.", 400);
                                 }
                                 for ($i=0; $i < explode('-',$item['id'])[1]; $i++) { 
