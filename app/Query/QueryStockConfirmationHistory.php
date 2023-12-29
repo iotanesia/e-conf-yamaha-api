@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\Paginator;
 
 class QueryStockConfirmationHistory extends Model
 {
@@ -235,7 +237,7 @@ class QueryStockConfirmationHistory extends Model
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
                             'model' => $val->refRegularDeliveryPlan->model,
                             'item_no' => $plan_set->toArray(),
-                            'qty' => $val->refRegularDeliveryPlan->qty,
+                            // 'qty' => $val->refRegularDeliveryPlan->qty,
                             'disburse' => $val->refRegularDeliveryPlan->disburse,
                             'delivery' => $val->refRegularDeliveryPlan->delivery,
                             'status_regular_delivery_plan' => $val->refRegularDeliveryPlan->status_regular_delivery_plan,
@@ -285,6 +287,7 @@ class QueryStockConfirmationHistory extends Model
                 for ($i = 0; $i < count($result_qty); $i++) {
                     if (count($result_qty[$i]) !== 0) {
                         $merge_qty = [
+                            'qty' => (array_sum($result_qty[$i]) / count($plan_set->toArray())),
                             'in_dc' => (array_sum($result_qty[$i]) / count($plan_set->toArray())),
                             'id' => $result_id_planbox[$i][0] . '-' . count($result_id_planbox[$i]),
                         ];
@@ -312,7 +315,8 @@ class QueryStockConfirmationHistory extends Model
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
                             'model' => $val->refRegularDeliveryPlan->model,
                             'item_no' => $val->refRegularDeliveryPlan->item_no,
-                            'qty' => $val->refRegularDeliveryPlan->qty,
+                            // 'qty' => $val->refRegularDeliveryPlan->qty,
+                            'qty' => $val->qty_pcs_box,
                             'disburse' => $val->refRegularDeliveryPlan->disburse,
                             'delivery' => $val->refRegularDeliveryPlan->delivery,
                             'status_regular_delivery_plan' => $val->refRegularDeliveryPlan->status_regular_delivery_plan,
@@ -365,8 +369,21 @@ class QueryStockConfirmationHistory extends Model
             $result[] = $result_merge;
         }
 
+        $collection = new Collection(array_merge(...$result));
+
+        // Paginate the collection
+        $perPage = $request->limit;
+        $page = Paginator::resolveCurrentPage('page') ?: 1;
+        $paginatedData = $collection->slice(($page - 1) * $perPage, $perPage)->all();
+
+        // Create a Paginator instance manually
+        $paginator = new Paginator($paginatedData, count($collection), $perPage, [$page], [
+            'path' => Paginator::resolveCurrentPath(),
+            'pageName' => 'page',
+        ]);
+
         return [
-            'items' => array_merge(...$result) ?? [],
+            'items' => $paginator->items() ?? [],
             'last_page' => $data->lastPage()
         ];
     }
