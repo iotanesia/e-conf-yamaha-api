@@ -384,7 +384,7 @@ class QueryStockConfirmationHistory extends Model
 
         return [
             'items' => $paginator->items() ?? [],
-            'last_page' => $data->lastPage()
+            'last_page' => $paginator->lastPage()
         ];
     }
 
