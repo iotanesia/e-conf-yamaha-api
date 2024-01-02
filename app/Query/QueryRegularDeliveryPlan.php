@@ -1008,6 +1008,7 @@ class QueryRegularDeliveryPlan extends Model {
             }
 
             $id = [];
+            $id_for_update = [];
             foreach ($request['data'] as $key => $item) {
                 if (count(explode('-',$item['id'])) > 1) {
                     $check = RegularDeliveryPlanBox::find(explode('-',$item['id'])[0]);
@@ -1033,6 +1034,8 @@ class QueryRegularDeliveryPlan extends Model {
                                     } else {
                                         $qty_condition = floor($qty_formula);
                                     }
+                                    
+                                    $id_for_update[] = $upd[$key+$i]->id;
                                     
                                     $upd[$key+$i]->update([
                                         'id_proc' => $item['id_proc'],
@@ -1150,7 +1153,7 @@ class QueryRegularDeliveryPlan extends Model {
             if (count($id) > 1) {
                 $data = RegularDeliveryPlanBox::where('id',$id[0])->orderBy('id','asc')->get();
     
-                $data->transform(function ($item) use($id)
+                $data->transform(function ($item) use($id, $id_for_update)
                 {
                     $no = $item->refBox->no_box ?? null;
                     $qty = $item->refBox->qty ?? null;
@@ -1161,12 +1164,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $qr_key = implode('-',$id). " | ".implode(',', $part_no). " | ".$item->refRegularDeliveryPlan->order_no. " | ".$item->refRegularDeliveryPlan->refConsignee->nick_name. " | ".$item->lot_packing. " | ".date('d/m/Y', strtotime($item->packing_date)). " | ".$item->qty_pcs_box;
                     QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
 
-                    $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->refRegularDeliveryPlan->id)
-                                                        ->where('qrcode', null)
-                                                        ->whereNotNull('packing_date')
-                                                        ->orderBy('qty_pcs_box', 'desc')
-                                                        ->orderBy('id','asc')
-                                                        ->get();
+                    $upd = RegularDeliveryPlanBox::whereIn('id', $id_for_update)->get();
                     
                     $qty_pcs_box = [];
                     foreach ($upd as $key => $val) {
