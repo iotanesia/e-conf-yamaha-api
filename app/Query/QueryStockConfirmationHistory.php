@@ -372,7 +372,7 @@ class QueryStockConfirmationHistory extends Model
         $collection = new Collection(array_merge(...$result));
 
         // Paginate the collection
-        $perPage = $request->limit;
+        $perPage = $request->limit ?? 1;
         $page = Paginator::resolveCurrentPage('page') ?: $request->page;
         $offset = ($page - 1) * $perPage;
         $paginatedData = $collection->slice($offset, $perPage)->all();
@@ -383,7 +383,7 @@ class QueryStockConfirmationHistory extends Model
             'pageName' => 'page',
         ]);
 
-        $last_page = (ceil(count($collection) / $perPage)) ?? 0;
+        $last_page = ceil(count($collection) / $perPage);
 
         return [
             'items' => array_values($paginator->items()) ?? [],
