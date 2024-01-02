@@ -202,7 +202,7 @@ class QueryStockConfirmationHistory extends Model
 
     public static function getInStock($request)
     {
-        $data = RegularStokConfirmation::where('status_instock', '=', 2)->where('in_dc', '>', 0)->paginate($request->limit ?? null);
+        $data = RegularStokConfirmation::where('status_instock', '=', 2)->where('in_dc', '>', 0)->get();
         if (!$data) throw new \Exception("Data not found", 400);
 
         $result = [];
