@@ -1384,7 +1384,7 @@ class QueryStockConfirmationHistory extends Model
                     }
                 }
 
-                $mst_part = MstPart::whereIn('item_no', $plan_set->toArray())->get();
+                $mst_part = MstPart::whereIn('item_no', $plan_set->toArray())->orderBy('item_no', 'asc')->get();
                 $item_no = [];
                 $item_name = [];
                 foreach ($mst_part as $key => $value) {
