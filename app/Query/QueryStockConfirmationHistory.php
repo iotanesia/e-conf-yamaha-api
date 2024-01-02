@@ -612,7 +612,7 @@ class QueryStockConfirmationHistory extends Model
                 }
 
                 $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
-                $part_set = MstPart::whereIn('item_no', $deliv_plan_set->toArray())->get();
+                $part_set = MstPart::whereIn('item_no', $deliv_plan_set->toArray())->orderBy('item_serial', 'asc')->get();
                 $item_serial_set = [];
                 $item_name_set = [];
                 foreach ($part_set as $key => $value) {
