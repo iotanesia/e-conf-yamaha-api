@@ -458,26 +458,8 @@ class QueryRegularDeliveryPlan extends Model {
                                     return array_merge($qty);
                                 });
 
-                $order_entry_upload = RegularOrderEntryUpload::where('id_regular_order_entry', $item->id_regular_order_entry)->first();
-                $upload_temp = RegularOrderEntryUploadDetailTemp::where('id_regular_order_entry_upload', $order_entry_upload->id)
-                                                                ->whereIn('item_no', $item_no_set->toArray())
-                                                                ->where('etd_jkt', $item->etd_jkt)
-                                                                ->get()->pluck('qty');
-                $qty_per_item_no = [];
-                foreach ($item_no_set as $key => $value) {
-                    $qty_per_item_no[] = [
-                        $value.'+' => $upload_temp->toArray()[$key]
-                    ];
-                }
-
-                $qty = [];
-                foreach ($mst_box as $key => $value) {
-                    $arary_key = array_keys($value)[0];
-                    $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
-                }
-                
                 $box = [
-                    'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty)),
+                    'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".ceil($item->qty / array_sum(array_merge(...$mst_box->toArray()))),
                     'length' =>  "",
                     'width' =>  "",
                     'height' =>  "",
