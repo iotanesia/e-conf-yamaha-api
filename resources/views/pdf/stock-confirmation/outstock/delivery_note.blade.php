@@ -118,7 +118,7 @@
                     <td class="text-center">{{ $loop->iteration }}.</td>
                     <td class="text-center">
                         @if ($item->item_no == null)
-                            @foreach ($item->refStokConfirmation->refRegularDeliveryPlan->manyDeliveryPlanSet as $item_no)
+                            @foreach ($item->refStokConfirmation->refRegularDeliveryPlan->manyDeliveryPlanSet()->orderby('item_no', 'asc')->get() as $item_no)
                                 {{ $item_no->item_no }} <br>
                             @endforeach
                         @else
@@ -127,7 +127,7 @@
                     </td>
                     <td class="text-center">
                         @if ($item->item_no == null)
-                            @foreach ($item->refStokConfirmation->refRegularDeliveryPlan->manyDeliveryPlanSet as $description)
+                            @foreach ($item->refStokConfirmation->refRegularDeliveryPlan->manyDeliveryPlanSet()->orderby('item_no', 'asc')->get() as $description)
                                 {{ $description->refPart->description }} <br>
                             @endforeach
                         @else
