@@ -301,20 +301,13 @@ class QueryStockConfirmationOutstockNote extends Model {
     public static function downloadOutStockNote($request,$pathToFile,$filename)
     {
         try {
-            $stokTemp = RegularStokConfirmationTemp::whereIn('qr_key',$request->id)->get();
+            $stokTemp = RegularStokConfirmationTemp::whereIn('qr_key',$request->id)->orderBy('id_stock_confirmation', 'asc')->get();
             $data = Model::whereJsonContains('id_stock_confirmation',[$stokTemp[0]->id_stock_confirmation])->orderBy('id','desc')->first();
             
             $words = explode(' ', $data->shipper);
             $data->shipperFirstWords = str_replace("JL.", " ",implode(' ', array_slice($words, 0, 13)));
             $data->shipperLastWords = str_replace("LTD", " ",implode(' ', array_slice($words, -23)));
 
-            foreach ($stokTemp as $check_item_no) {
-                if ($check_item_no->refRegularDeliveryPlan->item_no == null) {
-                    $data->item_no = RegularDeliveryPlanSet::where('id_delivery_plan', $check_item_no->id_regular_delivery_plan)->orderBy('item_no', 'asc')->pluck('item_no');
-                    $data->description = MstPart::whereIn('item_no', $data->item_no)->orderBy('item_no', 'asc')->pluck('description');
-                }
-            }
-            
             $items = RegularStokConfirmationOutstockNoteDetail::select('id_stock_confirmation', 'qty',
                                                                 DB::raw("string_agg(DISTINCT regular_stock_confirmation_outstock_note_detail.id::character varying, ',') as id_note_detail"),
                                                                 DB::raw("string_agg(DISTINCT regular_stock_confirmation_outstock_note_detail.item_no::character varying, ',') as item_no"),

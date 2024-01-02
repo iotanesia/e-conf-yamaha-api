@@ -29,4 +29,9 @@ class RegularStokConfirmationOutstockNoteDetail extends Model
     {
         return $this->belongsTo(MstPart::class, 'item_no', 'item_no');
     }
+
+    public function refStokConfirmation()
+    {
+        return $this->belongsTo(RegularStokConfirmation::class, 'id_stock_confirmation', 'id');
+    }
 }

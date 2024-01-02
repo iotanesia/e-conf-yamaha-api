@@ -118,8 +118,8 @@
                     <td class="text-center">{{ $loop->iteration }}.</td>
                     <td class="text-center">
                         @if ($item->item_no == null)
-                            @foreach ($data->item_no as $item_no)
-                                {{ $item_no }} <br>
+                            @foreach ($item->refStokConfirmation->refRegularDeliveryPlan->manyDeliveryPlanSet as $item_no)
+                                {{ $item_no->item_no }} <br>
                             @endforeach
                         @else
                             {{ $item->item_no }}
@@ -127,8 +127,8 @@
                     </td>
                     <td class="text-center">
                         @if ($item->item_no == null)
-                            @foreach ($data->description as $description)
-                                {{ $description }} <br>
+                            @foreach ($item->refStokConfirmation->refRegularDeliveryPlan->manyDeliveryPlanSet as $description)
+                                {{ $description->refPart->description }} <br>
                             @endforeach
                         @else
                             {{ $item->refMstPart->description}}

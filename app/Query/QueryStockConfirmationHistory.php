@@ -1328,6 +1328,7 @@ class QueryStockConfirmationHistory extends Model
         )
             ->whereIn('qr_key', $request->id_stock_confirmation)
             ->groupBy('id_stock_confirmation', 'qty')
+            ->orderBy('id_stock_confirmation', 'asc')
             ->get();
 
         $items->transform(function ($item) use ($items) {
