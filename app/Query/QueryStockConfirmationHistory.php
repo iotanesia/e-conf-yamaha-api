@@ -492,7 +492,8 @@ class QueryStockConfirmationHistory extends Model
             $res['code_consignee'] = $item->refRegularDeliveryPlan->code_consignee;
             $res['model'] = $item->refRegularDeliveryPlan->model;
             $res['item_no'] = $item->refRegularDeliveryPlan->item_no == null ? $plan_set->toArray() : $item->refRegularDeliveryPlan->item_no;
-            $res['qty'] = $item->refRegularDeliveryPlan->qty;
+            // $res['qty'] = $item->refRegularDeliveryPlan->qty;
+            $res['qty'] =  $item->refRegularDeliveryPlan->item_no == null ? $in_wh : $item->qty;
             $res['disburse'] = $item->refRegularDeliveryPlan->disburse;
             $res['delivery'] = $item->refRegularDeliveryPlan->delivery;
             $res['status_regular_delivery_plan'] = $item->refRegularDeliveryPlan->status_regular_delivery_plan;
