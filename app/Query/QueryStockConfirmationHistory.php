@@ -383,7 +383,7 @@ class QueryStockConfirmationHistory extends Model
             'pageName' => 'page',
         ]);
 
-        $last_page = ceil(count($collection) / $perPage);
+        $last_page = (ceil(count($collection) / $perPage)) ?? 0;
 
         return [
             'items' => array_values($paginator->items()) ?? [],
