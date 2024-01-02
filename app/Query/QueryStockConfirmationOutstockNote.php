@@ -310,8 +310,8 @@ class QueryStockConfirmationOutstockNote extends Model {
 
             foreach ($stokTemp as $check_item_no) {
                 if ($check_item_no->refRegularDeliveryPlan->item_no == null) {
-                    $data->item_no = RegularDeliveryPlanSet::where('id_delivery_plan', $check_item_no->id_regular_delivery_plan)->pluck('item_no');
-                    $data->description = MstPart::whereIn('item_no', $data->item_no)->pluck('description');
+                    $data->item_no = RegularDeliveryPlanSet::where('id_delivery_plan', $check_item_no->id_regular_delivery_plan)->orderBy('item_no', 'asc')->pluck('item_no');
+                    $data->description = MstPart::whereIn('item_no', $data->item_no)->orderBy('item_no', 'asc')->pluck('description');
                 }
             }
             
