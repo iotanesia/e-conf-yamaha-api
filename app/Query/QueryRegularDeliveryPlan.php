@@ -1017,9 +1017,9 @@ class QueryRegularDeliveryPlan extends Model {
                                         $qty_condition = floor($qty_formula);
                                     }
                                     
-                                    $id_for_update[] = $upd[$key+$i]->id;
+                                    $id_for_update[] = $upd[$i]->id;
                                     
-                                    $upd[$key+$i]->update([
+                                    $upd[$i]->update([
                                         'id_proc' => $item['id_proc'],
                                         'packing_date' => $item['packing_date'],
                                         'lot_packing' => $item['lot_packing'],
@@ -1152,11 +1152,11 @@ class QueryRegularDeliveryPlan extends Model {
                     foreach ($upd as $key => $val) {
                         if ($val->id === $item->id) {
                             for ($i=0; $i < $id[1]; $i++) { 
-                                $upd[$key+$i]->update([
+                                $upd[$i]->update([
                                     'qrcode' => $qr_name
                                 ]);
 
-                                $qty_pcs_box[] = $upd[$key+$i]->qty_pcs_box;
+                                $qty_pcs_box[] = $upd[$i]->qty_pcs_box;
                             }
                         }
                     }
