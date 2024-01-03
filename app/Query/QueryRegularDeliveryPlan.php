@@ -1010,11 +1010,11 @@ class QueryRegularDeliveryPlan extends Model {
                                 for ($i=0; $i < explode('-',$item['id'])[1]; $i++) { 
 
                                     $qty_formula = ($item['qty_pcs_box'] * count($check->refRegularDeliveryPlan->manyDeliveryPlanSet)) / explode('-',$item['id'])[1];
-                                    $remain_from_formula = ($item['qty_pcs_box'] * count($check->refRegularDeliveryPlan->manyDeliveryPlanSet)) - (floor($qty_formula) * explode('-',$item['id'])[1]);
+                                    $remain_from_formula = ($item['qty_pcs_box'] * count($check->refRegularDeliveryPlan->manyDeliveryPlanSet)) - (round($qty_formula) * explode('-',$item['id'])[1]);
                                     if ($i+1 <= $remain_from_formula) {
-                                        $qty_condition = floor($qty_formula) + 1;
+                                        $qty_condition = round($qty_formula) + 1;
                                     } else {
-                                        $qty_condition = floor($qty_formula);
+                                        $qty_condition = round($qty_formula);
                                     }
                                     
                                     $id_for_update[] = $upd[$i]->id;

@@ -240,11 +240,17 @@ class QueryStockConfirmationOutstockNote extends Model {
                         $result_arr[] = $group_arr[0];
                     }
                     
+                    $in_wh_arr = [];
                     for ($i=0; $i < count($result_qty); $i++) { 
                         if (count($result_qty[$i]) !== 0) {
-                            $in_wh = (array_sum($result_qty[$i]) / count($plan_set->toArray()));
+                            $in_wh_arr[] = (array_sum($result_qty[$i]) / count($plan_set->toArray()));
                         }
                     }
+
+                    $valueCounts = array_count_values($in_wh_arr);
+                    $maxCount = max($valueCounts);
+                    $maxValues = array_keys($valueCounts, $maxCount);
+                    $in_wh = $maxValues[0];
                         
                     $mst_part = MstPart::whereIn('item_no', $plan_set->toArray())->get();
                     $item_no = [];
