@@ -146,7 +146,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         ->leftJoin('mst_box as b','a.item_no','b.item_no')
                         ->leftJoin('mst_consignee as c','c.code','a.code_consignee')
                         ->leftJoin('mst_part as d','d.code_consignee','c.code')
-                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','a.order_no')
+                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','a.order_no','a.id')
                         ->paginate($params->limit ?? null);
         } else {
             $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan',
@@ -194,7 +194,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $item_no[] = $value;
             }
 
-            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) {
+            if ($check->refRegularDeliveryPlan->item_no == null) {
                 $mst_box = MstBox::where('part_set', 'set')
                                 ->whereIn('item_no', $item_no)
                                 ->get()->map(function ($item){
@@ -205,7 +205,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                                     return array_merge($qty);
                             });
 
-                $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_delivery_plan)->get();
+                $deliv_plan_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', explode(',', $item->id_delivery_plan))->get();
                 $qty_per_item_no = [];
                 $qty_set = [];
                 foreach ($deliv_plan_set as $key => $value) {
@@ -237,10 +237,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             }
 
             $box_result = self::getCountBox((int)$item->id_delivery_plan, $item->id_prospect_container_creation);
-            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
+            if ($check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
 
             $qty_result = explode(',',$item->qty);
-            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = [array_sum($qty_set)];
+            if ($check->refRegularDeliveryPlan->item_no == null) $qty_result = [array_sum($qty_set)];
 
             $item->item_name = $itemname;
             $item->item_no = $item_no;
