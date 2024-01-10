@@ -1012,12 +1012,6 @@ class QueryRegularDeliveryPlan extends Model {
                         $check->fill($item);
                         $check->save();
 
-                        //delete plan box
-                        $delete_plan_box = RegularDeliveryPlanBox::whereIn('id', $item['id_delivery_plan_box'])->whereNull('packing_date')->get();
-                        foreach ($delete_plan_box as $delete) {
-                            $delete->delete();
-                        }
-
                         // $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
                         //                                 ->where('qrcode', null)
                         //                                 ->orderBy('qty_pcs_box', 'desc')
