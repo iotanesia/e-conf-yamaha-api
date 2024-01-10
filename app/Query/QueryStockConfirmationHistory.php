@@ -969,12 +969,16 @@ class QueryStockConfirmationHistory extends Model
 
                     $check_qr = RegularStokConfirmationTemp::where('qr_key', $id . '-' . $total_item)->first();
                     if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+
+                    $qr_key = $id . '-' . $total_item;
                 } else {
                     $delivery_plan_box = RegularDeliveryPlanBox::find($params->id);
                     if (!$delivery_plan_box) throw new \Exception("Data not found", 400);
     
                     $check_qr = RegularStokConfirmationTemp::where('qr_key', $params->id)->first();
                     if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+
+                    $qr_key = $delivery_plan_box->id;
                 }
 
                 $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->whereIn('type', [Constant::INSTOCK, Constant::OUTSTOCK])->first();
@@ -991,7 +995,7 @@ class QueryStockConfirmationHistory extends Model
                 $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
                 $stock_confirmation->save();
 
-                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $delivery_plan_box->id)->first();
+                $stokTemp = RegularStokConfirmationTemp::where('qr_key', $qr_key)->first();
                 $stokTemp->update(['status_instock' => 2, 'is_reject' => null]);
 
                 self::create([
