@@ -756,107 +756,131 @@ class QueryStockConfirmationHistory extends Model
                 'qr_code'
             ]);
 
-            if (count(explode('-', $params->qr_code)) > 1) {
-                $id = explode('-', $params->qr_code)[0];
-                $qr_detail = explode('-', $params->qr_code)[1];
-                $total_item = explode(' | ', $qr_detail)[0];
+            // if (count(explode('-', $params->qr_code)) > 1) {
+            //     $id = explode('-', $params->qr_code)[0];
+            //     $qr_detail = explode('-', $params->qr_code)[1];
+            //     $total_item = explode(' | ', $qr_detail)[0];
 
-                $delivery_plan_box = RegularDeliveryPlanBox::find($id);
-                if (!$delivery_plan_box) throw new \Exception("data not found", 400);
+            //     $delivery_plan_box = RegularDeliveryPlanBox::find($id);
+            //     if (!$delivery_plan_box) throw new \Exception("data not found", 400);
 
-                $check_qr = RegularStokConfirmationTemp::where('qr_key', $id . '-' . $total_item)->first();
-                if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+            //     $check_qr = RegularStokConfirmationTemp::where('qr_key', $id . '-' . $total_item)->first();
+            //     if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+
+            //     $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+            //     if (!$stock_confirmation) throw new \Exception("stock has not arrived", 400);
+            //     $data = RegularDeliveryPlanBox::where('id', $id)->paginate($params->limit ?? null);
+
+            //     $data->transform(function ($item) use ($total_item, $params) {
+            //         $no = $item->refBox->no_box ?? null;
+            //         $qty = $item->refBox->qty ?? null;
+
+            //         $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
+            //         $part_no = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+            //         $qr_name = (string) Str::uuid() . '.png';
+            //         $qr_key = ($item->id . '-' . $total_item) . " | " . implode(',', $part_no) . " | " . $item->refRegularDeliveryPlan->order_no . " | " . $item->refRegularDeliveryPlan->refConsignee->nick_name . " | " . $item->lot_packing . " | " . date('d/m/Y', strtotime($item->packing_date)) . " | " . $item->qty_pcs_box;
+            //         QrCode::format('png')->generate($qr_key, storage_path() . '/app/qrcode/label/' . $qr_name);
+
+            //         $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->refRegularDeliveryPlan->id)
+            //             ->orderBy('qty_pcs_box', 'desc')
+            //             ->orderBy('id', 'asc')
+            //             ->get();
+
+            //         $qty_pcs_box = [];
+            //         foreach ($upd as $key => $val) {
+            //             if ($val->id === $item->id) {
+            //                 for ($i = 0; $i < $total_item; $i++) {
+            //                     $upd[$key + $i]->update([
+            //                         'qrcode' => $qr_name
+            //                     ]);
+
+            //                     $qty_pcs_box[] = $upd[$key + $i]->qty_pcs_box;
+            //                 }
+            //             }
+            //         }
+
+            //         $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+            //         $part_set = MstPart::whereIn('item_no', $deliv_plan_set->toArray())->orderBy('item_serial','asc')->get();
+            //         $item_no_set = [];
+            //         $item_name_set = [];
+            //         foreach ($part_set as $key => $value) {
+            //             $item_no_set[] = $value->item_serial;
+            //             $item_name_set[] = $value->description;
+            //         }
+
+            //         $qty_pcs_box = array_sum($qty_pcs_box) / count(array_unique($item_no_set));
+
+            //         return [
+            //             'id' => $params->qr_code,
+            //             'item_name' => array_unique($item_name_set),
+            //             'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
+            //             'item_no' => array_unique($item_no_set),
+            //             'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
+            //             'qty_pcs_box' => $qty_pcs_box,
+            //             'namebox' => $no . " " . $qty . " pcs",
+            //             'qrcode' => route('file.download') . '?filename=' . $qr_name . '&source=qr_labeling',
+            //             'lot_packing' => $item->lot_packing,
+            //             'packing_date' => $item->packing_date,
+            //             'no_box' => $item->refBox->no_box ?? null,
+            //             'qr_name' => $qr_key
+            //         ];
+            //     });
+            // } else {
+                if (count(explode('-', $params->qr_code)) > 1) {
+                    $id = explode('-', $params->qr_code)[0];
+                    $qr_detail = explode('-', $params->qr_code)[1];
+                    $total_item = explode(' | ', $qr_detail)[0];
+
+                    $delivery_plan_box = RegularDeliveryPlanBox::find($id);
+                    if (!$delivery_plan_box) throw new \Exception("data not found", 400);
+
+                    $check_qr = RegularStokConfirmationTemp::where('qr_key', $id . '-' . $total_item)->first();
+                    if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+
+                    $description = [];
+                    $item_no = [];
+                    foreach ($delivery_plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet as $key => $value) {
+                        $description[] = $value->refPart->description;
+                        $item_no[] = $value->item_no;
+                    }
+
+                    $part_no = $delivery_plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+                    $qr_name = (string) Str::uuid() . '.png';
+                    $qr_key = ($delivery_plan_box->id . '-' . $total_item) . " | " . implode(',', $part_no) . " | " . $delivery_plan_box->refRegularDeliveryPlan->order_no . " | " . $delivery_plan_box->refRegularDeliveryPlan->refConsignee->nick_name . " | " . $delivery_plan_box->lot_packing . " | " . date('d/m/Y', strtotime($delivery_plan_box->packing_date)) . " | " . $delivery_plan_box->qty_pcs_box;
+
+                } else {
+                    $key = explode('|', $params->qr_code);
+    
+                    $id = str_replace(' ', '', $key[0]);
+    
+                    $delivery_plan_box = RegularDeliveryPlanBox::find($id);
+                    if (!$delivery_plan_box) throw new \Exception("data not found", 400);
+                    
+                    $check_qr = RegularStokConfirmationTemp::where('qr_key', $id)->first();
+                    if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+                    
+                    $qr_name = (string) Str::uuid() . '.png';
+                    $qr_key = $delivery_plan_box->id . " | " . $delivery_plan_box->refRegularDeliveryPlan->item_no . " | " . $delivery_plan_box->refRegularDeliveryPlan->order_no . " | " . $delivery_plan_box->refRegularDeliveryPlan->refConsignee->nick_name . " | " . $delivery_plan_box->lot_packing . " | " . date('d/m/Y', strtotime($delivery_plan_box->packing_date)) . " | " . $delivery_plan_box->qty_pcs_box;
+                }
+
 
                 $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
                 if (!$stock_confirmation) throw new \Exception("stock has not arrived", 400);
                 $data = RegularDeliveryPlanBox::where('id', $id)->paginate($params->limit ?? null);
-
-                $data->transform(function ($item) use ($total_item, $params) {
+                $data->transform(function ($item) use($params, $description, $item_no, $qr_key, $qr_name){
                     $no = $item->refBox->no_box ?? null;
                     $qty = $item->refBox->qty ?? null;
 
-                    $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
-                    $part_no = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
-                    $qr_name = (string) Str::uuid() . '.png';
-                    $qr_key = ($item->id . '-' . $total_item) . " | " . implode(',', $part_no) . " | " . $item->refRegularDeliveryPlan->order_no . " | " . $item->refRegularDeliveryPlan->refConsignee->nick_name . " | " . $item->lot_packing . " | " . date('d/m/Y', strtotime($item->packing_date)) . " | " . $item->qty_pcs_box;
-                    QrCode::format('png')->generate($qr_key, storage_path() . '/app/qrcode/label/' . $qr_name);
-
-                    $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->refRegularDeliveryPlan->id)
-                        ->orderBy('qty_pcs_box', 'desc')
-                        ->orderBy('id', 'asc')
-                        ->get();
-
-                    $qty_pcs_box = [];
-                    foreach ($upd as $key => $val) {
-                        if ($val->id === $item->id) {
-                            for ($i = 0; $i < $total_item; $i++) {
-                                $upd[$key + $i]->update([
-                                    'qrcode' => $qr_name
-                                ]);
-
-                                $qty_pcs_box[] = $upd[$key + $i]->qty_pcs_box;
-                            }
-                        }
-                    }
-
-                    $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
-                    $part_set = MstPart::whereIn('item_no', $deliv_plan_set->toArray())->orderBy('item_serial','asc')->get();
-                    $item_no_set = [];
-                    $item_name_set = [];
-                    foreach ($part_set as $key => $value) {
-                        $item_no_set[] = $value->item_serial;
-                        $item_name_set[] = $value->description;
-                    }
-
-                    $qty_pcs_box = array_sum($qty_pcs_box) / count(array_unique($item_no_set));
-
-                    return [
-                        'id' => $params->qr_code,
-                        'item_name' => array_unique($item_name_set),
-                        'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
-                        'item_no' => array_unique($item_no_set),
-                        'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
-                        'qty_pcs_box' => $qty_pcs_box,
-                        'namebox' => $no . " " . $qty . " pcs",
-                        'qrcode' => route('file.download') . '?filename=' . $qr_name . '&source=qr_labeling',
-                        'lot_packing' => $item->lot_packing,
-                        'packing_date' => $item->packing_date,
-                        'no_box' => $item->refBox->no_box ?? null,
-                        'qr_name' => $qr_key
-                    ];
-                });
-            } else {
-                $key = explode('|', $params->qr_code);
-
-                $id = str_replace(' ', '', $key[0]);
-
-                $delivery_plan_box = RegularDeliveryPlanBox::find($id);
-                if (!$delivery_plan_box) throw new \Exception("data not found", 400);
-                
-                $check_qr = RegularStokConfirmationTemp::where('qr_key', $id)->first();
-                if (!$check_qr) throw new \Exception("QR key is invalid", 400);
-
-                $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
-                if (!$stock_confirmation) throw new \Exception("stock has not arrived", 400);
-                $data = RegularDeliveryPlanBox::where('id', $id)->paginate($params->limit ?? null);
-                $data->transform(function ($item) {
-                    $no = $item->refBox->no_box ?? null;
-                    $qty = $item->refBox->qty ?? null;
-
-                    $datasource = $item->refRegularDeliveryPlan->refRegularOrderEntry->datasource ?? null;
-
-                    $qr_name = (string) Str::uuid() . '.png';
-                    $qr_key = $item->id . " | " . $item->refRegularDeliveryPlan->item_no . " | " . $item->refRegularDeliveryPlan->order_no . " | " . $item->refRegularDeliveryPlan->refConsignee->nick_name . " | " . $item->lot_packing . " | " . date('d/m/Y', strtotime($item->packing_date)) . " | " . $item->qty_pcs_box;
                     QrCode::format('png')->generate($qr_key, storage_path() . '/app/qrcode/label/' . $qr_name);
 
                     $item->qrcode = $qr_name;
                     $item->save();
 
                     return [
-                        'id' => $item->id,
-                        'item_name' => $item->refRegularDeliveryPlan->refPart->description ?? null,
+                        'id' => count(explode('-', $params->qr_code)) > 1 ? $params->qr_code : $item->id,
+                        'item_name' => count(explode('-', $params->qr_code)) > 1 ? $description : $item->refRegularDeliveryPlan->refPart->description,
                         'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
-                        'item_no' => $item->refRegularDeliveryPlan->item_no ?? null,
+                        'item_no' => count(explode('-', $params->qr_code)) > 1 ? $item_no : $item->refRegularDeliveryPlan->item_no,
                         'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
                         'qty_pcs_box' => $item->qty_pcs_box,
                         'namebox' => $no . " " . $qty . " pcs",
@@ -867,7 +891,7 @@ class QueryStockConfirmationHistory extends Model
                         'qr_name' => $qr_key
                     ];
                 });
-            }
+            // }
 
             return [
                 'items' => $data[0],
