@@ -207,94 +207,94 @@ class QueryStockConfirmationHistory extends Model
 
         $result = [];
         foreach ($data as $key => $value) {
-            if ($value->refRegularDeliveryPlan->item_no == null) {
-                $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $value->id_regular_delivery_plan)->orderBy('qty_pcs_box', 'desc')->orderBy('id', 'asc')->get();
-                $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $value->id_regular_delivery_plan)->get()->pluck('item_no');
-                $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan', $value->id_regular_delivery_plan)->where('type', 'INSTOCK')->get()->pluck('id_regular_delivery_plan_box');
+            // if ($value->refRegularDeliveryPlan->item_no == null) {
+            //     $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $value->id_regular_delivery_plan)->orderBy('qty_pcs_box', 'desc')->orderBy('id', 'asc')->get();
+            //     $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $value->id_regular_delivery_plan)->get()->pluck('item_no');
+            //     $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan', $value->id_regular_delivery_plan)->where('type', 'INSTOCK')->get()->pluck('id_regular_delivery_plan_box');
 
-                $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->toArray())->get();
-                $sum_qty = [];
-                foreach ($mst_box as $key => $value_box) {
-                    $sum_qty[] = $value_box->qty;
-                }
+            //     $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->toArray())->get();
+            //     $sum_qty = [];
+            //     foreach ($mst_box as $key => $value_box) {
+            //         $sum_qty[] = $value_box->qty;
+            //     }
 
-                $result_qty = [];
-                $result_id_planbox = [];
-                $result_arr = [];
-                $qty = 0;
-                $group_qty = [];
-                $group_id_planbox = [];
-                $group_arr = [];
-                foreach ($plan_box as $key => $val) {
-                    $qty += $val->qty_pcs_box;
-                    if (in_array($val->id, $check_scan->toArray())) {
-                        $group_qty[] = $val->qty_pcs_box;
-                        $group_id_planbox[] = $val->id;
-                        $group_arr[] = [
-                            // 'id' => $value->id,
-                            'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
-                            'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
-                            'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
-                            'model' => $val->refRegularDeliveryPlan->model,
-                            'item_no' => $plan_set->toArray(),
-                            // 'qty' => $val->refRegularDeliveryPlan->qty,
-                            'disburse' => $val->refRegularDeliveryPlan->disburse,
-                            'delivery' => $val->refRegularDeliveryPlan->delivery,
-                            'status_regular_delivery_plan' => $val->refRegularDeliveryPlan->status_regular_delivery_plan,
-                            'order_no' => $val->refRegularDeliveryPlan->order_no,
-                            'cust_item_no' => $val->refRegularDeliveryPlan->cust_item_no,
-                            'created_at' => $val->refRegularDeliveryPlan->created_at,
-                            'created_by' => $val->refRegularDeliveryPlan->created_by,
-                            'updated_at' => $val->refRegularDeliveryPlan->updated_at,
-                            'updated_by' => $val->refRegularDeliveryPlan->updated_by,
-                            'deleted_at' => $val->refRegularDeliveryPlan->deleted_at,
-                            'uuid' => $val->refRegularDeliveryPlan->uuid,
-                            'etd_ypmi' => $val->refRegularDeliveryPlan->etd_ypmi,
-                            'etd_wh' => $val->refRegularDeliveryPlan->etd_wh,
-                            'etd_jkt' => $val->refRegularDeliveryPlan->etd_jkt,
-                            'is_inquiry' => $val->refRegularDeliveryPlan->is_inquiry,
-                            'id_prospect_container' => $val->refRegularDeliveryPlan->id_prospect_container,
-                            'id_prospect_container_creation' => $val->refRegularDeliveryPlan->id_prospect_container_creation,
-                            'status_bml' => $val->refRegularDeliveryPlan->status_bml,
-                            'cust_name' => $val->refRegularDeliveryPlan->refConsignee->nick_name,
-                            'status_desc' => 'Instock',
-                            'box' => array_sum($sum_qty) . ' x 1 '
-                        ];
-                    }
+            //     $result_qty = [];
+            //     $result_id_planbox = [];
+            //     $result_arr = [];
+            //     $qty = 0;
+            //     $group_qty = [];
+            //     $group_id_planbox = [];
+            //     $group_arr = [];
+            //     foreach ($plan_box as $key => $val) {
+            //         $qty += $val->qty_pcs_box;
+            //         if (in_array($val->id, $check_scan->toArray())) {
+            //             $group_qty[] = $val->qty_pcs_box;
+            //             $group_id_planbox[] = $val->id;
+            //             $group_arr[] = [
+            //                 // 'id' => $value->id,
+            //                 'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
+            //                 'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
+            //                 'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
+            //                 'model' => $val->refRegularDeliveryPlan->model,
+            //                 'item_no' => $plan_set->toArray(),
+            //                 // 'qty' => $val->refRegularDeliveryPlan->qty,
+            //                 'disburse' => $val->refRegularDeliveryPlan->disburse,
+            //                 'delivery' => $val->refRegularDeliveryPlan->delivery,
+            //                 'status_regular_delivery_plan' => $val->refRegularDeliveryPlan->status_regular_delivery_plan,
+            //                 'order_no' => $val->refRegularDeliveryPlan->order_no,
+            //                 'cust_item_no' => $val->refRegularDeliveryPlan->cust_item_no,
+            //                 'created_at' => $val->refRegularDeliveryPlan->created_at,
+            //                 'created_by' => $val->refRegularDeliveryPlan->created_by,
+            //                 'updated_at' => $val->refRegularDeliveryPlan->updated_at,
+            //                 'updated_by' => $val->refRegularDeliveryPlan->updated_by,
+            //                 'deleted_at' => $val->refRegularDeliveryPlan->deleted_at,
+            //                 'uuid' => $val->refRegularDeliveryPlan->uuid,
+            //                 'etd_ypmi' => $val->refRegularDeliveryPlan->etd_ypmi,
+            //                 'etd_wh' => $val->refRegularDeliveryPlan->etd_wh,
+            //                 'etd_jkt' => $val->refRegularDeliveryPlan->etd_jkt,
+            //                 'is_inquiry' => $val->refRegularDeliveryPlan->is_inquiry,
+            //                 'id_prospect_container' => $val->refRegularDeliveryPlan->id_prospect_container,
+            //                 'id_prospect_container_creation' => $val->refRegularDeliveryPlan->id_prospect_container_creation,
+            //                 'status_bml' => $val->refRegularDeliveryPlan->status_bml,
+            //                 'cust_name' => $val->refRegularDeliveryPlan->refConsignee->nick_name,
+            //                 'status_desc' => 'Instock',
+            //                 'box' => array_sum($sum_qty) . ' x 1 '
+            //             ];
+            //         }
 
-                    if ($qty >= (array_sum($sum_qty) * count($plan_set->toArray()))) {
-                        $result_qty[] = $group_qty;
-                        $result_id_planbox[] = $group_id_planbox;
-                        $result_arr[] = $group_arr[0] ?? [];
-                        $qty = 0;
-                        $group_qty = [];
-                        $group_id_planbox = [];
-                        $group_arr = [];
-                    }
-                }
+            //         if ($qty >= (array_sum($sum_qty) * count($plan_set->toArray()))) {
+            //             $result_qty[] = $group_qty;
+            //             $result_id_planbox[] = $group_id_planbox;
+            //             $result_arr[] = $group_arr[0] ?? [];
+            //             $qty = 0;
+            //             $group_qty = [];
+            //             $group_id_planbox = [];
+            //             $group_arr = [];
+            //         }
+            //     }
 
-                if (!empty($group_qty)) {
-                    $result_qty[] = $group_qty;
-                }
-                if (!empty($group_id_planbox)) {
-                    $result_id_planbox[] = $group_id_planbox;
-                }
-                if (!empty($group_arr)) {
-                    $result_arr[] = $group_arr[0];
-                }
+            //     if (!empty($group_qty)) {
+            //         $result_qty[] = $group_qty;
+            //     }
+            //     if (!empty($group_id_planbox)) {
+            //         $result_id_planbox[] = $group_id_planbox;
+            //     }
+            //     if (!empty($group_arr)) {
+            //         $result_arr[] = $group_arr[0];
+            //     }
 
-                $result_merge = [];
-                for ($i = 0; $i < count($result_qty); $i++) {
-                    if (count($result_qty[$i]) !== 0) {
-                        $merge_qty = [
-                            'qty' => (array_sum($result_qty[$i]) / count($plan_set->toArray())),
-                            'in_dc' => (array_sum($result_qty[$i]) / count($plan_set->toArray())),
-                            'id' => $result_id_planbox[$i][0] . '-' . count($result_id_planbox[$i]),
-                        ];
-                        $result_merge[] = array_merge($merge_qty, $result_arr[$i]);
-                    }
-                }
-            } else {
+            //     $result_merge = [];
+            //     for ($i = 0; $i < count($result_qty); $i++) {
+            //         if (count($result_qty[$i]) !== 0) {
+            //             $merge_qty = [
+            //                 'qty' => (array_sum($result_qty[$i]) / count($plan_set->toArray())),
+            //                 'in_dc' => (array_sum($result_qty[$i]) / count($plan_set->toArray())),
+            //                 'id' => $result_id_planbox[$i][0] . '-' . count($result_id_planbox[$i]),
+            //             ];
+            //             $result_merge[] = array_merge($merge_qty, $result_arr[$i]);
+            //         }
+            //     }
+            // } else {
                 $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $value->id_regular_delivery_plan)->get();
                 $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan', $value->id_regular_delivery_plan)->where('type', 'INSTOCK')->get()->pluck('id_regular_delivery_plan_box');
 
@@ -367,7 +367,7 @@ class QueryStockConfirmationHistory extends Model
             }
 
             $result[] = $result_merge;
-        }
+        // }
 
         $collection = new Collection(array_merge(...$result));
 
