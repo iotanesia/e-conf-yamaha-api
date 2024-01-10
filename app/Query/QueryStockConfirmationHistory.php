@@ -1407,7 +1407,7 @@ class QueryStockConfirmationHistory extends Model
 
             $item->item_number = $item_no;
             $item->item_name = $item_name;
-            $item->qty = $item->refRegularDeliveryPlan->item_no == null ? $maxCount . ' x ' . $in_wh : count(explode(',', $item->id_stok_temp)) . ' x ' . $item->qty;
+            $item->qty = $item->refRegularDeliveryPlan->item_no == null ? count(explode(',', $item->id_stok_temp)) . ' x ' . $in_wh : count(explode(',', $item->id_stok_temp)) . ' x ' . $item->qty;
             $item->order_no = $item->refRegularDeliveryPlan->order_no;
             $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
 
