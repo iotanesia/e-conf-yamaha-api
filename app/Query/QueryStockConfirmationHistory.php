@@ -763,6 +763,10 @@ class QueryStockConfirmationHistory extends Model
 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if (!$delivery_plan_box) throw new \Exception("data not found", 400);
+
+                $check_qr = RegularStokConfirmationTemp::where('qr_key', $id . '-' . $total_item)->first();
+                if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+
                 $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
                 if (!$stock_confirmation) throw new \Exception("stock has not arrived", 400);
                 $data = RegularDeliveryPlanBox::where('id', $id)->paginate($params->limit ?? null);
@@ -828,6 +832,10 @@ class QueryStockConfirmationHistory extends Model
 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if (!$delivery_plan_box) throw new \Exception("data not found", 400);
+                
+                $check_qr = RegularStokConfirmationTemp::where('qr_key', $id)->first();
+                if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+
                 $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
                 if (!$stock_confirmation) throw new \Exception("stock has not arrived", 400);
                 $data = RegularDeliveryPlanBox::where('id', $id)->paginate($params->limit ?? null);
@@ -1140,6 +1148,10 @@ class QueryStockConfirmationHistory extends Model
 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if (!$delivery_plan_box) throw new \Exception("data not found", 400);
+                
+                $check_qr = RegularStokConfirmationTemp::where('qr_key', $id . '-' . $total_item)->first();
+                if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+                
                 $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
                 if (!$stock_confirmation) throw new \Exception("stock has not arrived", 400);
                 $data = RegularDeliveryPlanBox::where('id', $id)->paginate($params->limit ?? null);
@@ -1205,6 +1217,10 @@ class QueryStockConfirmationHistory extends Model
 
                 $delivery_plan_box = RegularDeliveryPlanBox::find($id);
                 if (!$delivery_plan_box) throw new \Exception("data not found", 400);
+                
+                $check_qr = RegularStokConfirmationTemp::where('qr_key', $id)->first();
+                if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+                
                 $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
                 if (!$stock_confirmation) throw new \Exception("stock has not arrived", 400);
                 $data = RegularDeliveryPlanBox::where('id', $id)->paginate($params->limit ?? null);
