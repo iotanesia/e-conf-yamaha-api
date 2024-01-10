@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\ApiHelper as Helper;
 use App\Imports\OrderEntry;
+use App\Models\MstBox;
 use App\Models\RegularDeliveryPlan;
 use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanSet;
@@ -651,6 +652,9 @@ class QueryRegularOrderEntryUpload extends Model {
                             if ($check_update !== count(explode(',',$value->id_plan_set))) {
                                 $upd = RegularDeliveryPlanSet::find($id_update);
                                 $upd->update(['id_delivery_plan' => $id_deliv_plan[$i]['id']]);
+
+                                //set delivery plan box 
+                                self::updateDeliveryPlanBoxSet($upd->id_delivery_plan);  
                             }
                         }
                     }
@@ -663,6 +667,50 @@ class QueryRegularOrderEntryUpload extends Model {
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
+        }
+    }
+
+    
+    public static function updateDeliveryPlanBoxSet($id_delivery_plan)
+    {
+        $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$id_delivery_plan)->get();
+        $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no')->toArray())->get();
+        $count_plan_box = array_sum($plan_set->pluck('qty')->toArray()) / array_sum($mst_box->pluck('qty')->toArray());
+        $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id_delivery_plan)->get();
+        $result = $plan_box->take($count_plan_box);
+        $keep = $result->pluck('id')->toArray();
+
+        if ($plan_box[0]->refRegularDeliveryPlan->item_no == null) {
+            $id_deliv_box = [];
+            $qty_pcs_box = [];
+            $qty = 0;
+            $group = [];
+            $group_qty = [];
+            foreach ($plan_box as $key => $value) {
+                $qty += $value->qty_pcs_box;
+                $group[] = $value->id;
+                $group_qty[] = $value->qty_pcs_box;
+
+                if ($qty >= (array_sum($mst_box->pluck('qty')->toArray()) * count($plan_set))) {
+                    $id_deliv_box[] = $group;
+                    $qty_pcs_box[] = $group_qty;
+                    $qty = 0;
+                    $group = [];
+                    $group_qty = [];
+                }
+            }
+
+            if (!empty($group_qty)) {
+                $qty_pcs_box[] = $group_qty;
+            }
+
+            foreach ($result as $key => $update) {
+                $update->update(['qty_pcs_box' => array_sum($qty_pcs_box[$key]) / count($plan_set)]);
+            }
+
+            //delete plan box
+            $delete = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id_delivery_plan)->whereNotIn('id', $keep)->forceDelete();
+ 
         }
     }
 
