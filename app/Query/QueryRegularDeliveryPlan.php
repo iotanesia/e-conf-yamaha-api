@@ -508,82 +508,82 @@ class QueryRegularDeliveryPlan extends Model {
                                         ->orderBy('id','asc')
                                         ->get();
 
-        if ($data[0]->refRegularDeliveryPlan->item_no == null) {
-            $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$id)->get();
-            $item_no = [];
-            foreach ($plan_set as $key => $val_set) {
-                $item_no[] = $val_set->item_no;
-            }
-            $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
-            $no = '';
-            $qty_box = '';
-            $sum_qty = [];
-            foreach ($mst_box as $key => $val) {
-                $no = $val->no_box;
-                $qty_box = $val->qty;
-                $sum_qty[] = $val->qty;
-            }
+        // if ($data[0]->refRegularDeliveryPlan->item_no == null) {
+        //     $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$id)->get();
+        //     $item_no = [];
+        //     foreach ($plan_set as $key => $val_set) {
+        //         $item_no[] = $val_set->item_no;
+        //     }
+        //     $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
+        //     $no = '';
+        //     $qty_box = '';
+        //     $sum_qty = [];
+        //     foreach ($mst_box as $key => $val) {
+        //         $no = $val->no_box;
+        //         $qty_box = $val->qty;
+        //         $sum_qty[] = $val->qty;
+        //     }
 
-            $id_deliv_box = [];
-            $qty_pcs_box = [];
-            $lot_packing = [];
-            $packing_date = [];
-            $qty = 0;
-            $group = [];
-            $group_qty = [];
-            $group_lot_packing = [];
-            $group_packing_date = [];
-            foreach ($data as $key => $value) {
-                $qty += $value->qty_pcs_box;
-                $group[] = $value->id;
-                $group_qty[] = $value->qty_pcs_box;
-                $group_lot_packing[] = $value->lot_packing;
-                $group_packing_date[] = $value->packing_date;
+        //     $id_deliv_box = [];
+        //     $qty_pcs_box = [];
+        //     $lot_packing = [];
+        //     $packing_date = [];
+        //     $qty = 0;
+        //     $group = [];
+        //     $group_qty = [];
+        //     $group_lot_packing = [];
+        //     $group_packing_date = [];
+        //     foreach ($data as $key => $value) {
+        //         $qty += $value->qty_pcs_box;
+        //         $group[] = $value->id;
+        //         $group_qty[] = $value->qty_pcs_box;
+        //         $group_lot_packing[] = $value->lot_packing;
+        //         $group_packing_date[] = $value->packing_date;
 
-                if ($qty >= (array_sum($sum_qty) * count($item_no))) {
-                    $id_deliv_box[] = $group;
-                    $qty_pcs_box[] = $group_qty;
-                    $lot_packing[] = $group_lot_packing;
-                    $packing_date[] = $group_packing_date;
-                    $qty = 0;
-                    $group = [];
-                    $group_qty = [];
-                    $group_lot_packing = [];
-                    $group_packing_date = [];
-                }
-            }
+        //         if ($qty >= (array_sum($sum_qty) * count($item_no))) {
+        //             $id_deliv_box[] = $group;
+        //             $qty_pcs_box[] = $group_qty;
+        //             $lot_packing[] = $group_lot_packing;
+        //             $packing_date[] = $group_packing_date;
+        //             $qty = 0;
+        //             $group = [];
+        //             $group_qty = [];
+        //             $group_lot_packing = [];
+        //             $group_packing_date = [];
+        //         }
+        //     }
 
-            if (!empty($group)) {
-                $id_deliv_box[] = $group;
-            }
-            if (!empty($group_qty)) {
-                $qty_pcs_box[] = $group_qty;
-            }
-            if (!empty($group_lot_packing)) {
-                $lot_packing[] = $group_lot_packing;
-            }
-            if (!empty($group_packing_date)) {
-                $packing_date[] = $group_packing_date;
-            }
+        //     if (!empty($group)) {
+        //         $id_deliv_box[] = $group;
+        //     }
+        //     if (!empty($group_qty)) {
+        //         $qty_pcs_box[] = $group_qty;
+        //     }
+        //     if (!empty($group_lot_packing)) {
+        //         $lot_packing[] = $group_lot_packing;
+        //     }
+        //     if (!empty($group_packing_date)) {
+        //         $packing_date[] = $group_packing_date;
+        //     }
 
-            $result = [];
-            for ($i=0; $i < count($id_deliv_box); $i++) { 
-                $qrcode = RegularDeliveryPlanBox::whereIn('id', $id_deliv_box[$i])->get()->pluck('qrcode');
-                $result[] = [
-                    'id' => $id_deliv_box[$i],
-                    'qty_pcs_box' => array_sum($qty_pcs_box[$i]) / count($item_no),
-                    'lot_packing' => $lot_packing[$i],
-                    'packing_date' => $packing_date[$i],
-                    'namebox' => $no. " - ".$qty_box. " pcs",
-                    'status' => in_array(null,$qrcode->toArray()) !== true ? 'Done created QR code' : 'Waiting created QR code'
-                ];
-            }
+        //     $result = [];
+        //     for ($i=0; $i < count($id_deliv_box); $i++) { 
+        //         $qrcode = RegularDeliveryPlanBox::whereIn('id', $id_deliv_box[$i])->get()->pluck('qrcode');
+        //         $result[] = [
+        //             'id' => $id_deliv_box[$i],
+        //             'qty_pcs_box' => array_sum($qty_pcs_box[$i]) / count($item_no),
+        //             'lot_packing' => $lot_packing[$i],
+        //             'packing_date' => $packing_date[$i],
+        //             'namebox' => $no. " - ".$qty_box. " pcs",
+        //             'status' => in_array(null,$qrcode->toArray()) !== true ? 'Done created QR code' : 'Waiting created QR code'
+        //         ];
+        //     }
 
-            return [
-                    'items' => $result,
-                    'last_page' => 0
-                ];    
-        }
+        //     return [
+        //             'items' => $result,
+        //             'last_page' => 0
+        //         ];    
+        // }
         
         $data->transform(function ($item)
         {
