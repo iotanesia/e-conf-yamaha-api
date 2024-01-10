@@ -99,9 +99,10 @@ class QueryStockConfirmationOutstockNote extends Model {
                 }
 
                 //update ke fix quantity
-                // if ($stock_confirmation->in_dc == 0 && $stock_confirmation->in_wh == $stock_confirmation->qty && $stock_confirmation->production == 0) {
-                $stock_confirmation->status_instock = 3;
-                $stock_confirmation->save();
+                if ($stock_confirmation->in_dc == 0 && $stock_confirmation->in_wh == $stock_confirmation->qty && $stock_confirmation->production == 0) {
+                    $stock_confirmation->status_instock = 3;
+                    $stock_confirmation->save();
+                }  
 
                 $fixed_quantity_confirmation = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $stock_confirmation->id_regular_delivery_plan)->first();
                 if(!$fixed_quantity_confirmation) $fixed_quantity_confirmation = new RegularFixedQuantityConfirmation;
@@ -145,7 +146,6 @@ class QueryStockConfirmationOutstockNote extends Model {
                     $fixed_quantity_confirmation_box->save();
                 }
 
-                // }  
             }
 
             $lastData = Model::latest()->first();
