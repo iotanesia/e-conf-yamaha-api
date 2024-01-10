@@ -675,10 +675,7 @@ class QueryRegularOrderEntryUpload extends Model {
     {
         $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$id_delivery_plan)->get();
         $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no')->toArray())->get();
-        $count_plan_box = array_sum($plan_set->pluck('qty')->toArray()) / array_sum($mst_box->pluck('qty')->toArray());
         $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id_delivery_plan)->get();
-        $result = $plan_box->take($count_plan_box);
-        $keep = $result->pluck('id')->toArray();
 
         if ($plan_box[0]->refRegularDeliveryPlan->item_no == null) {
             $id_deliv_box = [];
@@ -704,8 +701,12 @@ class QueryRegularOrderEntryUpload extends Model {
                 $qty_pcs_box[] = $group_qty;
             }
 
+            $count_plan_box = count($id_deliv_box);
+            $result = $plan_box->take($count_plan_box);
+            $keep = $result->pluck('id')->toArray();
+
             foreach ($result as $key => $update) {
-                $update->update(['qty_pcs_box' => array_sum($qty_pcs_box[$key]) / count($plan_set)]);
+                $update->update(['qty_pcs_box' => round(array_sum($qty_pcs_box[$key]) / count($plan_set))]);
             }
 
             //delete plan box
