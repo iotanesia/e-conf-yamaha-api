@@ -680,41 +680,36 @@ class QueryRegularOrderEntryUpload extends Model {
         $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id_delivery_plan)->get();
 
         if ($plan_box[0]->refRegularDeliveryPlan->item_no == null) {
-            $id_deliv_box = [];
-            $qty_pcs_box = [];
-            $qty = 0;
-            $group = [];
-            $group_qty = [];
-            foreach ($plan_box as $key => $value) {
-                $qty += $value->qty_pcs_box;
-                $group[] = $value->id;
-                $group_qty[] = $value->qty_pcs_box;
 
-                if ($qty >= (array_sum($mst_box->pluck('qty')->toArray()) * count($plan_set))) {
-                    $id_deliv_box[] = $group;
-                    $qty_pcs_box[] = $group_qty;
-                    $qty = 0;
-                    $group = [];
-                    $group_qty = [];
-                }
-            }
+            $total_qty = $plan_box[0]->refRegularDeliveryPlan->qty;
+            $space = array_sum($mst_box->pluck('qty')->toArray());
+            $result_qty = self::distributeValue($total_qty, $space);
 
-            if (!empty($group_qty)) {
-                $qty_pcs_box[] = $group_qty;
-            }
-
-            $count_plan_box = count($id_deliv_box);
+            $count_plan_box = count($result_qty);
             $result = $plan_box->take($count_plan_box);
             $keep = $result->pluck('id')->toArray();
 
             foreach ($result as $key => $update) {
-                $update->update(['qty_pcs_box' => round(array_sum($qty_pcs_box[$key]) / count($plan_set))]);
+                $update->update(['qty_pcs_box' => $result_qty[$key]]);
             }
 
             //delete plan box
             $delete = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id_delivery_plan)->whereNotIn('id', $keep)->forceDelete();
  
         }
+    }
+
+    public static function distributeValue($value, $space)
+    {
+        $result = [];
+        $count = floor($value / $space);
+        $result = array_fill(0, $count, $space);
+        $remainingValue = $value - ($count * $space);
+        if ($remainingValue > 0) {
+            $result[] = $remainingValue;
+        }
+
+        return $result;
     }
 
     public static function getDifferentPart($id,$id_regular_order_entry_upload){
