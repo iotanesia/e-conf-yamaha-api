@@ -383,10 +383,10 @@ class QueryStockConfirmationHistory extends Model
                         $result_merge[] = $result_arr[$i];
                     }
                 }
-            }
+            // }
 
             $result[] = $result_merge;
-        // }
+        }
 
         $collection = new Collection(array_merge(...$result));
 
