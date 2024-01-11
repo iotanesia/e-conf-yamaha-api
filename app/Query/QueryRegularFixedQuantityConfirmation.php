@@ -561,13 +561,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->orderBy('id', 'asc')
             ->get();
             $id_fixed_quantity = [];
-            $delivery_plan_set = [];
+            // $delivery_plan_set = [];
             foreach ($fixedQuantity as $item){
-                if ($item->refRegularDeliveryPlan->item_no == null) {
-                    $delivery_plan_set[] = $item->refRegularDeliveryPlan->id;
-                } else {
+                // if ($item->refRegularDeliveryPlan->item_no == null) {
+                //     $delivery_plan_set[] = $item->refRegularDeliveryPlan->id;
+                // } else {
                     $id_fixed_quantity[] = $item->id;
-                }
+                // }
             }
 
             //calculation part set
@@ -877,21 +877,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $creation['id_container'] = 1;
                         $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
                         $creation['summary_box'] = $sum_count_box;
-                        if (count($delivery_plan_set) > 0) {
-                            $creation['iteration'] = ($i - 1) + 100;
-                        } elseif (count($id_fixed_quantity) !== 0) {
-                            $creation['iteration'] = $i;
-                        }
+                        $creation['iteration'] = $i;
                         $creation['space'] = 5905 - (int)$sum_row_length;
                     } else {
                         $creation['id_container'] = 2;
                         $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
                         $creation['summary_box'] = $send_summary_box;
-                        if (count($delivery_plan_set) > 0) {
-                            $creation['iteration'] = ($i - 1) + 100;
-                        } elseif (count($id_fixed_quantity) !== 0) {
-                            $creation['iteration'] = $i;
-                        }
+                        $creation['iteration'] = $i;
                         $creation['space'] = (int)$space;
                     }
 
@@ -915,25 +907,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $upd->is_actual = 99;
                 $upd->save();
 
-                if (count($delivery_plan_set) > 0) {
-                    $set = [
-                        'id' => $params->id,
-                        'colis' => $quantityConfirmationBox,
-                        'box_set_count' => $box_set_count,
-                        'check' => 'set'
-                    ];
-        
-                   ContainerActual::dispatch($set);
-                } elseif (count($id_fixed_quantity) !== 0) {
-                    $set = [
-                        'id' => $params->id,
-                        'colis' => $quantityConfirmationBox,
-                        'box_set_count' => $box_set_count,
-                        'check' => 'single'
-                    ];
-    
-                    ContainerActual::dispatch($set);
-                }
+                $set = [
+                    'id' => $params->id,
+                    'colis' => $quantityConfirmationBox,
+                    'box_set_count' => $box_set_count,
+                ];
+
+                ContainerActual::dispatch($set);
 
             // }
             

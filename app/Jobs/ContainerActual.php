@@ -40,22 +40,12 @@ class ContainerActual implements ShouldQueue
     {
         //distributed data algorithm
         $params = $this->params;
-        if ($params['check'] == 'set') {
-            $arrSummaryBox = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
-                ->orderBy('id', 'asc')
-                ->get()
-                ->map(function ($item){
-                    return $item->summary_box;
-                });
-        } else {
-            $arrSummaryBox = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
-                ->where('iteration','<',100)
-                ->orderBy('id', 'asc')
-                ->get()
-                ->map(function ($item){
-                    return $item->summary_box;
-                });
-        }
+        $arrSummaryBox = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($item){
+                return $item->summary_box;
+            });
         
         $iteration = 1;
         $index = 1;
