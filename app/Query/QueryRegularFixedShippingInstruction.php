@@ -563,6 +563,7 @@ class QueryRegularFixedShippingInstruction extends Model {
     {
         $data = RegularFixedActualContainerCreation::select('regular_fixed_actual_container_creation.code_consignee','regular_fixed_actual_container_creation.etd_jkt'
         ,DB::raw('COUNT(regular_fixed_actual_container_creation.etd_jkt) AS summary_container')
+        ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.summary_box::character varying, ',') as summary_box")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.code_consignee::character varying, ',') as code_consignee")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.id::character varying, ',') as id_actual_container_creation")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.datasource::character varying, ',') as datasource")
@@ -580,7 +581,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'etd_jkt' => $item->etd_jkt,
                 'etd_wh' => $item->etd_wh,
                 'etd_ypmi' => $item->etd_ypmi,
-                'summary_container' => $item->summary_container,
+                'summary_container' => $item->summary_box,
                 'code_consignee' => $item->code_consignee,
                 'datasource' => $item->datasource,
             ];
