@@ -1379,7 +1379,6 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                                 ->whereNotNull('qrcode')->get()->pluck('qty_pcs_box');
 
             $qty_result = array_sum($qty_scan->toArray());
-            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $qty_result = (array_sum($qty_scan->toArray()) / count($check->refRegularDeliveryPlan->manyRegularDeliveryPlanSet)) / count($box_scan);
 
             $item->item_no = $item_no;
             $item->item_name = $itemname;
