@@ -47,7 +47,7 @@ class ContainerActual implements ShouldQueue
                 return $item->summary_box;
             });
         
-        $iteration = 1;
+        $iteration = $params['type'] == 'set' ? 100 : 1;
         $index = 1;
         $countSummaryBox = count($arrSummaryBox);
         $counter = 0;

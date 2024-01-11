@@ -684,13 +684,13 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $creation['id_container'] = 1;
                         $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
                         $creation['summary_box'] = $sum_count_box;
-                        $creation['iteration'] = $i;
+                        $creation['iteration'] = $i + 99;
                         $creation['space'] = 5905 - (int)$sum_row_length;
                     } else {
                         $creation['id_container'] = 2;
                         $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
                         $creation['summary_box'] = $send_summary_box;
-                        $creation['iteration'] = $i;
+                        $creation['iteration'] = $i + 99;
                         $creation['space'] = (int)$space;
                     }
 
@@ -718,6 +718,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     'id' => $params->id,
                     'colis' => $quantityConfirmationBox,
                     'box_set_count' => $box_set_count,
+                    'type' => 'set'
                 ];
 
                 ContainerActual::dispatch($set);
@@ -871,6 +872,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     'id' => $params->id,
                     'colis' => $quantityConfirmationBox,
                     'box_set_count' => $box_set_count,
+                    'type' => 'single'
                 ];
 
                 ContainerActual::dispatch($set);
