@@ -66,29 +66,29 @@ class ContainerActual implements ShouldQueue
                 $fill = RegularFixedQuantityConfirmationBox::where('id',$val['id'])->first();
                 if ($fill->id_prospect_container_creation == null) {
 
-                    if ($fill->refRegularDeliveryPlan->item_no == null) {
-                        $persentase = max($arrSummaryBox->toArray()) / array_sum($arrSummaryBox->toArray());
-                        $jml_box_update = (int)($params['box_set_count'] * $persentase);
-                        $box_update = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $fill->refFixedQuantityConfirmation->id)
-                                                                            ->whereNotNull('qrcode') 
-                                                                            ->whereNull('id_prospect_container_creation')->get();
-                        $sisa = count($box_update) - $jml_box_update;
+                    // if ($fill->refRegularDeliveryPlan->item_no == null) {
+                    //     $persentase = max($arrSummaryBox->toArray()) / array_sum($arrSummaryBox->toArray());
+                    //     $jml_box_update = (int)($params['box_set_count'] * $persentase);
+                    //     $box_update = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $fill->refFixedQuantityConfirmation->id)
+                    //                                                         ->whereNotNull('qrcode') 
+                    //                                                         ->whereNull('id_prospect_container_creation')->get();
+                    //     $sisa = count($box_update) - $jml_box_update;
                         
-                        for ($i=0; $i < $countSummaryBox; $i++) { 
-                            foreach ($box_update->take($jml_box_update) as $value_box) {
-                                $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
-                                                                            ->where('iteration', ($i+100))
-                                                                            ->orderBy('id', 'asc')
-                                                                            ->first();
+                    //     for ($i=0; $i < $countSummaryBox; $i++) { 
+                    //         foreach ($box_update->take($jml_box_update) as $value_box) {
+                    //             $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
+                    //                                                         ->where('iteration', ($i+100))
+                    //                                                         ->orderBy('id', 'asc')
+                    //                                                         ->first();
                                 
-                                $value_box->update([
-                                    'id_prospect_container_creation' => $id_prop->id,
-                                    'is_labeling' => 1
-                                ]);
-                            }
-                            $jml_box_update = $sisa;
-                        }
-                    } else {
+                    //             $value_box->update([
+                    //                 'id_prospect_container_creation' => $id_prop->id,
+                    //                 'is_labeling' => 1
+                    //             ]);
+                    //         }
+                    //         $jml_box_update = $sisa;
+                    //     }
+                    // } else {
                         $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
                                                                         ->where('iteration', $iteration)
                                                                         ->orderBy('id', 'asc')
@@ -106,7 +106,7 @@ class ContainerActual implements ShouldQueue
                             }
                         }
                         $index = $index + 1;   
-                    }
+                    // }
                 }
             }
         }
