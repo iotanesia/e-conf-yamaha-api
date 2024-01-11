@@ -878,6 +878,8 @@ class QueryStockConfirmationHistory extends Model
                     $check_qr = RegularStokConfirmationTemp::where('qr_key', $id)->first();
                     if (!$check_qr) throw new \Exception("QR key is invalid", 400);
                     
+                    $description = $delivery_plan_box->refRegularDeliveryPlan->refPart->description;
+                    $item_no = $delivery_plan_box->refRegularDeliveryPlan->item_no;
                     $qr_name = (string) Str::uuid() . '.png';
                     $qr_key = $delivery_plan_box->id . " | " . $delivery_plan_box->refRegularDeliveryPlan->item_no . " | " . $delivery_plan_box->refRegularDeliveryPlan->order_no . " | " . $delivery_plan_box->refRegularDeliveryPlan->refConsignee->nick_name . " | " . $delivery_plan_box->lot_packing . " | " . date('d/m/Y', strtotime($delivery_plan_box->packing_date)) . " | " . $delivery_plan_box->qty_pcs_box;
                 }
@@ -1318,6 +1320,8 @@ class QueryStockConfirmationHistory extends Model
                     $check_qr = RegularStokConfirmationTemp::where('qr_key', $id)->first();
                     if (!$check_qr) throw new \Exception("QR key is invalid", 400);
                     
+                    $description = $delivery_plan_box->refRegularDeliveryPlan->refPart->description;
+                    $item_no = $delivery_plan_box->refRegularDeliveryPlan->item_no;
                     $qr_name = (string) Str::uuid() . '.png';
                     $qr_key = $delivery_plan_box->id . " | " . $delivery_plan_box->refRegularDeliveryPlan->item_no . " | " . $delivery_plan_box->refRegularDeliveryPlan->order_no . " | " . $delivery_plan_box->refRegularDeliveryPlan->refConsignee->nick_name . " | " . $delivery_plan_box->lot_packing . " | " . date('d/m/Y', strtotime($delivery_plan_box->packing_date)) . " | " . $delivery_plan_box->qty_pcs_box;
                 }
