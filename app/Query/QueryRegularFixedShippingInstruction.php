@@ -580,7 +580,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'etd_jkt' => $item->etd_jkt,
                 'etd_wh' => $item->etd_wh,
                 'etd_ypmi' => $item->etd_ypmi,
-                'summary_container' => $item->summary_box,
+                'summary_container' => $item->summary_container,
                 'code_consignee' => $item->code_consignee,
                 'datasource' => $item->datasource,
             ];
