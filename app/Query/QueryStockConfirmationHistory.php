@@ -333,7 +333,7 @@ class QueryStockConfirmationHistory extends Model
                             'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
                             'model' => $val->refRegularDeliveryPlan->model,
-                            'item_no' => $val->refRegularDeliveryPlan->item_no,
+                            'item_no' => $val->refRegularDeliveryPlan->item_no == null ? $val->refRegularDeliveryPlan->manyDeliveryPlanSet()->pluck('item_no') : $val->refRegularDeliveryPlan->item_no,
                             // 'qty' => $val->refRegularDeliveryPlan->qty,
                             'qty' => $val->qty_pcs_box,
                             'disburse' => $val->refRegularDeliveryPlan->disburse,
