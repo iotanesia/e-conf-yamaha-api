@@ -783,7 +783,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                             $check = array_sum($qty_pcs_box[0]) / count($item_no);
                             $box_set[] = [
                                 'item_no' => $item_no,
-                                'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
+                                // 'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
+                                'qty_pcs_box' => $qty_pcs_box[$i],
                                 'item_no_series' => $item_no_series,
                                 'unit_weight_kg' => $unit_weight_kg,
                                 'total_gross_weight' => $total_gross_weight,
@@ -1365,7 +1366,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $check = array_sum($qty_pcs_box[0]) / count($item_no);
                         $box_set[] = [
                             'item_no' => $item_no,
-                            'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
+                            // 'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
+                            'qty_pcs_box' => $qty_pcs_box[$i],
                             'item_no_series' => $item_no_series,
                             'unit_weight_kg' => $unit_weight_kg,
                             'total_gross_weight' => $total_gross_weight,
