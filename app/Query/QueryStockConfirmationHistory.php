@@ -328,7 +328,7 @@ class QueryStockConfirmationHistory extends Model
                         $group_qty[] = $val->qty_pcs_box;
                         $group_arr[] = [
                             // 'id' => $value->id,
-                            'id' => $val->id,
+                            'id' => $val->refRegularDeliveryPlan->item_no == null ? $val->id.'-'.count($val->refRegularDeliveryPlan->manyDeliveryPlanSet) : $val->id,
                             'id_regular_delivery_plan' => $val->refRegularDeliveryPlan->id,
                             'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
