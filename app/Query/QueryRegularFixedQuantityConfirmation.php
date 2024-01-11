@@ -561,20 +561,20 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->orderBy('id', 'asc')
             ->get();
             $id_fixed_quantity = [];
-            $delivery_plan_set = [];
+            $id_fixed_quantity_set = [];
             foreach ($fixedQuantity as $item){
                 if ($item->refRegularDeliveryPlan->item_no == null) {
-                    $delivery_plan_set[] = $item->refRegularDeliveryPlan->id;
+                    $id_fixed_quantity_set[] = $item->id;
                 } else {
                     $id_fixed_quantity[] = $item->id;
                 }
             }
 
             //calculation part set
-            if (count($delivery_plan_set) > 0) {
+            if (count($id_fixed_quantity_set) > 0) {
                 $quantityConfirmationBox = RegularFixedQuantityConfirmationBox::select('id_fixed_quantity_confirmation',
                     'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as sum_qty"),DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"))
-                ->whereIn('id_fixed_quantity_confirmation',$id_fixed_quantity)
+                ->whereIn('id_fixed_quantity_confirmation',$id_fixed_quantity_set)
                 ->where('is_labeling',0)
                 ->whereNotNull('qrcode')
                 ->whereNotNull('a.id_fixed_actual_container')
