@@ -1602,27 +1602,27 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $qty_pcs_box[] = $group_qty;
                     }
 
-                    // $res_qty = [];
-                    // foreach ($set_qty as $key => $value) {
-                    //     if (count($qty_pcs_box) >= count($set_qty)) {
-                    //         if ($value == max($set_qty)) {
-                    //             $val = array_sum($qty_pcs_box[$key]) / count($item_no);
-                    //         } else {
-                    //             $val = null;
-                    //         }
-                    //     } else {
-                    //         $val = null;
-                    //     }
+                    $res_qty = [];
+                    foreach ($set_qty as $key => $value) {
+                        if (count($qty_pcs_box) >= count($set_qty)) {
+                            if ($value == max($set_qty)) {
+                                $val = array_sum($qty_pcs_box[$key]) / count($item_no);
+                            } else {
+                                $val = null;
+                            }
+                        } else {
+                            $val = null;
+                        }
                         
-                    //     $res_qty[] = $val;
-                    // }
+                        $res_qty[] = $val;
+                    }
         
                     $box_set = [];
                     for ($i=0; $i < count($id_deliv_box); $i++) { 
-                        // $check = array_sum($qty_pcs_box[0]) / count($item_no);
+                        $check = array_sum($qty_pcs_box[0]) / count($item_no);
                         $box_set[] = [
                             'item_no' => $item_no,
-                            'qty_pcs_box' => $qty_pcs_box[$i],
+                            'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
                             'item_no_series' => $item_no_series,
                             'unit_weight_kg' => $unit_weight_kg,
                             'total_gross_weight' => $total_gross_weight,
@@ -1782,27 +1782,27 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $qty_pcs_box[] = $group_qty;
                     }
 
-                    // $res_qty = [];
-                    // foreach ($set_qty as $key => $value) {
-                    //     if (count($qty_pcs_box) >= count($set_qty)) {
-                    //         if ($value == max($set_qty)) {
-                    //             $val = array_sum($qty_pcs_box[$key]) / count($item_no);
-                    //         } else {
-                    //             $val = null;
-                    //         }
-                    //     } else {
-                    //         $val = null;
-                    //     }
+                    $res_qty = [];
+                    foreach ($set_qty as $key => $value) {
+                        if (count($qty_pcs_box) >= count($set_qty)) {
+                            if ($value == max($set_qty)) {
+                                $val = array_sum($qty_pcs_box[$key]) / count($item_no);
+                            } else {
+                                $val = null;
+                            }
+                        } else {
+                            $val = null;
+                        }
                         
-                    //     $res_qty[] = $val;
-                    // }
+                        $res_qty[] = $val;
+                    }
         
                     $box_set = [];
                     for ($i=0; $i < count($id_deliv_box); $i++) { 
-                        // $check = array_sum($qty_pcs_box[0]) / count($item_no);
+                        $check = array_sum($qty_pcs_box[0]) / count($item_no);
                         $box_set[] = [
                             'item_no' => $item_no,
-                            'qty_pcs_box' => $qty_pcs_box[$i],
+                            'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
                             'item_no_series' => $item_no_series,
                             'unit_weight_kg' => $unit_weight_kg,
                             'total_gross_weight' => $total_gross_weight,
