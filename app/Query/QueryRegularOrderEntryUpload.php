@@ -654,7 +654,9 @@ class QueryRegularOrderEntryUpload extends Model {
                                 $upd->update(['id_delivery_plan' => $id_deliv_plan[$i]['id']]);
 
                                 //set delivery plan box 
-                                self::updateDeliveryPlanBoxSet($upd->id_delivery_plan);  
+                                if ($check_update == count(explode(',',$value->id_plan_set))) {
+                                    self::updateDeliveryPlanBoxSet($upd->id_delivery_plan);  
+                                }
                             }
                         }
                     }
