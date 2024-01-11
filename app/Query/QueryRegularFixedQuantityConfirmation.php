@@ -694,6 +694,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $creation['space'] = (int)$space;
                     }
 
+                    $check = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $actual_container->id)->where('space', null)->first();
+                    if($check) $check->forceDelete();
                     RegularFixedActualContainerCreation::create($creation);
     
                     $sum_row_length = $sum_row_length - 12031;
@@ -848,6 +850,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $creation['space'] = (int)$space;
                     }
 
+                    $check = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $actual_container->id)->where('space', null)->first();
+                    if($check) $check->forceDelete();
                     RegularFixedActualContainerCreation::create($creation);
     
                     $sum_row_length = $sum_row_length - 12031;
