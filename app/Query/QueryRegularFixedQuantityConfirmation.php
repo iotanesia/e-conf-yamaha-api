@@ -1109,7 +1109,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     public static function getCountBoxFifo($id, $id_actual_creation){
         $data = RegularFixedQuantityConfirmationBox::select('id_box', DB::raw('count(*) as jml'), 
-                    DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty_pcs_box")
+                    DB::raw('MAX(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty_pcs_box')
                 )
                 ->whereIn('id_fixed_quantity_confirmation', explode(',',$id))
                 ->whereIn('id_prospect_container_creation', explode(',',$id_actual_creation))
