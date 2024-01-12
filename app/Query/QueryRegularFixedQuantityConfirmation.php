@@ -252,29 +252,29 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             if ($params->id_mot == 2) {
                 $store->update(['id_type_delivery' => 2]);
 
-                $container_creation = RegularFixedActualContainerCreation::create([
-                        "id_fixed_actual_container" => $store->id,
-                        "id_type_delivery" => 2,
-                        "id_mot" => 2,
-                        "code_consignee" => $params->code_consignee,
-                        "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
-                        "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
-                        "etd_jkt" => $params->etd_jkt,
-                        "datasource" => $params->datasource,
-                ]);
-
                 $shipping = RegularFixedShippingInstruction::create([
-                        "no_booking" =>  'BOOK'.Carbon::parse($params->etd_jkt)->format('dmY').mt_rand(10000,99999),
+                        "no_booking" =>  self::checkNoBooking(),
                         "booking_date" => now(),
                         "datasource" => $params->datasource,
                         "status" => 1,
                         "id_mot" => $params->id_mot
                 ]);
+                
+                $container_creation = RegularFixedActualContainerCreation::create([
+                    "id_fixed_actual_container" => $store->id,
+                    "id_type_delivery" => 2,
+                    "id_mot" => 2,
+                    "code_consignee" => $params->code_consignee,
+                    "etd_ypmi" => Carbon::parse($params->etd_jkt)->subDays(4)->format('Y-m-d'),
+                    "etd_wh" => Carbon::parse($params->etd_jkt)->subDays(2)->format('Y-m-d'),
+                    "etd_jkt" => $params->etd_jkt,
+                    "datasource" => $params->datasource,
+                    'id_fixed_shipping_instruction' => $shipping->id,
+                ]);
 
                 $id_delivery_plan = $container_creation->manyFixedQuantityConfirmation()->pluck('id_regular_delivery_plan');
                 $summary_box = RegularFixedQuantityConfirmationBox::whereIn('id_regular_delivery_plan', $id_delivery_plan->toArray())->get();
                 $container_creation->update([
-                    'id_fixed_shipping_instruction' => $shipping->id,
                     'summary_box' => count($summary_box)
                 ]);
             }
@@ -308,6 +308,24 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             if($is_trasaction) DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function checkNoBooking()
+    {
+        $check_no_booking = RegularFixedShippingInstruction::orderByDesc('updated_at')->first();
+
+        if ($check_no_booking == null) {
+            $iteration = '000001';
+        } elseif (substr($check_no_booking->no_booking,-6) == '999999') {
+            $iteration = '000001';
+        } elseif (substr($check_no_booking->no_booking,8,-6) !== Carbon::now()->format('Y')) {
+            $iteration = '000001';
+        } else {
+            $last_iteration = '000000'.(int)substr($check_no_booking->no_booking,-6) + 1;
+            $iteration = substr($last_iteration,-6);
+        }
+
+        return 'BOOK'.Carbon::now()->format('dmY').$iteration;
     }
 
     public static function changeEtd($params,$is_trasaction = true)
@@ -1414,7 +1432,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $data['no_booking'] = $request->no_booking;
             $data['datasource'] = $request->datasource;
             $data['id_mot'] = $request->id_mot;
-            $res = RegularFixedShippingInstruction::create($data);
+            if($request->id_mot == 1) $res = RegularFixedShippingInstruction::create($data);
+            if($request->id_mot == 2) $res = RegularFixedShippingInstruction::orderByDesc('updated_at')->first();
 
             $actual_container = RegularFixedActualContainer::where('id',$request->id)->get();
             foreach ($actual_container as $update) {
