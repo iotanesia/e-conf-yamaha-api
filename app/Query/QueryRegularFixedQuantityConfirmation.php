@@ -1249,7 +1249,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             return [
                 'items' => [
                     'id' => $request->id,
-                    'no_booking' => 'BOOK'.Carbon::now()->format('dmY').$iteration,
+                    'no_booking' => $check_no_booking->id_mot == 2 ? $check_no_booking->no_booking : 'BOOK'.Carbon::now()->format('dmY').$iteration,
                     'etd_jkt' => $etdJkt[0]->etd_jkt,
                     'id_mot' => $etdJkt[0]->id_mot,
                     'datasource' => $etdJkt[0]->datasource
