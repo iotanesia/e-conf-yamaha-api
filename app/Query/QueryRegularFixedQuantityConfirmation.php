@@ -1416,14 +1416,16 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $data['id_mot'] = $request->id_mot;
             $res = RegularFixedShippingInstruction::create($data);
 
-            $actual_creation = RegularFixedActualContainerCreation::whereIn('id_fixed_actual_container',$request->id)->get();
-            foreach ($actual_creation as $key => $value) {
-                RegularFixedActualContainer::where('id', $value->id_fixed_actual_container)
-                                            ->update([
-                                                'is_actual' => 2,
-                                                'id_fixed_shipping_instruction' => $res->id
-                                            ]);
+            $actual_container = RegularFixedActualContainer::whereIn('id',explode(',',$request->id))->get();
+            foreach ($actual_container as $update) {
+                $update->update(['is_actual' => 2]);
             }
+
+            $container_creation = RegularFixedActualContainerCreation::whereIn('id_fixed_actual_container',explode(',',$request->id))->get();
+            foreach ($container_creation as $upd) {
+                $upd->update(['id_fixed_shipping_instruction' => $res->id]);
+            }
+
             if($is_transaction) DB::commit();
             return ['items'=>$res];
         } catch (\Throwable $th) {
