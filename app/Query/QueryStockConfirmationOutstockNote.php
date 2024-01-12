@@ -137,20 +137,23 @@ class QueryStockConfirmationOutstockNote extends Model {
                 $fixed_quantity_confirmation->save();
 
                 foreach ($fixed_quantity_confirmation->refRegularDeliveryPlan->manyDeliveryPlanBox as $item_box) {
-                    $fixed_quantity_confirmation_box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $fixed_quantity_confirmation->id)->where('id_regular_delivery_plan_box', $item_box->id)->first();
-                    if(!$fixed_quantity_confirmation_box) $fixed_quantity_confirmation_box = new RegularFixedQuantityConfirmationBox;
-                    $attr['id_fixed_quantity_confirmation'] = $fixed_quantity_confirmation->id;
-                    $attr['id_regular_delivery_plan'] = $fixed_quantity_confirmation->id_regular_delivery_plan;
-                    $attr['id_regular_delivery_plan_box'] = $item_box->id;
-                    $attr['id_box'] = $item_box->id_box;
-                    $attr['qty_pcs_box'] = $item_box->qty_pcs_box;
-                    $attr['id_proc'] = $item_box->id_proc;
-                    $attr['lot_packing'] = $item_box->lot_packing;
-                    $attr['packing_date'] = $item_box->packing_date;
-                    $attr['qrcode'] = $item_box->qrcode;
-                    $attr['is_labeling'] = $fixed_quantity_confirmation_box->is_labeling == 1 ? $fixed_quantity_confirmation_box->is_labeling : $item_box->is_labeling;
-                    $fixed_quantity_confirmation_box->fill($attr);
-                    $fixed_quantity_confirmation_box->save();
+                    $check_outstock = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $item_box->id)->where('type', 'OUTSTOCK')->first();
+                    if ($check_outstock) {
+                        $fixed_quantity_confirmation_box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $fixed_quantity_confirmation->id)->where('id_regular_delivery_plan_box', $item_box->id)->first();
+                        if(!$fixed_quantity_confirmation_box) $fixed_quantity_confirmation_box = new RegularFixedQuantityConfirmationBox;
+                        $attr['id_fixed_quantity_confirmation'] = $fixed_quantity_confirmation->id;
+                        $attr['id_regular_delivery_plan'] = $fixed_quantity_confirmation->id_regular_delivery_plan;
+                        $attr['id_regular_delivery_plan_box'] = $item_box->id;
+                        $attr['id_box'] = $item_box->id_box;
+                        $attr['qty_pcs_box'] = $item_box->qty_pcs_box;
+                        $attr['id_proc'] = $item_box->id_proc;
+                        $attr['lot_packing'] = $item_box->lot_packing;
+                        $attr['packing_date'] = $item_box->packing_date;
+                        $attr['qrcode'] = $item_box->qrcode;
+                        $attr['is_labeling'] = $fixed_quantity_confirmation_box->is_labeling == 1 ? $fixed_quantity_confirmation_box->is_labeling : $item_box->is_labeling;
+                        $fixed_quantity_confirmation_box->fill($attr);
+                        $fixed_quantity_confirmation_box->save();
+                    }
                 }
 
             }
