@@ -772,7 +772,7 @@ class QueryRegularDeliveryPlan extends Model {
                 ]);
 
                 $shipping = RegularDeliveryPlanShippingInsruction::create([
-                        "no_booking" =>  'BOOK'.Carbon::parse($params->etd_jkt)->format('dmY').mt_rand(10000,99999),
+                        "no_booking" =>  self::checkNoBooking(),
                         "booking_date" => now(),
                         "datasource" => $params->datasource,
                         "status" => 1,
@@ -780,7 +780,7 @@ class QueryRegularDeliveryPlan extends Model {
                 ]);
 
                 $id_delivery_plan = $container_creation->manyDeliveryPlan()->pluck('id');
-                $summary_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan', $id_delivery_plan)->get();
+                $summary_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan', $id_delivery_plan->toArray())->get();
                 $container_creation->update([
                     'id_shipping_instruction' => $shipping->id,
                     'summary_box' => count($summary_box)
@@ -811,6 +811,24 @@ class QueryRegularDeliveryPlan extends Model {
             if($is_trasaction) DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function checkNoBooking()
+    {
+        $check_no_booking = RegularDeliveryPlanShippingInsruction::orderByDesc('updated_at')->first();
+
+        if ($check_no_booking == null) {
+            $iteration = '000001';
+        } elseif (substr($check_no_booking->no_booking,-6) == '999999') {
+            $iteration = '000001';
+        } elseif (substr($check_no_booking->no_booking,8,-6) !== Carbon::now()->format('Y')) {
+            $iteration = '000001';
+        } else {
+            $last_iteration = '000000'.(int)substr($check_no_booking->no_booking,-6) + 1;
+            $iteration = substr($last_iteration,-6);
+        }
+
+        return 'BOOK'.Carbon::now()->format('dmY').$iteration;
     }
 
     public static function noPackaging($params)
