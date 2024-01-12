@@ -1202,6 +1202,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
                 DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
+                DB::raw('count(regular_fixed_quantity_confirmation.id) as count'),
             )
             ->whereIn('id_fixed_actual_container', $id_fixed_actual_container)
             ->groupBy('id_regular_delivery_plan')
@@ -1219,6 +1220,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no') : $item->refRegularDeliveryPlan->item_no;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;
+                $item->in_wh = count(explode(',', $item->count)) . ' x ' . $item->in_wh;
                 unset(
                     $item->refRegularDeliveryPlan,
                     $item->refFixedActualContainer
