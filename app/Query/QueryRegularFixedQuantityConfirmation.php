@@ -1416,12 +1416,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $data['id_mot'] = $request->id_mot;
             $res = RegularFixedShippingInstruction::create($data);
 
-            $actual_container = RegularFixedActualContainer::whereIn('id',explode(',',$request->id))->get();
+            $actual_container = RegularFixedActualContainer::where('id',$request->id)->get();
             foreach ($actual_container as $update) {
                 $update->update(['is_actual' => 2]);
             }
 
-            $container_creation = RegularFixedActualContainerCreation::whereIn('id_fixed_actual_container',explode(',',$request->id))->get();
+            $container_creation = RegularFixedActualContainerCreation::where('id_fixed_actual_container',$request->id)->get();
             foreach ($container_creation as $upd) {
                 $upd->update(['id_fixed_shipping_instruction' => $res->id]);
             }
