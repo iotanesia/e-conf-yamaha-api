@@ -1227,18 +1227,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $iteration = substr($last_iteration,-6);
             }
 
-            // $data['no_booking'] = 'BOOK'.Carbon::parse($etdJkt[0]->etd_jkt)->format('dmY').$iteration;
-            $data['no_booking'] = 'BOOK'.Carbon::now()->format('dmY').$iteration;
-            $data['datasource'] = $etdJkt[0]->datasource;
-            $data['booking_date'] = Carbon::now()->format('Y-m-d');
-            $insert = RegularFixedShippingInstruction::create($data);
-            RegularFixedActualContainerCreation::whereIn('id_fixed_actual_container',$request->id)->update(['id_fixed_shipping_instruction'=>$insert->id]);
             if($is_transaction) DB::commit();
             return [
                 'items' => [
-                    'id'=>$insert->id,
-                    'no_booking'=>$data['no_booking'],
-                    'etd_jkt'=>$etdJkt[0]->etd_jkt,
+                    'id' => $request->id,
+                    'no_booking' => 'BOOK'.Carbon::now()->format('dmY').$iteration,
+                    'etd_jkt' => $etdJkt[0]->etd_jkt,
                     'id_mot' => $etdJkt[0]->id_mot,
                     'datasource' => $etdJkt[0]->datasource
                     ]
@@ -1414,12 +1408,21 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         Helper::requireParams(['id']);
         if($is_transaction) DB::beginTransaction();
         try {
-            $res = RegularFixedShippingInstruction::where('id',$request->id)->first();
-            $res->status = Constant::STS_BOOK_FINISH;
-            $res->save();
-            $actual_creation = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $res->id)->get();
+         
+            $data['booking_date'] = Carbon::now()->format('Y-m-d');
+            $data['status'] = Constant::STS_BOOK_FINISH;
+            $data['no_booking'] = $request->no_booking;
+            $data['datasource'] = $request->datasource;
+            $data['id_mot'] = $request->id_mot;
+            $res = RegularFixedShippingInstruction::create($data);
+
+            $actual_creation = RegularFixedActualContainerCreation::whereIn('id_fixed_actual_container',$request->id)->get();
             foreach ($actual_creation as $key => $value) {
-                RegularFixedActualContainer::where('id', $value->id_fixed_actual_container)->update(['is_actual' => 2]);
+                RegularFixedActualContainer::where('id', $value->id_fixed_actual_container)
+                                            ->update([
+                                                'is_actual' => 2,
+                                                'id_fixed_shipping_instruction' => $res->id
+                                            ]);
             }
             if($is_transaction) DB::commit();
             return ['items'=>$res];
