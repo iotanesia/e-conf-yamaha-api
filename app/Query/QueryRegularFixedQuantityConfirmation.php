@@ -253,7 +253,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $store->update(['id_type_delivery' => 2]);
 
                 $shipping = RegularFixedShippingInstruction::create([
-                        "no_booking" =>  self::checkNoBooking(),
+                        "no_booking" =>  null,
                         "booking_date" => now(),
                         "datasource" => $params->datasource,
                         "status" => 1,
@@ -1233,6 +1233,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             // if(count($etdJkt) > 1)  throw new \Exception("Invalid ETD JKT", 400);
 
             $check_no_booking = RegularFixedShippingInstruction::orderByDesc('updated_at')->first();
+            if($check_no_booking->id_mot == 2) $check_no_booking = RegularFixedShippingInstruction::whereNotNull('no_booking')->orderByDesc('updated_at')->first();
 
             if ($check_no_booking == null) {
                 $iteration = '000001';
@@ -1249,7 +1250,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             return [
                 'items' => [
                     'id' => $request->id,
-                    'no_booking' => $check_no_booking->id_mot == 2 ? $check_no_booking->no_booking : 'BOOK'.Carbon::now()->format('dmY').$iteration,
+                    'no_booking' => 'BOOK'.Carbon::now()->format('dmY').$iteration,
                     'etd_jkt' => $etdJkt[0]->etd_jkt,
                     'id_mot' => $etdJkt[0]->id_mot,
                     'datasource' => $etdJkt[0]->datasource
@@ -1433,7 +1434,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $data['datasource'] = $request->datasource;
             $data['id_mot'] = $request->id_mot;
             if($request->id_mot == 1) $res = RegularFixedShippingInstruction::create($data);
-            if($request->id_mot == 2) $res = RegularFixedShippingInstruction::orderByDesc('updated_at')->first();
+            if($request->id_mot == 2) {
+                $res = RegularFixedShippingInstruction::whereNull('no_booking')->orderByDesc('updated_at')->first();
+                $res->update(['no_booking' => $request->no_booking]);
+            } 
 
             $actual_container = RegularFixedActualContainer::where('id',$request->id)->get();
             foreach ($actual_container as $update) {
