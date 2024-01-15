@@ -1233,7 +1233,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             // if(count($etdJkt) > 1)  throw new \Exception("Invalid ETD JKT", 400);
 
             $check_no_booking = RegularFixedShippingInstruction::orderByDesc('updated_at')->first();
-            if($check_no_booking->id_mot == 2) $check_no_booking = RegularFixedShippingInstruction::whereNotNull('no_booking')->orderByDesc('updated_at')->first();
+            if($check_no_booking == null || $check_no_booking->id_mot == 2) $check_no_booking = RegularFixedShippingInstruction::whereNotNull('no_booking')->orderByDesc('updated_at')->first();
 
             if ($check_no_booking == null) {
                 $iteration = '000001';
