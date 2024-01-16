@@ -14,6 +14,7 @@ use App\Models\RegularDeliveryPlanSet;
 use App\Models\RegularFixedActualContainer;
 use App\Models\RegularFixedPackingCreationNote;
 use App\Models\RegularFixedPackingCreationNoteDetail;
+use App\Models\RegularFixedQuantityConfirmationBox;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -170,6 +171,7 @@ class QueryRegularFixedPackingCreation extends Model {
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id::character varying, ',') as id_quantity_confirmation"),
             DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
             DB::raw('count(regular_fixed_quantity_confirmation.id) as count'),
             )
@@ -185,11 +187,13 @@ class QueryRegularFixedPackingCreation extends Model {
                     $mst_part = MstPart::whereIn('item_no', $part_set->toArray())->get()->pluck('description');
                 }
 
+                $qty_pcs_box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_quantity_confirmation)->first();
+
                 $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $part_set : [$item->item_no];
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $mst_part->toArray() : trim($item->refRegularDeliveryPlan->refPart->description);
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;
-                $item->in_wh = count(explode(',', $item->count)) . ' x ' . $item->in_wh;
+                $item->in_wh = count(explode(',', $item->count)) . ' x ' . $qty_pcs_box->qty_pcs_box;
                 unset(
                     $item->refRegularDeliveryPlan,
                     $item->refFixedActualContainer
