@@ -34,6 +34,7 @@ class QueryRegularFixedShippingInstruction extends Model {
     public static function shipping($params)
     {
         $data = Model::where(function ($query) use ($params){
+            $query->whereNotNull('no_booking');
             $category = $params->category ?? null;
             $kueri = $params->kueri ?? null;
         
