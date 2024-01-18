@@ -87,7 +87,7 @@
             <tr>
                 <td class="no-bo">Container No</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">{{ count($data) }} ({{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer->container_type) : null }})</td>
+                <td class="no-bo">{{ count($data) }} ({{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer ? $item->manyFixedActualContainerCreation[0]->refMstContainer->container_type : null) : null }})</td>
                 <td class="no-bo">ETD {{ $item->refPartOfDischarge->port ?? null }}</td>
                 <td class="no-bo">:</td>
                 <td class="no-bo">{{ date('d F Y', strtotime($item->etd_ypmi)) }}</td>
