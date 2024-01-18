@@ -1564,7 +1564,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 
                 if ($deliv_value->item_no == null) {
                     $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
-                    $deliv_plan_box = $deliv_value->manyFixedQuantityConfirmationBox()->where('id_regular_delivery_plan',$deliv_value->id)->where('qrcode','!=',null)->get();
+                    $deliv_plan_box = $deliv_value->manyFixedQuantityConfirmationBox()
+                                        ->whereHas('refFixedQuantityConfirmation', function ($q) use ($id) {
+                                            $q->where('id_fixed_actual_container', $id);
+                                        })
+                                        ->where('id_regular_delivery_plan',$deliv_value->id)->where('qrcode','!=',null)->get();
                     // $deliv_plan_box = RegularFixedQuantityConfirmationBox::select(
                     //     'id_fixed_quantity_confirmation', 
                     //     DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty_pcs_box"),
