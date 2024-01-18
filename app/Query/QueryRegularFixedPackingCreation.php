@@ -187,13 +187,13 @@ class QueryRegularFixedPackingCreation extends Model {
                     $mst_part = MstPart::whereIn('item_no', $part_set->toArray())->get()->pluck('description');
                 }
 
-                $qty_pcs_box = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $item->id_quantity_confirmation)->first();
+                $qty_pcs_box = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', explode(',', $item->id_quantity_confirmation))->get();
 
                 $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $part_set : [$item->item_no];
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $mst_part->toArray() : trim($item->refRegularDeliveryPlan->refPart->description);
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;
-                $item->in_wh = count(explode(',', $item->count)) . ' x ' . $qty_pcs_box->qty_pcs_box;
+                $item->in_wh = count(explode(',', $item->count)) . ' x ' . array_sum($qty_pcs_box->pluck('qty_pcs_box')->toArray());
                 unset(
                     $item->refRegularDeliveryPlan,
                     $item->refFixedActualContainer
