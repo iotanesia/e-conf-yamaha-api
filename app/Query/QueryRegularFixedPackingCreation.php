@@ -267,7 +267,7 @@ class QueryRegularFixedPackingCreation extends Model {
 
     public static function downloadpackingCreationDeliveryNote($id,$pathToFile,$filename)
     {
-        try {
+        // try {
             $actual = RegularFixedActualContainer::find($id);
 
             $data = RegularFixedActualContainer::
@@ -290,15 +290,17 @@ class QueryRegularFixedPackingCreation extends Model {
             $data->nick_name = $data->username;
             $data->shipper = MstShipment::Where('is_active', 1)->first()->shipment ?? null;
 
-            $items = RegularFixedQuantityConfirmation::select('id_regular_delivery_plan',
+            $items = RegularFixedQuantityConfirmation::select('regular_fixed_quantity_confirmation.id_regular_delivery_plan',
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
                         DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
                         DB::raw('count(regular_fixed_quantity_confirmation.id) as count'),
+                        DB::raw("string_agg(DISTINCT a.qty_pcs_box::character varying, ',') as qty_pcs_box")
                     )
                     ->where('id_fixed_actual_container', $id)
-                    ->groupBy('id_regular_delivery_plan')
+                    ->join('regular_fixed_quantity_confirmation_box as a','a.id_fixed_quantity_confirmation','regular_fixed_quantity_confirmation.id')
+                    ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan')
                     ->get();
 
             Pdf::loadView('pdf.packing-creation.delivery_note',[
@@ -308,8 +310,8 @@ class QueryRegularFixedPackingCreation extends Model {
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
-          } catch (\Throwable $th) {
-              return Helper::setErrorResponse($th);
-          }
+        //   } catch (\Throwable $th) {
+        //       return Helper::setErrorResponse($th);
+        //   }
     }
 }

@@ -132,7 +132,7 @@
                         <td class="text-center">{{ $item->refRegularDeliveryPlan->refPart->description }}</td>
                     @endif
                     <td class="text-center">{{ $item->order_no }}</td>
-                    <td class="text-center">{{ $item->count.' x '.$item->in_wh }}</td>
+                    <td class="text-center">{{ $item->count.' x '.array_sum(explode(',', $item->qty_pcs_box)) }}</td>
                     <td class="text-center">{{ $item->refFixedActualContainer->no_packaging }}</td>
                 </tr>
             @endforeach
