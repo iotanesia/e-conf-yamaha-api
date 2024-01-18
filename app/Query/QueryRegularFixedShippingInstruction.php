@@ -1346,6 +1346,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no)->get();
                     $qty_box = [];
                     $sum_qty = [];
+                    $unit_weight_kg_mst = [];
+                    $total_gross_weight_mst = [];
                     $unit_weight_kg = [];
                     $total_gross_weight = [];
                     $count_outer_carton_weight = 0;
@@ -1358,6 +1360,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $sum_qty[] = $value->qty;
                         $count_net_weight = $value->unit_weight_gr;
                         $count_outer_carton_weight = $value->outer_carton_weight;
+                        $unit_weight_kg_mst[] = ($count_net_weight * $value->qty)/1000;
+                        $total_gross_weight_mst[] = (($count_net_weight * $value->qty)/1000) + $count_outer_carton_weight;
                         $unit_weight_kg[] = ($count_net_weight * ((array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($deliv_plan_box)) / count($plan_set)))/1000;
                         $total_gross_weight[] = (($count_net_weight * ((array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($deliv_plan_box)) / count($plan_set)))/1000) + $count_outer_carton_weight;
                         $length = $value->length;
@@ -1414,8 +1418,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                             // 'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
                             'qty_pcs_box' => $qty_pcs_box[$i],
                             'item_no_series' => $item_no_series,
-                            'unit_weight_kg' => $unit_weight_kg,
-                            'total_gross_weight' => $total_gross_weight,
+                            'unit_weight_kg' =>  $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $unit_weight_kg_mst : $unit_weight_kg,
+                            'total_gross_weight' =>  $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $total_gross_weight_mst : $total_gross_weight,
                             'length' => $length,
                             'width' => $width,
                             'height' => $height,
