@@ -672,6 +672,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
                 $res_box_single = [];
                 $res_box_set = [];
+                $id_fixed_actual = $item->id_fixed_actual_container;
                 foreach ($deliv_plan as $key => $deliv_value) {
                     if ($deliv_value->item_no !== null) {
                         $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) {
@@ -699,7 +700,11 @@ class QueryRegularFixedShippingInstruction extends Model {
                     
                     if ($deliv_value->item_no == null) {
                         $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
-                        $deliv_plan_box = $deliv_value->manyFixedQuantityConfirmationBox()->where('id_regular_delivery_plan',$deliv_value->id)->where('qrcode','!=',null)->get();
+                        $deliv_plan_box = $deliv_value->manyFixedQuantityConfirmationBox()
+                                            ->whereHas('refFixedQuantityConfirmation', function ($q) use ($id_fixed_actual) {
+                                                $q->where('id_fixed_actual_container', $id_fixed_actual);
+                                            })
+                                            ->where('id_regular_delivery_plan',$deliv_value->id)->where('qrcode','!=',null)->get();
                         // $deliv_plan_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan',$deliv_value->id)
                         //                                     ->whereIn('id_prospect_container_creation', explode(',', $params->id))
                         //                                     ->where('qrcode','!=',null)
