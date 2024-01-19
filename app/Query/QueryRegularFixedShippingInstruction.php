@@ -333,8 +333,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
             }
 
-            $box_result = self::getCountBox($item->id_fixed_quantity_confirmation);
-            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
+            $box_result = self::getCountBoxFifo($item->id_fixed_quantity_confirmation,$item->id_prospect_container_creation);
 
             $qty_scan = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', explode(',',$item->id_fixed_quantity_confirmation))
                                                 ->where('id_prospect_container_creation', $item->id_prospect_container_creation)
@@ -360,6 +359,27 @@ class QueryRegularFixedShippingInstruction extends Model {
             'last_page' => $data->lastPage(),
 
         ];
+    }
+    
+    public static function getCountBoxFifo($id, $id_actual_creation){
+        $data = RegularFixedQuantityConfirmationBox::select('id_box', DB::raw('count(*) as jml'), 
+                    DB::raw('MAX(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty_pcs_box')
+                )
+                ->whereIn('id_fixed_quantity_confirmation', explode(',',$id))
+                ->whereIn('id_prospect_container_creation', explode(',',$id_actual_creation))
+                ->whereNotNull('qrcode')
+                ->groupBy('id_box')
+                ->get();
+        return
+            $data->map(function ($item){
+                $set['id'] = 0;
+                $set['id_box'] = $item->id_box;
+                $set['qty'] =  $item->qty_pcs_box." x ".$item->jml." pcs";
+                $set['length'] =  "";
+                $set['width'] =  "";
+                $set['height'] =  "";
+                return $set;
+            });
     }
 
     public static function getCustName($code_consignee){
