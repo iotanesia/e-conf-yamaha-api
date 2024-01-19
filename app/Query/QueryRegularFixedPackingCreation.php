@@ -142,7 +142,8 @@ class QueryRegularFixedPackingCreation extends Model {
         $fixed_packing_creation = RegularFixedActualContainer::
                         select(DB::raw("string_agg(DISTINCT d.name::character varying, ',') as yth"),
                                  DB::raw("string_agg(DISTINCT e.nick_name::character varying, ',') as username"),
-                                 DB::raw("string_agg(DISTINCT g.container_type::character varying, ',') as jenis_truck")
+                                 DB::raw("string_agg(DISTINCT g.container_type::character varying, ',') as jenis_truck"),
+                                 DB::raw("string_agg(DISTINCT regular_fixed_actual_container.is_actual::character varying, ',') as is_actual")
                         )->where('regular_fixed_actual_container.id',$id)
                             ->join('regular_fixed_quantity_confirmation as b','b.id_fixed_actual_container','regular_fixed_actual_container.id')
                             ->join('regular_fixed_actual_container_creation as c','regular_fixed_actual_container.id','c.id_fixed_actual_container')
@@ -158,6 +159,7 @@ class QueryRegularFixedPackingCreation extends Model {
         $ret['surat_jalan'] = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first());
         $ret['delivery_date'] = date('d-m-Y');
         $ret['shipped'] = MstShipment::Where('is_active', 1)->first()->shipment ?? null;
+        $ret['status_booking'] = $fixed_packing_creation->is_actual == 2 ? 'Sudah Booking' : null;
 
         return [
             'items' => $ret,
