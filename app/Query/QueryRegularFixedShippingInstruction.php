@@ -671,8 +671,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $si_item->container_value = explode(',', $si_item->container_value);
                     $si_item->container_count = explode(',', $si_item->count_container);
                     $si_item->container_type = explode(',', $si_item->container_type);
-                    // $si_item->summary_box = array_sum($summary_box->toArray());
-                    $si_item->summary_box = count($summary_box);
+                    $si_item->summary_box = array_sum($summary_box->toArray());;
 
                     return $si_item;
                 });
@@ -873,8 +872,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'port_of_loading' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
                     'count' => $item->summary_container,
-                    // 'summary_box' => array_sum($summary_box->toArray()),
-                    'summary_box' => count($summary_box),
+                    'summary_box' => array_sum($summary_box->toArray()),
                     'to' => $item->refMstLsp->name ?? null,
                     'status' => $item->status ?? null,
                     'id_fixed_shipping_instruction_creation' => $item->id_fixed_shipping_instruction_creation ?? null,
