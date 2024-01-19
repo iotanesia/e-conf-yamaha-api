@@ -730,7 +730,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                         
                         $box_single = [];
                         foreach ($res as $key => $item_res) {
-                            if ($item !== null && $item_res['qrcode'] !== null && !in_array($item_res, $box_single)) {
+                            if ($item_res !== null && $item_res['qrcode'] !== null && !in_array($item_res, $box_single)) {
                                 $box_single[] = $item_res;
                             }
                         }
