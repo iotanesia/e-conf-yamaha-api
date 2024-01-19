@@ -713,22 +713,24 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $id_fixed_actual = $item->id_fixed_actual_container;
                 foreach ($deliv_plan as $key => $deliv_value) {
                     if ($deliv_value->item_no !== null) {
-                        $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) {
-                            $res['qrcode'] = $item->qrcode;
-                            $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
-                            $res['qty_pcs_box'] = [$item->qty_pcs_box];
-                            $res['item_no_series'] = [$item->refMstBox->item_no_series];
-                            $res['unit_weight_kg'] = [($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000];
-                            $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
-                            $res['length'] = $item->refMstBox->length;
-                            $res['width'] = $item->refMstBox->width;
-                            $res['height'] = $item->refMstBox->height;
-                            return $res;
+                        $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) use($id_fixed_actual){
+                            if ($item->refFixedQuantityConfirmation->id_fixed_actual_container == $id_fixed_actual) {
+                                $res['qrcode'] = $item->qrcode;
+                                $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
+                                $res['qty_pcs_box'] = [$item->qty_pcs_box];
+                                $res['item_no_series'] = [$item->refMstBox->item_no_series];
+                                $res['unit_weight_kg'] = [($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000];
+                                $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
+                                $res['length'] = $item->refMstBox->length;
+                                $res['width'] = $item->refMstBox->width;
+                                $res['height'] = $item->refMstBox->height;
+                                return $res;
+                            }
                         });
                         
                         $box_single = [];
                         foreach ($res as $key => $item_res) {
-                            if ($item_res['qrcode'] !== null && !in_array($item_res, $box_single)) {
+                            if ($item !== null && $item_res['qrcode'] !== null && !in_array($item_res, $box_single)) {
                                 $box_single[] = $item_res;
                             }
                         }
