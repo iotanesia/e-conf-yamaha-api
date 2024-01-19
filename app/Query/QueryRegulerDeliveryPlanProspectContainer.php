@@ -540,20 +540,42 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
                 $box = RegularDeliveryPlanBox::with('refBox')->where('id_prospect_container_creation', $item->id)->get();
 
+                $count_net_weight = 0;
+                $count_outer_carton_weight = 0;
                 $count_meas = 0;
                 $total_net_weight = 0;
-                $total_outer_carton_weight = 0;
-                foreach ($box as $box_item){
+                $total_net_weight_mst = 0;
+                $total_gross_weight = 0;
+                $total_gross_weight_mst = 0;
+                foreach ($box as $key => $box_item){
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
+                        $master = [];
+                        $check = [];
                         foreach ($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet as $set) {
-                            $total_net_weight += (($set->refBox->unit_weight_gr * $set->qty)/1000) / count($box);
-                            $total_outer_carton_weight += (($set->refBox->outer_carton_weight)) / count($box);
-                            $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000) / count($box);
+                            $master[] = $set->refBox->qty;
+                            $check[] = $box->pluck('qty_pcs_box')->toArray()[$key];
+                            $total_net_weight += ((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000)));
+                            $total_gross_weight += (((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000) + $set->refBox->outer_carton_weight));
+                            $total_net_weight_mst += (($set->refBox->unit_weight_gr * $set->refBox->qty) / 1000);
+                            $total_gross_weight_mst += ($set->refBox->unit_weight_gr * $set->refBox->qty / 1000) + $set->refBox->outer_carton_weight;
                         } 
+                        $res_check = (array_sum($check) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                        $res_master =  array_sum($master) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                        if ($res_check == $res_master) {
+                            $total_net_weight = $total_net_weight_mst;
+                            $total_gross_weight = $total_gross_weight_mst;
+                        } else {
+                            $total_net_weight = $total_net_weight;
+                            $total_gross_weight = $total_gross_weight;
+                        }
+
+                        $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000) / count($box);
                     } else {
+                        $count_net_weight = $box_item->refBox->unit_weight_gr;
+                        $count_outer_carton_weight = $box_item->refBox->outer_carton_weight;
                         $count_meas += (($box_item->refBox->length * $box_item->refBox->width * $box_item->refBox->height) / 1000000000);
-                        $total_net_weight += ($box_item->refBox->unit_weight_gr * $box_item->qty_pcs_box)/1000;
-                        $total_outer_carton_weight += $box_item->refBox->outer_carton_weight;
+                        $total_net_weight += ($count_net_weight * $box_item->qty_pcs_box)/1000;
+                        $total_gross_weight += (($count_net_weight * $box_item->qty_pcs_box)/1000) + $count_outer_carton_weight;
                     }
                 }
 
@@ -562,9 +584,9 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $item->type_delivery = $item->refMstTypeDelivery->name;
                 $item->lsp = $item->refMstLsp->name;
                 $item->id_mot = $item->refMstMot->id;
-                $item->net_weight = round($total_net_weight,2);
-                $item->gross_weight = round($total_net_weight + $total_outer_carton_weight,2);
-                $item->measurement = round($count_meas,3);
+                $item->net_weight = number_format($total_net_weight, 2);
+                $item->gross_weight = number_format($total_gross_weight, 2);
+                $item->measurement = number_format($count_meas,3);
                 $item->container_type = $item->refMstContainer->container_type;
 
                 unset(
