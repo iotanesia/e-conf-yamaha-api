@@ -119,10 +119,10 @@
                     <td class="text-center">
                         @if ($item->item_no == null)
                             @foreach ($item->refStokConfirmation->refRegularDeliveryPlan->manyDeliveryPlanSet()->orderby('item_no', 'asc')->get() as $item_no)
-                                {{ $item_no->item_no }} <br>
+                                {{ $item_no->refBox->item_no_series }} <br>
                             @endforeach
                         @else
-                            {{ $item->item_no }}
+                            {{ $item->refMstPart->item_serial }}
                         @endif
                     </td>
                     <td class="text-center">

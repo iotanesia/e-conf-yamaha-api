@@ -1535,12 +1535,12 @@ class QueryStockConfirmationHistory extends Model
                     $item_no = [];
                     $item_name = [];
                     foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $value) {
-                        $item_no[] = $value->refPart->item_no;
+                        $item_no[] = $value->refPart->item_serial;
                         $item_name[] = $value->refPart->description;
                     }
                 } else {
                     $mst_part = MstPart::where('item_no', $item->refRegularDeliveryPlan->item_no)->first();
-                    $item_no = $mst_part->item_no;
+                    $item_no = $mst_part->item_serial;
                     $item_name = $mst_part->description;
                 }
             // }
