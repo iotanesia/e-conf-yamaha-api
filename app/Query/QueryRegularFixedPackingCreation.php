@@ -169,16 +169,18 @@ class QueryRegularFixedPackingCreation extends Model {
 
     public static function packingCreationDeliveryNotePart($id,$params)
     {
-        $data = RegularFixedQuantityConfirmation::select('id_regular_delivery_plan',
+        $data = RegularFixedQuantityConfirmation::select('regular_fixed_quantity_confirmation.id_regular_delivery_plan',
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id::character varying, ',') as id_quantity_confirmation"),
             DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
             DB::raw('count(regular_fixed_quantity_confirmation.id) as count'),
+            DB::raw("string_agg(DISTINCT a.qty_pcs_box::character varying, ',') as qty_pcs_box")
             )
             ->where('id_fixed_actual_container', $id)
-            ->groupBy('id_regular_delivery_plan')
+            ->join('regular_fixed_quantity_confirmation_box as a','a.id_fixed_quantity_confirmation','regular_fixed_quantity_confirmation.id')
+            ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan')
             ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
         return [
@@ -195,7 +197,8 @@ class QueryRegularFixedPackingCreation extends Model {
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $mst_part->toArray() : trim($item->refRegularDeliveryPlan->refPart->description);
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;
-                $item->in_wh = count(explode(',', $item->count)) . ' x ' . array_sum($qty_pcs_box->pluck('qty_pcs_box')->toArray());
+                // $item->in_wh = count(explode(',', $item->count)) . ' x ' . array_sum($qty_pcs_box->pluck('qty_pcs_box')->toArray());
+                $item->in_wh = $item->count.' x '.array_sum(explode(',', $item->qty_pcs_box));
                 unset(
                     $item->refRegularDeliveryPlan,
                     $item->refFixedActualContainer
@@ -269,7 +272,7 @@ class QueryRegularFixedPackingCreation extends Model {
 
     public static function downloadpackingCreationDeliveryNote($id,$pathToFile,$filename)
     {
-        // try {
+        try {
             $actual = RegularFixedActualContainer::find($id);
 
             $data = RegularFixedActualContainer::
@@ -312,8 +315,8 @@ class QueryRegularFixedPackingCreation extends Model {
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
-        //   } catch (\Throwable $th) {
-        //       return Helper::setErrorResponse($th);
-        //   }
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 }

@@ -138,4 +138,23 @@
             @endforeach
         </tbody>
     </table>
+
+    <table style="margin-top: 80px;">
+        <thead>
+            <tr>
+                <th class="text-center"> Receipt Sign</th>
+                <th class="text-center"> Logistic Provider</th>
+                <th class="text-center"> Approval</th>
+                <th class="text-center"> Operator </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center" style="padding: 30px;"> </td>
+                <td class="text-center" style="padding: 30px;"> </td>
+                <td class="text-center" style="padding: 30px;"> </td>
+                <td class="text-center" style="padding: 30px;"> </td>
+            </tr>
+        </tbody>
+    </table>
 </body>
