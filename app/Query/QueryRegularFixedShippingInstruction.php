@@ -374,7 +374,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             $data->map(function ($item){
                 $set['id'] = 0;
                 $set['id_box'] = $item->id_box;
-                $set['qty'] =  $item->qty_pcs_box." x ".$item->jml." pcs";
+                $set['qty'] =  $item->qty_pcs_box." x ".$item->jml;
                 $set['length'] =  "";
                 $set['width'] =  "";
                 $set['height'] =  "";
