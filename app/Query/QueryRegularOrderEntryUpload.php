@@ -152,7 +152,7 @@ class QueryRegularOrderEntryUpload extends Model {
 
     public static function byId($params,$id)
     {
-        $data = self::where('id_regular_order_entry',$id)->paginate($params->limit ?? null);
+        $data = self::where('id_regular_order_entry',$id)->orderBy('created_at', 'desc')->paginate($params->limit ?? null);
 
         if($data == null) throw new \Exception("id tidak ditemukan", 400);
 
