@@ -299,6 +299,7 @@ class QueryRegularFixedPackingCreation extends Model {
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
                         DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
+                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.code_consignee::character varying, ',') as code_consignee"),
                         DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
                         DB::raw('count(regular_fixed_quantity_confirmation.id) as count'),
                         DB::raw("string_agg(DISTINCT a.qty_pcs_box::character varying, ',') as qty_pcs_box")

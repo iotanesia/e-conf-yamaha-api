@@ -5,8 +5,7 @@
         body {
             margin-top: 5px;
             margin-left: 26px;
-            font-size: 9pt;
-            font-size: 9pt;
+            font-size: 10px;
         /* font-family: 'Times New Roman', Times, serif; */
         font-family: Arial, Helvetica, sans-serif;
         /* margin-right: 4cm; */
@@ -110,6 +109,7 @@
                 <th class="text-center"> Order No </th>
                 <th class="text-center"> Quantity <br> (pcs)</th>
                 <th class="text-center"> No. Invoice</th>
+                <th class="text-center"> Customer Name</th>
             </tr>
         </thead>
         <tbody>
@@ -134,6 +134,7 @@
                     <td class="text-center">{{ $item->order_no }}</td>
                     <td class="text-center">{{ $item->count.' x '.array_sum(explode(',', $item->qty_pcs_box)) }}</td>
                     <td class="text-center">{{ $item->refFixedActualContainer->no_packaging }}</td>
+                    <td class="text-center">{{ $item->refConsignee->nick_name }}</td>
                 </tr>
             @endforeach
         </tbody>
