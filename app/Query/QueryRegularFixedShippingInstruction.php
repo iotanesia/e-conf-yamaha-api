@@ -1273,9 +1273,11 @@ class QueryRegularFixedShippingInstruction extends Model {
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id::character varying, ',') as id_quantity_confirmation"),
                 DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
                 DB::raw('count(regular_fixed_quantity_confirmation.id) as count'),
+                DB::raw("string_agg(DISTINCT a.qty_pcs_box::character varying, ',') as qty_pcs_box")
             )
             ->whereIn('id_fixed_actual_container', $id_fixed_actual_container)
-            ->groupBy('id_regular_delivery_plan')
+            ->join('regular_fixed_quantity_confirmation_box as a','a.id_fixed_quantity_confirmation','regular_fixed_quantity_confirmation.id')
+            ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan', 'a.qty_pcs_box')
             ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
         return [
@@ -1284,15 +1286,17 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $item_name_set = [];
                 foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $key => $value) {
                     $item_name_set[] = $value->refPart->description;
+                    $item_no_set[] = $value->refPart->item_serial;
                 }
                 
                 $qty_pcs_box = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', explode(',', $item->id_quantity_confirmation))->get();
 
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name_set : trim($item->refRegularDeliveryPlan->refPart->description);
-                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no') : $item->refRegularDeliveryPlan->item_no;
+                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_set : $item->refRegularDeliveryPlan->item_no;
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;
-                $item->in_wh = count(explode(',', $item->count)) . ' x ' . array_sum($qty_pcs_box->pluck('qty_pcs_box')->toArray());
+                // $item->in_wh = count(explode(',', $item->count)) . ' x ' . array_sum($qty_pcs_box->pluck('qty_pcs_box')->toArray());
+                $item->in_wh = $item->count.' x '.array_sum(explode(',', $item->qty_pcs_box));
                 unset(
                     $item->refRegularDeliveryPlan,
                     $item->refFixedActualContainer
