@@ -1030,6 +1030,15 @@ class QueryRegularDeliveryPlan extends Model {
                         $check->fill($item);
                         $check->save();
 
+                        if ($check->qty_pcs_box !== $item['qty_pcs_box']) {
+                            RegularDeliveryPlanBox::create([
+                                "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
+                                "id_box" => $check->id_box,
+                                "qty_pcs_box" => $check->qty_pcs_box - $item['qty_pcs_box'],
+                                "is_labeling" => $check->is_labeling,
+                            ]);
+                        }
+
                         // $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
                         //                                 ->where('qrcode', null)
                         //                                 ->orderBy('qty_pcs_box', 'desc')
@@ -1074,6 +1083,15 @@ class QueryRegularDeliveryPlan extends Model {
                         }
                         $check->fill($item);
                         $check->save();
+
+                        if ($check->qty_pcs_box !== $item['qty_pcs_box']) {
+                            RegularDeliveryPlanBox::create([
+                                "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
+                                "id_box" => $check->id_box,
+                                "qty_pcs_box" => $check->qty_pcs_box - $item['qty_pcs_box'],
+                                "is_labeling" => $check->is_labeling,
+                            ]);
+                        }
                     }
                     $id[] = $item['id'];
                 }
