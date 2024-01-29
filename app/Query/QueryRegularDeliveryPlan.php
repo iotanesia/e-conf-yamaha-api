@@ -459,7 +459,7 @@ class QueryRegularDeliveryPlan extends Model {
                                 });
 
                 $box = [
-                    'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".ceil($item->qty / array_sum(array_merge(...$mst_box->toArray()))),
+                    'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".count($item->manyDeliveryPlanBox),
                     'length' =>  "",
                     'width' =>  "",
                     'height' =>  "",
