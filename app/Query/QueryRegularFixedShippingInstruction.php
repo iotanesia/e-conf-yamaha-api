@@ -1266,7 +1266,7 @@ class QueryRegularFixedShippingInstruction extends Model {
               $id_fixed_actual_container[] = $value->id_fixed_actual_container;
         }
 
-        $data = RegularFixedQuantityConfirmation::select('id_regular_delivery_plan',
+        $data = RegularFixedQuantityConfirmation::select('regular_fixed_quantity_confirmation.id_regular_delivery_plan',
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
