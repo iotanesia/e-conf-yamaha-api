@@ -1339,55 +1339,55 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             }
             $item_no = [];
             foreach (explode(',', $item->item_no) as $value) {
-                $item_no[] = $value;
+                $item_no[] = self::getItemSerial($value);
             }
 
-            if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) {
-                $item_no_set = $check->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no');
+            // if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) {
+            //     $item_no_set = $check->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no');
 
-                $mst_box = MstBox::where('part_set', 'set')
-                            ->whereIn('item_no', $item_no_set)
-                            ->get()->map(function ($item){
-                                $qty = [
-                                    $item->id.'id' => $item->qty
-                                ];
+            //     $mst_box = MstBox::where('part_set', 'set')
+            //                 ->whereIn('item_no', $item_no_set)
+            //                 ->get()->map(function ($item){
+            //                     $qty = [
+            //                         $item->id.'id' => $item->qty
+            //                     ];
                             
-                                return array_merge($qty);
-                            });
+            //                     return array_merge($qty);
+            //                 });
 
-                $box_scan = RegularFixedQuantityConfirmationBox::select(DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qrcode::character varying, ',') as qrcode"),
-                                                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
-                                                            DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty"),
-                                                            )
-                                                            ->whereIn('id_fixed_quantity_confirmation', explode(',', $item->id_fixed_quantity_confirmation))
-                                                            ->whereNotNull('qrcode')
-                                                            ->groupBy('regular_fixed_quantity_confirmation_box.qrcode')
-                                                            ->get()->map(function ($item) use($item_no_set){
-                                                                $qty = [
-                                                                    $item->id_box.'id' => ($item->qty / count($item_no_set)) ?? 0
-                                                                ];
+            //     $box_scan = RegularFixedQuantityConfirmationBox::select(DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qrcode::character varying, ',') as qrcode"),
+            //                                                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
+            //                                                 DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty"),
+            //                                                 )
+            //                                                 ->whereIn('id_fixed_quantity_confirmation', explode(',', $item->id_fixed_quantity_confirmation))
+            //                                                 ->whereNotNull('qrcode')
+            //                                                 ->groupBy('regular_fixed_quantity_confirmation_box.qrcode')
+            //                                                 ->get()->map(function ($item) use($item_no_set){
+            //                                                     $qty = [
+            //                                                         $item->id_box.'id' => ($item->qty / count($item_no_set)) ?? 0
+            //                                                     ];
                                                             
-                                                                return array_merge($qty);
-                                                            });
+            //                                                     return array_merge($qty);
+            //                                                 });
 
-                $qty = [];
-                $qty_sum = [];
-                foreach ($mst_box as $key => $value) {
-                    $arary_key = array_keys($value)[0];
-                    $box_scan_per_id = array_merge(...$box_scan)[$arary_key] ?? 0;
-                    $qty[] = $box_scan_per_id / $value[$arary_key];
-                    $qty_sum[] = $value[$arary_key];
-                }
-                $max_qty[] = (int)ceil(max($qty)) / count($item_no_set);
+            //     $qty = [];
+            //     $qty_sum = [];
+            //     foreach ($mst_box as $key => $value) {
+            //         $arary_key = array_keys($value)[0];
+            //         $box_scan_per_id = array_merge(...$box_scan)[$arary_key] ?? 0;
+            //         $qty[] = $box_scan_per_id / $value[$arary_key];
+            //         $qty_sum[] = $value[$arary_key];
+            //     }
+            //     $max_qty[] = (int)ceil(max($qty)) / count($item_no_set);
         
-                $box = [
-                    'qty' =>  array_sum($qty_sum)." x ".count($box_scan),
-                    'length' =>  "",
-                    'width' =>  "",
-                    'height' =>  "",
-                ];
+            //     $box = [
+            //         'qty' =>  array_sum($qty_sum)." x ".count($box_scan),
+            //         'length' =>  "",
+            //         'width' =>  "",
+            //         'height' =>  "",
+            //     ];
 
-            }
+            // }
 
             $box_result = self::getCountBoxFifo($item->id_fixed_quantity_confirmation,$item->id_prospect_container_creation);
             // if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
@@ -1426,6 +1426,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     public static function getPart($id_part){
         $data = MstPart::where('item_no', $id_part)->first();
         return $data->description ?? null;
+    }
+
+    public static function getItemSerial($id_part){
+        $data = MstPart::where('item_no', $id_part)->first();
+        return $data->item_serial ?? null;
     }
 
     public static function detailById($params)
