@@ -335,6 +335,7 @@ class QueryStockConfirmationOutstockNote extends Model {
                                                                 DB::raw("string_agg(DISTINCT regular_stock_confirmation_outstock_note_detail.item_no::character varying, ',') as item_no"),
                                                                 DB::raw("string_agg(DISTINCT regular_stock_confirmation_outstock_note_detail.order_no::character varying, ',') as order_no"),
                                                                 DB::raw("string_agg(DISTINCT regular_stock_confirmation_outstock_note_detail.no_packing::character varying, ',') as no_packing"),
+                                                                DB::raw("string_agg(DISTINCT regular_stock_confirmation_outstock_note_detail.id_stock_confirmation::character varying, ',') as id_stock_confirmation"),
                                                             )->where('id_stock_confirmation_outstock_note', $data->id)
                                                             ->groupBy('id_stock_confirmation', 'qty')
                                                             ->get();

@@ -109,7 +109,7 @@
                 <th class="text-center"> Item Name</th>
                 <th class="text-center"> Order No </th>
                 <th class="text-center"> Quantity <br> (pcs)</th>
-                <th class="text-center"> No. Packing List</th>
+                <th class="text-center"> CUSTOMER NAME</th>
             </tr>
         </thead>
         <tbody>
@@ -136,7 +136,7 @@
                     </td>
                     <td class="text-center">{{ $item->order_no }}</td>
                     <td class="text-center">{{ count(explode(',', $item->id_note_detail)).' x '.$item->qty }}</td>
-                    <td class="text-center">{{ $item->no_packing }}</td>
+                    <td class="text-center">{{ $item->refStokConfirmation->refConsignee->nick_name ?? null }}</td>
                 </tr>
             @endforeach
         </tbody>
