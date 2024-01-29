@@ -655,39 +655,39 @@ class QueryStockConfirmationHistory extends Model
                         $item_name[] = $value->description;
                     }
 
-                    $mst_box = MstBox::whereIn('item_no', $item_no_set->toArray())
-                        ->get()->map(function ($item) {
-                            $qty = [
-                                $item->item_no . '+' => $item->qty
-                            ];
+                    // $mst_box = MstBox::whereIn('item_no', $item_no_set->toArray())
+                    //     ->get()->map(function ($item) {
+                    //         $qty = [
+                    //             $item->item_no . '+' => $item->qty
+                    //         ];
 
-                            return array_merge($qty);
-                        });
+                    //         return array_merge($qty);
+                    //     });
 
-                    $order_entry_upload = RegularOrderEntryUpload::where('id_regular_order_entry', $item->refRegularDeliveryPlan->id_regular_order_entry)->first();
-                    $upload_temp = RegularOrderEntryUploadDetailTemp::where('id_regular_order_entry_upload', $order_entry_upload->id)
-                        ->whereIn('item_no', $item_no_set->toArray())
-                        ->where('etd_jkt', $item->refRegularDeliveryPlan->etd_jkt)
-                        ->get()->pluck('qty');
-                    $qty_per_item_no = [];
-                    foreach ($item_no_set as $key => $value) {
-                        $qty_per_item_no[] = [
-                            $value . '+' => $upload_temp->toArray()[$key]
-                        ];
-                    }
+                    // $order_entry_upload = RegularOrderEntryUpload::where('id_regular_order_entry', $item->refRegularDeliveryPlan->id_regular_order_entry)->first();
+                    // $upload_temp = RegularOrderEntryUploadDetailTemp::where('id_regular_order_entry_upload', $order_entry_upload->id)
+                    //     ->whereIn('item_no', $item_no_set->toArray())
+                    //     ->where('etd_jkt', $item->refRegularDeliveryPlan->etd_jkt)
+                    //     ->get()->pluck('qty');
+                    // $qty_per_item_no = [];
+                    // foreach ($item_no_set as $key => $value) {
+                    //     $qty_per_item_no[] = [
+                    //         $value . '+' => $upload_temp->toArray()[$key]
+                    //     ];
+                    // }
 
-                    $qty = [];
-                    foreach ($mst_box as $key => $value) {
-                        $arary_key = array_keys($value)[0];
-                        $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
-                    }
+                    // $qty = [];
+                    // foreach ($mst_box as $key => $value) {
+                    //     $arary_key = array_keys($value)[0];
+                    //     $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
+                    // }
 
-                    $box = [
-                        'qty' =>  array_sum(array_merge(...$mst_box->toArray())) . " x " . (int)ceil(max($qty)) . " box",
-                        'length' =>  "",
-                        'width' =>  "",
-                        'height' =>  "",
-                    ];
+                    // $box = [
+                    //     'qty' =>  array_sum(array_merge(...$mst_box->toArray())) . " x " . (int)ceil(max($qty)) . " box",
+                    //     'length' =>  "",
+                    //     'width' =>  "",
+                    //     'height' =>  "",
+                    // ];
                 }
 
                 $item->status_tracking = $status ?? null;
@@ -701,7 +701,7 @@ class QueryStockConfirmationHistory extends Model
                 $item->etd_wh = $item->refRegularDeliveryPlan->etd_wh;
                 $item->etd_jkt = $item->refRegularDeliveryPlan->etd_jkt;
                 $item->production = $item->production;
-                $item->box = $item->refRegularDeliveryPlan->item_no == null ? $box : (self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null);
+                $item->box = (self::getCountBox($item->refRegularDeliveryPlan->id)[0] ?? null);
 
                 unset(
                     $item->refRegularDeliveryPlan,
