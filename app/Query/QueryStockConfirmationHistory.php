@@ -611,7 +611,7 @@ class QueryStockConfirmationHistory extends Model
             $date_from = str_replace('-', '', $request->date_from);
             $date_to = str_replace('-', '', $request->date_to);
             if ($request->date_from || $request->date_to) $query->whereBetween('etd_jkt', [$date_from, $date_to]);
-        })->paginate($request->limit ?? null);
+        })->orderBy('id', 'asc')->paginate($request->limit ?? null);
 
 
         if (!$data) throw new \Exception("Data not found", 400);
