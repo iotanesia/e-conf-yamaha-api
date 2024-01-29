@@ -1858,14 +1858,15 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
         
                     $box_set = [];
-                    for ($i=0; $i < count($id_deliv_box); $i++) { 
-                        $check = array_sum($qty_pcs_box[0]) / count($item_no);
+                    for ($i=0; $i < count($deliv_plan_box); $i++) { 
+                        // $check = array_sum($qty_pcs_box[0]) / count($item_no);
+                        $check = array_sum($mst_box->pluck('qty')->toArray());
                         $box_set[] = [
                             'item_no' => $item_no,
-                            'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
+                            'qty_pcs_box' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] >= $check ? $res_qty : $qty_box,
                             'item_no_series' => $item_no_series,
-                            'unit_weight_kg' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $unit_weight_kg_mst : $unit_weight_kg,
-                            'total_gross_weight' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $total_gross_weight_mst : $total_gross_weight,
+                            'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] >= $check ? $unit_weight_kg : $unit_weight_kg_mst,
+                            'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] >= $check ? $total_gross_weight : $total_gross_weight_mst,
                             'length' => $length,
                             'width' => $width,
                             'height' => $height,
