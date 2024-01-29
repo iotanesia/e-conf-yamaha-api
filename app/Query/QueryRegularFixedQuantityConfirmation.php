@@ -1864,10 +1864,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $check = array_sum($mst_box->pluck('qty')->toArray());
                         $box_set[] = [
                             'item_no' => $item_no,
-                            'qty_pcs_box' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] >= $check ? $res_qty : $qty_box,
+                            'qty_pcs_box' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $res_qty : $qty_box,
                             'item_no_series' => $item_no_series,
-                            'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] >= $check ? $unit_weight_kg : $unit_weight_kg_mst,
-                            'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] >= $check ? $total_gross_weight : $total_gross_weight_mst,
+                            'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $unit_weight_kg : $unit_weight_kg_mst,
+                            'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $total_gross_weight : $total_gross_weight_mst,
                             'length' => $length,
                             'width' => $width,
                             'height' => $height,
