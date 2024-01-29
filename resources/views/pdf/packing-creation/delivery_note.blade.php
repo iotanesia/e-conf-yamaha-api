@@ -119,7 +119,7 @@
                     @if ($item->item_no == null)
                         <td class="text-center">
                             @foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $item_no)
-                                {{ $item_no->item_no }} <br>
+                                {{ $item_no->refPart->item_serial }} <br>
                             @endforeach
                         </td>
                         <td class="text-center">
@@ -128,7 +128,7 @@
                             @endforeach
                         </td>
                     @else
-                        <td class="text-center">{{ $item->item_no }}</td>
+                        <td class="text-center">{{ $item->refRegularDeliveryPlan->refPart->item_serial }}</td>
                         <td class="text-center">{{ $item->refRegularDeliveryPlan->refPart->description }}</td>
                     @endif
                     <td class="text-center">{{ $item->order_no }}</td>
