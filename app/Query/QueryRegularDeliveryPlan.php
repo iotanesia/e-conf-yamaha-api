@@ -1027,8 +1027,6 @@ class QueryRegularDeliveryPlan extends Model {
                         if ($item['qty_pcs_box'] > ($check->refRegularDeliveryPlan->qty - array_sum($qty_done))) {
                             throw new \Exception("qty exceeds maximum.", 400);
                         }
-                        $check->fill($item);
-                        $check->save();
 
                         if ($check->qty_pcs_box !== $item['qty_pcs_box']) {
                             RegularDeliveryPlanBox::create([
@@ -1038,6 +1036,9 @@ class QueryRegularDeliveryPlan extends Model {
                                 "is_labeling" => $check->is_labeling,
                             ]);
                         }
+
+                        $check->fill($item);
+                        $check->save();
 
                         // $upd = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $check->id_regular_delivery_plan)
                         //                                 ->where('qrcode', null)
@@ -1081,8 +1082,6 @@ class QueryRegularDeliveryPlan extends Model {
                         if ($item['qty_pcs_box'] > ($check->refRegularDeliveryPlan->qty - array_sum($qty_done))) {
                             throw new \Exception("qty exceeds maximum.", 400);
                         }
-                        $check->fill($item);
-                        $check->save();
 
                         if ($check->qty_pcs_box !== $item['qty_pcs_box']) {
                             RegularDeliveryPlanBox::create([
@@ -1092,6 +1091,9 @@ class QueryRegularDeliveryPlan extends Model {
                                 "is_labeling" => $check->is_labeling,
                             ]);
                         }
+                        
+                        $check->fill($item);
+                        $check->save();
                     }
                     $id[] = $item['id'];
                 }
