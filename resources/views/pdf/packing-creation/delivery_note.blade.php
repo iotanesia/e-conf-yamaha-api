@@ -78,7 +78,7 @@
             <td class="no-bo">Surat Jalan No</td>
             <td class="no-bo">:</td>
             <td class="no-bo">{{ $data->no_letters }}</td>
-            <td class="no-bo"></td>
+            <td class="no-bo" width="250"></td>
             <td class="no-bo"></td>
             <td class="no-bo"></td>
         </tr>

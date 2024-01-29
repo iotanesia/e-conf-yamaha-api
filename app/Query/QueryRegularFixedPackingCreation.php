@@ -172,6 +172,7 @@ class QueryRegularFixedPackingCreation extends Model {
         $data = RegularFixedQuantityConfirmation::select('regular_fixed_quantity_confirmation.id_regular_delivery_plan',
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_serial::character varying, ',') as item_serial"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id::character varying, ',') as id_quantity_confirmation"),
             DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
@@ -187,13 +188,16 @@ class QueryRegularFixedPackingCreation extends Model {
             'items' => $data->getCollection()->transform(function($item){
 
                 if ($item->refRegularDeliveryPlan->item_no == null) {
-                    $part_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
-                    $mst_part = MstPart::whereIn('item_no', $part_set->toArray())->get()->pluck('description');
+                    $part_set = RegularDeliveryPlanSet::with('refBox')->where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('refBox')->pluck('item_no_series');
+                    $item_no_set = array_map(function ($item) {
+                        return str_replace('-', '', $item);
+                    }, $part_set->toArray());
+                    $mst_part = MstPart::whereIn('item_no', $item_no_set)->get()->pluck('description');
                 }
 
                 $qty_pcs_box = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', explode(',', $item->id_quantity_confirmation))->get();
 
-                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $part_set : [$item->item_no];
+                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $part_set : [$item->item_serial];
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $mst_part->toArray() : trim($item->refRegularDeliveryPlan->refPart->description);
                 $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;

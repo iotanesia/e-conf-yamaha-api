@@ -334,7 +334,7 @@ class QueryStockConfirmationHistory extends Model
                             'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
                             'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
                             'model' => $val->refRegularDeliveryPlan->model,
-                            'item_no' => $val->refRegularDeliveryPlan->item_no == null ? $val->refRegularDeliveryPlan->manyDeliveryPlanSet()->pluck('item_no') : $val->refRegularDeliveryPlan->item_no,
+                            'item_no' => $val->refRegularDeliveryPlan->item_no == null ? $val->refRegularDeliveryPlan->manyDeliveryPlanSet()->with('refBox')->get()->pluck('refBox')->pluck('item_no_series') : $val->refRegularDeliveryPlan->refPart->item_serial,
                             // 'qty' => $val->refRegularDeliveryPlan->qty,
                             'qty' => $val->qty_pcs_box,
                             'disburse' => $val->refRegularDeliveryPlan->disburse,
@@ -512,7 +512,7 @@ class QueryStockConfirmationHistory extends Model
             $res['id_regular_order_entry'] = $item->refRegularDeliveryPlan->id_regular_order_entry;
             $res['code_consignee'] = $item->refRegularDeliveryPlan->code_consignee;
             $res['model'] = $item->refRegularDeliveryPlan->model;
-            $res['item_no'] = $item->refRegularDeliveryPlan->item_no == null ? $item->refRegularDeliveryPlan->manyDeliveryPlanSet()->pluck('item_no')->toArray() : $item->refRegularDeliveryPlan->item_no;
+            $res['item_no'] = $item->refRegularDeliveryPlan->item_no == null ? $item->refRegularDeliveryPlan->manyDeliveryPlanSet()->get()->pluck('refBox')->pluck('item_no_series') : $item->refRegularDeliveryPlan->refPart->item_serial;
             // $res['qty'] = $item->refRegularDeliveryPlan->qty;
             $res['qty'] =  $item->qty;
             $res['disburse'] = $item->refRegularDeliveryPlan->disburse;
