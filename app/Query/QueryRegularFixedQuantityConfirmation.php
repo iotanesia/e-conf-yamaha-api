@@ -1667,15 +1667,16 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
         
                     $box_set = [];
-                    for ($i=0; $i < count($id_deliv_box); $i++) { 
-                        $check = array_sum($qty_pcs_box[0]) / count($item_no);
+                    for ($i=0; $i < count($deliv_plan_box); $i++) { 
+                        // $check = array_sum($qty_pcs_box[0]) / count($item_no);
+                        $check = array_sum($mst_box->pluck('qty')->toArray());
                         $box_set[] = [
                             'item_no' => $item_no,
                             // 'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
-                            'qty_pcs_box' => $qty_pcs_box[$i],
+                            'qty_pcs_box' => [$deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i]],
                             'item_no_series' => $item_no_series,
-                            'unit_weight_kg' =>  $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $unit_weight_kg_mst : $unit_weight_kg,
-                            'total_gross_weight' =>  $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $total_gross_weight_mst : $total_gross_weight,
+                            'unit_weight_kg' =>  $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] >= $check ? $unit_weight_kg : $unit_weight_kg_mst,
+                            'total_gross_weight' =>  $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] >= $check ? $total_gross_weight : $total_gross_weight_mst,
                             'length' => $length,
                             'width' => $width,
                             'height' => $height,
@@ -1724,7 +1725,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     public static function printPackaging($request,$id,$pathToFile,$filename)
     {
-        // try {
+        try {
             $data = RegularFixedActualContainer::where('id',$id)->get();
             $id_delivery_plan = [];
             foreach ($data[0]->manyFixedQuantityConfirmation as $id_delivery) {
@@ -1913,9 +1914,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->setPaper('A4','potrait')
             ->download($filename);
 
-        //   } catch (\Throwable $th) {
-        //       return Helper::setErrorResponse($th);
-        //   }
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 
 }
