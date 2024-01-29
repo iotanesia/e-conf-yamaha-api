@@ -1399,7 +1399,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $qty_box[] = $value->qty;
                         $sum_qty[] = $value->qty;
                         $count_net_weight = $value->unit_weight_gr;
-                        $count_outer_carton_weight = $value->outer_carton_weight;
+                        $count_outer_carton_weight = $value->outer_carton_weight / count($plan_set);
                         $unit_weight_kg_mst[] = ($count_net_weight * $value->qty)/1000;
                         $total_gross_weight_mst[] = (($count_net_weight * $value->qty)/1000) + $count_outer_carton_weight;
                         $unit_weight_kg[] = ($count_net_weight * ((array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($deliv_plan_box)) / count($plan_set)))/1000;
