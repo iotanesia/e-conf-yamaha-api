@@ -1044,14 +1044,18 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
                         $master = [];
                         $check = [];
+                        $outer_carton_weight = 0;
                         foreach ($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet as $set) {
                             $master[] = $set->refBox->qty;
                             $check[] = $box->pluck('qty_pcs_box')->toArray()[$key];
                             $total_net_weight += ((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000)));
-                            $total_gross_weight += (((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000) + $set->refBox->outer_carton_weight));
+                            // $total_gross_weight += (((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000) + $set->refBox->outer_carton_weight));
                             $total_net_weight_mst += (($set->refBox->unit_weight_gr * $set->refBox->qty) / 1000);
-                            $total_gross_weight_mst += ($set->refBox->unit_weight_gr * $set->refBox->qty / 1000) + $set->refBox->outer_carton_weight;
+                            // $total_gross_weight_mst += ($set->refBox->unit_weight_gr * $set->refBox->qty / 1000) + $set->refBox->outer_carton_weight;
+                            $outer_carton_weight = $set->refBox->outer_carton_weight;
                         } 
+                        $total_gross_weight = $total_net_weight + $outer_carton_weight;
+                        $total_gross_weight_mst = $total_net_weight_mst + $outer_carton_weight;
                         $res_check = (array_sum($check) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
                         $res_master =  array_sum($master) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
                         if ($res_check == $res_master) {
