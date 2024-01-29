@@ -221,7 +221,8 @@ class QueryStockConfirmationHistory extends Model
 
     public static function getInStock($request)
     {
-        $data = RegularStokConfirmation::where('status_instock', '=', 2)->where('in_dc', '>', 0)->get();
+        $data = RegularStokConfirmation::where('status_instock', '=', 2)->where('in_dc', '>', 0)
+                                        ->orderBy('created_at', 'desc')->get();
         if (!$data) throw new \Exception("Data not found", 400);
 
         $result = [];
@@ -444,7 +445,8 @@ class QueryStockConfirmationHistory extends Model
                         ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
                 }
             }
-        })->where('status_outstock', '=', 2)->where('in_wh', '>', 0)->where('is_reject', null)->paginate($request->limit ?? null);
+        })->where('status_outstock', '=', 2)->where('in_wh', '>', 0)->where('is_reject', null)
+        ->orderBy('created_at', 'desc')->paginate($request->limit ?? null);
 
         if (!$data) throw new \Exception("Data not found", 400);
 
