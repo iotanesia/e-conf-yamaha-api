@@ -283,7 +283,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             }
             $item_no = [];
             foreach (explode(',', $item->item_no) as $value) {
-                $item_no[] = $value;
+                $item_no[] = self::getItemSerial($value);
             }
 
             if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) {
@@ -391,6 +391,12 @@ class QueryRegularFixedShippingInstruction extends Model {
         $data = MstPart::where('item_no', $id_part)->first();
         return $data->description ?? null;
     }
+
+    public static function getItemSerial($id_part){
+        $data = MstPart::where('item_no', $id_part)->first();
+        return $data->item_serial ?? null;
+    }
+
     public static function getCountBox($id){
         $data = RegularFixedQuantityConfirmationBox::select('id_box', DB::raw('count(*) as jml'))
                 ->whereIn('id_fixed_quantity_confirmation', explode(',',$id))
