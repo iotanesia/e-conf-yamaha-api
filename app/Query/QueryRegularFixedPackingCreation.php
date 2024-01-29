@@ -181,7 +181,7 @@ class QueryRegularFixedPackingCreation extends Model {
             )
             ->where('id_fixed_actual_container', $id)
             ->join('regular_fixed_quantity_confirmation_box as a','a.id_fixed_quantity_confirmation','regular_fixed_quantity_confirmation.id')
-            ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan')
+            ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan', 'a.qty_pcs_box')
             ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
         return [
@@ -310,7 +310,7 @@ class QueryRegularFixedPackingCreation extends Model {
                     )
                     ->where('id_fixed_actual_container', $id)
                     ->join('regular_fixed_quantity_confirmation_box as a','a.id_fixed_quantity_confirmation','regular_fixed_quantity_confirmation.id')
-                    ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan')
+                    ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan', 'a.qty_pcs_box')
                     ->get();
 
             Pdf::loadView('pdf.packing-creation.delivery_note',[
