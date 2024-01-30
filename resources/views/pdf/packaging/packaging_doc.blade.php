@@ -177,8 +177,8 @@
                 <tr>
                     <td colspan="3" class="text-center"> TOTAL</td>
                     <td class="text-center">{{ $count_qty }}</td>
-                    <td class="text-center">{{ round($count_net_weight,1) }}</td>
-                    <td class="text-center">{{ round($count_gross_weight,1) }}</td>
+                    <td class="text-center">{{ round($count_net_weight,2) }}</td>
+                    <td class="text-center">{{ round($count_gross_weight,2) }}</td>
                     <td class="text-center">{{ round($count_meas,3) }}</td>
                 </tr>
             </table>
