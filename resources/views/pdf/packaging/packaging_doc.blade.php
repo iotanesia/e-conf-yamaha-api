@@ -199,13 +199,13 @@
                 <tr>
                     <td class="no-bo" width="200px">Grand Total Nett Weights</td>
                     <td class="no-bo" width="4">:</td>
-                    <td width="50px" class="text-right no-bo">{{ round($count_net_weight,1) }}</td>
+                    <td width="50px" class="text-right no-bo">{{ round($count_net_weight,2) }}</td>
                     <td class="no-bo">Kgs</td>
                 </tr>
                 <tr>
                     <td class="no-bo" width="200px">Grand Total Gross Weights</td>
                     <td class="no-bo" width="4">:</td>
-                    <td width="50px" class="text-right no-bo">{{ round($count_gross_weight,1) }}</td>
+                    <td width="50px" class="text-right no-bo">{{ round($count_gross_weight,2) }}</td>
                     <td class="no-bo">Kgs</td>
                 </tr>
                 <tr>
