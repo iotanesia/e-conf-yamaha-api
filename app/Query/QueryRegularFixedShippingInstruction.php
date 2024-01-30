@@ -1186,12 +1186,16 @@ class QueryRegularFixedShippingInstruction extends Model {
                     for ($i=0; $i < count($deliv_plan_box); $i++) { 
                         // $check = array_sum($qty_pcs_box[0]) / count($item_no);
                         $check = array_sum($mst_box->pluck('qty')->toArray());
+                        $ratio_qty = self::inputQuantity(array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()), $mst_box->pluck('qty')->toArray());
                         $box_set[] = [
                             'item_no' => $item_no,
-                            'qty_pcs_box' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $res_qty : $qty_box,
+                            // 'qty_pcs_box' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $res_qty : $qty_box,
+                            'qty_pcs_box' => count($res_qty) == 0 ? $res_qty : $ratio_qty,
                             'item_no_series' => $item_no_series,
-                            'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $unit_weight_kg : $unit_weight_kg_mst,
-                            'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $total_gross_weight : $total_gross_weight_mst,
+                            // 'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $unit_weight_kg : $unit_weight_kg_mst,
+                            'unit_weight_kg' => $unit_weight_kg,
+                            // 'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $total_gross_weight : $total_gross_weight_mst,
+                            'total_gross_weight' => $total_gross_weight,
                             'length' => $length,
                             'width' => $width,
                             'height' => $height,
@@ -1544,4 +1548,21 @@ class QueryRegularFixedShippingInstruction extends Model {
         }
     }
 
+    public static function inputQuantity($value, $ratio) 
+    {
+        $reference_value = min($ratio);
+        $ratios = [];
+        foreach ($ratio as $val) {
+            $ratios[] = $val / $reference_value;
+        }
+        
+        $qty = $value;
+
+        $result = [];
+        foreach ($ratios as $res) {
+            $result[] = $qty * ($res / array_sum($ratios));
+        }
+
+        return $result;
+    }
 }
