@@ -967,29 +967,34 @@ class QueryRegularDeliveryPlan extends Model {
         // }
             
         $item = RegularDeliveryPlanBox::where('id',$id)->orderBy('id','asc')->first();
-        $check_set = $item->refRegularDeliveryPlan->item_no;
-        if ($check_set == null) {
+        $item_no = (array)$item->refRegularDeliveryPlan->item_no;
+        if (count($item_no) == 0) {
             $description = [];
             $item_serial = [];
+            $item_no = [];
             foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $value) {
                 $description[] = $value->refPart->description;
                 $item_serial[] = $value->refPart->item_serial;
+                $item_no[] = $value->item_no;
             }
         }
+
+        $mst_box = MstBox::whereIn('item_no', $item_no)->get()->pluck('qty');
         
         if(!$item) throw new \Exception("Data not found", 400);
         $data = [
-            'id' => $check_set == null ? $item->id.'-'.count($item->refRegularDeliveryPlan->manyDeliveryPlanSet) : $item->id,
-            'item_name' => $check_set == null ? $description : trim($item->refRegularDeliveryPlan->refPart->description) ?? null,
-            'item_no' => $check_set == null ? $item_serial : $item->refRegularDeliveryPlan->refPart->item_serial ?? null,
+            'id' => count($item_no) > 1 ? $item->id.'-'.count($item->refRegularDeliveryPlan->manyDeliveryPlanSet) : $item->id,
+            'item_name' => count($item_no) > 1 ? $description : trim($item->refRegularDeliveryPlan->refPart->description),
+            'item_no' => count($item_no) > 1 ? $item_serial : $item->refRegularDeliveryPlan->refPart->item_serial,
             'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
-            'qty_pcs_box' => $item->qty_pcs_box ?? 0,
+            'qty_pcs_box' => $mst_box ?? 0,
             'packing_date' => $item->packing_date ?? null,
             'lot_packing' => $item->lot_packing ?? null,
             'qrcode' => route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling',
-            'qr_key' => $check_set == null ? $item->id.'-'.count($item->refRegularDeliveryPlan->manyDeliveryPlanSet) : $item->id,
+            'qr_key' => count($item_no) > 1 ? $item->id.'-'.count($item->refRegularDeliveryPlan->manyDeliveryPlanSet) : $item->id,
             'no_box' => $item->refBox->no_box ?? null,
             'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
+            'maks_qty' => array_sum($mst_box->toArray())
         ];
 
         return [
