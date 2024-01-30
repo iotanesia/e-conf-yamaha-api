@@ -980,6 +980,7 @@ class QueryRegularDeliveryPlan extends Model {
             }
         }
 
+        $plan_set_history = RegularDeliveryPlanSetHistory::where('id_delivery_plan_box', $item->id)->get();
         $mst_box = MstBox::whereIn('item_no', $item_no)->get()->pluck('qty');
         
         if(!$item) throw new \Exception("Data not found", 400);
@@ -988,7 +989,7 @@ class QueryRegularDeliveryPlan extends Model {
             'item_name' => count($item_no) > 1 ? $description : trim($item->refRegularDeliveryPlan->refPart->description),
             'item_no' => count($item_no) > 1 ? $item_serial : (array)$item->refRegularDeliveryPlan->refPart->item_serial,
             'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
-            'qty_pcs_box' => $mst_box ?? 0,
+            'qty_pcs_box' => count($plan_set_history) > 0 ? $plan_set_history->pluck('qty') : $mst_box,
             'packing_date' => $item->packing_date ?? null,
             'lot_packing' => $item->lot_packing ?? null,
             'qrcode' => route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling',
