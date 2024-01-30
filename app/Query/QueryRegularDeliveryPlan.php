@@ -996,7 +996,7 @@ class QueryRegularDeliveryPlan extends Model {
             'qr_key' => count($item_no) > 1 ? $item->id.'-'.count($item->refRegularDeliveryPlan->manyDeliveryPlanSet) : $item->id,
             'no_box' => $item->refBox->no_box ?? null,
             'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
-            'maks_qty' => $item->refRegularDeliveryPlan->qty,
+            'maks_qty' => $item->qty_pcs_box,
             'id_delivery_plan' => $item->refRegularDeliveryPlan->id
         ];
 
