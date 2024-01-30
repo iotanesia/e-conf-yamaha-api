@@ -1028,7 +1028,7 @@ class QueryRegularDeliveryPlan extends Model {
                             throw new \Exception("qty exceeds maximum.", 400);
                         }
 
-                        if ($check->qty_pcs_box !== $item['qty_pcs_box']) {
+                        if ($check->qty_pcs_box != $item['qty_pcs_box']) {
                             RegularDeliveryPlanBox::create([
                                 "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
                                 "id_box" => $check->id_box,
@@ -1083,7 +1083,7 @@ class QueryRegularDeliveryPlan extends Model {
                             throw new \Exception("qty exceeds maximum.", 400);
                         }
 
-                        if ($check->qty_pcs_box !== $item['qty_pcs_box']) {
+                        if ($check->qty_pcs_box != $item['qty_pcs_box']) {
                             RegularDeliveryPlanBox::create([
                                 "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
                                 "id_box" => $check->id_box,
