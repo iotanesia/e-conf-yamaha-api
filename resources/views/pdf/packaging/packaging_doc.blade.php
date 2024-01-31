@@ -177,9 +177,9 @@
                 <tr>
                     <td colspan="3" class="text-center"> TOTAL</td>
                     <td class="text-center">{{ $count_qty }}</td>
-                    <td class="text-center">{{ round($count_net_weight,2) }}</td>
-                    <td class="text-center">{{ round($count_gross_weight,2) }}</td>
-                    <td class="text-center">{{ round($count_meas,3) }}</td>
+                    <td class="text-center">{{ number_format($count_net_weight,2) }}</td>
+                    <td class="text-center">{{ number_format($count_gross_weight,2) }}</td>
+                    <td class="text-center">{{ number_format(round($count_meas, 2),3) }}</td>
                 </tr>
             </table>
 
@@ -199,19 +199,19 @@
                 <tr>
                     <td class="no-bo" width="200px">Grand Total Nett Weights</td>
                     <td class="no-bo" width="4">:</td>
-                    <td width="50px" class="text-right no-bo">{{ round($count_net_weight,2) }}</td>
+                    <td width="50px" class="text-right no-bo">{{ number_format($count_net_weight,2) }}</td>
                     <td class="no-bo">Kgs</td>
                 </tr>
                 <tr>
                     <td class="no-bo" width="200px">Grand Total Gross Weights</td>
                     <td class="no-bo" width="4">:</td>
-                    <td width="50px" class="text-right no-bo">{{ round($count_gross_weight,2) }}</td>
+                    <td width="50px" class="text-right no-bo">{{ number_format($count_gross_weight,2) }}</td>
                     <td class="no-bo">Kgs</td>
                 </tr>
                 <tr>
                     <td class="no-bo" width="200px">Grand Total Measurement</td>
                     <td class="no-bo" width="4">:</td>
-                    <td width="50px" class="text-right no-bo">{{ round($count_meas,3) }}</td>
+                    <td width="50px" class="text-right no-bo">{{ number_format(round($count_meas, 2),3) }}</td>
                     <td class="no-bo">M3</td>
                 </tr>
             </table>
