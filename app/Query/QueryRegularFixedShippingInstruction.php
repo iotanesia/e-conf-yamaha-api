@@ -1270,7 +1270,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
         $ret['yth'] = $data->refMstLsp->name;
         $ret['username'] = $data->refMstConsignee->name;
-        $ret['jenis_truck'] = $data->refMstContainer->container_type." HC";
+        $ret['jenis_truck'] = $data->refMstContainer->container_type."'";
         $ret['surat_jalan'] = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first());
         $ret['delivery_date'] = date('d-m-Y');
         $ret['shipped'] = MstShipment::Where('is_active', 1)->first()->shipment ?? null;
