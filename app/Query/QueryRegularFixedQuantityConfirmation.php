@@ -1678,15 +1678,18 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         // $check = array_sum($qty_pcs_box[0]) / count($item_no);
                         $res_check = (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($plan_set));
                         $check_master = array_sum($mst_box->pluck('qty')->toArray()) / count($plan_set);
+                        $nw_gw = self::nettWeightGrossWeight($deliv_plan_box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray(), $mst_box, $plan_set);
                         $box_set[] = [
                             'item_no' => $item_no,
                             // 'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
                             'qty_pcs_box' => [$deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i]],
                             'item_no_series' => $item_no_series,
-                            // 'unit_weight_kg' =>  $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $unit_weight_kg : $unit_weight_kg_mst,
-                            'unit_weight_kg' => $res_check == $check_master ? $unit_weight_kg_mst : $unit_weight_kg,
-                            // 'total_gross_weight' =>  $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $total_gross_weight : $total_gross_weight_mst,
-                            'total_gross_weight' => $res_check == $check_master ? $total_gross_weight_mst : $total_gross_weight,
+                            // 'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $unit_weight_kg : $unit_weight_kg_mst,
+                            // 'unit_weight_kg' => $res_check >= $check_master ? $unit_weight_kg_mst : $unit_weight_kg,
+                            'unit_weight_kg' => $nw_gw[$i]['unit_weight_kg'],
+                            // 'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $total_gross_weight : $total_gross_weight_mst,
+                            // 'total_gross_weight' => $res_check >= $check_master ? $total_gross_weight_mst : $total_gross_weight,
+                            'total_gross_weight' => $nw_gw[$i]['total_gross_weight'],
                             'length' => $length,
                             'width' => $width,
                             'height' => $height,
