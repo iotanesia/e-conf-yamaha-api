@@ -1866,16 +1866,19 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         // $check = array_sum($qty_pcs_box[0]) / count($item_no);
                         $res_check = (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($plan_set));
                         $check_master = array_sum($mst_box->pluck('qty')->toArray()) / count($plan_set);
-                        $ratio_qty = self::inputQuantity(array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()), $mst_box->pluck('qty')->toArray());
+                        $ratio_qty = self::inputQuantity($deliv_plan_box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray());
+                        $nw_gw = self::nettWeightGrossWeight($deliv_plan_box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray(), $mst_box, $plan_set);
                         $box_set[] = [
                             'item_no' => $item_no,
                             // 'qty_pcs_box' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $res_qty : $qty_box,
-                            'qty_pcs_box' => count($res_qty) == 0 ? $res_qty : $ratio_qty,
+                            'qty_pcs_box' => count($res_qty) == 0 ? $res_qty : $ratio_qty[$i],
                             'item_no_series' => $item_no_series,
                             // 'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $unit_weight_kg : $unit_weight_kg_mst,
-                            'unit_weight_kg' => $res_check == $check_master ? $unit_weight_kg_mst : $unit_weight_kg,
+                            // 'unit_weight_kg' => $res_check >= $check_master ? $unit_weight_kg_mst : $unit_weight_kg,
+                            'unit_weight_kg' => $nw_gw[$i]['unit_weight_kg'],
                             // 'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $total_gross_weight : $total_gross_weight_mst,
-                            'total_gross_weight' => $res_check == $check_master ? $total_gross_weight_mst : $total_gross_weight,
+                            // 'total_gross_weight' => $res_check >= $check_master ? $total_gross_weight_mst : $total_gross_weight,
+                            'total_gross_weight' => $nw_gw[$i]['total_gross_weight'],
                             'length' => $length,
                             'width' => $width,
                             'height' => $height,
@@ -1935,14 +1938,42 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $ratios[] = $val / $reference_value;
         }
         
-        $qty = $value;
-
         $result = [];
-        foreach ($ratios as $res) {
-            $result[] = $qty * ($res / array_sum($ratios));
+        foreach ($value as $qty) {
+            $result_qty = [];
+            foreach ($ratios as $res) {
+                $result_qty[] = $qty * ($res / array_sum($ratios));
+            }
+
+            $result[] = $result_qty;
         }
 
         return $result;
+    }
+
+    public static function nettWeightGrossWeight($value, $ratio, $mst_box, $plan_set)
+    {
+        $qty_ratio = self::inputQuantity($value, $ratio);
+
+        $result = [];
+        foreach ($qty_ratio as $qty) {
+            $unit_weight_kg = [];
+            $total_gross_weight = [];
+            foreach ($mst_box as $key => $value) {
+                $count_net_weight = $value->unit_weight_gr;
+                $count_outer_carton_weight = $value->outer_carton_weight / count($plan_set);
+                $unit_weight_kg[] = ($count_net_weight * $qty[$key])/1000;
+                $total_gross_weight[] = (($count_net_weight * $qty[$key])/1000) + $count_outer_carton_weight;
+            }
+
+            $result[] = [
+                'unit_weight_kg' => $unit_weight_kg,
+                'total_gross_weight' => $total_gross_weight,
+            ];
+        }
+
+        return $result;
+
     }
 
 }
