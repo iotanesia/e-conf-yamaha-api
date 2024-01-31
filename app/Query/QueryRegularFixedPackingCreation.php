@@ -294,7 +294,7 @@ class QueryRegularFixedPackingCreation extends Model {
                         
             $data->no_letters = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first());
             $data->delivery_date = date('d-m-Y');
-            $data->truck_type = $data->jenis_truck." HC";
+            $data->truck_type = $data->jenis_truck."'";
             $data->yth = $data->yth;
             $data->nick_name = $data->username;
             $data->shipper = MstShipment::Where('is_active', 1)->first()->shipment ?? null;

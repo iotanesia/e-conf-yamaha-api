@@ -153,10 +153,10 @@
         </thead>
         <tbody>
             <tr>
-                <td class="text-center" style="padding: 30px;"> </td>
-                <td class="text-center" style="padding: 30px;"> </td>
-                <td class="text-center" style="padding: 30px;"> </td>
-                <td class="text-center" style="padding: 30px;"> </td>
+                <td class="text-center" style="padding: 30px;" width="50"> </td>
+                <td class="text-center" style="padding: 30px;" width="50"> </td>
+                <td class="text-center" style="padding: 30px;" width="50"> </td>
+                <td class="text-center" style="padding: 30px;" width="50"> </td>
             </tr>
         </tbody>
     </table>
