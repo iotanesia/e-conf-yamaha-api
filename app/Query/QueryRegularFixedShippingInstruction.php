@@ -1186,7 +1186,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $box_set = [];
                     for ($i=0; $i < count($deliv_plan_box); $i++) { 
                         // $check = array_sum($qty_pcs_box[0]) / count($item_no);
-                        $check = array_sum($mst_box->pluck('qty')->toArray());
+                        $res_check = (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($plan_set));
+                        $check_master = array_sum($mst_box->pluck('qty')->toArray()) / count($plan_set);
                         $ratio_qty = self::inputQuantity(array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()), $mst_box->pluck('qty')->toArray());
                         $box_set[] = [
                             'item_no' => $item_no,
@@ -1194,9 +1195,9 @@ class QueryRegularFixedShippingInstruction extends Model {
                             'qty_pcs_box' => count($res_qty) == 0 ? $res_qty : $ratio_qty,
                             'item_no_series' => $item_no_series,
                             // 'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $unit_weight_kg : $unit_weight_kg_mst,
-                            'unit_weight_kg' => $unit_weight_kg,
+                            'unit_weight_kg' => $res_check == $check_master ? $unit_weight_kg_mst : $unit_weight_kg,
                             // 'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $total_gross_weight : $total_gross_weight_mst,
-                            'total_gross_weight' => $total_gross_weight,
+                            'total_gross_weight' => $res_check == $check_master ? $total_gross_weight_mst : $total_gross_weight,
                             'length' => $length,
                             'width' => $width,
                             'height' => $height,
