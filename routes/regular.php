@@ -243,6 +243,7 @@ Route::prefix('v1/regular')
             Route::post('/delivery-note/save',[FixedPackingCreationController::class,'packingCreationDeliveryNoteSave']);
             Route::get('/delivery-note/print/{id}',[FixedPackingCreationController::class,'packingCreationDeliveryNotePrint']);
             Route::get('/download/{id}',[FixedQuantityConfirmationController::class,'printPackaging']);
+            Route::get('/export/csv',[FixedQuantityConfirmationController::class,'exportCSV']);
         });
 
         Route::group(['prefix' => 'casemarks'],function(){

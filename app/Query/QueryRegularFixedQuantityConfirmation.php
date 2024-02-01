@@ -23,6 +23,9 @@ use App\Models\RegularOrderEntry;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PackingExport;
+use App\Models\RegularStokConfirmationHistory;
 
 class QueryRegularFixedQuantityConfirmation extends Model {
 
@@ -1971,7 +1974,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $total_gross_weight = [];
             foreach ($mst_box as $key => $value) {
                 $count_net_weight = $value->unit_weight_gr;
-                $count_outer_carton_weight = $value->outer_carton_weight / count($plan_set);
+                $count_outer_carton_weight = count($plan_set) == 0 ? $value->outer_carton_weight : ($value->outer_carton_weight / count($plan_set));
                 $unit_weight_kg[] = ($count_net_weight * $qty[$key])/1000;
                 $total_gross_weight[] = (($count_net_weight * $qty[$key])/1000) + $count_outer_carton_weight;
             }
@@ -1984,6 +1987,44 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         return $result;
 
+    }
+
+    public static function exportCSV($request)
+    {
+        $query = RegularStokConfirmationHistory::where('type', 'OUTSTOCK')
+        ->orderBy('created_at','asc')
+        ->get();
+
+        $data = $query->map(function ($item, $key){
+            $plan_box = RegularDeliveryPlanBox::where('id', $item->id_regular_delivery_plan_box)->first();
+            $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $plan_box->refRegularDeliveryPlan->id)->first();
+            $mst_box = MstBox::where('id', $plan_box->id_box)->get();
+            $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_perbox], [$plan_box->refBox->qty], $mst_box, $plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
+            $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->where('item_no', $plan_box->refBox->item_no)->first();
+
+            $set["gl_account"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->gl_account : $plan_set->refPart->gl_account;
+            $set["coa"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->coa : $plan_set->refPart->coa;
+            $set["cost_center"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->cost_center : $plan_set->refPart->cost_center;
+            $set["urutan_no_container"] = null;
+            $set["kosong"] = null;
+            $set["po_no"] = $fixedQuantity->order_no ?? null;
+            $set["part_no"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->item_serial : $plan_set->refPart->item_serial;
+            $set["qty"] = $item->qty_pcs_perbox ?? null;
+            $res['no'] = $key + 1;
+            $res['nw'] = $nw_gw[0]['unit_weight_kg'][0] ?? null;
+            $res['gw'] = $nw_gw[0]['total_gross_weight'][0] ?? null;
+            $set["model_code"] = $fixedQuantity->cust_item_no ?? null;
+            $set["type_box"] = 'CARTON BOX';
+            $set["panjang"] = $plan_box->refBox->length ?? null;
+            $set["lebar"] = $plan_box->refBox->width ?? null;
+            $set["tinggi"] = $plan_box->refBox->height ?? null;
+            $set["hs_code"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->hs_code : $plan_set->refPart->hs_code;
+
+            unset($item->refRegularDeliveryPlan);
+            return $set;
+        });
+
+        return Excel::download(new PackingExport($data->toArray()), 'packing-list.csv');
     }
 
 }

@@ -232,4 +232,13 @@ class FixedQuantityConfirmationController extends Controller
         }
     }
 
+    public function exportCSV(Request $request)
+    {
+        try {
+            return QueryRegularFixedQuantityConfirmation::exportCSV($request);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
 }
