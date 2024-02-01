@@ -191,12 +191,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             }
             $item_no = [];
             foreach (explode(',', $item->item_no) as $value) {
-                $item_no[] = $value;
+                $item_no[] = self::getItemSerial($value);
             }
 
             if ($check->refRegularDeliveryPlan->item_no == null) {
                 $mst_box = MstBox::where('part_set', 'set')
-                                ->whereIn('item_no', $item_no)
+                                ->whereIn('item_no', str_replace('-','',$item_no))
                                 ->get()->map(function ($item){
                                     $qty = [
                                         $item->item_no.'id' => $item->qty
@@ -273,6 +273,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         return $data->description ?? null;
     }
 
+    public static function getItemSerial($id_part){
+        $data = MstPart::where('item_no', $id_part)->first();
+        return $data->item_serial ?? null;
+    }
+
     public static function getCountBox($id, $id_prospect_container_creation){
         $data = RegularDeliveryPlanBox::select('id_box', DB::raw('count(*) as jml'))
                 ->where('id_regular_delivery_plan', $id)
@@ -283,7 +288,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $data->map(function ($item){
                 $set['id'] = 0;
                 $set['id_box'] = $item->id_box;
-                $set['qty'] =  $item->refBox->qty." x ".$item->jml." pcs";
+                $set['qty'] =  $item->refBox->qty." x ".$item->jml;
                 $set['length'] =  "";
                 $set['width'] =  "";
                 $set['height'] =  "";
