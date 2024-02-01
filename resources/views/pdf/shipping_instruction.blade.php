@@ -115,7 +115,11 @@
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">CONTAINER </td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->container_count}} x {{ $data->container_value }}</td>
+                        @if ($data->container_count == 0)
+                            <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : -</td>
+                        @else
+                            <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->container_count}} x {{ $data->container_value }}</td>
+                        @endif
                         <td width="80" class="no-bo" style="padding: 0 0 0 5px; margin: 0;">DO No</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->do_no}}</td>
                     </tr>
