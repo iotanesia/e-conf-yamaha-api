@@ -2010,9 +2010,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $set["po_no"] = $fixedQuantity->order_no ?? null;
             $set["part_no"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->item_serial : $plan_set->refPart->item_serial;
             $set["qty"] = $item->qty_pcs_perbox ?? null;
-            $res['no'] = $key + 1;
-            $res['nw'] = $nw_gw[0]['unit_weight_kg'][0] ?? null;
-            $res['gw'] = $nw_gw[0]['total_gross_weight'][0] ?? null;
+            $set['no'] = $key + 1;
+            $set['nw'] = number_format($nw_gw[0]['unit_weight_kg'][0], 2) ?? null;
+            $set['gw'] = number_format($nw_gw[0]['total_gross_weight'][0], 2) ?? null;
             $set["model_code"] = $fixedQuantity->cust_item_no ?? null;
             $set["type_box"] = 'CARTON BOX';
             $set["panjang"] = $plan_box->refBox->length ?? null;
@@ -2020,7 +2020,6 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $set["tinggi"] = $plan_box->refBox->height ?? null;
             $set["hs_code"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->hs_code : $plan_set->refPart->hs_code;
 
-            unset($item->refRegularDeliveryPlan);
             return $set;
         });
 
