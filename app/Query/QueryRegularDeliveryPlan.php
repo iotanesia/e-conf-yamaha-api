@@ -1645,7 +1645,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'freight_charge' => 'COLLECT',
                     'incoterm' => 'FOB',
                     'shipped_by' => $item->mot,
-                    'container_value' => explode(',', $item->container_type),
+                    'container_value' => $item->mot == 'AIR' ? '-' : explode(',', $item->container_type),
                     // 'container_count' => array_sum($summary_box->toArray()) == 0 ? [count($box)] : [array_sum($summary_box->toArray())],
                     'container_count' => $item->mot == 'AIR' ? '-' : [count($summary_box->toArray())],
                     'container_type' => $item->container_value,
