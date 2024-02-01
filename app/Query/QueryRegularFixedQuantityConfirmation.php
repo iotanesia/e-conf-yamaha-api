@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PackingExport;
+use App\Exports\PebExport;
 use App\Models\RegularStokConfirmationHistory;
 
 class QueryRegularFixedQuantityConfirmation extends Model {
@@ -2003,32 +2004,106 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->where('item_no', $plan_box->refBox->item_no)->first();
 
             if ($fixedQuantity->id_fixed_actual_container !== null) {
-                $set["gl_account"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->gl_account : $plan_set->refPart->gl_account;
-                $set["coa"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->coa : $plan_set->refPart->coa;
-                $set["cost_center"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->cost_center : $plan_set->refPart->cost_center;
-                $set["urutan_no_container"] = null;
-                $set["kosong"] = null;
-                $set["po_no"] = $fixedQuantity->order_no ?? null;
-                $set["part_no"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->item_serial : $plan_set->refPart->item_serial;
-                $set["qty"] = $item->qty_pcs_perbox ?? null;
-                $set['no'] = $key + 1;
-                $set['nw'] = number_format($nw_gw[0]['unit_weight_kg'][0], 2) ?? null;
-                $set['gw'] = number_format($nw_gw[0]['total_gross_weight'][0], 2) ?? null;
-                $set["model_code"] = $fixedQuantity->cust_item_no ?? null;
-                $set["type_box"] = 'CARTON BOX';
-                $set["panjang"] = $plan_box->refBox->length ?? null;
-                $set["lebar"] = $plan_box->refBox->width ?? null;
-                $set["tinggi"] = $plan_box->refBox->height ?? null;
-                $set["hs_code"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->hs_code : $plan_set->refPart->hs_code;
+                $res["gl_account"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->gl_account : $plan_set->refPart->gl_account;
+                $res["coa"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->coa : $plan_set->refPart->coa;
+                $res["cost_center"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->cost_center : $plan_set->refPart->cost_center;
+                $res["urutan_no_container"] = null;
+                $res["kosong"] = null;
+                $res["po_no"] = $fixedQuantity->order_no ?? null;
+                $res["part_no"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->item_serial : $plan_set->refPart->item_serial;
+                $res["qty"] = $item->qty_pcs_perbox ?? null;
+                $res['no'] = $key + 1;
+                $res['nw'] = number_format($nw_gw[0]['unit_weight_kg'][0], 2) ?? null;
+                $res['gw'] = number_format($nw_gw[0]['total_gross_weight'][0], 2) ?? null;
+                $res["model_code"] = $fixedQuantity->cust_item_no ?? null;
+                $res["type_box"] = 'CARTON BOX';
+                $res["panjang"] = $plan_box->refBox->length ?? null;
+                $res["lebar"] = $plan_box->refBox->width ?? null;
+                $res["tinggi"] = $plan_box->refBox->height ?? null;
+                $res["hs_code"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->hs_code : $plan_set->refPart->hs_code;
     
-                return $set;
+                return $res;
             }
 
         });
 
         $filteredData = array_values(array_filter($data->toArray()));
+        $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
-        return Excel::download(new PackingExport($filteredData), 'packing-list.csv');
+        return Excel::download(new PackingExport($filteredData), $filename.'.csv');
+    }
+
+    public static function exportPEB($request)
+    {
+        $query = RegularStokConfirmationHistory::select('id_regular_delivery_plan',
+            DB::raw("string_agg(DISTINCT regular_stock_confirmation_history.created_at::character varying, ',') as created_at"),
+            DB::raw("string_agg(DISTINCT regular_stock_confirmation_history.id_regular_delivery_plan_box::character varying, ',') as id_regular_delivery_plan_box"),
+            DB::raw("string_agg(DISTINCT regular_stock_confirmation_history.id_box::character varying, ',') as id_box"),
+            DB::raw("SUM(regular_stock_confirmation_history.qty_pcs_perbox) as qty_pcs_perbox"),
+        )
+        ->where('type', 'OUTSTOCK')
+        ->groupBy('id_regular_delivery_plan')
+        ->orderBy('created_at', 'asc')
+        ->get();
+
+        $data = $query->map(function ($item, $key){
+            $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)->first();
+
+            if ($item->refRegularDeliveryPlan->item_no == null) {
+                $item_no = [];
+                $kode_barang = [];
+                $hs_code = '';
+                foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $value) {
+                    $kode_barang[] = $value->item_no.', '.trim($value->refPart->description);
+                    $hs_code = $value->refPart->hs_code;
+                    $item_no[] = $value->item_no;
+                }
+
+                $kode_barang = implode(', ',$kode_barang);
+                $mst_box = MstBox::whereIn('item_no', $item_no)->get();
+                $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_perbox], $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                $netto = array_sum($nw_gw[0]['unit_weight_kg']);
+
+                $volume = 0;
+                foreach ($mst_box as $vol) {
+                    $volume = ($vol->length * $vol->width * $vol->height) / 1000000000;
+                }
+            } else {
+                $kode_barang = $item->refRegularDeliveryPlan->item_no.', '.trim($item->refRegularDeliveryPlan->refPart->description);
+                $hs_code = $item->refRegularDeliveryPlan->refPart->hs_code;
+                
+                $mst_box = MstBox::where('item_no', $item->refRegularDeliveryPlan->item_no)->get();
+                $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_perbox], $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                $netto = array_sum($nw_gw[0]['unit_weight_kg']);
+                
+                $volume = 0;
+                foreach ($mst_box as $vol) {
+                    $volume = ($vol->length * $vol->width * $vol->height) / 1000000000;
+                }
+            }
+            
+
+            if ($fixedQuantity->id_fixed_actual_container !== null) {
+                $res['seri_barang'] = $key + 1;
+                $res['hs'] = $hs_code;
+                $res['kode_barang'] = $kode_barang;
+                $res['uraian'] = 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES';
+                $res['kode_satuan'] = 'PCE';
+                $res['jumlah_satuan'] = $item->qty_pcs_perbox;
+                $res['kode_kemasan'] = 'CT';
+                $res['jumlah_kemasan'] = count(explode(',', $item->id_regular_delivery_plan_box));
+                $res['netto'] = number_format($netto, 2);
+                $res['volume'] = number_format($volume, 3);
+
+                return $res;
+            }
+
+        });
+
+        $filteredData = array_values(array_filter($data->toArray()));
+        $filename = 'PEB-'.Carbon::now()->format('Ymd');
+
+        return Excel::download(new PebExport($filteredData), $filename.'.xlsx');
     }
 
 }

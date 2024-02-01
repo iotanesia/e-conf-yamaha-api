@@ -241,4 +241,13 @@ class FixedQuantityConfirmationController extends Controller
         }
     }
 
+    public function exportPEB(Request $request)
+    {
+        try {
+            return QueryRegularFixedQuantityConfirmation::exportPEB($request);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
 }

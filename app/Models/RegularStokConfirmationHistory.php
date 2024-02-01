@@ -23,4 +23,9 @@ class RegularStokConfirmationHistory extends Model
         "updated_by",
         "deleted_at"
     ];
+    
+    public function refRegularDeliveryPlan()
+    {
+        return $this->belongsTo(RegularDeliveryPlan::class,'id_regular_delivery_plan','id');
+    }
 }
