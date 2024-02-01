@@ -1465,7 +1465,8 @@ class QueryRegularDeliveryPlan extends Model {
                     $si_item->container_value = explode(',', $si_item->container_value);
                     $si_item->container_count = explode(',', $si_item->container_count);
                     $si_item->container_type = explode(',', $si_item->container_type);
-                    $si_item->summary_box = array_sum($summary_box->toArray()) == 0 ? implode('',$si_item->container_count) : array_sum($summary_box->toArray());
+                    // $si_item->summary_box = array_sum($summary_box->toArray()) == 0 ? implode('',$si_item->container_count) : array_sum($summary_box->toArray());
+                    $si_item->summary_box = $si_item->description_of_goods_1;
 
                     return $si_item;
                 });
