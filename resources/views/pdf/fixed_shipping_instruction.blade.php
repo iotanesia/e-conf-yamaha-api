@@ -176,7 +176,7 @@
             </table>
 
             <table style="border: 1px solid #000; border-top:hidden; border-bottom:hidden;">
-                <table>
+                <table style="margin-bottom: 10px;">
                     <tr>
                         <td class="no-bo" colspan="2"><b>{{$data->description_of_goods_1}} {{$data->description_of_goods_1_detail}}</b> &nbsp; &nbsp; <b>{{$data->description_of_goods_2}}</b></td>
                         <td class="no-bo" colspan="2"><b>{{$data->description_of_goods_2_detail}}</b></td>
@@ -189,9 +189,9 @@
             <table style="border: 1px solid #000; border-top:hidden;">
                 <table>
                     <tr>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Carton Box Qty</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="80">Carton Box Qty</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->description_of_goods_1}}</td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="80">Carton Boxes</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Carton Boxes</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
                     </tr>
@@ -213,8 +213,8 @@
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Measurement </td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{number_format($data->measurement,3)}}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Kgs</td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Container//Seal No.//Qty//GW//M3</td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->seal_no}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="90">Container//Seal No.//Qty//GW//M3</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="140"> : {{$data->seal_no}}</td>
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">B/L </td>
