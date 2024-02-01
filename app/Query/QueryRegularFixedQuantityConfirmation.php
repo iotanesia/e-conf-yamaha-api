@@ -2026,7 +2026,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         });
 
-        return Excel::download(new PackingExport($data->toArray()), 'packing-list.csv');
+        $filteredData = array_values(array_filter($data->toArray()));
+
+        return Excel::download(new PackingExport($filteredData), 'packing-list.csv');
     }
 
 }
