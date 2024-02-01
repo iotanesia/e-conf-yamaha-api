@@ -214,7 +214,7 @@
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{round($data->measurement,2)}}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Kgs</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="80">Container//Seal No.//Qty//GW//M3</td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="160"> : {{$data->seal_no}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="150"> : {{$data->seal_no}}</td>
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">B/L </td>
