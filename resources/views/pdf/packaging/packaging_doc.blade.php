@@ -64,7 +64,7 @@
 </head>
 
 <body>
-    <h4 class="text-center">PACKING LIST SHEET</h4>
+    <h2 class="text-center">PACKING LIST SHEET</h2>
 
     @foreach ($data as $key => $item)
         <table>
@@ -74,7 +74,11 @@
                 <td class="no-bo">{{ $item->no_packaging }}</td>
                 <td class="no-bo">SHIPPED BY</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">{{ $item->manyFixedActualContainerCreation[0]->refMstLsp->name ?? null }}</td>
+                @if ($item->id_mot == 2)
+                    <td class="no-bo">-</td>
+                @else
+                    <td class="no-bo">{{ $item->manyFixedActualContainerCreation[0]->refMstLsp->name ?? null }}</td>
+                @endif
             </tr>
             <tr>
                 <td class="no-bo">Date</td>
@@ -87,7 +91,11 @@
             <tr>
                 <td class="no-bo">Container No</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">{{ count($data) }} ({{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer ? $item->manyFixedActualContainerCreation[0]->refMstContainer->container_type : null) : null }})</td>
+                @if ($item->id_mot == 2)
+                    <td class="no-bo">-</td>
+                @else
+                    <td class="no-bo">{{ count($data) }} ({{ count($item->manyFixedActualContainerCreation) !== 0 ? ($item->manyFixedActualContainerCreation[0]->refMstContainer ? $item->manyFixedActualContainerCreation[0]->refMstContainer->container_type : null) : null }})</td>
+                @endif
                 <td class="no-bo">ETD {{ $item->refPartOfDischarge->port ?? null }}</td>
                 <td class="no-bo">:</td>
                 <td class="no-bo">{{ date('d F Y', strtotime($item->etd_ypmi)) }}</td>
@@ -169,6 +177,8 @@
                             <td style='padding-bottom:5px;' class='text-center'>{{ number_format($box_item['unit_weight_kg'][$i], 2) }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ?  number_format(array_sum($gross_weight_per_part[$key]), 2) : null }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ? number_format((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000), 3) : null }}</td>
+                            
+                            <?php $meas = 0; $meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000) ?>
                         </tr>
                     @endfor
                 @endforeach
@@ -179,7 +189,7 @@
                     <td class="text-center">{{ $count_qty }}</td>
                     <td class="text-center">{{ number_format($count_net_weight,2) }}</td>
                     <td class="text-center">{{ number_format($count_gross_weight,2) }}</td>
-                    <td class="text-center">{{ number_format(round($count_meas, 2),3) }}</td>
+                    <td class="text-center">{{ number_format($meas, 3) }}</td>
                 </tr>
             </table>
 
