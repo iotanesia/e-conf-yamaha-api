@@ -581,7 +581,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         //     $total_gross_weight = $total_gross_weight;
                         // }
 
-                        $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000) / count($box);
+                        $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000);
                     } else {
                         $count_net_weight = $box_item->refBox->unit_weight_gr;
                         $count_outer_carton_weight = $box_item->refBox->outer_carton_weight;
