@@ -556,23 +556,30 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
                         $master = [];
                         $check = [];
+                        $item_no_set = [];
                         foreach ($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet as $set) {
+                            $item_no_set[] = $set->item_no;
                             $master[] = $set->refBox->qty;
                             $check[] = $box->pluck('qty_pcs_box')->toArray()[$key];
-                            $total_net_weight += ((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000)));
-                            $total_gross_weight += (((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000) + $set->refBox->outer_carton_weight));
-                            $total_net_weight_mst += (($set->refBox->unit_weight_gr * $set->refBox->qty) / 1000);
-                            $total_gross_weight_mst += ($set->refBox->unit_weight_gr * $set->refBox->qty / 1000) + $set->refBox->outer_carton_weight;
+                            // $total_net_weight += ((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000)));
+                            // $total_gross_weight += (((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000) + $set->refBox->outer_carton_weight));
+                            // $total_net_weight_mst += (($set->refBox->unit_weight_gr * $set->refBox->qty) / 1000);
+                            // $total_gross_weight_mst += ($set->refBox->unit_weight_gr * $set->refBox->qty / 1000) + $set->refBox->outer_carton_weight;
                         } 
-                        $res_check = (array_sum($check) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
-                        $res_master =  array_sum($master) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
-                        if ($res_check == $res_master) {
-                            $total_net_weight = $total_net_weight_mst;
-                            $total_gross_weight = $total_gross_weight_mst;
-                        } else {
-                            $total_net_weight = $total_net_weight;
-                            $total_gross_weight = $total_gross_weight;
-                        }
+                        $mst_box = MstBox::whereIn('item_no', $item_no_set)->get();
+                        $nw_gw = self::nettWeightGrossWeight($box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray(), $mst_box, $box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                            
+                        $total_net_weight += array_sum($nw_gw[$key]['unit_weight_kg']);
+                        $total_gross_weight += array_sum($nw_gw[$key]['total_gross_weight']);
+                        // $res_check = (array_sum($check) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                        // $res_master =  array_sum($master) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                        // if ($res_check == $res_master) {
+                        //     $total_net_weight = $total_net_weight_mst;
+                        //     $total_gross_weight = $total_gross_weight_mst;
+                        // } else {
+                        //     $total_net_weight = $total_net_weight;
+                        //     $total_gross_weight = $total_gross_weight;
+                        // }
 
                         $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000) / count($box);
                     } else {
@@ -1262,5 +1269,51 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             }
         }
         return $totalBoxes;
+    }
+    
+    public static function inputQuantity($value, $ratio) 
+    {
+        $reference_value = min($ratio);
+        $ratios = [];
+        foreach ($ratio as $val) {
+            $ratios[] = $val / $reference_value;
+        }
+        
+        $result = [];
+        foreach ($value as $qty) {
+            $result_qty = [];
+            foreach ($ratios as $res) {
+                $result_qty[] = $qty * ($res / array_sum($ratios));
+            }
+
+            $result[] = $result_qty;
+        }
+
+        return $result;
+    }
+
+    public static function nettWeightGrossWeight($value, $ratio, $mst_box, $plan_set)
+    {
+        $qty_ratio = self::inputQuantity($value, $ratio);
+
+        $result = [];
+        foreach ($qty_ratio as $qty) {
+            $unit_weight_kg = [];
+            $total_gross_weight = [];
+            foreach ($mst_box as $key => $value) {
+                $count_net_weight = $value->unit_weight_gr;
+                $count_outer_carton_weight = count($plan_set) == 0 ? $value->outer_carton_weight : ($value->outer_carton_weight / count($plan_set));
+                $unit_weight_kg[] = ($count_net_weight * $qty[$key])/1000;
+                $total_gross_weight[] = (($count_net_weight * $qty[$key])/1000) + $count_outer_carton_weight;
+            }
+
+            $result[] = [
+                'unit_weight_kg' => $unit_weight_kg,
+                'total_gross_weight' => $total_gross_weight,
+            ];
+        }
+
+        return $result;
+
     }
 }
