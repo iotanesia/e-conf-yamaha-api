@@ -921,8 +921,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     $delivery_plan[] = $item->id;
                 }
             }
-            //1418
-// dd($delivery_plan);
+            
             //calculation part set
             if (count($delivery_plan_set) > 0) {
                 $delivery_plan_box_set = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
@@ -1037,7 +1036,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         $creation['iteration'] = $i + 99;
                         $creation['space'] = 5905 - (int)$sum_row_length;
                     } else {
-                        $creation['id_container'] = 2;
+                        $creation['id_container'] = 3;
                         $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
                         // $creation['summary_box'] = (int)floor($send_summary_box);
                         $creation['summary_box'] = (int)$send_summary_box[$i-1];
