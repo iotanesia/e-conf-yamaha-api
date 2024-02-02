@@ -53,7 +53,7 @@
         }
         .flying-text {
             position: absolute;
-            left: 25px;
+            left: 45px;
             top: 230px;
             z-index: -1;
         }

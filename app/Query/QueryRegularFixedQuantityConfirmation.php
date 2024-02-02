@@ -2063,6 +2063,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $filteredData = array_values(array_filter($data->toArray()));
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
+        foreach ($flattenedArray as $key => &$subarray) {
+            $subarray["no"] = $key +1;
+        }
         $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
         return Excel::download(new PackingExport($flattenedArray), $filename.'.csv');
