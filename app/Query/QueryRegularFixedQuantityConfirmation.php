@@ -2118,7 +2118,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             }
             
 
-            if ($fixedQuantity->id_fixed_actual_container !== null) {
+            if ($fixedQuantity && $fixedQuantity->id_fixed_actual_container !== null) {
                 $res['seri_barang'] = $key + 1;
                 $res['hs'] = $hs_code;
                 $res['kode_barang'] = $kode_barang;
