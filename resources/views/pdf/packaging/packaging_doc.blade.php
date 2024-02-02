@@ -177,8 +177,6 @@
                             <td style='padding-bottom:5px;' class='text-center'>{{ number_format($box_item['unit_weight_kg'][$i], 2) }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ?  number_format(array_sum($gross_weight_per_part[$key]), 2) : null }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ? number_format((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000), 3) : null }}</td>
-                            
-                            <?php $meas = 0; $meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000) ?>
                         </tr>
                     @endfor
                 @endforeach
@@ -189,7 +187,7 @@
                     <td class="text-center">{{ $count_qty }}</td>
                     <td class="text-center">{{ number_format($count_net_weight,2) }}</td>
                     <td class="text-center">{{ number_format($count_gross_weight,2) }}</td>
-                    <td class="text-center">{{ number_format($meas, 3) }}</td>
+                    <td class="text-center">{{ number_format($count_meas,3) }}</td>
                 </tr>
             </table>
 
@@ -221,7 +219,7 @@
                 <tr>
                     <td class="no-bo" width="200px">Grand Total Measurement</td>
                     <td class="no-bo" width="4">:</td>
-                    <td width="50px" class="text-right no-bo">{{ number_format(round($count_meas, 2),3) }}</td>
+                    <td width="50px" class="text-right no-bo">{{ number_format($count_meas,3) }}</td>
                     <td class="no-bo">M3</td>
                 </tr>
             </table>
