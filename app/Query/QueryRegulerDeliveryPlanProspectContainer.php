@@ -921,7 +921,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     $delivery_plan[] = $item->id;
                 }
             }
-
+            //1418
+// dd($delivery_plan);
             //calculation part set
             if (count($delivery_plan_set) > 0) {
                 $delivery_plan_box_set = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
@@ -1024,19 +1025,22 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 ];
 
                 $count_container = (int)ceil($sum_row_length / 12031);
-                $send_summary_box = $summary_box;
+                // $send_summary_box = $summary_box;
+                $send_summary_box = self::ratioSummaryBox(array_sum($count_box), $sum_row_length, 12031);
                 $sum_send_summary_box = 0;
                 for ($i=1; $i <= $count_container; $i++) { 
                     if ($sum_row_length < 5905) {
                         $creation['id_container'] = 1;
                         $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-                        $creation['summary_box'] = (int)floor($sum_count_box);
+                        // $creation['summary_box'] = (int)floor($sum_count_box);
+                        $creation['summary_box'] = (int)$send_summary_box[$i-1];
                         $creation['iteration'] = $i + 99;
                         $creation['space'] = 5905 - (int)$sum_row_length;
                     } else {
                         $creation['id_container'] = 2;
                         $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                        $creation['summary_box'] = (int)floor($send_summary_box);
+                        // $creation['summary_box'] = (int)floor($send_summary_box);
+                        $creation['summary_box'] = (int)$send_summary_box[$i-1];
                         $creation['iteration'] = $i + 99;
                         $creation['space'] = (int)$space;
                     }
@@ -1045,17 +1049,17 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     if($check) $check->forceDelete();
                     RegularProspectContainerCreation::create($creation);
                     $sum_row_length = $sum_row_length - 12031;
-                    $send_summary_box = $send_summary_box;
-                    $sum_send_summary_box += $send_summary_box;
-                    $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
+                    // $send_summary_box = $send_summary_box;
+                    // $sum_send_summary_box += $send_summary_box;
+                    // $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
 
-                    if ($send_summary_box > $remaining_send_summary_box) {
-                        $send_summary_box = $remaining_send_summary_box;
-                    }
+                    // if ($send_summary_box > $remaining_send_summary_box) {
+                    //     $send_summary_box = $remaining_send_summary_box;
+                    // }
                     
-                    if ($sum_row_length < 5905) {
-                        $sum_count_box = $send_summary_box;
-                    }
+                    // if ($sum_row_length < 5905) {
+                    //     $sum_count_box = $send_summary_box;
+                    // }
                 }
 
                 $upd = RegularProspectContainer::find($params->id);
@@ -1172,19 +1176,22 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             ];
 
             $count_container = (int)ceil($sum_row_length / 12031);
-            $send_summary_box = $summary_box;
+            // $send_summary_box = $summary_box;
+            $send_summary_box = self::ratioSummaryBox(array_sum($count_box), $sum_row_length, 12031);
             $sum_send_summary_box = 0;
             for ($i=1; $i <= $count_container; $i++) { 
                 if ($sum_row_length < 5905) {
                     $creation['id_container'] = 1;
                     $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-                    $creation['summary_box'] = (int)floor($sum_count_box);
+                    // $creation['summary_box'] = (int)floor($sum_count_box);
+                    $creation['summary_box'] = (int)$send_summary_box[$i-1];
                     $creation['iteration'] = $i;
                     $creation['space'] = 5905 - (int)$sum_row_length;
                 } else {
                     $creation['id_container'] = 2;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                    $creation['summary_box'] = (int)floor($send_summary_box);
+                    // $creation['summary_box'] = (int)floor($send_summary_box);
+                    $creation['summary_box'] = (int)$send_summary_box[$i-1];
                     $creation['iteration'] = $i;
                     $creation['space'] = (int)$space;
                 }
@@ -1193,17 +1200,17 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 if($check) $check->forceDelete();
                 RegularProspectContainerCreation::create($creation);
                 $sum_row_length = $sum_row_length - 12031;
-                $send_summary_box = $send_summary_box;
-                $sum_send_summary_box += $send_summary_box;
-                $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
+                // $send_summary_box = $send_summary_box;
+                // $sum_send_summary_box += $send_summary_box;
+                // $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
 
-                if ($send_summary_box > $remaining_send_summary_box) {
-                    $send_summary_box = $remaining_send_summary_box;
-                }
+                // if ($send_summary_box > $remaining_send_summary_box) {
+                //     $send_summary_box = $remaining_send_summary_box;
+                // }
                 
-                if ($sum_row_length < 5905) {
-                    $sum_count_box = $send_summary_box;
-                }
+                // if ($sum_row_length < 5905) {
+                //     $sum_count_box = $send_summary_box;
+                // }
             }
             
             $upd = RegularProspectContainer::find($params->id);
@@ -1229,6 +1236,29 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function ratioSummaryBox($qty, $sum_row_length, $divisor)
+    {
+        $ratios = [];
+        $fullChunks = floor($sum_row_length / $divisor);
+        for ($i = 0; $i < $fullChunks; $i++) {
+            $ratios[] = $divisor;
+        }
+
+        $remainingQty = $sum_row_length % $divisor;
+        if ($remainingQty > 0) {
+            $ratios[] = $remainingQty;
+        }
+
+        $totalRatio = array_sum($ratios);
+    
+        $result = [];
+        foreach ($ratios as $variable => $ratio) {
+            $result[$variable] = round($qty * ($ratio / $totalRatio));
+        }
+    
+        return $result;
     }
 
     public static function creationDelete($params, $id)
