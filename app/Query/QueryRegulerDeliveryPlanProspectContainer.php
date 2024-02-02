@@ -928,7 +928,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     if ($item->refRegularDeliveryPlan->item_no == null) {
                         $count_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->count();
                         $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refBox->length * (int)ceil(($item->count_box / $count_set) / 4));
-                        $count_box = $item->count_box / $count_set;
+                        $count_box = $item->count_box;
                         $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
                                                         ->where('id_box', $item->id_box)
                                                         ->whereNull('id_prospect_container_creation')
