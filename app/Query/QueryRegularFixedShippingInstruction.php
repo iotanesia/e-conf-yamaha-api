@@ -564,11 +564,11 @@ class QueryRegularFixedShippingInstruction extends Model {
             $actual_container = RegularFixedActualContainer::where('id', $actual_container_creation->id_fixed_actual_container)->get();
 
             foreach ($actual_container as $key => $value) {
-                $tes = $value->manyFixedQuantityConfirmation;
+                $fixedQuantity = $value->manyFixedQuantityConfirmation;
             }
 
             $box = [];
-            foreach ($tes as $key => $item) {
+            foreach ($fixedQuantity as $key => $item) {
                 $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
             }
 
@@ -1549,11 +1549,11 @@ class QueryRegularFixedShippingInstruction extends Model {
             $actual_container = RegularFixedActualContainer::where('id', $actual_container_creation->id_fixed_actual_container)->get();
 
             foreach ($actual_container as $key => $value) {
-                $tes = $value->manyFixedQuantityConfirmation;
+                $fixedQuantity = $value->manyFixedQuantityConfirmation;
             }
 
             $box = [];
-            foreach ($tes as $key => $item) {
+            foreach ($fixedQuantity as $key => $item) {
                 $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
             }
 
