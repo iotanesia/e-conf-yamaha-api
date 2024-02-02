@@ -915,169 +915,169 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $delivery_plan = [];
             $delivery_plan_set = [];
             foreach ($plan as $item){
-                if ($item->item_no == null) {
-                    $delivery_plan_set[] = $item->id;
-                } else {
-                    $delivery_plan[] = $item->id;
-                }
+                // if ($item->item_no == null) {
+                //     $delivery_plan_set[] = $item->id;
+                // } else {
+                // }
+                $delivery_plan[] = $item->id;
             }
             
             //calculation part set
-            if (count($delivery_plan_set) > 0) {
-                $delivery_plan_box_set = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
-                'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
-                ->whereIn('id_regular_delivery_plan',$delivery_plan_set)
-                ->groupBy('id_box', 'id_regular_delivery_plan')
-                ->orderBy('count_box','desc')
-                ->get()
-                ->map(function ($item, $index){
+            // if (count($delivery_plan_set) > 0) {
+            //     $delivery_plan_box_set = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
+            //     'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
+            //     ->whereIn('id_regular_delivery_plan',$delivery_plan_set)
+            //     ->groupBy('id_box', 'id_regular_delivery_plan')
+            //     ->orderBy('count_box','desc')
+            //     ->get()
+            //     ->map(function ($item, $index){
                     
-                    if ($item->refRegularDeliveryPlan->item_no == null) {
-                        $count_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->count();
-                        $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refBox->length * (int)ceil(($item->count_box / $count_set) / 4));
-                        $count_box = $item->count_box;
-                        $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
-                                                        ->where('id_box', $item->id_box)
-                                                        ->whereNull('id_prospect_container_creation')
-                                                        ->orderBy('id', 'asc')
-                                                        ->get();
-                        $box_set_count = count($box);
-                    } 
+            //         if ($item->refRegularDeliveryPlan->item_no == null) {
+            //             $count_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->count();
+            //             $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refBox->length * (int)ceil(($item->count_box / $count_set) / 4));
+            //             $count_box = $item->count_box;
+            //             $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
+            //                                             ->where('id_box', $item->id_box)
+            //                                             ->whereNull('id_prospect_container_creation')
+            //                                             ->orderBy('id', 'asc')
+            //                                             ->get();
+            //             $box_set_count = count($box);
+            //         } 
 
-                    return [
-                        'id_delivery_plan' => $item->id_regular_delivery_plan,
-                        'item_no' => $item->refBox->item_no,
-                        'label' => $item->refBox->no_box,
-                        'width' =>  $item->refBox->width,
-                        'length' => $item->refBox->length,
-                        'count_box' => $count_box,
-                        'sum_qty' => $item->sum_qty,
-                        'priority' => $index + 1,
-                        'forkside' => $item->refBox->fork_side,
-                        'stackingCapacity' => $item->refBox->stack_capacity,
-                        'row' => (int)ceil($count_box / 4),
-                        'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
-                        'row_length' => $row_length,
-                        'box' => $box,
-                        'box_set_count' => $box_set_count
-                    ];
-                });
+            //         return [
+            //             'id_delivery_plan' => $item->id_regular_delivery_plan,
+            //             'item_no' => $item->refBox->item_no,
+            //             'label' => $item->refBox->no_box,
+            //             'width' =>  $item->refBox->width,
+            //             'length' => $item->refBox->length,
+            //             'count_box' => $count_box,
+            //             'sum_qty' => $item->sum_qty,
+            //             'priority' => $index + 1,
+            //             'forkside' => $item->refBox->fork_side,
+            //             'stackingCapacity' => $item->refBox->stack_capacity,
+            //             'row' => (int)ceil($count_box / 4),
+            //             'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
+            //             'row_length' => $row_length,
+            //             'box' => $box,
+            //             'box_set_count' => $box_set_count
+            //         ];
+            //     });
 
-                $box_set_count = 0;
-                $sum_row_length = 0;
-                $sum_count_box = 0;
-                $sum_qty_box = [];
-                $first_row_length = [];
-                $first_row = [];
-                $first_count_box = [];
-                $row_length = [];
-                $count_box = [];
-                $big_row_length = [];
-                foreach ($delivery_plan_box_set as $key => $value) {
-                    $box_set_count += $value['box_set_count'];
-                    $sum_row_length += $value['row_length'];
-                    $sum_count_box += $value['count_box'];
-                    $sum_qty_box[] = $value['sum_qty'];
-                    $first_row_length[] = $delivery_plan_box_set[$key]['first_row_length'];
-                    $first_row[] = $delivery_plan_box_set[$key]['row'];
-                    $first_count_box[] = $delivery_plan_box_set[$key]['count_box'];
-                    $row_length[] = $delivery_plan_box_set[$key]['row_length'];
-                    $count_box[] = $delivery_plan_box_set[$key]['count_box'];
-                    $big_row_length[] = $delivery_plan_box_set[$key]['first_row_length'] * $delivery_plan_box_set[$key]['row'];
-                }
+            //     $box_set_count = 0;
+            //     $sum_row_length = 0;
+            //     $sum_count_box = 0;
+            //     $sum_qty_box = [];
+            //     $first_row_length = [];
+            //     $first_row = [];
+            //     $first_count_box = [];
+            //     $row_length = [];
+            //     $count_box = [];
+            //     $big_row_length = [];
+            //     foreach ($delivery_plan_box_set as $key => $value) {
+            //         $box_set_count += $value['box_set_count'];
+            //         $sum_row_length += $value['row_length'];
+            //         $sum_count_box += $value['count_box'];
+            //         $sum_qty_box[] = $value['sum_qty'];
+            //         $first_row_length[] = $delivery_plan_box_set[$key]['first_row_length'];
+            //         $first_row[] = $delivery_plan_box_set[$key]['row'];
+            //         $first_count_box[] = $delivery_plan_box_set[$key]['count_box'];
+            //         $row_length[] = $delivery_plan_box_set[$key]['row_length'];
+            //         $count_box[] = $delivery_plan_box_set[$key]['count_box'];
+            //         $big_row_length[] = $delivery_plan_box_set[$key]['first_row_length'] * $delivery_plan_box_set[$key]['row'];
+            //     }
         
-                $space = 0;
-                $sum_first_length = 0;
-                $summary_box = 0;
-                $num_items = count($first_row_length);
-                foreach ($first_row_length as $key => $value) {
-                    $sum_first_length += $value * $first_row[$key];
-                    $summary_box += $count_box[$key];
-                    if ($sum_first_length > 5905 && $sum_first_length <= 12031) {
-                        if ($key+1 < $num_items) {
-                            if ($sum_first_length + ($value * $first_row[$key+1]) <= 12031) {
-                                $sum_first_length = $sum_first_length + ($value * $first_row[$key+1]);
-                                $summary_box = $summary_box + $count_box[$key+1];
-                                if ($sum_first_length + ($value * $first_row[$key+2]) <= 12031) {
-                                    $sum_first_length = $sum_first_length + ($value * $first_row[$key+2]);
-                                    $summary_box = $summary_box + $count_box[$key+2];
-                                }
-                            }
-                        }
-                        $space = 12031 - $sum_first_length;
-                        $summary_box = $summary_box;
-                        break;
-                    }
-                }
+            //     $space = 0;
+            //     $sum_first_length = 0;
+            //     $summary_box = 0;
+            //     $num_items = count($first_row_length);
+            //     foreach ($first_row_length as $key => $value) {
+            //         $sum_first_length += $value * $first_row[$key];
+            //         $summary_box += $count_box[$key];
+            //         if ($sum_first_length > 5905 && $sum_first_length <= 12031) {
+            //             if ($key+1 < $num_items) {
+            //                 if ($sum_first_length + ($value * $first_row[$key+1]) <= 12031) {
+            //                     $sum_first_length = $sum_first_length + ($value * $first_row[$key+1]);
+            //                     $summary_box = $summary_box + $count_box[$key+1];
+            //                     if ($sum_first_length + ($value * $first_row[$key+2]) <= 12031) {
+            //                         $sum_first_length = $sum_first_length + ($value * $first_row[$key+2]);
+            //                         $summary_box = $summary_box + $count_box[$key+2];
+            //                     }
+            //                 }
+            //             }
+            //             $space = 12031 - $sum_first_length;
+            //             $summary_box = $summary_box;
+            //             break;
+            //         }
+            //     }
 
-                $creation = [
-                    'id_type_delivery' => $lsp->id_type_delivery,
-                    'id_mot' => $lsp->refTypeDelivery->id_mot,
-                    'id_lsp' => $lsp->id,
-                    'code_consignee' => $prospect_container->code_consignee,
-                    'etd_jkt' => $prospect_container->etd_jkt,
-                    'etd_ypmi' => $prospect_container->etd_ypmi,
-                    'etd_wh' => $prospect_container->etd_wh,
-                    'id_prospect_container' => $params->id,
-                    'status_bml' => 0,
-                    'datasource' => $params->datasource,
-                ];
+            //     $creation = [
+            //         'id_type_delivery' => $lsp->id_type_delivery,
+            //         'id_mot' => $lsp->refTypeDelivery->id_mot,
+            //         'id_lsp' => $lsp->id,
+            //         'code_consignee' => $prospect_container->code_consignee,
+            //         'etd_jkt' => $prospect_container->etd_jkt,
+            //         'etd_ypmi' => $prospect_container->etd_ypmi,
+            //         'etd_wh' => $prospect_container->etd_wh,
+            //         'id_prospect_container' => $params->id,
+            //         'status_bml' => 0,
+            //         'datasource' => $params->datasource,
+            //     ];
 
-                $count_container = (int)ceil($sum_row_length / 12031);
-                // $send_summary_box = $summary_box;
-                $send_summary_box = self::ratioSummaryBox(array_sum($count_box), $sum_row_length, 12031);
-                $sum_send_summary_box = 0;
-                for ($i=1; $i <= $count_container; $i++) { 
-                    if ($sum_row_length < 5905) {
-                        $creation['id_container'] = 1;
-                        $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-                        // $creation['summary_box'] = (int)floor($sum_count_box);
-                        $creation['summary_box'] = (int)$send_summary_box[$i-1];
-                        $creation['iteration'] = $i + 99;
-                        $creation['space'] = 5905 - (int)$sum_row_length;
-                    } else {
-                        $creation['id_container'] = 3;
-                        $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                        // $creation['summary_box'] = (int)floor($send_summary_box);
-                        $creation['summary_box'] = (int)$send_summary_box[$i-1];
-                        $creation['iteration'] = $i + 99;
-                        $creation['space'] = (int)$space;
-                    }
+            //     $count_container = (int)ceil($sum_row_length / 12031);
+            //     // $send_summary_box = $summary_box;
+            //     $send_summary_box = self::ratioSummaryBox(array_sum($count_box), $sum_row_length, 12031);
+            //     $sum_send_summary_box = 0;
+            //     for ($i=1; $i <= $count_container; $i++) { 
+            //         if ($sum_row_length < 5905) {
+            //             $creation['id_container'] = 1;
+            //             $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
+            //             // $creation['summary_box'] = (int)floor($sum_count_box);
+            //             $creation['summary_box'] = (int)$send_summary_box[$i-1];
+            //             $creation['iteration'] = $i + 99;
+            //             $creation['space'] = 5905 - (int)$sum_row_length;
+            //         } else {
+            //             $creation['id_container'] = 3;
+            //             $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
+            //             // $creation['summary_box'] = (int)floor($send_summary_box);
+            //             $creation['summary_box'] = (int)$send_summary_box[$i-1];
+            //             $creation['iteration'] = $i + 99;
+            //             $creation['space'] = (int)$space;
+            //         }
 
-                    $check = RegularProspectContainerCreation::where('id_prospect_container', $prospect_container->id)->where('space', null)->first();
-                    if($check) $check->forceDelete();
-                    RegularProspectContainerCreation::create($creation);
-                    $sum_row_length = $sum_row_length - 12031;
-                    // $send_summary_box = $send_summary_box;
-                    // $sum_send_summary_box += $send_summary_box;
-                    // $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
+            //         $check = RegularProspectContainerCreation::where('id_prospect_container', $prospect_container->id)->where('space', null)->first();
+            //         if($check) $check->forceDelete();
+            //         RegularProspectContainerCreation::create($creation);
+            //         $sum_row_length = $sum_row_length - 12031;
+            //         // $send_summary_box = $send_summary_box;
+            //         // $sum_send_summary_box += $send_summary_box;
+            //         // $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
 
-                    // if ($send_summary_box > $remaining_send_summary_box) {
-                    //     $send_summary_box = $remaining_send_summary_box;
-                    // }
+            //         // if ($send_summary_box > $remaining_send_summary_box) {
+            //         //     $send_summary_box = $remaining_send_summary_box;
+            //         // }
                     
-                    // if ($sum_row_length < 5905) {
-                    //     $sum_count_box = $send_summary_box;
-                    // }
-                }
+            //         // if ($sum_row_length < 5905) {
+            //         //     $sum_count_box = $send_summary_box;
+            //         // }
+            //     }
 
-                $upd = RegularProspectContainer::find($params->id);
-                $upd->is_prospect = 99;
-                $upd->save();
+            //     $upd = RegularProspectContainer::find($params->id);
+            //     $upd->is_prospect = 99;
+            //     $upd->save();
 
-                $set = [
-                    'id' => $params->id,
-                    'colis' => $delivery_plan_box_set,
-                    'box_set_count' => $box_set_count,
-                    'type' => 'set'
-                ];
+            //     $set = [
+            //         'id' => $params->id,
+            //         'colis' => $delivery_plan_box_set,
+            //         'box_set_count' => $box_set_count,
+            //         'type' => 'set'
+            //     ];
     
-               ContainerPlan::dispatch($set);
-            } 
+            //    ContainerPlan::dispatch($set);
+            // } 
 
 
             //calculation part single
-            if (count($delivery_plan) !== 0) {
+            // if (count($delivery_plan) !== 0) {
 
             $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
                 'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
@@ -1137,29 +1137,29 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $big_row_length[] = $delivery_plan_box[$key]['first_row_length'] * $delivery_plan_box[$key]['row'];
             }
     
-            $space = 0;
-            $sum_first_length = 0;
-            $summary_box = 0;
-            $num_items = count($first_row_length);
-            foreach ($first_row_length as $key => $value) {
-                $sum_first_length += $value * $first_row[$key];
-                $summary_box += $count_box[$key];
-                if ($sum_first_length > 5905 && $sum_first_length <= 12031) {
-                    if ($key+1 < $num_items) {
-                        if ($sum_first_length + ($value * $first_row[$key+1]) <= 12031) {
-                            $sum_first_length = $sum_first_length + ($value * $first_row[$key+1]);
-                            $summary_box = $summary_box + $count_box[$key+1];
-                            if ($sum_first_length + ($value * $first_row[$key+2]) <= 12031) {
-                                $sum_first_length = $sum_first_length + ($value * $first_row[$key+2]);
-                                $summary_box = $summary_box + $count_box[$key+2];
-                            }
-                        }
-                    }
-                    $space = 12031 - $sum_first_length;
-                    $summary_box = $summary_box;
-                    break;
-                }
-            }
+            // $space = 0;
+            // $sum_first_length = 0;
+            // $summary_box = 0;
+            // $num_items = count($first_row_length);
+            // foreach ($first_row_length as $key => $value) {
+            //     $sum_first_length += $value * $first_row[$key];
+            //     $summary_box += $count_box[$key];
+            //     if ($sum_first_length > 5905 && $sum_first_length <= 12031) {
+            //         if ($key+1 < $num_items) {
+            //             if ($sum_first_length + ($value * $first_row[$key+1]) <= 12031) {
+            //                 $sum_first_length = $sum_first_length + ($value * $first_row[$key+1]);
+            //                 $summary_box = $summary_box + $count_box[$key+1];
+            //                 if ($sum_first_length + ($value * $first_row[$key+2]) <= 12031) {
+            //                     $sum_first_length = $sum_first_length + ($value * $first_row[$key+2]);
+            //                     $summary_box = $summary_box + $count_box[$key+2];
+            //                 }
+            //             }
+            //         }
+            //         $space = 12031 - $sum_first_length;
+            //         $summary_box = $summary_box;
+            //         break;
+            //     }
+            // }
 
             $creation = [
                 'id_type_delivery' => $lsp->id_type_delivery,
@@ -1183,16 +1183,16 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     $creation['id_container'] = 1;
                     $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
                     // $creation['summary_box'] = (int)floor($sum_count_box);
-                    $creation['summary_box'] = (int)$send_summary_box[$i-1];
+                    $creation['summary_box'] = (int)$send_summary_box[$i-1]['summary_box'];
                     $creation['iteration'] = $i;
-                    $creation['space'] = 5905 - (int)$sum_row_length;
+                    $creation['space'] = (int)$send_summary_box[$i-1]['space'];
                 } else {
                     $creation['id_container'] = 3;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
                     // $creation['summary_box'] = (int)floor($send_summary_box);
-                    $creation['summary_box'] = (int)$send_summary_box[$i-1];
+                    $creation['summary_box'] = (int)$send_summary_box[$i-1]['summary_box'];
                     $creation['iteration'] = $i;
-                    $creation['space'] = (int)$space;
+                    $creation['space'] = (int)$send_summary_box[$i-1]['space'];
                 }
 
                 $check = RegularProspectContainerCreation::where('id_prospect_container', $prospect_container->id)->where('space', null)->first();
@@ -1226,7 +1226,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 
             ContainerPlan::dispatch($set);
 
-            }
+            // }
 
 
            DB::commit();
@@ -1255,9 +1255,15 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         $result = [];
         foreach ($ratios as $key => $ratio) {
             if ($key+1 == count($ratios)) {
-                $result[$key] = ceil($qty * ($ratio / $totalRatio));
+                $result[$key] = [
+                    'summary_box' => ceil($qty * ($ratio / $totalRatio)),
+                    'space' => ceil($qty * ($ratio / $totalRatio)) - ($qty * ($ratio / $totalRatio))
+                ];
             } else {
-                $result[$key] = floor($qty * ($ratio / $totalRatio));
+                $result[$key] = [
+                    'summary_box' => floor($qty * ($ratio / $totalRatio)),
+                    'space' => ($qty * ($ratio / $totalRatio)) - floor($qty * ($ratio / $totalRatio))
+                ];
             }
             
         }
