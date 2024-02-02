@@ -111,9 +111,9 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function byIdProspectContainer($params,$id)
     {
-        $check = RegularDeliveryPlanBox::where('id_prospect_container_creation', $params->id)->first();
+        // $check = RegularDeliveryPlanBox::where('id_prospect_container_creation', $params->id)->first();
 
-        if ($check->refRegularDeliveryPlan->item_no !== null) {
+        // if ($check->refRegularDeliveryPlan->item_no !== null) {
             $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
                         'b.part_set',
                         DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
@@ -128,9 +128,11 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
                         DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"),
                         DB::raw("string_agg(DISTINCT c.nick_name::character varying, ',') as cust_name"),
-                        DB::raw("string_agg(DISTINCT d.description::character varying, ',') as item_name"))
-                        ->where(function($query) use($params) {
-                            $query->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id);
+                        DB::raw("string_agg(DISTINCT d.description::character varying, ',') as item_name"),
+                        DB::raw("string_agg(DISTINCT e.item_no::character varying, ',') as item_no_set"),
+                        )
+                        ->where(function($query) use($params, $id) {
+                            $query->where('regular_delivery_plan_box.id_prospect_container_creation', $id);
 
                             if($params->kueri) $query->where('c.nick_name',"like", "%$params->kueri%")
                                                     ->orWhere('a.cust_item_no',"like", "%$params->kueri%")
@@ -146,44 +148,45 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         ->leftJoin('mst_box as b','a.item_no','b.item_no')
                         ->leftJoin('mst_consignee as c','c.code','a.code_consignee')
                         ->leftJoin('mst_part as d','d.code_consignee','c.code')
+                        ->leftJoin('regular_delivery_plan_set as e','e.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
                         ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','a.order_no','a.id')
                         ->paginate($params->limit ?? null);
-        } else {
-            $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan',
-                        DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
-                        DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_box::character varying, ',') as id_box"),
-                        DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
-                        DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
-                        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-                        DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
-                        DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
-                        DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
-                        DB::raw("string_agg(DISTINCT b.qty::character varying, ',') as qty"),
-                        DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no"),
-                        DB::raw("string_agg(DISTINCT c.nick_name::character varying, ',') as cust_name"),
-                        DB::raw("string_agg(DISTINCT d.description::character varying, ',') as item_name")
-                        )
-                        ->where(function($query) use($params) {
-                            $query->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id);
+        // } else {
+        //     $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan',
+        //                 DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
+        //                 DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_box::character varying, ',') as id_box"),
+        //                 DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
+        //                 DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
+        //                 DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+        //                 DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
+        //                 DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
+        //                 DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
+        //                 DB::raw("string_agg(DISTINCT b.qty::character varying, ',') as qty"),
+        //                 DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no"),
+        //                 DB::raw("string_agg(DISTINCT c.nick_name::character varying, ',') as cust_name"),
+        //                 DB::raw("string_agg(DISTINCT d.description::character varying, ',') as item_name")
+        //                 )
+        //                 ->where(function($query) use($params) {
+        //                     $query->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id);
 
-                            if($params->kueri) $query->where('c.nick_name',"like", "%$params->kueri%")
-                                                    ->orWhere('a.cust_item_no',"like", "%$params->kueri%")
-                                                    ->orWhere('b.item_no',"like", '%' . str_replace('-', '', $params->kueri) . '%')
-                                                    ->orWhere('d.description',"like", "%$params->kueri%")
-                                                    ->orWhere('a.etd_ypmi',"like", "%$params->kueri%")
-                                                    ->orWhere('a.etd_jkt',"like", "%$params->kueri%")
-                                                    ->orWhere('a.etd_wh',"like", "%$params->kueri%")
-                                                    ->orWhere('a.order_no',"like", "%$params->kueri%");
-                        })
-                        ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
-                        ->leftJoin('regular_delivery_plan_set as b','b.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
-                        ->leftJoin('mst_consignee as c','c.code','a.code_consignee')
-                        ->leftJoin('mst_part as d','d.code_consignee','c.code')
-                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan')
-                        ->paginate($params->limit ?? null);
-        }
+        //                     if($params->kueri) $query->where('c.nick_name',"like", "%$params->kueri%")
+        //                                             ->orWhere('a.cust_item_no',"like", "%$params->kueri%")
+        //                                             ->orWhere('b.item_no',"like", '%' . str_replace('-', '', $params->kueri) . '%')
+        //                                             ->orWhere('d.description',"like", "%$params->kueri%")
+        //                                             ->orWhere('a.etd_ypmi',"like", "%$params->kueri%")
+        //                                             ->orWhere('a.etd_jkt',"like", "%$params->kueri%")
+        //                                             ->orWhere('a.etd_wh',"like", "%$params->kueri%")
+        //                                             ->orWhere('a.order_no',"like", "%$params->kueri%");
+        //                 })
+        //                 ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
+        //                 ->leftJoin('regular_delivery_plan_set as b','b.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
+        //                 ->leftJoin('mst_consignee as c','c.code','a.code_consignee')
+        //                 ->leftJoin('mst_part as d','d.code_consignee','c.code')
+        //                 ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan')
+        //                 ->paginate($params->limit ?? null);
+        // }
 
-        $data->transform(function ($item) use ($check){
+        $data->transform(function ($item) {
             $custname = self::getCustName($item->code_consignee);
             $itemname = [];
             foreach (explode(',', $item->item_no) as $value) {
@@ -194,53 +197,64 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $item_no[] = self::getItemSerial($value);
             }
 
-            if ($check->refRegularDeliveryPlan->item_no == null) {
-                $mst_box = MstBox::where('part_set', 'set')
-                                ->whereIn('item_no', str_replace('-','',$item_no))
-                                ->get()->map(function ($item){
-                                    $qty = [
-                                        $item->item_no.'id' => $item->qty
-                                    ];
-                                
-                                    return array_merge($qty);
-                            });
-
-                $deliv_plan_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', explode(',', $item->id_delivery_plan))->get();
-                $qty_per_item_no = [];
-                $qty_set = [];
-                foreach ($deliv_plan_set as $key => $value) {
-                    $qty_per_item_no[] = [
-                        $value->item_no.'id' => $value->qty
-                    ];
-                    $qty_set[] = $value->qty;
+            if ($item->item_no == null) {
+                $itemname = [];
+                foreach (explode(',', $item->item_no_set) as $value) {
+                    $itemname[] = self::getPart($value);
                 }
-
-                $qty = [];
-                foreach ($mst_box as $key => $value) {
-                    $arary_key = array_keys($value)[0];
-                    $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
-                }
-        
-                $box = [
-                    'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty)),
-                    'length' =>  "",
-                    'width' =>  "",
-                    'height' =>  "",
-                ];
-
-                if (count(explode(',',$item->qty)) == 1) {
-                    $qty_order = [];
-                    for ($i=1; $i <= count($item_no); $i++) { 
-                        $qty_order[] = $item->qty;
-                    }
+                $item_no = [];
+                foreach (explode(',', $item->item_no_set) as $value) {
+                    $item_no[] = self::getItemSerial($value);
                 }
             }
 
+            // if ($check->refRegularDeliveryPlan->item_no == null) {
+            //     $mst_box = MstBox::where('part_set', 'set')
+            //                     ->whereIn('item_no', str_replace('-','',$item_no))
+            //                     ->get()->map(function ($item){
+            //                         $qty = [
+            //                             $item->item_no.'id' => $item->qty
+            //                         ];
+                                
+            //                         return array_merge($qty);
+            //                 });
+
+            //     $deliv_plan_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', explode(',', $item->id_delivery_plan))->get();
+            //     $qty_per_item_no = [];
+            //     $qty_set = [];
+            //     foreach ($deliv_plan_set as $key => $value) {
+            //         $qty_per_item_no[] = [
+            //             $value->item_no.'id' => $value->qty
+            //         ];
+            //         $qty_set[] = $value->qty;
+            //     }
+
+            //     $qty = [];
+            //     foreach ($mst_box as $key => $value) {
+            //         $arary_key = array_keys($value)[0];
+            //         $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
+            //     }
+        
+            //     $box = [
+            //         'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty)),
+            //         'length' =>  "",
+            //         'width' =>  "",
+            //         'height' =>  "",
+            //     ];
+
+            //     if (count(explode(',',$item->qty)) == 1) {
+            //         $qty_order = [];
+            //         for ($i=1; $i <= count($item_no); $i++) { 
+            //             $qty_order[] = $item->qty;
+            //         }
+            //     }
+            // }
+
             $box_result = self::getCountBox((int)$item->id_delivery_plan, $item->id_prospect_container_creation);
-            if ($check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
+            // if ($check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
 
             $qty_result = explode(',',$item->qty);
-            if ($check->refRegularDeliveryPlan->item_no == null) $qty_result = [array_sum($qty_set)];
+            // if ($check->refRegularDeliveryPlan->item_no == null) $qty_result = [array_sum($qty_set)];
 
             $item->item_name = $itemname;
             $item->item_no = $item_no;
