@@ -1187,7 +1187,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     $creation['iteration'] = $i;
                     $creation['space'] = 5905 - (int)$sum_row_length;
                 } else {
-                    $creation['id_container'] = 2;
+                    $creation['id_container'] = 3;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
                     // $creation['summary_box'] = (int)floor($send_summary_box);
                     $creation['summary_box'] = (int)$send_summary_box[$i-1];
@@ -1253,10 +1253,15 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         $totalRatio = array_sum($ratios);
     
         $result = [];
-        foreach ($ratios as $variable => $ratio) {
-            $result[$variable] = round($qty * ($ratio / $totalRatio));
+        foreach ($ratios as $key => $ratio) {
+            if ($key+1 == count($ratios)) {
+                $result[$key] = ceil($qty * ($ratio / $totalRatio));
+            } else {
+                $result[$key] = floor($qty * ($ratio / $totalRatio));
+            }
+            
         }
-    
+        
         return $result;
     }
 
