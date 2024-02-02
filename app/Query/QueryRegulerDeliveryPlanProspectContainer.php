@@ -920,8 +920,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $delivery_plan_box_set = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
                 'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
                 ->whereIn('id_regular_delivery_plan',$delivery_plan_set)
-                ->where('is_labeling',0)
-                ->whereNotNull('qrcode')
                 ->groupBy('id_box', 'id_regular_delivery_plan')
                 ->orderBy('count_box','desc')
                 ->get()
@@ -933,9 +931,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         $count_box = $item->count_box / $count_set;
                         $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
                                                         ->where('id_box', $item->id_box)
-                                                        ->where('is_labeling',0)
                                                         ->whereNull('id_prospect_container_creation')
-                                                        ->whereNotNull('qrcode')
                                                         ->orderBy('id', 'asc')
                                                         ->get();
                         $box_set_count = count($box);
@@ -1076,8 +1072,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
                 'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
             ->whereIn('id_regular_delivery_plan',$delivery_plan)
-            ->where('is_labeling',0)
-            ->whereNotNull('qrcode')
             ->groupBy('id_box', 'id_regular_delivery_plan')
             ->orderBy('count_box','desc')
             ->get()
@@ -1087,8 +1081,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $count_box = $item->count_box;
                 $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
                                                 ->whereNull('id_prospect_container_creation')
-                                                ->where('is_labeling',0)
-                                                ->whereNotNull('qrcode')
                                                 ->orderBy('id', 'asc')
                                                 ->get();
                 $box_set_count = count($box);
