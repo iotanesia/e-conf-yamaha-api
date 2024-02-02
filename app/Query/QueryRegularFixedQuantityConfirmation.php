@@ -1998,39 +1998,74 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $data = $query->map(function ($item, $key){
             $plan_box = RegularDeliveryPlanBox::where('id', $item->id_regular_delivery_plan_box)->first();
-            $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $plan_box->refRegularDeliveryPlan->id)->first();
-            $mst_box = MstBox::where('id', $plan_box->id_box)->get();
-            $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_perbox], [$plan_box->refBox->qty], $mst_box, $plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
-            $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->where('item_no', $plan_box->refBox->item_no)->first();
+            $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)->first();
 
-            if ($fixedQuantity->id_fixed_actual_container !== null) {
-                $res["gl_account"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->gl_account : $plan_set->refPart->gl_account;
-                $res["coa"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->coa : $plan_set->refPart->coa;
-                $res["cost_center"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->cost_center : $plan_set->refPart->cost_center;
-                $res["urutan_no_container"] = null;
-                $res["kosong"] = null;
-                $res["po_no"] = $fixedQuantity->order_no ?? null;
-                $res["part_no"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->item_serial : $plan_set->refPart->item_serial;
-                $res["qty"] = $item->qty_pcs_perbox ?? null;
-                $res['no'] = $key + 1;
-                $res['nw'] = number_format($nw_gw[0]['unit_weight_kg'][0], 2) ?? null;
-                $res['gw'] = number_format($nw_gw[0]['total_gross_weight'][0], 2) ?? null;
-                $res["model_code"] = $fixedQuantity->cust_item_no ?? null;
-                $res["type_box"] = 'CARTON BOX';
-                $res["panjang"] = $plan_box->refBox->length ?? null;
-                $res["lebar"] = $plan_box->refBox->width ?? null;
-                $res["tinggi"] = $plan_box->refBox->height ?? null;
-                $res["hs_code"] = $plan_box->refRegularDeliveryPlan->item_no != null ? $plan_box->refRegularDeliveryPlan->refPart->hs_code : $plan_set->refPart->hs_code;
-    
-                return $res;
+            if ($fixedQuantity && $fixedQuantity->id_fixed_actual_container !== null) {
+                if ($plan_box->refRegularDeliveryPlan->item_no == null) {
+                    $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->get();
+                    $deliv_plan_box = $fixedQuantity->manyFixedQuantityConfirmationBox()
+                                        ->where('id_regular_delivery_plan',$item->id_regular_delivery_plan)->where('qrcode','!=',null)->get();
+                    $mst_box = MstBox::whereIn('item_no', $plan_set->pluck('item_no')->toArray())->get();
+                    $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_perbox], $mst_box->pluck('qty')->toArray(), $mst_box, $plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                    $ratio_qty = self::inputQuantity($deliv_plan_box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray());
+                    $res = [];
+                    foreach ($plan_set as $key => $value) {
+                        $res[] = [
+                            'gl_account' => $value->refPart->gl_account,
+                            'coa' => $value->refPart->coa,
+                            'cost_center' => $value->refPart->cost_center,
+                            'urutan_no_container' => null,
+                            'kosong' => null,
+                            'po_no' => $fixedQuantity->order_no,
+                            'part_no' => $value->refPart->item_serial,
+                            'qty' => $ratio_qty[0][$key],
+                            'no' => null,
+                            'nw' => number_format($nw_gw[0]['unit_weight_kg'][$key], 2),
+                            'gw' => number_format($nw_gw[0]['total_gross_weight'][$key], 2),
+                            'model_code' => $fixedQuantity->cust_item_no,
+                            'type_box' => 'CARTON BOX',
+                            'panjang' => $value->refBox->length,
+                            'lebar' => $value->refBox->width,
+                            'tinggi' => $value->refBox->height,
+                            'hs_code' => $value->refPart->hs_code
+                        ];
+                    }
+                    return $res;
+                } else {
+                    $mst_box = MstBox::where('id', $plan_box->id_box)->get();
+                    $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_perbox], [$plan_box->refBox->qty], $mst_box, $plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                    
+                    $res["gl_account"] = $plan_box->refRegularDeliveryPlan->refPart->gl_account;
+                    $res["coa"] = $plan_box->refRegularDeliveryPlan->refPart->coa;
+                    $res["cost_center"] = $plan_box->refRegularDeliveryPlan->refPart->cost_center;
+                    $res["urutan_no_container"] = null;
+                    $res["kosong"] = null;
+                    $res["po_no"] = $fixedQuantity->order_no ?? null;
+                    $res["part_no"] = $plan_box->refRegularDeliveryPlan->refPart->item_serial;
+                    $res["qty"] = $item->qty_pcs_perbox ?? null;
+                    $res['no'] = null;
+                    $res['nw'] = number_format($nw_gw[0]['unit_weight_kg'][0], 2) ?? null;
+                    $res['gw'] = number_format($nw_gw[0]['total_gross_weight'][0], 2) ?? null;
+                    $res["model_code"] = $fixedQuantity->cust_item_no ?? null;
+                    $res["type_box"] = 'CARTON BOX';
+                    $res["panjang"] = $plan_box->refBox->length ?? null;
+                    $res["lebar"] = $plan_box->refBox->width ?? null;
+                    $res["tinggi"] = $plan_box->refBox->height ?? null;
+                    $res["hs_code"] = $plan_box->refRegularDeliveryPlan->refPart->hs_code;
+                    
+                    return [$res];
+                }
+                
+
             }
 
         });
 
         $filteredData = array_values(array_filter($data->toArray()));
+        $flattenedArray = call_user_func_array('array_merge', $filteredData);
         $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
-        return Excel::download(new PackingExport($filteredData), $filename.'.csv');
+        return Excel::download(new PackingExport($flattenedArray), $filename.'.csv');
     }
 
     public static function exportPEB($request)

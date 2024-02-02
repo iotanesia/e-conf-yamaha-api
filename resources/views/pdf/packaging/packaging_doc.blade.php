@@ -71,7 +71,7 @@
             <tr>
                 <td class="no-bo">INVOICE NO</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">{{ $item->no_packaging }}</td>
+                <td class="no-bo" width="250">{{ $item->no_packaging }}</td>
                 <td class="no-bo">SHIPPED BY</td>
                 <td class="no-bo">:</td>
                 @if ($item->id_mot == 2)
@@ -118,12 +118,12 @@
                 </tr>
                 <tr>
                     <td class="text-center"> Case Mark and Number</td>
-                    <td class="text-center"> Package Number</td>
+                    <td class="text-center" width="20"> Package Number</td>
                     <td class="text-center"> Parts Number</td>
-                    <td class="text-center"> Qty <br> (PCS)</td>
-                    <td class="text-center"> Nett. W <br> (Kgs)</td>
-                    <td class="text-center"> Gross. W <br> (Kgs)</td>
-                    <td class="text-center"> Meas. <br> (M3) </td>
+                    <td class="text-center" width="40"> Qty <br> (PCS)</td>
+                    <td class="text-center" width="40"> Nett. W <br> (Kgs)</td>
+                    <td class="text-center" width="40"> Gross. W <br> (Kgs)</td>
+                    <td class="text-center" width="40"> Meas. <br> (M3) </td>
                 </tr>
                 
                 <p class="flying-text text-center">
