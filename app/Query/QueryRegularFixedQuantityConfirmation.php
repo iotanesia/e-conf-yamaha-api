@@ -2147,59 +2147,75 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         $data = $query->map(function ($item, $key){
             $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)->first();
 
-            if ($item->refRegularDeliveryPlan->item_no == null) {
-                $item_no = [];
-                $kode_barang = [];
-                $hs_code = '';
-                foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $value) {
-                    $kode_barang[] = $value->item_no.', '.trim($value->refPart->description);
-                    $hs_code = $value->refPart->hs_code;
-                    $item_no[] = $value->item_no;
-                }
-
-                $kode_barang = implode(', ',$kode_barang);
-                $mst_box = MstBox::whereIn('item_no', $item_no)->get();
-                $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_box], $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
-                $netto = array_sum($nw_gw[0]['unit_weight_kg']);
-
-                $volume = 0;
-                foreach ($mst_box as $vol) {
-                    $volume = ($vol->length * $vol->width * $vol->height) / 1000000000;
-                }
-            } else {
-                $kode_barang = $item->refRegularDeliveryPlan->item_no.', '.trim($item->refRegularDeliveryPlan->refPart->description);
-                $hs_code = $item->refRegularDeliveryPlan->refPart->hs_code;
-                
-                $mst_box = MstBox::where('item_no', $item->refRegularDeliveryPlan->item_no)->get();
-                $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_box], $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
-                $netto = array_sum($nw_gw[0]['unit_weight_kg']);
-                
-                $volume = 0;
-                foreach ($mst_box as $vol) {
-                    $volume = ($vol->length * $vol->width * $vol->height) / 1000000000;
-                }
-            }
-            
-
             if ($fixedQuantity && $fixedQuantity->id_fixed_actual_container !== null) {
-                $res['seri_barang'] = $key + 1;
-                $res['hs'] = $hs_code;
-                $res['kode_barang'] = $kode_barang;
-                $res['uraian'] = 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES';
-                $res['kode_satuan'] = 'PCE';
-                $res['jumlah_satuan'] = $item->qty_pcs_box;
-                $res['kode_kemasan'] = 'CT';
-                $res['jumlah_kemasan'] = count(explode(',', $item->id_regular_delivery_plan_box));
-                $res['netto'] = number_format($netto, 2);
-                $res['volume'] = number_format($volume, 3);
-
-                return $res;
+                if ($item->refRegularDeliveryPlan->item_no == null) {
+                    $item_no = [];
+                    foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $value) {
+                        $item_no[] = $value->item_no;
+                    }
+    
+                    $mst_box = MstBox::whereIn('item_no', $item_no)->get();
+                    $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_box], $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                    $netto = array_sum($nw_gw[0]['unit_weight_kg']);
+                    $qty_ratio = self::inputQuantity([$item->qty_pcs_box], $mst_box->pluck('qty')->toArray());
+    
+                    $volume = 0;
+                    foreach ($mst_box as $vol) {
+                        $volume = ($vol->length * $vol->width * $vol->height) / 1000000000;
+                    }
+    
+                    $res = [];
+                    foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $i => $value) {
+                        $res[] = [
+                                'seri_barang' => null,
+                                'hs' => $value->refPart->hs_code,
+                                'kode_barang' => $value->item_no.', '.trim($value->refPart->description),
+                                'uraian' => 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES',
+                                'kode_satuan' => 'PCE',
+                                'jumlah_satuan' => $qty_ratio[0][$i],
+                                'kode_kemasan' => 'CT',
+                                'jumlah_kemasan' => $i == 0 ? count(explode(',', $item->id_regular_delivery_plan_box)) : null,
+                                'netto' => number_format($nw_gw[0]['unit_weight_kg'][$i], 2),
+                                'volume' => $i == 0 ? number_format($volume, 3) : null,
+                        ];
+                    }
+    
+                    return $res;
+                } else {
+                    $kode_barang = $item->refRegularDeliveryPlan->item_no.', '.trim($item->refRegularDeliveryPlan->refPart->description);
+                    $hs_code = $item->refRegularDeliveryPlan->refPart->hs_code;
+                    
+                    $mst_box = MstBox::where('item_no', $item->refRegularDeliveryPlan->item_no)->get();
+                    $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_box], $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                    $netto = array_sum($nw_gw[0]['unit_weight_kg']);
+                    
+                    $volume = 0;
+                    foreach ($mst_box as $vol) {
+                        $volume = ($vol->length * $vol->width * $vol->height) / 1000000000;
+                    }
+    
+                    $res['seri_barang'] = null;
+                    $res['hs'] = $hs_code;
+                    $res['kode_barang'] = $kode_barang;
+                    $res['uraian'] = 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES';
+                    $res['kode_satuan'] = 'PCE';
+                    $res['jumlah_satuan'] = $item->qty_pcs_box;
+                    $res['kode_kemasan'] = 'CT';
+                    $res['jumlah_kemasan'] = count(explode(',', $item->id_regular_delivery_plan_box));
+                    $res['netto'] = number_format($netto, 2);
+                    $res['volume'] = number_format($volume, 3);
+    
+                    return [$res];
+                }
             }
 
         });
-
         $filteredData = array_values(array_filter($data->toArray()));
-        $filename = 'PEB-'.Carbon::now()->format('Ymd');
+        $flattenedArray = call_user_func_array('array_merge', $filteredData);
+        foreach ($flattenedArray as $key => &$subarray) {
+            $subarray["seri_barang"] = $key +1;
+        }
+        $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
         return Excel::download(new PebExport($filteredData), $filename.'.xlsx');
     }
