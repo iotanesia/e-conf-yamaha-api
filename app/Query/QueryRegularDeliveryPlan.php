@@ -1493,7 +1493,7 @@ class QueryRegularDeliveryPlan extends Model {
                             $res['qty_pcs_box'] = [$item->qty_pcs_box];
                             $res['item_no_series'] = [$item->refBox->item_no_series];
                             $res['unit_weight_kg'] = [($item->refBox->unit_weight_gr * $item->qty_pcs_box)/1000];
-                            $res['total_gross_weight'] = [(($item->refBox->unit_weight_gr * $item->qty_pcs_box)/1000) + ($item->refBox->outer_carton_weight/count($deliv_value->manyDeliveryPlanBox))];
+                            $res['total_gross_weight'] = [(($item->refBox->unit_weight_gr * $item->qty_pcs_box)/1000) + ($item->refBox->outer_carton_weight)];
                             $res['length'] = $item->refBox->length;
                             $res['width'] = $item->refBox->width;
                             $res['height'] = $item->refBox->height;
@@ -1651,9 +1651,9 @@ class QueryRegularDeliveryPlan extends Model {
                     // 'container_count' => array_sum($summary_box->toArray()) == 0 ? [count($box)] : [array_sum($summary_box->toArray())],
                     'container_count' => $item->mot == 'AIR' ? [''] : [count($summary_box->toArray())],
                     'container_type' => $item->container_value,
-                    'net_weight' => round($count_net_weight,2),
-                    'gross_weight' => round($count_gross_weight,2),
-                    'measurement' => round($count_meas,3),
+                    'net_weight' => number_format($count_net_weight,2),
+                    'gross_weight' => number_format($count_gross_weight,2),
+                    'measurement' => number_format($count_meas,3),
                     'pod' => $item->port,
                     'pol' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
