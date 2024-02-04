@@ -927,7 +927,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 ->get();
 
             $delivery_plan = [];
-            $delivery_plan_set = [];
+            // $delivery_plan_set = [];
             foreach ($plan as $item){
                 // if ($item->item_no == null) {
                 //     $delivery_plan_set[] = $item->id;
@@ -1199,7 +1199,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     // $creation['summary_box'] = (int)floor($sum_count_box);
                     $creation['summary_box'] = (int)$send_summary_box[$i-1]['summary_box'];
                     $creation['iteration'] = $i;
-                    $creation['space'] = (int)$send_summary_box[$i-1]['space'];
+                    $creation['space'] = 5905 - (int)$sum_row_length;
                 } else {
                     $creation['id_container'] = 3;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;

@@ -232,19 +232,19 @@ class FixedQuantityConfirmationController extends Controller
         }
     }
 
-    public function exportCSV(Request $request)
+    public function exportCSV(Request $request, $id)
     {
         try {
-            return QueryRegularFixedQuantityConfirmation::exportCSV($request);
+            return QueryRegularFixedQuantityConfirmation::exportCSV($request, $id);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }
     }
 
-    public function exportPEB(Request $request)
+    public function exportPEB(Request $request, $id)
     {
         try {
-            return QueryRegularFixedQuantityConfirmation::exportPEB($request);
+            return QueryRegularFixedQuantityConfirmation::exportPEB($request, $id);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }
