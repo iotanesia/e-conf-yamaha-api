@@ -1328,7 +1328,7 @@ class QueryRegularDeliveryPlan extends Model {
         where(function($query) use ($params){
             if($params->datasource) $query->where('datasource',$params->datasource);
             if($params->no_booking) $query->where('no_booking','ilike',$params->no_booking.'%');
-        })
+        })->orderBy('no_booking', 'asc')
         ->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
