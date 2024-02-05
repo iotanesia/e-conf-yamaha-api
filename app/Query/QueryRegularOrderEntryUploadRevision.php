@@ -89,20 +89,22 @@ class QueryRegularOrderEntryUploadRevision extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
 
-            if(!$request->id) throw new \Exception("id tidak ditemukan", 400);
-            if(!$request->id_user) throw new \Exception("user id tidak ditemukan", 400);
-            if(!$request->note) throw new \Exception("note belum terisi", 400);
+            // if(!$request->id) throw new \Exception("id tidak ditemukan", 400);
+            // if(!$request->id_user) throw new \Exception("user id tidak ditemukan", 400);
+            // if(!$request->note) throw new \Exception("note belum terisi", 400);
 
-            //update upload
-            $update = RegularOrderEntryUpload::where('id',$request->id)
-                ->update(['status' => Constant::STS_PROCESS_REJECTED]);
+            // //update upload
+            // $update = RegularOrderEntryUpload::where('id',$request->id)
+            //     ->update(['status' => Constant::STS_PROCESS_REJECTED]);
 
-            //save revisi
-            $params['id_regular_order_entry_upload'] = $request->id;
-            $params['id_user'] = $request->id_user;
-            $params['note'] = $request->note;
-            $params['type'] = 'REJECTED';
-            self::create($params);
+            // //save revisi
+            // $params['id_regular_order_entry_upload'] = $request->id;
+            // $params['id_user'] = $request->id_user;
+            // $params['note'] = $request->note;
+            // $params['type'] = 'REJECTED';
+            // self::create($params);
+
+            return ['message' => 'Data Rejected'];
 
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
