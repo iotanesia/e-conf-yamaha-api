@@ -53,6 +53,15 @@ class FixedQuantityConfirmationController extends Controller
         }
     }
 
+    public function exportExcel(Request $request)
+    {
+        try {
+            return QueryRegularFixedQuantityConfirmation::exportExcel($request);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function getActualContainer(Request $request)
     {
         try {

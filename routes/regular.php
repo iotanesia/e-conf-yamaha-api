@@ -185,6 +185,7 @@ Route::prefix('v1/regular')
             Route::post('/no-packaging',[FixedQuantityConfirmationController::class,'noPackaging']);
             Route::post('/inquiry',[FixedQuantityConfirmationController::class,'inquiryProcess']);
             Route::post('/edit',[FixedQuantityConfirmationController::class,'update']);
+            Route::get('/excel',[FixedQuantityConfirmationController::class,'exportExcel']);
         });
 
         Route::group(['prefix' => 'actual-container'],function (){

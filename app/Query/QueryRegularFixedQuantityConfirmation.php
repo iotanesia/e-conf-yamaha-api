@@ -26,6 +26,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PackingExport;
 use App\Exports\PebExport;
+use App\Exports\FixedQuantityExport;
 use App\Models\RegularFixedShippingInstructionCreation;
 use App\Models\RegularStokConfirmationHistory;
 
@@ -372,6 +373,34 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             if($is_trasaction) DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function exportExcel($request)
+    {
+        $data = self::getFixedQuantity($request);
+
+        $res = [];
+        foreach ($data['items'] as $key => $value) {
+            $res[] = [
+                'no' => $key +1,
+                'cust_name' => $value->refConsignee->nick_name ?? null,
+                'item_no' => $value->refRegularDeliveryPlan->item_no == null ? implode(',', $value->item_no->toArray()) : $value->item_no,
+                'item_name' => $value->refRegularDeliveryPlan->item_no == null ? implode(',', $value->item_name) : $value->item_name,
+                'cust_item_no' => $value->cust_item_no,
+                'cust_order_no' => $value->order_no,
+                'qty' => (string)$value->qty,
+                'etd_ypmi' => $value->etd_ypmi,
+                'etd_wh' => $value->etd_wh,
+                'etd_jkt' => $value->etd_jkt,
+                'production' => (string)$value->production,
+                'in_dc' => (string)$value->in_dc,
+                'in_wh' => (string)$value->in_wh
+            ];
+        }
+
+        $filename = 'fixed-quantity-'.Carbon::now()->format('Ymd');
+
+        return Excel::download(new FixedQuantityExport($res), $filename.'.xlsx');
     }
 
     public static function getActualContainer($params) {
