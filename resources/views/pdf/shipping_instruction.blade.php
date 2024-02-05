@@ -197,21 +197,21 @@
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Net Weight</td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{round($data->net_weight,2)}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{ $data->net_weight }}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Kgs</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">PEB No.</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->peb}}</td>
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Gross Weight </td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{round($data->gross_weight,2)}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->gross_weight}}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Kgs</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">NOPEN</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->no_open}}</td>
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Measurement </td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{round($data->measurement,2)}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->measurement}}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Kgs</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="80">Container//Seal No.//Qty//GW//M3</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="150"> : {{$data->seal_no}}</td>
