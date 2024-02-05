@@ -1242,13 +1242,13 @@ class QueryRegularFixedShippingInstruction extends Model {
             $count_qty = 0;
             $count_net_weight = 0;
             $count_gross_weight = 0;
-            $count_meas = 0;
+            $count_meas = [];
             $gross_weight_per_part = [];
             foreach ($box as $box_item){
                 $count_qty += array_sum($box_item['qty_pcs_box']);
                 $count_net_weight += array_sum($box_item['unit_weight_kg']);
                 $count_gross_weight += array_sum($box_item['total_gross_weight']);
-                $count_meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000);
+                $count_meas[] = round((($box_item['length'] * $box_item['width'] * $box_item['height']) * array_sum($box_item['qty_pcs_box']) / 1000000000), 3);
                 $gross_weight_per_part[] = $box_item['total_gross_weight'];
             }
 
@@ -1267,7 +1267,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
                 'count_gross_weight' => $count_gross_weight,
-                'count_meas' => $count_meas,
+                'count_meas' => array_sum($count_meas),
                 'check_shipping' => $check_shipping
             ])
             ->save($pathToFile)
