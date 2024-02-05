@@ -121,7 +121,7 @@
                             <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : 
                                 @foreach (explode(',',$data->container_count) as $key => $item)
                                     @if ($key > 0)
-                                        &nbsp; {{ $item }} x {{ explode(',',$data->container_value)[$key] }}
+                                        &nbsp; {{ $item }} x {{ explode(',',$data->container_value)[$key] }} <br>
                                     @else
                                         {{ $item }} x {{ explode(',',$data->container_value)[$key] }} <br>
                                     @endif
