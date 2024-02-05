@@ -631,6 +631,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.code_consignee::character varying, ',') as code_consignee")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.id::character varying, ',') as id_actual_container_creation")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.datasource::character varying, ',') as datasource")
+        ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.id_mot::character varying, ',') as id_mot")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_wh::character varying, ',') as etd_wh")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_ypmi::character varying, ',') as etd_ypmi"))
         ->where('regular_fixed_actual_container_creation.id_fixed_shipping_instruction',$id)
@@ -645,7 +646,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'etd_jkt' => $item->etd_jkt,
                 'etd_wh' => $item->etd_wh,
                 'etd_ypmi' => $item->etd_ypmi,
-                'summary_container' => $item->summary_container,
+                'summary_container' => $item->id_mot == 2 ? '-' : $item->summary_container,
                 'code_consignee' => $item->code_consignee,
                 'datasource' => $item->datasource,
             ];
