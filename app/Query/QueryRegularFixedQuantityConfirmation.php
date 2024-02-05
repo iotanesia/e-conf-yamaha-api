@@ -26,6 +26,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PackingExport;
 use App\Exports\PebExport;
+use App\Models\RegularFixedShippingInstructionCreation;
 use App\Models\RegularStokConfirmationHistory;
 
 class QueryRegularFixedQuantityConfirmation extends Model {
@@ -1794,6 +1795,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     {
         try {
             $data = RegularFixedActualContainer::where('id',$id)->get();
+            $check_shipping = RegularFixedShippingInstructionCreation::where('id',$data[0]->manyFixedActualContainerCreation[0]->id_fixed_shipping_instruction_creation)->first();
             $id_delivery_plan = [];
             foreach ($data[0]->manyFixedQuantityConfirmation as $id_delivery) {
                 $id_delivery_plan[] = $id_delivery->id_regular_delivery_plan;
@@ -1983,7 +1985,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
                 'count_gross_weight' => $count_gross_weight,
-                'count_meas' => array_sum($count_meas)
+                'count_meas' => array_sum($count_meas),
+                'check_shipping' => $check_shipping
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')

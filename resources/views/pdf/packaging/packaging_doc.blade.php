@@ -75,9 +75,9 @@
                 <td class="no-bo">SHIPPED BY</td>
                 <td class="no-bo">:</td>
                 @if ($item->id_mot == 2)
-                    <td class="no-bo">-</td>
+                    <td class="no-bo">{{ $check_shipping == null ? null : 'AIR' }}</td>
                 @else
-                    <td class="no-bo">{{ count($item->manyFixedActualContainerCreation) == 0 ? null : $item->manyFixedActualContainerCreation[0]->refMstLsp->name }}</td>
+                    <td class="no-bo">{{ $check_shipping == null ? null : 'SEA' }}</td>
                 @endif
             </tr>
             <tr>
