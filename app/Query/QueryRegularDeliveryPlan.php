@@ -1450,7 +1450,7 @@ class QueryRegularDeliveryPlan extends Model {
         ->paginate(1);
         if(!$data) throw new \Exception("Data not found", 400);
 
-        $data->transform(function ($item) {
+        $data->transform(function ($item) use($params) {
             if ($item->id_shipping_instruction_creation) {
                 $SI = RegularDeliveryPlanShippingInsructionCreation::where('id',$item->id_shipping_instruction_creation)->paginate(1);
                 $summary_box = RegularDeliveryPlanProspectContainerCreation::where('code_consignee', $item->code_consignee)
@@ -1692,7 +1692,8 @@ class QueryRegularDeliveryPlan extends Model {
                     'description_of_goods_2' => $count_qty,
                     'seal_no' => '',
                     'connecting_vessel' => '',
-                    'carton_box_qty' => count($box)
+                    'carton_box_qty' => count($box),
+                    'id_prospect_container_creation' => $params->id
                 ];
             }
         });
@@ -1711,9 +1712,9 @@ class QueryRegularDeliveryPlan extends Model {
             // $request->merge(['consignee'=>json_encode($consignee),'status'=>Constant::DRAFT]);
             $request1 = $request->except(['container_count','container_value','container_type']);
             $request2 = [
-                            'container_count' => implode(',',$request->container_count),
-                            'container_value' => implode(',',$request->container_value),
-                            'container_type' => implode(',',$request->container_type),
+                            'container_count' => implode(',',$request->container_count) == "" ? null : implode(',',$request->container_count),
+                            'container_value' => implode(',',$request->container_value) == "" ? null : implode(',',$request->container_value),
+                            'container_type' => implode(',',$request->container_type) == "" ? null : implode(',',$request->container_type),
                         ];
             $params = array_merge($request1,$request2);
             Helper::requireParams([
@@ -1726,7 +1727,7 @@ class QueryRegularDeliveryPlan extends Model {
             if ($shipping_instruction_creation == null) {
                 $insert = RegularDeliveryPlanShippingInsructionCreation::create($params);
                 $prospect_container_creation = RegularDeliveryPlanProspectContainerCreation::query();
-                $update_creation = $prospect_container_creation->where('datasource',$request->datasource)->where('code_consignee',$request->code_consignee)->where('etd_jkt',$request->etd_jkt)->get();
+                $update_creation = $prospect_container_creation->where('id', $request->id_prospect_container_creation)->where('datasource',$request->datasource)->where('code_consignee',$request->code_consignee)->where('etd_jkt',$request->etd_jkt)->get();
                 foreach ($update_creation as $key => $value) {
                     $value->update(['id_shipping_instruction_creation'=>$insert->id, 'status' => 2]);
                 }
