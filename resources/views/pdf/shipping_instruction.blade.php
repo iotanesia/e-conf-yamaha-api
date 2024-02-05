@@ -118,7 +118,15 @@
                         @if ($data->container_count == 0)
                             <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : -</td>
                         @else
-                            <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->container_count}} x {{ $data->container_value }}</td>
+                            <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : 
+                                @foreach (explode(',',$data->container_count) as $key => $item)
+                                    @if ($key > 0)
+                                        &nbsp; {{ $item }} x {{ explode(',',$data->container_value)[$key] }}
+                                    @else
+                                        {{ $item }} x {{ explode(',',$data->container_value)[$key] }} <br>
+                                    @endif
+                                @endforeach
+                            </td>
                         @endif
                         <td width="80" class="no-bo" style="padding: 0 0 0 5px; margin: 0;">DO No</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->do_no}}</td>
