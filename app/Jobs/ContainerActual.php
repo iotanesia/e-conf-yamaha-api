@@ -47,7 +47,7 @@ class ContainerActual implements ShouldQueue
                 return $item->summary_box;
             });
         
-        $iteration = $params['type'] == 'set' ? 100 : 1;
+        $iteration = 1;
         $index = 1;
         $countSummaryBox = count($arrSummaryBox);
         $counter = 0;
@@ -55,48 +55,24 @@ class ContainerActual implements ShouldQueue
             foreach ($value['box'] as $val) {
                 $fill = RegularFixedQuantityConfirmationBox::where('id',$val['id'])->first();
                 if ($fill->id_prospect_container_creation == null) {
+                    $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
+                                                                    ->where('iteration', $iteration)
+                                                                    ->orderBy('id', 'asc')
+                                                                    ->first();
 
-                    // if ($fill->refRegularDeliveryPlan->item_no == null) {
-                    //     $persentase = max($arrSummaryBox->toArray()) / array_sum($arrSummaryBox->toArray());
-                    //     $jml_box_update = (int)($params['box_set_count'] * $persentase);
-                    //     $box_update = RegularFixedQuantityConfirmationBox::where('id_fixed_quantity_confirmation', $fill->refFixedQuantityConfirmation->id)
-                    //                                                         ->whereNotNull('qrcode') 
-                    //                                                         ->whereNull('id_prospect_container_creation')->get();
-                    //     $sisa = count($box_update) - $jml_box_update;
-                        
-                    //     for ($i=0; $i < $countSummaryBox; $i++) { 
-                    //         foreach ($box_update->take($jml_box_update) as $value_box) {
-                    //             $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
-                    //                                                         ->where('iteration', ($i+100))
-                    //                                                         ->orderBy('id', 'asc')
-                    //                                                         ->first();
-                                
-                    //             $value_box->update([
-                    //                 'id_prospect_container_creation' => $id_prop->id,
-                    //                 'is_labeling' => 1
-                    //             ]);
-                    //         }
-                    //         $jml_box_update = $sisa;
-                    //     }
-                    // } else {
-                        $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
-                                                                        ->where('iteration', $iteration)
-                                                                        ->orderBy('id', 'asc')
-                                                                        ->first();
+                    $fill = RegularFixedQuantityConfirmationBox::where('id',$val['id'])->first();
+                    $fill->id_prospect_container_creation = $id_prop->id;
+                    $fill->is_labeling = 1;
+                    $fill->save();
 
-                        $fill = RegularFixedQuantityConfirmationBox::where('id',$val['id'])->first();
-                        $fill->id_prospect_container_creation = $id_prop->id;
-                        $fill->is_labeling = 1;
-                        $fill->save();
-
-                        if($counter < $countSummaryBox) {
-                            if ($index == $arrSummaryBox[$counter]) {
-                                $iteration = $iteration + 1;
-                                $counter = $counter + 1;
-                            }
+                    if($counter < $countSummaryBox) {
+                        if ($index == $arrSummaryBox[$counter]) {
+                            $iteration = $iteration + 1;
+                            $counter = $counter + 1;
+                            $index = 0;
                         }
-                        $index = $index + 1;   
-                    // }
+                    }
+                    $index = $index + 1;   
                 }
             }
         }
