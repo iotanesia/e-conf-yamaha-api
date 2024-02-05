@@ -1627,13 +1627,26 @@ class QueryRegularDeliveryPlan extends Model {
                     $container_count[] = $value;
                 }
 
-                $summary_box = RegularDeliveryPlanProspectContainerCreation::where('code_consignee', $item->code_consignee)
+                $summary_box_data = RegularDeliveryPlanProspectContainerCreation::where('code_consignee', $item->code_consignee)
                                                                             ->where('etd_jkt', $item->etd_jkt)
                                                                             ->where('datasource', $item->datasource)
+                                                                            ->where('id_prospect_container', $item->id_prospect_container)
                                                                             ->get()->map(function($q){
-                                                                                $items = $q->summary_box;
+                                                                                $items = [
+                                                                                    'summary_box' => $q->summary_box,
+                                                                                    'container' => $q->refMstContainer->container_type ?? null
+                                                                                ];
                                                                                 return $items;
                                                                             });
+
+                $summary_box = [];   
+                $container_type = [];    
+                $jml_container = [];                                                     
+                foreach ($summary_box_data as $key => $value) {
+                    $summary_box[] = $value['summary_box'];
+                    $container_type[] = $value['container'];
+                    $jml_container[] = 1;
+                }
 
                 return [
                     'code_consignee' => $item->code_consignee,
@@ -1641,15 +1654,15 @@ class QueryRegularDeliveryPlan extends Model {
                     'customer_name' => $item->refMstConsignee->nick_name ?? null,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
-                    'summary_container' => count($summary_box->toArray()),
+                    'summary_container' => count($summary_box),
                     'hs_code' => '',
                     'via' => $item->mot,
                     'freight_charge' => 'COLLECT',
                     'incoterm' => 'FOB',
                     'shipped_by' => $item->mot,
-                    'container_value' => $item->mot == 'AIR' ? [''] : explode(',', $item->container_type),
+                    'container_value' => $item->mot == 'AIR' ? [''] : $container_type,
                     // 'container_count' => array_sum($summary_box->toArray()) == 0 ? [count($box)] : [array_sum($summary_box->toArray())],
-                    'container_count' => $item->mot == 'AIR' ? [''] : [count($summary_box->toArray())],
+                    'container_count' => $item->mot == 'AIR' ? [''] : $jml_container,
                     'container_type' => $item->container_value,
                     'net_weight' => number_format($count_net_weight,2),
                     'gross_weight' => number_format($count_gross_weight,2),

@@ -874,12 +874,12 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $count_qty = 0;
                 $count_net_weight = 0;
                 $count_gross_weight = 0;
-                $count_meas = 0;
+                $count_meas = [];
                 foreach ($box as $box_item){
                     $count_qty += array_sum($box_item['qty_pcs_box']);
                     $count_net_weight += array_sum($box_item['unit_weight_kg']);
                     $count_gross_weight += array_sum($box_item['total_gross_weight']);
-                    $count_meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000);
+                    $count_meas[] = (($box_item['length'] * $box_item['width'] * $box_item['height']) * array_sum($box_item['qty_pcs_box']) / 1000000000);
                 }
 
                 $summary_box = RegularFixedActualContainerCreation::where('code_consignee', $item->code_consignee)
@@ -908,9 +908,9 @@ class QueryRegularFixedShippingInstruction extends Model {
                     // 'container_count' => [array_sum($summary_box->toArray())],
                     'container_count' => $item->mot == 'AIR' ? [''] : [count($summary_box)],
                     'container_type' => $item->container_value,
-                    'net_weight' => round($count_net_weight,2),
-                    'gross_weight' => round($count_gross_weight,2),
-                    'measurement' => round($count_meas,3),
+                    'net_weight' => number_format($count_net_weight,2),
+                    'gross_weight' => number_format($count_gross_weight,2),
+                    'measurement' => number_format(array_sum($count_meas),3),
                     'port_of_discharge' => $item->port,
                     'port_of_loading' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
