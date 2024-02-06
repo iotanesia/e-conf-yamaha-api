@@ -1818,7 +1818,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     public static function exportPEB($request, $id)
     {
         $id_fixed_quantity = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $id)->get();
-        $query = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', $id_fixed_quantity->pluck('id')->toArray())
+        $query = RegularFixedQuantityConfirmationBox::select('id_regular_delivery_plan',
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation::character varying, ',') as id_fixed_quantity_confirmation"),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.created_at::character varying, ',') as created_at"),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty_pcs_box"),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan_box::character varying, ',') as id_regular_delivery_plan_box"),
+        )
+        ->whereIn('regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation', $id_fixed_quantity->pluck('id')->toArray())
+        ->groupBy('id_regular_delivery_plan')
         ->orderBy('created_at','asc')
         ->get();
 
@@ -1833,9 +1840,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
     
                     $mst_box = MstBox::whereIn('item_no', $item_no)->get();
-                    $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_box], $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                    $nw_gw = self::nettWeightGrossWeight(explode(',', $item->qty_pcs_box), $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
                     $netto = array_sum($nw_gw[0]['unit_weight_kg']);
-                    $qty_ratio = self::inputQuantity([$item->qty_pcs_box], $mst_box->pluck('qty')->toArray());
+                    $qty_ratio = self::inputQuantity(explode(',', $item->qty_pcs_box), $mst_box->pluck('qty')->toArray());
     
                     $volume = 0;
                     foreach ($mst_box as $vol) {
@@ -1866,7 +1873,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $hs_code = $item->refRegularDeliveryPlan->refPart->hs_code;
                     
                     $mst_box = MstBox::where('item_no', $item->refRegularDeliveryPlan->item_no)->get();
-                    $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_box], $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                    $nw_gw = self::nettWeightGrossWeight(explode(',', $item->qty_pcs_box), $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
                     $netto = array_sum($nw_gw[0]['unit_weight_kg']);
                     
                     $volume = 0;
@@ -1881,7 +1888,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res['kode_barang'] = $kode_barang;
                     $res['uraian'] = 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES';
                     $res['kode_satuan'] = 'PCE';
-                    $res['jumlah_satuan'] = $item->qty_pcs_box;
+                    $res['jumlah_satuan'] = array_sum(explode(',', $item->qty_pcs_box));
                     $res['kode_kemasan'] = 'CT';
                     $res['jumlah_kemasan'] = count(explode(',', $item->id_regular_delivery_plan_box));
                     $res['netto'] = number_format($netto, 2);
