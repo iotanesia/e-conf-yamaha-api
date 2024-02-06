@@ -794,14 +794,34 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $count_meas[] = (($box_item['length'] * $box_item['width'] * $box_item['height']) * array_sum($box_item['qty_pcs_box']) / 1000000000);
                 }
 
-                $summary_box = RegularFixedActualContainerCreation::where('code_consignee', $item->code_consignee)
-                                                                            ->where('etd_jkt', $item->etd_jkt)
-                                                                            ->where('datasource', $item->datasource)
-                                                                            ->whereIn('id',explode(',',$params->id))
-                                                                            ->get()->map(function($q){
-                                                                                $items = $q->summary_box;
-                                                                                return $items;
-                                                                            });
+                $summary_box_data = RegularFixedActualContainerCreation::select('id_container',
+                                    DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.summary_box::character varying, ',') as summary_box"),
+                                    DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.code_consignee::character varying, ',') as code_consignee"),
+                                    DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_jkt::character varying, ',') as etd_jkt"),
+                                    DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.datasource::character varying, ',') as datasource")
+                                    )
+                                    ->where('regular_fixed_actual_container_creation.code_consignee', $item->code_consignee)
+                                    ->where('regular_fixed_actual_container_creation.etd_jkt', $item->etd_jkt)
+                                    ->where('regular_fixed_actual_container_creation.datasource', $item->datasource)
+                                    ->whereIn('regular_fixed_actual_container_creation.id',explode(',',$params->id))
+                                    ->groupBy('id_container')
+                                    ->get()->map(function($q){
+                                        $items = [
+                                            'summary_box' => $q->summary_box,
+                                            'container' => $q->refMstContainer->container_type ?? null,
+                                            'id_container' => $q->id_container
+                                        ];
+                                        return $items;
+                                    });
+
+                $summary_box = [];   
+                $container_type = [];    
+                $jml_container = [];                                                     
+                foreach ($summary_box_data as $key => $value) {
+                    $summary_box[] = $value['summary_box'];
+                    $container_type[] = $value['container'];
+                    $jml_container[] = $value['id_container'];
+                }
 
                 return [
                     'id_actual_container_creation' => $params->id,
@@ -810,15 +830,15 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'customer_name' => $item->refMstConsignee->nick_name ?? null,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
-                    'summary_container' => $item->summary_container,
+                    'summary_container' => count($summary_box),
                     'hs_code' => $item->hs_code,
                     'via' => $item->mot,
                     'freight_charge' => 'COLLECT',
                     'incoterm' => 'FOB',
                     'shipped_by' => $item->mot,
-                    'container_value' => $item->mot == 'AIR' ? [''] : explode(',', $item->container_type),
+                    'container_value' => $item->mot == 'AIR' ? [''] : $container_type,
                     // 'container_count' => [array_sum($summary_box->toArray())],
-                    'container_count' => $item->mot == 'AIR' ? [''] : [count($summary_box)],
+                    'container_count' => $item->mot == 'AIR' ? [''] : $jml_container,
                     'container_type' => $item->container_value,
                     'net_weight' => number_format($count_net_weight,2),
                     'gross_weight' => number_format($count_gross_weight,2),
@@ -827,7 +847,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'port_of_loading' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
                     'count' => $item->summary_container,
-                    'summary_box' => array_sum($summary_box->toArray()),
+                    'summary_box' => count($box),
                     'to' => $item->refMstLsp->name ?? null,
                     'status' => $item->status ?? null,
                     'id_fixed_shipping_instruction_creation' => $item->id_fixed_shipping_instruction_creation ?? null,
