@@ -624,7 +624,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->get()
             ->map(function ($item, $index) {
 
-                $row_length = $item->refMstBox->fork_side == 'Width' ? ($item->refMstBox->width * (int)ceil($item->count_box / 4)) : ($item->refMstBox->length * (int)ceil($item->count_box / 4));
+                $row_length = $item->refMstBox->fork_side == 'Length' ? ($item->refMstBox->width * (int)ceil($item->count_box / 4)) : ($item->refMstBox->length * (int)ceil($item->count_box / 4));
                 $count_box = $item->count_box;
                 $box = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id')
                                                             ->where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
@@ -649,7 +649,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     'forkside' => $item->refMstBox->fork_side,
                     'stackingCapacity' => $item->refMstBox->stack_capacity,
                     'row' => (int)ceil($count_box / 4),
-                    'first_row_length' => $item->refMstBox->fork_side == 'Width' ? $item->refMstBox->width : $item->refMstBox->length,
+                    'first_row_length' => $item->refMstBox->fork_side == 'Length' ? $item->refMstBox->width : $item->refMstBox->length,
                     'row_length' => $row_length,
                     'box' => $box,
                     'box_set_count' => $box_set_count
@@ -1762,7 +1762,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                             'po_no' => $fixedQuantity->order_no,
                             'part_no' => $value->refPart->item_serial,
                             'qty' => $ratio_qty[0][$key],
-                            'no' => null,
+                            'no' => $key == 0 ? '0' : null,
                             'nw' => number_format($nw_gw[0]['unit_weight_kg'][$key], 2),
                             'gw' => number_format($nw_gw[0]['total_gross_weight'][$key], 2),
                             'model_code' => $fixedQuantity->cust_item_no,
@@ -1786,7 +1786,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res["po_no"] = $fixedQuantity->order_no ?? null;
                     $res["part_no"] = $plan_box->refRegularDeliveryPlan->refPart->item_serial;
                     $res["qty"] = $item->qty_pcs_box ?? null;
-                    $res['no'] = null;
+                    $res['no'] = '0';
                     $res['nw'] = number_format($nw_gw[0]['unit_weight_kg'][0], 2) ?? null;
                     $res['gw'] = number_format($nw_gw[0]['total_gross_weight'][0], 2) ?? null;
                     $res["model_code"] = $fixedQuantity->cust_item_no ?? null;
@@ -1807,7 +1807,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         $filteredData = array_values(array_filter($data->toArray()));
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
         foreach ($flattenedArray as $key => &$subarray) {
-            $subarray["no"] = $key +1;
+            $subarray["no"] = $subarray["no"] == '0' ? $key +1 : null;
         }
         $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
@@ -1894,7 +1894,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         }
         $filename = 'peb-'.Carbon::now()->format('Ymd');
 
-        return Excel::download(new PebExport($filteredData), $filename.'.xlsx');
+        return Excel::download(new PebExport($flattenedArray), $filename.'.xlsx');
     }
 
 }

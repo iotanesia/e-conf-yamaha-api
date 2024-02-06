@@ -842,7 +842,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             ->get()
             ->map(function ($item, $index){
                 
-                $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
+                $row_length = $item->refBox->fork_side == 'Length' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
                 $count_box = $item->count_box;
                 $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
                                                 ->whereNull('id_prospect_container_creation')
@@ -862,7 +862,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'forkside' => $item->refBox->fork_side,
                     'stackingCapacity' => $item->refBox->stack_capacity,
                     'row' => (int)ceil($count_box / 4),
-                    'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
+                    'first_row_length' => $item->refBox->fork_side == 'Length' ? $item->refBox->width : $item->refBox->length,
                     'row_length' => $row_length,
                     'box' => $box,
                     'box_set_count' => $box_set_count
