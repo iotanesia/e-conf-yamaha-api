@@ -111,81 +111,44 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
     public static function byIdProspectContainer($params,$id)
     {
-        // $check = RegularDeliveryPlanBox::where('id_prospect_container_creation', $params->id)->first();
+        $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
+                    'b.part_set',
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
+                    DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
+                    DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
+                    DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+                    DB::raw("string_agg(DISTINCT a.qty::character varying, ',') as qty"),
+                    DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
+                    DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
+                    DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
+                    DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
+                    DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
+                    DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"),
+                    DB::raw("string_agg(DISTINCT c.nick_name::character varying, ',') as cust_name"),
+                    DB::raw("string_agg(DISTINCT d.description::character varying, ',') as item_name"),
+                    DB::raw("string_agg(DISTINCT e.item_no::character varying, ',') as item_no_set"),
+                    )
+                    ->where(function($query) use($params, $id) {
+                        $query->where('regular_delivery_plan_box.id_prospect_container_creation', $id);
 
-        // if ($check->refRegularDeliveryPlan->item_no !== null) {
-            $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation',
-                        'b.part_set',
-                        DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
-                        DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
-                        DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
-                        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-                        DB::raw("string_agg(DISTINCT a.qty::character varying, ',') as qty"),
-                        DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
-                        DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
-                        DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
-                        DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
-                        DB::raw("string_agg(DISTINCT b.part_set::character varying, ',') as part_set"),
-                        DB::raw("string_agg(DISTINCT b.id_box::character varying, ',') as id_box"),
-                        DB::raw("string_agg(DISTINCT c.nick_name::character varying, ',') as cust_name"),
-                        DB::raw("string_agg(DISTINCT d.description::character varying, ',') as item_name"),
-                        DB::raw("string_agg(DISTINCT e.item_no::character varying, ',') as item_no_set"),
-                        )
-                        ->where(function($query) use($params, $id) {
-                            $query->where('regular_delivery_plan_box.id_prospect_container_creation', $id);
-
-                            if($params->kueri) $query->where('c.nick_name',"like", "%$params->kueri%")
-                                                    ->orWhere('a.cust_item_no',"like", "%$params->kueri%")
-                                                    ->orWhere('a.item_no',"like", '%' . str_replace('-', '', $params->kueri) . '%')
-                                                    ->orWhere('d.description',"like", "%$params->kueri%")
-                                                    ->orWhere('a.etd_ypmi',"like", "%$params->kueri%")
-                                                    ->orWhere('a.etd_jkt',"like", "%$params->kueri%")
-                                                    ->orWhere('a.etd_wh',"like", "%$params->kueri%")
-                                                    ->orWhere('a.qty',"like", "%$params->kueri%")
-                                                    ->orWhere('a.order_no',"like", "%$params->kueri%");
-                        })
-                        ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
-                        ->leftJoin('mst_box as b','a.item_no','b.item_no')
-                        ->leftJoin('mst_consignee as c','c.code','a.code_consignee')
-                        ->leftJoin('mst_part as d','d.code_consignee','c.code')
-                        ->leftJoin('regular_delivery_plan_set as e','e.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
-                        ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','a.order_no','a.id')
-                        ->paginate($params->limit ?? null);
-        // } else {
-        //     $data = RegularDeliveryPlanBox::select('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan',
-        //                 DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
-        //                 DB::raw("string_agg(DISTINCT regular_delivery_plan_box.id_box::character varying, ',') as id_box"),
-        //                 DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
-        //                 DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
-        //                 DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-        //                 DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
-        //                 DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
-        //                 DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
-        //                 DB::raw("string_agg(DISTINCT b.qty::character varying, ',') as qty"),
-        //                 DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no"),
-        //                 DB::raw("string_agg(DISTINCT c.nick_name::character varying, ',') as cust_name"),
-        //                 DB::raw("string_agg(DISTINCT d.description::character varying, ',') as item_name")
-        //                 )
-        //                 ->where(function($query) use($params) {
-        //                     $query->where('regular_delivery_plan_box.id_prospect_container_creation', $params->id);
-
-        //                     if($params->kueri) $query->where('c.nick_name',"like", "%$params->kueri%")
-        //                                             ->orWhere('a.cust_item_no',"like", "%$params->kueri%")
-        //                                             ->orWhere('b.item_no',"like", '%' . str_replace('-', '', $params->kueri) . '%')
-        //                                             ->orWhere('d.description',"like", "%$params->kueri%")
-        //                                             ->orWhere('a.etd_ypmi',"like", "%$params->kueri%")
-        //                                             ->orWhere('a.etd_jkt',"like", "%$params->kueri%")
-        //                                             ->orWhere('a.etd_wh',"like", "%$params->kueri%")
-        //                                             ->orWhere('a.order_no',"like", "%$params->kueri%");
-        //                 })
-        //                 ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
-        //                 ->leftJoin('regular_delivery_plan_set as b','b.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
-        //                 ->leftJoin('mst_consignee as c','c.code','a.code_consignee')
-        //                 ->leftJoin('mst_part as d','d.code_consignee','c.code')
-        //                 ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','b.id_delivery_plan')
-        //                 ->paginate($params->limit ?? null);
-        // }
-
+                        if($params->kueri) $query->where('c.nick_name',"like", "%$params->kueri%")
+                                                ->orWhere('a.cust_item_no',"like", "%$params->kueri%")
+                                                ->orWhere('a.item_no',"like", '%' . str_replace('-', '', $params->kueri) . '%')
+                                                ->orWhere('d.description',"like", "%$params->kueri%")
+                                                ->orWhere('a.etd_ypmi',"like", "%$params->kueri%")
+                                                ->orWhere('a.etd_jkt',"like", "%$params->kueri%")
+                                                ->orWhere('a.etd_wh',"like", "%$params->kueri%")
+                                                ->orWhere('a.qty',"like", "%$params->kueri%")
+                                                ->orWhere('a.order_no',"like", "%$params->kueri%");
+                    })
+                    ->leftJoin('regular_delivery_plan as a','a.id','regular_delivery_plan_box.id_regular_delivery_plan')
+                    ->leftJoin('mst_box as b','a.item_no','b.item_no')
+                    ->leftJoin('mst_consignee as c','c.code','a.code_consignee')
+                    ->leftJoin('mst_part as d','d.code_consignee','c.code')
+                    ->leftJoin('regular_delivery_plan_set as e','e.id_delivery_plan','regular_delivery_plan_box.id_regular_delivery_plan')
+                    ->groupBy('regular_delivery_plan_box.id_prospect_container_creation','a.etd_jkt','b.part_set','a.order_no','a.id')
+                    ->paginate($params->limit ?? null);
+        
         $data->transform(function ($item) {
             $custname = self::getCustName($item->code_consignee);
             $itemname = [];
@@ -208,54 +171,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 }
             }
 
-            // if ($check->refRegularDeliveryPlan->item_no == null) {
-            //     $mst_box = MstBox::where('part_set', 'set')
-            //                     ->whereIn('item_no', str_replace('-','',$item_no))
-            //                     ->get()->map(function ($item){
-            //                         $qty = [
-            //                             $item->item_no.'id' => $item->qty
-            //                         ];
-                                
-            //                         return array_merge($qty);
-            //                 });
-
-            //     $deliv_plan_set = RegularDeliveryPlanSet::whereIn('id_delivery_plan', explode(',', $item->id_delivery_plan))->get();
-            //     $qty_per_item_no = [];
-            //     $qty_set = [];
-            //     foreach ($deliv_plan_set as $key => $value) {
-            //         $qty_per_item_no[] = [
-            //             $value->item_no.'id' => $value->qty
-            //         ];
-            //         $qty_set[] = $value->qty;
-            //     }
-
-            //     $qty = [];
-            //     foreach ($mst_box as $key => $value) {
-            //         $arary_key = array_keys($value)[0];
-            //         $qty[] = array_merge(...$qty_per_item_no)[$arary_key] / $value[$arary_key];
-            //     }
-        
-            //     $box = [
-            //         'qty' =>  array_sum(array_merge(...$mst_box->toArray()))." x ".(int)ceil(max($qty)),
-            //         'length' =>  "",
-            //         'width' =>  "",
-            //         'height' =>  "",
-            //     ];
-
-            //     if (count(explode(',',$item->qty)) == 1) {
-            //         $qty_order = [];
-            //         for ($i=1; $i <= count($item_no); $i++) { 
-            //             $qty_order[] = $item->qty;
-            //         }
-            //     }
-            // }
-
             $box_result = self::getCountBox((int)$item->id_delivery_plan, $item->id_prospect_container_creation);
-            // if ($check->refRegularDeliveryPlan->item_no == null) $box_result = [$box];
-
+            
             $qty_result = explode(',',$item->qty);
-            // if ($check->refRegularDeliveryPlan->item_no == null) $qty_result = [array_sum($qty_set)];
-
+            
             $item->item_name = $itemname;
             $item->item_no = $item_no;
             $item->cust_name = $custname;
@@ -563,9 +482,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $count_outer_carton_weight = 0;
                 $count_meas = 0;
                 $total_net_weight = 0;
-                $total_net_weight_mst = 0;
                 $total_gross_weight = 0;
-                $total_gross_weight_mst = 0;
                 foreach ($box as $key => $box_item){
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
                         $master = [];
@@ -575,26 +492,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                             $item_no_set[] = $set->item_no;
                             $master[] = $set->refBox->qty;
                             $check[] = $box->pluck('qty_pcs_box')->toArray()[$key];
-                            // $total_net_weight += ((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000)));
-                            // $total_gross_weight += (((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000) + $set->refBox->outer_carton_weight));
-                            // $total_net_weight_mst += (($set->refBox->unit_weight_gr * $set->refBox->qty) / 1000);
-                            // $total_gross_weight_mst += ($set->refBox->unit_weight_gr * $set->refBox->qty / 1000) + $set->refBox->outer_carton_weight;
                         } 
                         $mst_box = MstBox::whereIn('item_no', $item_no_set)->get();
                         $nw_gw = self::nettWeightGrossWeight($box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray(), $mst_box, $box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
                             
                         $total_net_weight += array_sum($nw_gw[$key]['unit_weight_kg']);
                         $total_gross_weight += array_sum($nw_gw[$key]['total_gross_weight']);
-                        // $res_check = (array_sum($check) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
-                        // $res_master =  array_sum($master) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
-                        // if ($res_check == $res_master) {
-                        //     $total_net_weight = $total_net_weight_mst;
-                        //     $total_gross_weight = $total_gross_weight_mst;
-                        // } else {
-                        //     $total_net_weight = $total_net_weight;
-                        //     $total_gross_weight = $total_gross_weight;
-                        // }
-
                         $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000);
                     } else {
                         $count_net_weight = $box_item->refBox->unit_weight_gr;
@@ -927,172 +830,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 ->get();
 
             $delivery_plan = [];
-            // $delivery_plan_set = [];
             foreach ($plan as $item){
-                // if ($item->item_no == null) {
-                //     $delivery_plan_set[] = $item->id;
-                // } else {
-                // }
                 $delivery_plan[] = $item->id;
             }
             
-            //calculation part set
-            // if (count($delivery_plan_set) > 0) {
-            //     $delivery_plan_box_set = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
-            //     'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
-            //     ->whereIn('id_regular_delivery_plan',$delivery_plan_set)
-            //     ->groupBy('id_box', 'id_regular_delivery_plan')
-            //     ->orderBy('count_box','desc')
-            //     ->get()
-            //     ->map(function ($item, $index){
-                    
-            //         if ($item->refRegularDeliveryPlan->item_no == null) {
-            //             $count_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->count();
-            //             $row_length = $item->refBox->fork_side == 'Width' ? ($item->refBox->width * (int)ceil(($item->count_box / $count_set) / 4)) : ($item->refBox->length * (int)ceil(($item->count_box / $count_set) / 4));
-            //             $count_box = $item->count_box;
-            //             $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
-            //                                             ->where('id_box', $item->id_box)
-            //                                             ->whereNull('id_prospect_container_creation')
-            //                                             ->orderBy('id', 'asc')
-            //                                             ->get();
-            //             $box_set_count = count($box);
-            //         } 
-
-            //         return [
-            //             'id_delivery_plan' => $item->id_regular_delivery_plan,
-            //             'item_no' => $item->refBox->item_no,
-            //             'label' => $item->refBox->no_box,
-            //             'width' =>  $item->refBox->width,
-            //             'length' => $item->refBox->length,
-            //             'count_box' => $count_box,
-            //             'sum_qty' => $item->sum_qty,
-            //             'priority' => $index + 1,
-            //             'forkside' => $item->refBox->fork_side,
-            //             'stackingCapacity' => $item->refBox->stack_capacity,
-            //             'row' => (int)ceil($count_box / 4),
-            //             'first_row_length' => $item->refBox->fork_side == 'Width' ? $item->refBox->width : $item->refBox->length,
-            //             'row_length' => $row_length,
-            //             'box' => $box,
-            //             'box_set_count' => $box_set_count
-            //         ];
-            //     });
-
-            //     $box_set_count = 0;
-            //     $sum_row_length = 0;
-            //     $sum_count_box = 0;
-            //     $sum_qty_box = [];
-            //     $first_row_length = [];
-            //     $first_row = [];
-            //     $first_count_box = [];
-            //     $row_length = [];
-            //     $count_box = [];
-            //     $big_row_length = [];
-            //     foreach ($delivery_plan_box_set as $key => $value) {
-            //         $box_set_count += $value['box_set_count'];
-            //         $sum_row_length += $value['row_length'];
-            //         $sum_count_box += $value['count_box'];
-            //         $sum_qty_box[] = $value['sum_qty'];
-            //         $first_row_length[] = $delivery_plan_box_set[$key]['first_row_length'];
-            //         $first_row[] = $delivery_plan_box_set[$key]['row'];
-            //         $first_count_box[] = $delivery_plan_box_set[$key]['count_box'];
-            //         $row_length[] = $delivery_plan_box_set[$key]['row_length'];
-            //         $count_box[] = $delivery_plan_box_set[$key]['count_box'];
-            //         $big_row_length[] = $delivery_plan_box_set[$key]['first_row_length'] * $delivery_plan_box_set[$key]['row'];
-            //     }
-        
-            //     $space = 0;
-            //     $sum_first_length = 0;
-            //     $summary_box = 0;
-            //     $num_items = count($first_row_length);
-            //     foreach ($first_row_length as $key => $value) {
-            //         $sum_first_length += $value * $first_row[$key];
-            //         $summary_box += $count_box[$key];
-            //         if ($sum_first_length > 5905 && $sum_first_length <= 12031) {
-            //             if ($key+1 < $num_items) {
-            //                 if ($sum_first_length + ($value * $first_row[$key+1]) <= 12031) {
-            //                     $sum_first_length = $sum_first_length + ($value * $first_row[$key+1]);
-            //                     $summary_box = $summary_box + $count_box[$key+1];
-            //                     if ($sum_first_length + ($value * $first_row[$key+2]) <= 12031) {
-            //                         $sum_first_length = $sum_first_length + ($value * $first_row[$key+2]);
-            //                         $summary_box = $summary_box + $count_box[$key+2];
-            //                     }
-            //                 }
-            //             }
-            //             $space = 12031 - $sum_first_length;
-            //             $summary_box = $summary_box;
-            //             break;
-            //         }
-            //     }
-
-            //     $creation = [
-            //         'id_type_delivery' => $lsp->id_type_delivery,
-            //         'id_mot' => $lsp->refTypeDelivery->id_mot,
-            //         'id_lsp' => $lsp->id,
-            //         'code_consignee' => $prospect_container->code_consignee,
-            //         'etd_jkt' => $prospect_container->etd_jkt,
-            //         'etd_ypmi' => $prospect_container->etd_ypmi,
-            //         'etd_wh' => $prospect_container->etd_wh,
-            //         'id_prospect_container' => $params->id,
-            //         'status_bml' => 0,
-            //         'datasource' => $params->datasource,
-            //     ];
-
-            //     $count_container = (int)ceil($sum_row_length / 12031);
-            //     // $send_summary_box = $summary_box;
-            //     $send_summary_box = self::ratioSummaryBox(array_sum($count_box), $sum_row_length, 12031);
-            //     $sum_send_summary_box = 0;
-            //     for ($i=1; $i <= $count_container; $i++) { 
-            //         if ($sum_row_length < 5905) {
-            //             $creation['id_container'] = 1;
-            //             $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-            //             // $creation['summary_box'] = (int)floor($sum_count_box);
-            //             $creation['summary_box'] = (int)$send_summary_box[$i-1];
-            //             $creation['iteration'] = $i + 99;
-            //             $creation['space'] = 5905 - (int)$sum_row_length;
-            //         } else {
-            //             $creation['id_container'] = 3;
-            //             $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-            //             // $creation['summary_box'] = (int)floor($send_summary_box);
-            //             $creation['summary_box'] = (int)$send_summary_box[$i-1];
-            //             $creation['iteration'] = $i + 99;
-            //             $creation['space'] = (int)$space;
-            //         }
-
-            //         $check = RegularProspectContainerCreation::where('id_prospect_container', $prospect_container->id)->where('space', null)->first();
-            //         if($check) $check->forceDelete();
-            //         RegularProspectContainerCreation::create($creation);
-            //         $sum_row_length = $sum_row_length - 12031;
-            //         // $send_summary_box = $send_summary_box;
-            //         // $sum_send_summary_box += $send_summary_box;
-            //         // $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
-
-            //         // if ($send_summary_box > $remaining_send_summary_box) {
-            //         //     $send_summary_box = $remaining_send_summary_box;
-            //         // }
-                    
-            //         // if ($sum_row_length < 5905) {
-            //         //     $sum_count_box = $send_summary_box;
-            //         // }
-            //     }
-
-            //     $upd = RegularProspectContainer::find($params->id);
-            //     $upd->is_prospect = 99;
-            //     $upd->save();
-
-            //     $set = [
-            //         'id' => $params->id,
-            //         'colis' => $delivery_plan_box_set,
-            //         'box_set_count' => $box_set_count,
-            //         'type' => 'set'
-            //     ];
-    
-            //    ContainerPlan::dispatch($set);
-            // } 
-
-
-            //calculation part single
-            // if (count($delivery_plan) !== 0) {
-
             $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
                 'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
             ->whereIn('id_regular_delivery_plan',$delivery_plan)
@@ -1150,30 +891,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $count_box[] = $delivery_plan_box[$key]['count_box'];
                 $big_row_length[] = $delivery_plan_box[$key]['first_row_length'] * $delivery_plan_box[$key]['row'];
             }
-    
-            // $space = 0;
-            // $sum_first_length = 0;
-            // $summary_box = 0;
-            // $num_items = count($first_row_length);
-            // foreach ($first_row_length as $key => $value) {
-            //     $sum_first_length += $value * $first_row[$key];
-            //     $summary_box += $count_box[$key];
-            //     if ($sum_first_length > 5905 && $sum_first_length <= 12031) {
-            //         if ($key+1 < $num_items) {
-            //             if ($sum_first_length + ($value * $first_row[$key+1]) <= 12031) {
-            //                 $sum_first_length = $sum_first_length + ($value * $first_row[$key+1]);
-            //                 $summary_box = $summary_box + $count_box[$key+1];
-            //                 if ($sum_first_length + ($value * $first_row[$key+2]) <= 12031) {
-            //                     $sum_first_length = $sum_first_length + ($value * $first_row[$key+2]);
-            //                     $summary_box = $summary_box + $count_box[$key+2];
-            //                 }
-            //             }
-            //         }
-            //         $space = 12031 - $sum_first_length;
-            //         $summary_box = $summary_box;
-            //         break;
-            //     }
-            // }
 
             $creation = [
                 'id_type_delivery' => $lsp->id_type_delivery,
@@ -1189,21 +906,17 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             ];
 
             $count_container = (int)ceil($sum_row_length / 12031);
-            // $send_summary_box = $summary_box;
             $send_summary_box = self::ratioSummaryBox(array_sum($count_box), $sum_row_length, 12031);
-            $sum_send_summary_box = 0;
             for ($i=1; $i <= $count_container; $i++) { 
                 if ($sum_row_length < 5905) {
                     $creation['id_container'] = 1;
                     $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-                    // $creation['summary_box'] = (int)floor($sum_count_box);
                     $creation['summary_box'] = (int)$send_summary_box[$i-1]['summary_box'];
                     $creation['iteration'] = $i;
                     $creation['space'] = 5905 - (int)$sum_row_length;
                 } else {
                     $creation['id_container'] = 3;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                    // $creation['summary_box'] = (int)floor($send_summary_box);
                     $creation['summary_box'] = (int)$send_summary_box[$i-1]['summary_box'];
                     $creation['iteration'] = $i;
                     $creation['space'] = (int)$send_summary_box[$i-1]['space'];
@@ -1213,17 +926,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 if($check) $check->forceDelete();
                 RegularProspectContainerCreation::create($creation);
                 $sum_row_length = $sum_row_length - 12031;
-                // $send_summary_box = $send_summary_box;
-                // $sum_send_summary_box += $send_summary_box;
-                // $remaining_send_summary_box = $sum_count_box - $sum_send_summary_box;
-
-                // if ($send_summary_box > $remaining_send_summary_box) {
-                //     $send_summary_box = $remaining_send_summary_box;
-                // }
-                
-                // if ($sum_row_length < 5905) {
-                //     $sum_count_box = $send_summary_box;
-                // }
             }
             
             $upd = RegularProspectContainer::find($params->id);
@@ -1239,9 +941,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
                 
             ContainerPlan::dispatch($set);
-
-            // }
-
 
            DB::commit();
 

@@ -162,9 +162,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $count_outer_carton_weight = 0;
                 $count_meas = 0;
                 $total_net_weight = 0;
-                $total_net_weight_mst = 0;
                 $total_gross_weight = 0;
-                $total_gross_weight_mst = 0;
                 foreach ($box as $key => $box_item){
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
                         $master = [];
@@ -174,10 +172,6 @@ class QueryRegularFixedShippingInstruction extends Model {
                             $item_no_set[] = $set->item_no;
                             $master[] = $set->refBox->qty;
                             $check[] = $box->pluck('qty_pcs_box')->toArray()[$key];
-                            // $total_net_weight += ((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000)));
-                            // $total_gross_weight += (((($set->refBox->unit_weight_gr * ((array_sum($box->pluck('qty_pcs_box')->toArray()) / count($box)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)))/1000) + ($set->refBox->outer_carton_weight / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet))));
-                            // $total_net_weight_mst += (($set->refBox->unit_weight_gr * $set->refBox->qty) / 1000);
-                            // $total_gross_weight_mst += ($set->refBox->unit_weight_gr * $set->refBox->qty / 1000) + ($set->refBox->outer_carton_weight / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet));
                         } 
                         
                         $mst_box = MstBox::whereIn('item_no', $item_no_set)->get();
@@ -185,16 +179,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                             
                         $total_net_weight += array_sum($nw_gw[$key]['unit_weight_kg']);
                         $total_gross_weight += array_sum($nw_gw[$key]['total_gross_weight']);
-                        // $res_check = (array_sum($check) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet)) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
-                        // $res_master =  array_sum($master) / count($box_item->refRegularDeliveryPlan->manyDeliveryPlanSet);
-                        // if ($res_check == $res_master) {
-                        //     $total_net_weight = $total_net_weight_mst;
-                        //     $total_gross_weight = $total_gross_weight_mst;
-                        // } else {
-                        //     $total_net_weight = $total_net_weight;
-                        //     $total_gross_weight = $total_gross_weight;
-                        // }
-                        $count_meas += ($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) * $box_item->qty_pcs_box / 1000000000;
+                       $count_meas += ($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) * $box_item->qty_pcs_box / 1000000000;
                     } else {
                         $count_net_weight = $box_item->refMstBox->unit_weight_gr;
                         $count_outer_carton_weight = $box_item->refMstBox->outer_carton_weight;
@@ -234,58 +219,31 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function shippingContainerDetail($params,$id)
     {
-        $check = RegularFixedQuantityConfirmationBox::where('id_prospect_container_creation', $id)->first();
+        $data = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', 'a.id',
+                    DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
+                    DB::raw('MAX(regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation) as id_fixed_quantity_confirmation'),
+                    DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
+                    DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
+                    DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
+                    DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
+                    DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
+                    DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
+                    DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
+                    DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty"),
+                    DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
+                    DB::raw("string_agg(DISTINCT d.item_no::character varying, ',') as item_no_set"),
+                    )
+                    ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $id)
+                    ->whereNotNull('regular_fixed_quantity_confirmation_box.qrcode')
+                    ->whereNotNull('c.id_fixed_actual_container')
+                    ->leftJoin('regular_delivery_plan as a', 'a.id', 'regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
+                    ->leftJoin('regular_fixed_quantity_confirmation as c', 'c.id', 'regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation')
+                    ->leftJoin('regular_delivery_plan_set as d','d.id_delivery_plan','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
+                    ->groupBy('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', 'a.id')
+                    ->distinct() // Make the entire result set distinct
+                    ->paginate($params->limit ?? null);
 
-        // if ($check->refRegularDeliveryPlan->item_no !== null) {
-            $data = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', 'a.id',
-                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
-                        DB::raw('MAX(regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation) as id_fixed_quantity_confirmation'),
-                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
-                        DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
-                        DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
-                        DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-                        DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
-                        DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
-                        DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
-                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty"),
-                        DB::raw("string_agg(DISTINCT a.item_no::character varying, ',') as item_no"),
-                        DB::raw("string_agg(DISTINCT d.item_no::character varying, ',') as item_no_set"),
-                        )
-                        ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $id)
-                        ->whereNotNull('regular_fixed_quantity_confirmation_box.qrcode')
-                        ->whereNotNull('c.id_fixed_actual_container')
-                        ->leftJoin('regular_delivery_plan as a', 'a.id', 'regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
-                        ->leftJoin('regular_fixed_quantity_confirmation as c', 'c.id', 'regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation')
-                        ->leftJoin('regular_delivery_plan_set as d','d.id_delivery_plan','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
-                        ->groupBy('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', 'a.id')
-                        ->distinct() // Make the entire result set distinct
-                        ->paginate($params->limit ?? null);
-
-        // } else {
-        //     $data = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id_prospect_container_creation','b.id_delivery_plan',
-        //                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_delivery_plan"),
-        //                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation::character varying, ',') as id_fixed_quantity_confirmation"),
-        //                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
-        //                 DB::raw("string_agg(DISTINCT a.code_consignee::character varying, ',') as code_consignee"),
-        //                 DB::raw("string_agg(DISTINCT a.cust_item_no::character varying, ',') as cust_item_no"),
-        //                 DB::raw("string_agg(DISTINCT a.order_no::character varying, ',') as order_no"),
-        //                 DB::raw("string_agg(DISTINCT a.etd_ypmi::character varying, ',') as etd_ypmi"),
-        //                 DB::raw("string_agg(DISTINCT a.etd_wh::character varying, ',') as etd_wh"),
-        //                 DB::raw("string_agg(DISTINCT a.etd_jkt::character varying, ',') as etd_jkt"),
-        //                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty"),
-        //                 DB::raw("string_agg(DISTINCT b.item_no::character varying, ',') as item_no")
-        //                 )
-        //                 ->where('regular_fixed_quantity_confirmation_box.id_prospect_container_creation', $id)
-        //                 ->whereNotNull('regular_fixed_quantity_confirmation_box.qrcode')
-        //                 ->whereNotNull('c.id_fixed_actual_container')
-        //                 ->leftJoin('regular_delivery_plan as a','a.id','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
-        //                 ->leftJoin('regular_delivery_plan_set as b','b.id_delivery_plan','regular_fixed_quantity_confirmation_box.id_regular_delivery_plan')
-        //                 ->leftJoin('regular_fixed_quantity_confirmation as c','c.id','regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation')
-        //                 ->groupBy('regular_fixed_quantity_confirmation_box.id_prospect_container_creation','b.id_delivery_plan')
-        //                 ->paginate($params->limit ?? null);
-        // }
-
-        $data->transform(function ($item) use ($check){
+        $data->transform(function ($item) {
             $custname = self::getCustName($item->code_consignee);
             $itemname = [];
             foreach (explode(',', $item->item_no) as $value) {
@@ -306,53 +264,6 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $item_no[] = self::getItemSerial($value);
                 }
             }
-
-            // if (count($item_no) > 1 || $check->refRegularDeliveryPlan->item_no == null) {
-            //     $item_no_set = $check->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no');
-
-            //     $mst_box = MstBox::where('part_set', 'set')
-            //                 ->whereIn('item_no', $item_no_set)
-            //                 ->get()->map(function ($item){
-            //                     $qty = [
-            //                         $item->id.'id' => $item->qty
-            //                     ];
-                            
-            //                     return array_merge($qty);
-            //                 });
-
-            //     $box_scan = RegularFixedQuantityConfirmationBox::select(DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qrcode::character varying, ',') as qrcode"),
-            //                                                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
-            //                                                 DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty"),
-            //                                                 )
-            //                                                 ->whereIn('id_fixed_quantity_confirmation', explode(',', $item->id_fixed_quantity_confirmation))
-            //                                                 ->whereNotNull('qrcode')
-            //                                                 ->groupBy('regular_fixed_quantity_confirmation_box.qrcode')
-            //                                                 ->get()->map(function ($item) use($item_no_set){
-            //                                                     $qty = [
-            //                                                         $item->id_box.'id' => ($item->qty / count($item_no_set)) ?? 0
-            //                                                     ];
-                                                            
-            //                                                     return array_merge($qty);
-            //                                                 });
-
-            //     $qty = [];
-            //     $qty_sum = [];
-            //     foreach ($mst_box as $key => $value) {
-            //         $arary_key = array_keys($value)[0];
-            //         $box_scan_per_id = array_merge(...$box_scan)[$arary_key] ?? 0;
-            //         $qty[] = $box_scan_per_id / $value[$arary_key];
-            //         $qty_sum[] = $value[$arary_key];
-            //     }
-            //     $max_qty[] = (int)ceil(max($qty)) / count($item_no_set);
-        
-            //     $box = [
-            //         'qty' =>  array_sum($qty_sum)." x ".count($box_scan),
-            //         'length' =>  "",
-            //         'width' =>  "",
-            //         'height' =>  "",
-            //     ];
-
-            // }
 
             $box_result = self::getCountBoxFifo($item->id_fixed_quantity_confirmation,$item->id_prospect_container_creation);
 
@@ -773,12 +684,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                                                 $q->where('id_fixed_actual_container', $id_fixed_actual);
                                             })
                                             ->where('id_regular_delivery_plan',$deliv_value->id)->where('qrcode','!=',null)->get();
-                        // $deliv_plan_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan',$deliv_value->id)
-                        //                                     ->whereIn('id_prospect_container_creation', explode(',', $params->id))
-                        //                                     ->where('qrcode','!=',null)
-                        //                                     ->orderBy('qty_pcs_box','desc')
-                        //                                     ->orderBy('id','asc')
-                        //                                     ->get();
+                        
                         $item_no = [];
                         $set_qty = [];
                         $item_no_series = [];
@@ -857,20 +763,12 @@ class QueryRegularFixedShippingInstruction extends Model {
             
                         $box_set = [];
                         for ($i=0; $i < count($deliv_plan_box); $i++) { 
-                            // $check = array_sum($qty_pcs_box[0]) / count($item_no);
-                        $res_check = (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($plan_set));
-                        $check_master = array_sum($mst_box->pluck('qty')->toArray()) / count($plan_set);
                         $nw_gw = self::nettWeightGrossWeight($deliv_plan_box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray(), $mst_box, $plan_set);
                             $box_set[] = [
                                 'item_no' => $item_no,
-                                // 'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
                                 'qty_pcs_box' => [$deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i]],
                                 'item_no_series' => $item_no_series,
-                                // 'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $unit_weight_kg : $unit_weight_kg_mst,
-                                // 'unit_weight_kg' => $res_check >= $check_master ? $unit_weight_kg_mst : $unit_weight_kg,
                                 'unit_weight_kg' => $nw_gw[$i]['unit_weight_kg'],
-                                // 'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $total_gross_weight : $total_gross_weight_mst,
-                                // 'total_gross_weight' => $res_check >= $check_master ? $total_gross_weight_mst : $total_gross_weight,
                                 'total_gross_weight' => $nw_gw[$i]['total_gross_weight'],
                                 'length' => $length,
                                 'width' => $width,
@@ -941,7 +839,6 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'fax_id' => $mst_shipment->fax_id ?? null,
                     'tel_consignee' => $item->tel_consignee,
                     'fax_consignee' => $item->fax_consignee,
-                    // 'consignee_address' => $item->consignee_address,
                     'notify_part' => '',
                     'tel_notify_part' => '',
                     'fax_notify_part' => '',
@@ -1121,18 +1018,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                                             $q->where('id_fixed_actual_container', $id_fixed_actual);
                                         })
                                         ->where('id_regular_delivery_plan',$deliv_value->id)->where('qrcode','!=',null)->get();
-                    // $deliv_plan_box = RegularFixedQuantityConfirmationBox::select(
-                    //                                     'id_fixed_quantity_confirmation', 
-                    //                                     DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty_pcs_box"),
-                    //                                     DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qrcode::character varying, ',') as qrcode"),
-                    //                                     DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id::character varying, ',') as id_quantity_confirmation_box"),
-                    //                                     )
-                    //                                     ->where('id_regular_delivery_plan',$deliv_value->id)
-                    //                                     ->where('qrcode','!=',null)
-                    //                                     ->groupBy('id_fixed_quantity_confirmation')
-                    //                                     ->orderBy('qty_pcs_box','desc')
-                    //                                     ->orderBy('id_quantity_confirmation_box','asc')
-                    //                                     ->get();
+                    
                     $item_no = [];
                     $set_qty = [];
                     foreach ($plan_set as $key => $value) {
@@ -1211,21 +1097,13 @@ class QueryRegularFixedShippingInstruction extends Model {
         
                     $box_set = [];
                     for ($i=0; $i < count($deliv_plan_box); $i++) { 
-                        // $check = array_sum($qty_pcs_box[0]) / count($item_no);
-                        $res_check = (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($plan_set));
-                        $check_master = array_sum($mst_box->pluck('qty')->toArray()) / count($plan_set);
                         $ratio_qty = self::inputQuantity($deliv_plan_box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray());
                         $nw_gw = self::nettWeightGrossWeight($deliv_plan_box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray(), $mst_box, $plan_set);
                         $box_set[] = [
                             'item_no' => $item_no,
-                            // 'qty_pcs_box' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $res_qty : $qty_box,
                             'qty_pcs_box' => count($res_qty) == 0 ? $res_qty : $ratio_qty[$i],
                             'item_no_series' => $item_no_series,
-                            // 'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $unit_weight_kg : $unit_weight_kg_mst,
-                            // 'unit_weight_kg' => $res_check >= $check_master ? $unit_weight_kg_mst : $unit_weight_kg,
                             'unit_weight_kg' => $nw_gw[$i]['unit_weight_kg'],
-                            // 'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $total_gross_weight : $total_gross_weight_mst,
-                            // 'total_gross_weight' => $res_check >= $check_master ? $total_gross_weight_mst : $total_gross_weight,
                             'total_gross_weight' => $nw_gw[$i]['total_gross_weight'],
                             'length' => $length,
                             'width' => $width,
@@ -1399,19 +1277,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                                             $q->where('id_fixed_actual_container', $id_fixed_actual);
                                         })
                                         ->where('id_regular_delivery_plan',$deliv_value->id)->where('qrcode','!=',null)->get();
-                    // $deliv_plan_box = RegularFixedQuantityConfirmationBox::select(
-                    //     'id_fixed_quantity_confirmation', 
-                    //     DB::raw("SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty_pcs_box"),
-                    //     DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qrcode::character varying, ',') as qrcode"),
-                    //     DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id::character varying, ',') as id_quantity_confirmation_box"),
-                    //     )
-                    //     ->where('id_regular_delivery_plan',$deliv_value->id)
-                    //     ->where('qrcode','!=',null)
-                    //     ->groupBy('id_fixed_quantity_confirmation')
-                    //     ->orderBy('qty_pcs_box','desc')
-                    //     ->orderBy('id_quantity_confirmation_box','asc')
-                    //     ->get();
-
+                    
                     $item_no = [];
                     $set_qty = [];
                     foreach ($plan_set as $key => $value) {
@@ -1490,20 +1356,12 @@ class QueryRegularFixedShippingInstruction extends Model {
         
                     $box_set = [];
                     for ($i=0; $i < count($deliv_plan_box); $i++) { 
-                        // $check = array_sum($qty_pcs_box[0]) / count($item_no); 
-                        $res_check = (array_sum($deliv_plan_box->pluck('qty_pcs_box')->toArray()) / count($plan_set));
-                        $check_master = array_sum($mst_box->pluck('qty')->toArray()) / count($plan_set);
                         $nw_gw = self::nettWeightGrossWeight($deliv_plan_box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray(), $mst_box, $plan_set);
                         $box_set[] = [
                             'item_no' => $item_no,
-                            // 'qty_pcs_box' => $check == array_sum($qty_pcs_box[$i]) / count($item_no) ? $qty_box : $res_qty,
                             'qty_pcs_box' => [$deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i]],
                             'item_no_series' => $item_no_series,
-                            // 'unit_weight_kg' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $unit_weight_kg : $unit_weight_kg_mst,
-                            // 'unit_weight_kg' => $res_check >= $check_master ? $unit_weight_kg_mst : $unit_weight_kg,
                             'unit_weight_kg' => $nw_gw[$i]['unit_weight_kg'],
-                            // 'total_gross_weight' => $deliv_plan_box->pluck('qty_pcs_box')->toArray()[$i] > $check ? $total_gross_weight : $total_gross_weight_mst,
-                            // 'total_gross_weight' => $res_check >= $check_master ? $total_gross_weight_mst : $total_gross_weight,
                             'total_gross_weight' => $nw_gw[$i]['total_gross_weight'],
                             'length' => $length,
                             'width' => $width,
