@@ -1806,8 +1806,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $filteredData = array_values(array_filter($data->toArray()));
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
+        $no = 1;
         foreach ($flattenedArray as $key => &$subarray) {
-            $subarray["no"] = $subarray["no"] == '0' ? $key +1 : null;
+            $subarray["no"] = $subarray["no"] == '0' ? $no++ : null;
         }
         $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
