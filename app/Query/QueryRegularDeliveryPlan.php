@@ -1460,14 +1460,23 @@ class QueryRegularDeliveryPlan extends Model {
                     $container_count[] = $value;
                 }
 
-                $summary_box_data = RegularDeliveryPlanProspectContainerCreation::where('code_consignee', $item->code_consignee)
-                                                                            ->where('etd_jkt', $item->etd_jkt)
-                                                                            ->where('datasource', $item->datasource)
-                                                                            ->where('id_prospect_container', $item->id_prospect_container)
+                $summary_box_data = RegularDeliveryPlanProspectContainerCreation::select('id_container',
+                                                                            DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.summary_box::character varying, ',') as summary_box"),
+                                                                            DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.code_consignee::character varying, ',') as code_consignee"),
+                                                                            DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.etd_jkt::character varying, ',') as etd_jkt"),
+                                                                            DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.datasource::character varying, ',') as datasource"),
+                                                                            DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_prospect_container::character varying, ',') as id_prospect_container")
+                                                                            )
+                                                                            ->where('regular_delivery_plan_prospect_container_creation.code_consignee', $item->code_consignee)
+                                                                            ->where('regular_delivery_plan_prospect_container_creation.etd_jkt', $item->etd_jkt)
+                                                                            ->where('regular_delivery_plan_prospect_container_creation.datasource', $item->datasource)
+                                                                            ->where('regular_delivery_plan_prospect_container_creation.id_prospect_container', $item->id_prospect_container)
+                                                                            ->groupBy('id_container')
                                                                             ->get()->map(function($q){
                                                                                 $items = [
                                                                                     'summary_box' => $q->summary_box,
-                                                                                    'container' => $q->refMstContainer->container_type ?? null
+                                                                                    'container' => $q->refMstContainer->container_type ?? null,
+                                                                                    'id_container' => $q->id_container
                                                                                 ];
                                                                                 return $items;
                                                                             });
@@ -1478,7 +1487,7 @@ class QueryRegularDeliveryPlan extends Model {
                 foreach ($summary_box_data as $key => $value) {
                     $summary_box[] = $value['summary_box'];
                     $container_type[] = $value['container'];
-                    $jml_container[] = 1;
+                    $jml_container[] = $value['id_container'];
                 }
 
                 return [

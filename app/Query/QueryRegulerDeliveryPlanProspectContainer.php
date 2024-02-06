@@ -915,7 +915,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     $creation['iteration'] = $i;
                     $creation['space'] = 5905 - (int)$sum_row_length;
                 } else {
-                    $creation['id_container'] = 3;
+                    $creation['id_container'] = 2;
                     $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
                     $creation['summary_box'] = (int)$send_summary_box[$i-1]['summary_box'];
                     $creation['iteration'] = $i;

@@ -1845,6 +1845,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res = [];
                     foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $i => $value) {
                         $res[] = [
+                                'no_packaging' => $fixedQuantity->refFixedActualContainer->no_packaging ?? null,
+                                'tanggal' => date('Ymd', strtotime($fixedQuantity->refFixedActualContainer->created_at)) ?? null,
                                 'seri_barang' => null,
                                 'hs' => $value->refPart->hs_code,
                                 'kode_barang' => $value->item_no.', '.trim($value->refPart->description),
@@ -1872,6 +1874,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $volume = ($vol->length * $vol->width * $vol->height) / 1000000000;
                     }
     
+                    $res['no_packaging'] = $fixedQuantity->refFixedActualContainer->no_packaging ?? null;
+                    $res['tanggal'] = date('Ymd', strtotime($fixedQuantity->refFixedActualContainer->created_at)) ?? null;
                     $res['seri_barang'] = null;
                     $res['hs'] = $hs_code;
                     $res['kode_barang'] = $kode_barang;

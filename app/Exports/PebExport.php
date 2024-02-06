@@ -27,6 +27,6 @@ class PebExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return ["SERI BARANG", "HS", "KODE BARANG", "URAIAN", "KODE SATUAN", "JUMLAH SATUAN", "KODE KEMASAN", "JUMLAH KEMASAN", "NETTO", "VOLUME"];
+        return ["NO PACKING LIST", "TANGGAL", "SERI BARANG", "HS", "KODE BARANG", "URAIAN", "KODE SATUAN", "JUMLAH SATUAN", "KODE KEMASAN", "JUMLAH KEMASAN", "NETTO", "VOLUME"];
     }
 }
