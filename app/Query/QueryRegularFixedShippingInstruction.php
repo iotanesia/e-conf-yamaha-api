@@ -795,6 +795,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 }
 
                 $summary_box_data = RegularFixedActualContainerCreation::select('id_container',
+                                    DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.iteration::character varying, ',') as iteration"),
                                     DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.summary_box::character varying, ',') as summary_box"),
                                     DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.code_consignee::character varying, ',') as code_consignee"),
                                     DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_jkt::character varying, ',') as etd_jkt"),
@@ -805,6 +806,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                                     ->where('regular_fixed_actual_container_creation.datasource', $item->datasource)
                                     ->whereIn('regular_fixed_actual_container_creation.id',explode(',',$params->id))
                                     ->groupBy('id_container')
+                                    ->orderBy('iteration')
                                     ->get()->map(function($q){
                                         $items = [
                                             'summary_box' => $q->summary_box,
