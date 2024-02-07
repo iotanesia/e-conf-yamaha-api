@@ -85,7 +85,7 @@
             <td class="no-bo">Seal No</td>
             <td class="no-bo">:</td>
             <td class="no-bo"></td>
-            <td class="no-bo">ETD MANAUS</td>
+            <td class="no-bo">ETA MANAUS</td>
             <td class="no-bo">:</td>
             <td class="no-bo"></td>
         </tr>
