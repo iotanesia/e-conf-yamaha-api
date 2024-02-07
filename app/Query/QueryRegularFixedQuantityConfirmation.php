@@ -1742,6 +1742,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         $data = $query->map(function ($item, $key){
             $plan_box = RegularDeliveryPlanBox::where('id', $item->id_regular_delivery_plan_box)->first();
             $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)->first();
+            $container_creation = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $fixedQuantity->refFixedActualContainer->id)->first();
 
             if ($fixedQuantity && $fixedQuantity->id_fixed_actual_container !== null) {
                 if ($plan_box->refRegularDeliveryPlan->item_no == null) {
@@ -1757,14 +1758,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                             'gl_account' => $value->refPart->gl_account,
                             'coa' => $value->refPart->coa,
                             'cost_center' => $value->refPart->cost_center,
-                            'urutan_no_container' => null,
+                            'urutan_no_container' => $container_creation->iteration.' '.($container_creation->refMstContainer->container_type) ?? null,
                             'kosong' => null,
                             'po_no' => $fixedQuantity->order_no,
                             'part_no' => $value->refPart->item_serial,
                             'qty' => $ratio_qty[0][$key],
                             'no' => $key == 0 ? '0' : null,
-                            'nw' => number_format($nw_gw[0]['unit_weight_kg'][$key], 2),
-                            'gw' => number_format($nw_gw[0]['total_gross_weight'][$key], 2),
+                            'nw' => str_replace('.',',',number_format($nw_gw[0]['unit_weight_kg'][$key], 2)),
+                            'gw' => str_replace('.',',',number_format($nw_gw[0]['total_gross_weight'][$key], 2)),
                             'model_code' => $fixedQuantity->cust_item_no,
                             'type_box' => 'CARTON BOX',
                             'panjang' => $value->refBox->length,
@@ -1781,14 +1782,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res["gl_account"] = $plan_box->refRegularDeliveryPlan->refPart->gl_account;
                     $res["coa"] = $plan_box->refRegularDeliveryPlan->refPart->coa;
                     $res["cost_center"] = $plan_box->refRegularDeliveryPlan->refPart->cost_center;
-                    $res["urutan_no_container"] = null;
+                    $res["urutan_no_container"] = $container_creation->iteration.' '.($container_creation->refMstContainer->container_type) ?? null;
                     $res["kosong"] = null;
                     $res["po_no"] = $fixedQuantity->order_no ?? null;
                     $res["part_no"] = $plan_box->refRegularDeliveryPlan->refPart->item_serial;
                     $res["qty"] = $item->qty_pcs_box ?? null;
                     $res['no'] = '0';
-                    $res['nw'] = number_format($nw_gw[0]['unit_weight_kg'][0], 2) ?? null;
-                    $res['gw'] = number_format($nw_gw[0]['total_gross_weight'][0], 2) ?? null;
+                    $res['nw'] = str_replace('.',',',number_format($nw_gw[0]['unit_weight_kg'][0], 2)) ?? null;
+                    $res['gw'] = str_replace('.',',',number_format($nw_gw[0]['total_gross_weight'][0], 2)) ?? null;
                     $res["model_code"] = $fixedQuantity->cust_item_no ?? null;
                     $res["type_box"] = 'CARTON BOX';
                     $res["panjang"] = $plan_box->refBox->length ?? null;

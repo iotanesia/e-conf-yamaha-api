@@ -820,7 +820,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 foreach ($summary_box_data as $key => $value) {
                     $summary_box[] = $value['summary_box'];
                     $container_type[] = $value['container'];
-                    $jml_container[] = $value['id_container'];
+                    $jml_container[] = count(explode(',',$value['id_container']));
                 }
 
                 return [
