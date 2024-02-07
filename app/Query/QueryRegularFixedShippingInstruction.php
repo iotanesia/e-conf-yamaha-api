@@ -179,11 +179,11 @@ class QueryRegularFixedShippingInstruction extends Model {
                             
                         $total_net_weight += array_sum($nw_gw[$key]['unit_weight_kg']);
                         $total_gross_weight += array_sum($nw_gw[$key]['total_gross_weight']);
-                       $count_meas += ($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) * $box_item->qty_pcs_box / 1000000000;
+                       $count_meas += ($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) / 1000000000;
                     } else {
                         $count_net_weight = $box_item->refMstBox->unit_weight_gr;
                         $count_outer_carton_weight = $box_item->refMstBox->outer_carton_weight;
-                        $count_meas += (($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) * $box_item->qty_pcs_box / 1000000000);
+                        $count_meas += (($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) / 1000000000);
                         $total_net_weight += ($count_net_weight * $box_item->qty_pcs_box)/1000;
                         $total_gross_weight += (($count_net_weight * $box_item->qty_pcs_box)/1000) + $count_outer_carton_weight;
                     }
