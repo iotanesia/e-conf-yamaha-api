@@ -1742,7 +1742,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         $data = $query->map(function ($item, $key){
             $plan_box = RegularDeliveryPlanBox::where('id', $item->id_regular_delivery_plan_box)->first();
             $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)->first();
-            $container_creation = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $fixedQuantity->refFixedActualContainer->id)->first();
+            $container_creation = RegularFixedActualContainerCreation::where('id', $item->id_prospect_container_creation)->first();
 
             if ($fixedQuantity && $fixedQuantity->id_fixed_actual_container !== null) {
                 if ($plan_box->refRegularDeliveryPlan->item_no == null) {
@@ -1758,7 +1758,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                             'gl_account' => $value->refPart->gl_account,
                             'coa' => $value->refPart->coa,
                             'cost_center' => $value->refPart->cost_center,
-                            'urutan_no_container' => $container_creation->iteration.' '.($container_creation->refMstContainer->container_type) ?? null,
+                            'urutan_no_container' => $container_creation->iteration.' ('.$container_creation->refMstContainer->container_type.')' ?? null,
                             'kosong' => null,
                             'po_no' => $fixedQuantity->order_no,
                             'part_no' => $value->refPart->item_serial,
@@ -1782,7 +1782,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res["gl_account"] = $plan_box->refRegularDeliveryPlan->refPart->gl_account;
                     $res["coa"] = $plan_box->refRegularDeliveryPlan->refPart->coa;
                     $res["cost_center"] = $plan_box->refRegularDeliveryPlan->refPart->cost_center;
-                    $res["urutan_no_container"] = $container_creation->iteration.' '.($container_creation->refMstContainer->container_type) ?? null;
+                    $res["urutan_no_container"] = $container_creation->iteration.' ('.$container_creation->refMstContainer->container_type.')' ?? null;
                     $res["kosong"] = null;
                     $res["po_no"] = $fixedQuantity->order_no ?? null;
                     $res["part_no"] = $plan_box->refRegularDeliveryPlan->refPart->item_serial;
