@@ -1736,6 +1736,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     {
         $id_fixed_quantity = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $id)->get();
         $query = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', $id_fixed_quantity->pluck('id')->toArray())
+        ->whereNotNull('id_prospect_container_creation')
         ->orderBy('created_at','asc')
         ->get();
 
