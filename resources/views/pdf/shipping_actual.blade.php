@@ -324,9 +324,23 @@
                 <td class="text-center">Approved</td>
             </tr>
             <tr>
-                <td height="50"></td>
-                <td></td>
-                <td></td>
+                @if ($data->issued)
+                    <td height="50"><p style="border: red 1px solid; text-align:center; color:red;"><b>ISSUED</b></p></td>
+                @else
+                    <td height="50"></td>
+                @endif
+
+                @if ($data->checked)
+                    <td><p style="border: red 1px solid; text-align:center; color:red;"><b>CHECKED</b></p></td>
+                @else
+                    <td></td> 
+                @endif
+
+                @if ($data->approved)
+                    <td><p style="border: red 1px solid; text-align:center; color:red;"><b>APPROVED</b></p></td>
+                @else
+                    <td></td>
+                @endif
             </tr>
             <tr>
                 <td class="text-center">{{ $data->issued }}</td>

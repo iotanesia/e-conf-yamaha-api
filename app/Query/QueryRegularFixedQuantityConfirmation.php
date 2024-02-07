@@ -61,7 +61,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.status::character varying, ',') as status"),
                 DB::raw('MIN(regular_fixed_quantity_confirmation.in_dc) as in_dc'),
                 DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
-                DB::raw('MAX(regular_fixed_quantity_confirmation.production) as production'),
+                DB::raw('MIN(regular_fixed_quantity_confirmation.production) as production'),
             )->where(function ($query) use ($params){
 
                 $query->where('is_actual',Constant::IS_NOL);
