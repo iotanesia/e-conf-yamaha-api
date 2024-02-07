@@ -333,19 +333,19 @@
             </tr>
             <tr>
                 @if ($data->issued)
-                    <td height="50"><p style="border: red 1px solid; text-align:center; color:red;"><b>ISSUED</b></p></td>
+                    <td height="50"><p style="border: #800000 1px solid; text-align:center; color:#800000;"><b>ISSUED</b></p></td>
                 @else
                     <td height="50"></td>
                 @endif
 
                 @if ($data->checked)
-                    <td><p style="border: red 1px solid; text-align:center; color:red;"><b>CHECKED</b></p></td>
+                    <td><p style="border: #800000 1px solid; text-align:center; color:#800000;"><b>CHECKED</b></p></td>
                 @else
                     <td></td> 
                 @endif
 
                 @if ($data->approved)
-                    <td><p style="border: red 1px solid; text-align:center; color:red;"><b>APPROVED</b></p></td>
+                    <td><p style="border: #800000 1px solid; text-align:center; color:#800000;"><b>APPROVED</b></p></td>
                 @else
                     <td></td>
                 @endif
