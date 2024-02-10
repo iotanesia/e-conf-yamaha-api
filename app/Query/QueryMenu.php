@@ -32,6 +32,13 @@ class QueryMenu extends Model {
 
             $items = $data->getCollection()->transform(function ($item){
                 $item->children = $item->manyChild;
+                $i = 0;
+                foreach($item->manyChild  as $child){
+                    if($child->url == "#"){
+                        $item->children[$i]->children = self::where('parent',$child->id)->orderBy('order', 'asc')->get();
+                    }
+                    $i++;
+                }
                 unset($item->manyChild);
                 return $item;
             });
