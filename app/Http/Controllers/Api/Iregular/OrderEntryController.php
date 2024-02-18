@@ -68,4 +68,16 @@ class OrderEntryController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    
+    public function storeDoc(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularOrderEntry::storeDoc($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }

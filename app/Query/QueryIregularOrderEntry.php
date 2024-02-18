@@ -23,6 +23,8 @@ use App\Models\MstShippedBy;
 use App\Models\MstTypeTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class QueryIregularOrderEntry extends Model {
 
@@ -38,6 +40,7 @@ class QueryIregularOrderEntry extends Model {
                 if($category) {
                     $query->where($category, 'ilike', $params->kueri);
                 }
+                $query->where("is_completed_create", 1);
 
             });
 
@@ -170,25 +173,74 @@ class QueryIregularOrderEntry extends Model {
         try {
             $params = $request->all();
             
-            $data = [];
+            $i = 0;
             foreach ($params['part'] as $key => $value) {
                 $arr = $value;
                 $id_order_entry = ['id_iregular_order_entry' => $id];
-                $data[] = array_merge($arr,$id_order_entry);
-
+                IregularOrderEntryPart::create(array_merge($arr,$id_order_entry));
+                $i++;
             }
 
-            IregularOrderEntryPart::create($data[0]);
             $order_entry = Model::find($id);
-            $mst_doc = MstDoc::where('id_good_payment', $order_entry->id_good_payment)->first();
-            IregularOrderEntryDoc::create([
-                'id_iregular_order_entry' => $id,
-                'id_doc' => $mst_doc->id,
-                'is_completed' => 0
-            ]);
+            $doc_list = MstDoc::where('id_good_payment', $order_entry->id_good_payment)->get();
+            foreach($doc_list as $doc){
+                IregularOrderEntryDoc::create([
+                    'id_iregular_order_entry' => $id,
+                    'id_doc' => $doc->id,
+                    'is_completed' => 0
+                ]);
+            }
 
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function storeDoc($request, $id, $is_transaction = true){
+        if($is_transaction) DB::beginTransaction();
+
+        try {
+            $params = $request->all();
+
+            $files = $params["files"];
+            foreach($files as $file){
+                $ext = $file->getClientOriginalExtension();
+                if(!in_array($ext,['pdf'])) throw new \Exception("file format error", 400);
+            }
+
+            $i = 0;
+            $datas = json_decode($params["data"], true); // Decode the JSON string into an object
+
+            foreach($datas as $data){
+                // Remove special characters and spaces and replace them with underscores
+                $doc_name = preg_replace('/[^A-Za-z0-9\-]/', '_', $data["name_doc"]);
+                // Replace multiple underscores with a single underscore
+                $doc_name = preg_replace('/_+/', '_', $doc_name);
+                $filename = 'OE-IREGULAR-'.$doc_name;
+
+                $ext = $files[$i]->getClientOriginalExtension();
+                $savedname = (string) Str::uuid().'.'.$ext;
+                $params = [
+                    'filename' => $filename,
+                    'path' => '/order-entry/iregular/'.date('Y').date('m').date('d').'/'.$savedname,
+                    'extension' => $ext,
+                ];
+
+                $iregularDoc = IregularOrderEntryDoc::find($data["id"]);
+                $iregularDoc->update($params);
+                Storage::putFileAs(str_replace($savedname,'',$params['path']),$files[$i],$savedname);
+                $i++;
+            }
+
+            $iregularOrder = self::find($id);
+            $iregularOrder->is_completed_create = true;
+            $iregularOrder->save();
+            
+            if($is_transaction) DB::commit();
+            // Cache::flush([self::cast]); //delete cache
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
