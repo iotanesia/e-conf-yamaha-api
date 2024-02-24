@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class IregularOrderEntry extends Model
+class IregularDeliveryPlan extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'iregular_order_entry';
+    protected $table = 'iregular_delivery_plan';
     public $fillable = [
         'id',
+        'id_iregular_order_entry',
         'requestor',
         'ext',
         'cost_center',
@@ -50,24 +51,24 @@ class IregularOrderEntry extends Model
 	    'deleted_at'
     ];
 
-    public function manyOrderEntryCheckbox()
+    public function manyDeliveryPlanCheckbox()
     {
-        return $this->hasMany(IregularOrderEntryCheckbox::class,'id_iregular_order_entry','id')->orderBy('id','asc');
+        return $this->hasMany(IregularDeliveryPlanCheckbox::class,'id_iregular_delivery_plan','id')->orderBy('id','asc');
     }
 
-    public function manyOrderEntryDoc()
+    public function manyDeliveryPlanDoc()
     {
-        return $this->hasMany(IregularOrderEntryDoc::class,'id_iregular_order_entry','id')->orderBy('id','asc');
+        return $this->hasMany(IregularDeliveryPlanDoc::class,'id_iregular_delivery_plan','id')->orderBy('id','asc');
     }
     
-    public function manyOrderEntryPart()
+    public function manyDeliveryPlanPart()
     {
-        return $this->hasMany(IregularOrderEntryPart::class,'id_iregular_order_entry','id')->orderBy('id','asc');
+        return $this->hasMany(IregularDeliveryPlanPart::class,'id_iregular_delivery_plan','id')->orderBy('id','asc');
     }
 
     public function manyTracking()
     {
-        return $this->hasMany(IregularOrderEntryTracking::class,'id_iregular_order_entry','id')->orderBy('id','desc');
+        return $this->hasMany(IregularOrderEntryTracking::class,'id_iregular_order_entry','id_iregular_order_entry')->orderBy('id','desc');
     }
 
     public function refTypeTransaction(){

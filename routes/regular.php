@@ -76,7 +76,7 @@ Route::prefix('v1/regular')
 
       // delivery-plan
      Route::group(['prefix' => 'delivery-plan'],function (){
-        Route::get('/',[DeliveryPlanController::class,'getDeliveryPlan']);
+        Route::get('/',[DeliveryPlanController::class,'']);
         Route::post('/no-packaging',[DeliveryPlanController::class,'noPackaging']);
         Route::post('/inquiry',[DeliveryPlanController::class,'inquiryProcess']);
         Route::post('/edit',[DeliveryPlanController::class,'update']);

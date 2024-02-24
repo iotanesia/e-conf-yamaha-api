@@ -3,11 +3,8 @@
 namespace App\Query;
 
 use App\Constants\Constant;
-use App\Models\IregularOrderEntry AS Model;
+use App\Models\IregularDeliveryPlan AS Model;
 use App\ApiHelper as Helper;
-use App\Models\IregularOrderEntryDoc;
-use App\Models\IregularOrderEntryPart;
-use App\Models\IregularOrderEntryCheckbox;
 use App\Models\IregularDeliveryPlan;
 use App\Models\IregularDeliveryPlanDoc;
 use App\Models\IregularDeliveryPlanPart;
@@ -32,21 +29,21 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class QueryIregularOrderEntry extends Model {
+class QueryIregularDeliveryPlan extends Model {
 
-    const cast = 'iregular-order-entry';
+    const cast = 'iregular-delivery-plan';
 
     public static function getAll($params, $status_tracking = null)
     {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key.(isset($status_tracking) ? json_encode($status_tracking) : ''), function () use ($params, $status_tracking){
-            $query = self::select('iregular_order_entry.*')
+            $query = self::select('iregular_delivery_plan.*')
                 ->leftJoin('iregular_order_entry_tracking', function($join) {
-                    $join->on('iregular_order_entry_tracking.id_iregular_order_entry', '=', 'iregular_order_entry.id')
+                    $join->on('iregular_order_entry_tracking.id_iregular_order_entry', '=', 'iregular_delivery_plan.id_iregular_order_entry')
                         ->where('iregular_order_entry_tracking.id', function($subquery) {
                                 $subquery->selectRaw('MAX(id)')
                                     ->from('iregular_order_entry_tracking')
-                                    ->whereColumn('id_iregular_order_entry', 'iregular_order_entry.id');
+                                    ->whereColumn('id_iregular_order_entry', 'iregular_delivery_plan.id_iregular_order_entry');
                         });
                 });
 
@@ -54,19 +51,9 @@ class QueryIregularOrderEntry extends Model {
                 $query->where('iregular_order_entry_tracking.status', $status_tracking);
             }
 
-            // if ($item->tracking == 1) $tracking = 'Draft';
-            // if ($item->tracking == 2) $tracking = 'Approval Dc Spv';
-            // if ($item->tracking == 3) $tracking = 'Approval Dc Manager';
-            // if ($item->tracking == 4) $tracking = 'Enquiry';
-            // if ($item->tracking == 5) $tracking = 'Shipping';
-            // if ($item->tracking == 6) $tracking = 'Approval CC Spv';
-            // if ($item->tracking == 7) $tracking = 'Approval CC Manager';
-            // if ($item->tracking == 8) $tracking = 'Finish';
-                
-            
             $category = $params->category ?? null;
             if ($category) {
-                $query->where('iregular_order_entry.' . $category, 'ilike', $params->kueri);
+                $query->where('iregular_delivery_plan.' . $category, 'ilike', $params->kueri);
             }
             
             if ($params->withTrashed == 'true') {
@@ -101,133 +88,6 @@ class QueryIregularOrderEntry extends Model {
                 ]
             ];
         });
-    }
-
-    public static function storeData($request,$is_transaction = true)
-    {
-        if($is_transaction) DB::beginTransaction();
-        try {
-            $params = $request->all();
-
-            $files = $params["files"];
-            foreach($files as $file){
-                $ext = $file->getClientOriginalExtension();
-                if(!in_array($ext,['pdf'])) throw new \Exception("file format error", 400);
-            }
-
-
-            $order_entry = json_decode($params["order_entry"], true);
-            $order_entry_checkbox = self::getParamCheckbox($order_entry);
-            $insert = Model::create($order_entry);
-
-            IregularOrderEntryTracking::create([
-                'id_iregular_order_entry' => $insert->id,
-                'status' => 1,
-                'description' => 'Draft'
-            ]);
-            
-            $checkbox = [];
-            foreach ($order_entry_checkbox as $item) {
-                $checkbox[] = [
-                    'id_iregular_order_entry' => $insert->id,
-                    'id_value' => $item['id'],
-                    'type' => $item['type'],
-                    'value' => $item['value']
-                ];
-            }
-            $insert->manyOrderEntryCheckbox()->createMany($checkbox);
-
-            $id = $insert->id;          
-
-            // part
-            $i = 0;
-            $part = json_decode($params["part"], true);
-            foreach ($part as $key => $value) {
-                $arr = $value;
-                $id_order_entry = ['id_iregular_order_entry' => $id];
-                IregularOrderEntryPart::create(array_merge($arr,$id_order_entry));
-                $i++;
-            }
-
-            // document
-            
-            $uploadIndex = 0;
-            $datas = json_decode($params["document"], true); 
-
-            foreach($datas as $data){
-
-                if($data["is_upload"] == true){
-                    // Remove special characters and spaces and replace them with underscores
-                    $doc_name = preg_replace('/[^A-Za-z0-9\-]/', '_', $data["name_doc"]);
-                    // Replace multiple underscores with a single underscore
-                    $doc_name = preg_replace('/_+/', '_', $doc_name);
-                    $savedname = (string) Str::uuid().'.'.$ext;
-
-                    $filename = 'OE-IREGULAR-'.$doc_name."-".$savedname;
-
-                    $ext = $files[$uploadIndex]->getClientOriginalExtension();
-
-                    $path = '/order-entry/iregular/'.date('Y').date('m').date('d').'/'.$savedname;
-                    Storage::putFileAs(str_replace($savedname,'',$path),$files[$uploadIndex],$savedname);
-
-                    IregularOrderEntryDoc::create([
-                        'filename' => $filename,
-                        'id_iregular_order_entry' => $id,
-                        'id_doc' => $data["id_doc"],
-                        'path' => $path,
-                        'extension' => $ext,
-                        'is_completed' => 0
-                    ]);
-
-                    $uploadIndex++;
-
-                } else {
-                    IregularOrderEntryDoc::create([
-                        'id_iregular_order_entry' => $id,
-                        'id_doc' => $data["id_doc"],
-                        'is_completed' => 0
-                    ]);
-                }
-
-            }
-
-
-            if($is_transaction) DB::commit();
-            Cache::flush([self::cast]); //delete cache
-            return ['items' => ['id' => $insert->id]];
-        } catch (\Throwable $th) {
-            if($is_transaction) DB::rollBack();
-            throw $th;
-        }
-    }
-
-    public static function getParamCheckbox($params) {
-        $comodities = [];
-        foreach ($params['comodities'] as $value) {
-            $value['type'] = 'comodities';
-            array_push($comodities, $value);
-        }
-
-        $good_condition = [];
-        foreach ($params['good_condition'] as $value) {
-            $value['type'] = 'good_condition';
-            array_push($good_condition, $value);
-        }
-
-        $good_status = [];
-        foreach ($params['good_status'] as $value) {
-            $value['type'] = 'good_status';
-            array_push($good_status, $value);
-        }
-
-        $incoterms = [];
-        foreach ($params['incoterms'] as $value) {
-            $value['type'] = 'incoterms';
-            array_push($incoterms, $value);
-        }
-
-        $res = array_merge($comodities,$good_condition,$good_status,$incoterms);
-        return $res;
     }
 
     public static function getForm($request)
@@ -271,15 +131,15 @@ class QueryIregularOrderEntry extends Model {
         if(!$data) throw new \Exception("id tidak ditemukan", 400);
         
         $data->type_transaction = $data->refTypeTransaction;
-        $data->checkbox = $data->manyOrderEntryCheckbox;
-        $data->doc = $data->manyOrderEntryDoc;
-        $data->part = $data->manyOrderEntryPart;
+        $data->checkbox = $data->manyDeliveryPlanCheckbox;
+        $data->doc = $data->manyDeliveryPlanDoc;
+        $data->part = $data->manyDeliveryPlanPart;
         $data->tracking = $data->manyTracking;
 
         unset($data->refTypeTransaction);
-        unset($data->manyOrderEntryCheckbox);
-        unset($data->manyOrderEntryDoc);
-        unset($data->manyOrderEntryPart);
+        unset($data->manyDeliveryPlanCheckbox);
+        unset($data->manyDeliveryPlanDoc);
+        unset($data->manyDeliveryPlanPart);
         unset($data->manyTracking);
                     
         return [
@@ -289,7 +149,7 @@ class QueryIregularOrderEntry extends Model {
     
     public static function getDoc($params, $id)
     {
-        $data = IregularOrderEntryDoc::where('id_iregular_order_entry', $id)->paginate($params->limit ?? null);
+        $data = IregularDeliveryPlanDoc::where('id_iregular_delivery_plan', $id)->paginate($params->limit ?? null);
 
         return [
             'items' => $data->getCollection()->transform(function($item){
@@ -297,7 +157,7 @@ class QueryIregularOrderEntry extends Model {
                 $item->name_doc = $item->MstDoc->name;
                 unset(
                     $item->MstDoc,
-                    $item->id_iregular_order_entry,
+                    $item->id_iregular_delivery_plan,
                     $item->id_doc,
                     $item->path,
                     $item->extension,
@@ -339,7 +199,7 @@ class QueryIregularOrderEntry extends Model {
             }            
 
             IregularOrderEntryTracking::create([
-                "id_iregular_order_entry" => $data->id,
+                "id_iregular_order_entry" => $data->id_iregular_order_entry,
                 "status" => $to_tracking,
                 "description" => $description
             ]);
