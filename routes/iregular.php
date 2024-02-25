@@ -13,6 +13,7 @@ Route::prefix('v1/iregular')
     // order-entry
     Route::group(['prefix' => 'order-entry'],function (){
         Route::get('/',[OrderEntryController::class,'index']);
+        Route::get('/dc-officer',[OrderEntryController::class,'getDcOfficer']);
         Route::get('/dc-spv',[OrderEntryController::class,'getDcSpv']);
         Route::get('/dc-manager',[OrderEntryController::class,'getDcManager']);
         Route::post('/',[OrderEntryController::class,'store']);
@@ -31,8 +32,15 @@ Route::prefix('v1/iregular')
      // delivery-plan
     Route::group(['prefix' => 'delivery-plan'],function (){
         Route::get('/',[DeliveryPlanController::class,'index']);
+        Route::get('/shipping-instruction',[DeliveryPlanController::class,'shippingInstructionList']);
+        Route::post('/shipping-instruction',[DeliveryPlanController::class,'shippingInstructionStore']);
+        Route::get('/shipping-instruction/{id}',[DeliveryPlanController::class,'shippingInstruction']);
+        Route::get('/shipping-instruction/draft/{id}',[DeliveryPlanController::class,'shippingInstructionDraft']); //pake id shipping instruction
+        Route::get('/shipping-instruction/draft-list/{id}',[DeliveryPlanController::class,'shippingInstructionDraftList']);
         Route::get('/form-data/{id}',[DeliveryPlanController::class,'formData']);
         Route::get('/form',[DeliveryPlanController::class,'form']);
         Route::get('/doc/{id}',[DeliveryPlanController::class,'getDoc']);
+        Route::post('/send-to-shipping',[DeliveryPlanController::class,'sendToShipping']);
+        Route::post('/reject-by-cc-officer',[DeliveryPlanController::class,'rejectByCcOfficer']);
      });
 });

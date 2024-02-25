@@ -25,6 +25,17 @@ class OrderEntryController extends Controller
         }
     }
 
+    public function getDcOfficer(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularOrderEntry::getAll($request, 1)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function getDcSpv(Request $request)
     {
         try {
