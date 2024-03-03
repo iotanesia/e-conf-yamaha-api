@@ -25,6 +25,30 @@ class OrderEntryController extends Controller
         }
     }
 
+    public function getDcSpv(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularOrderEntry::getAll($request, 2)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+
+    public function getDcManager(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularOrderEntry::getAll($request, 3)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+
     public function sendToDcSpv(Request $request)
     {
         try {
@@ -62,7 +86,7 @@ class OrderEntryController extends Controller
     {
         try {
             return ResponseInterface::responseData(
-                QueryIregularOrderEntry::sendApproval($request, 9, "Reject DC SPV")
+                QueryIregularOrderEntry::sendApproval($request, 99, "Reject DC SPV")
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -73,7 +97,7 @@ class OrderEntryController extends Controller
     {
         try {
             return ResponseInterface::responseData(
-                QueryIregularOrderEntry::sendApproval($request, 9, "Reject DC Manager")
+                QueryIregularOrderEntry::sendApproval($request, 99, "Reject DC Manager")
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

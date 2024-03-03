@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\ApiHelper as ResponseInterface;
 use App\Query\QueryIregularDeliveryPlan;
+use Illuminate\Support\Facades\Storage;
+use ZipArchive;
+
 
 class DeliveryPlanController extends Controller
 {
@@ -58,7 +61,7 @@ class DeliveryPlanController extends Controller
         }
     }
 
-    public function sendToShipping(Request $request)
+    public function sendToInputInvoice(Request $request)
     {
         try {
             return ResponseInterface::responseData(
@@ -73,7 +76,64 @@ class DeliveryPlanController extends Controller
     {
         try {
             return ResponseInterface::responseData(
-                QueryIregularDeliveryPlan::sendApproval($request, 9, "Reject CC Officer")
+                QueryIregularDeliveryPlan::sendApproval($request, 99, "Reject CC Officer")
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function storeInvoice(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::storeInvoice($request, $id_iregular_order_entry)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function getInvoice(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::getInvoice($request, $id_iregular_order_entry)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function downloadFiles(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            $filePaths = QueryIregularDeliveryPlan::downloadFiles($request, $id_iregular_order_entry); 
+            $zipFileName = Storage::path('temp/files.zip');
+            print_r($zipFileName);
+            $zip = new ZipArchive();
+            $zip->open($zipFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+            foreach ($filePaths as $filePath) {
+                if (Storage::exists($filePath)) {
+                    $zip->addFile($filePath, basename($filePath));
+                }
+            }
+
+            $zip->close();
+
+            return response()->download($zipFileName)->deleteFileAfterSend(true);
+           
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function getInvoiceDetail(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::getInvoiceDetail($request, $id_iregular_order_entry)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

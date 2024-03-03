@@ -36,10 +36,10 @@ class QueryIregularOrderEntry extends Model {
 
     const cast = 'iregular-order-entry';
 
-    public static function getAll($params, $status_tracking = null)
+    public static function getAll($params, $min_status_tracking = null)
     {
         $key = self::cast.json_encode($params->query());
-        return Helper::storageCache($key.(isset($status_tracking) ? json_encode($status_tracking) : ''), function () use ($params, $status_tracking){
+        return Helper::storageCache($key, function () use ($params, $min_status_tracking){
             $query = self::select('iregular_order_entry.*')
                 ->leftJoin('iregular_order_entry_tracking', function($join) {
                     $join->on('iregular_order_entry_tracking.id_iregular_order_entry', '=', 'iregular_order_entry.id')
@@ -50,19 +50,10 @@ class QueryIregularOrderEntry extends Model {
                         });
                 });
 
-            if (isset($status_tracking)) {
-                $query->where('iregular_order_entry_tracking.status', $status_tracking);
+            if (isset($min_status_tracking)) {
+                $query->where('iregular_order_entry_tracking.status', '>=', $min_status_tracking);
             }
 
-            // if ($item->tracking == 1) $tracking = 'Draft';
-            // if ($item->tracking == 2) $tracking = 'Approval Dc Spv';
-            // if ($item->tracking == 3) $tracking = 'Approval Dc Manager';
-            // if ($item->tracking == 4) $tracking = 'Enquiry';
-            // if ($item->tracking == 5) $tracking = 'Shipping';
-            // if ($item->tracking == 6) $tracking = 'Approval CC Spv';
-            // if ($item->tracking == 7) $tracking = 'Approval CC Manager';
-            // if ($item->tracking == 8) $tracking = 'Finish';
-                
             
             $category = $params->category ?? null;
             if ($category) {
@@ -75,8 +66,8 @@ class QueryIregularOrderEntry extends Model {
             
             $data = $query->paginate($params->limit ?? 10);
             
-            if (isset($status_tracking)) {
-                $totalRow = $query->where('iregular_order_entry_tracking.status', $status_tracking)->count();
+            if (isset($min_status_tracking)) {
+                $totalRow = $query->where('iregular_order_entry_tracking.status', '>=', $min_status_tracking)->count();
             } else {
                 $totalRow = self::count();
             }
@@ -339,108 +330,32 @@ class QueryIregularOrderEntry extends Model {
                 'id',
             ]);
 
+            $token = $request->header("Authorization");
+            $token = Str::replaceFirst('Bearer ', '', $token);
+            $tokenData = Helper::decodeJwtSignature($token, env("JWT_SECRET"));
+
             $params = $request->all();
             $data = self::find($params['id']);
             if(!$data) throw new \Exception("id tidak ditemukan", 400);
 
-            if(!isset($description)){
-                if ($to_tracking == 1) $description = 'Draft';
-                else if ($to_tracking == 2) $description = 'Approval DC Spv';
-                else if ($to_tracking == 3) $description = 'Approval DC Manager';
-                else if ($to_tracking == 4) $description = 'Enquiry';
-                else if ($to_tracking == 5) $description = 'Shipping';
-                else if ($to_tracking == 6) $description = 'Approval CC Spv';
-                else if ($to_tracking == 7) $description = 'Approval CC Manager';
-                else if ($to_tracking == 8) $description = 'Finish';
-                else if ($to_tracking == 9) $description = 'Reject';
-            }            
+            if(!isset($description))
+                $description = Constant::STS_PROCESS_IREGULAR[$to_tracking];
 
             IregularOrderEntryTracking::create([
                 "id_iregular_order_entry" => $data->id,
                 "status" => $to_tracking,
+                "id_user" => $tokenData->sub->id,
+                "id_role" => $tokenData->sub->id_role,
+                "id_position" => $tokenData->sub->id_position,
                 "description" => $description
             ]);
 
             if($to_tracking == 4){
                 $delivery_plan = [
                     'id_iregular_order_entry' => $data->id,
-                    'requestor' => $data->requestor,
-                    'ext' => $data->ext,
-                    'cost_center' => $data->cost_center,
-                    'section' => $data->section,
-                    'id_type_transaction' => $data->id_type_transaction,
-                    'id_good_payment' => $data->id_good_payment,
-                    'id_doc_type' => $data->id_doc_type,
-                    'reason_foc' => $data->reason_foc,
-                    'id_freight_charge' => $data->id_freight_charge,
-                    'id_insurance' => $data->id_insurance,
-                    'id_duty_tax' => $data->id_duty_tax,
-                    'id_inland_cost' => $data->id_inland_cost,
-                    'id_shipped' => $data->id_shipped,
-                    'pick_up_location' => $data->pick_up_location,
-                    'name_consignee' => $data->name_consignee,
-                    'company_consignee' => $data->company_consignee,
-                    'email_consignee' => $data->email_consignee,
-                    'phone_consignee' => $data->phone_consignee,
-                    'fax_consignee' => $data->fax_consignee,
-                    'address_consignee' => $data->address_consignee,
-                    'description_goods' => $data->description_goods,
-                    'invoice_no' => $data->invoice_no,
-                    'entity_site' => $data->entity_site,
-                    'rate' => $data->rate,
-                    'receive_date' => $data->receive_date,
-                    'delivery_date' => $data->delivery_date,
-                    'etd_date' => $data->etd_date,
-                    'stuffing_date' => $data->stuffing_date,
-                    'id_freight' => $data->id_freight,
-                    'id_good_criteria' => $data->id_good_criteria
                 ];
     
                 $insert_delivery_plan = IregularDeliveryPlan::create($delivery_plan);
-    
-                $order_entry_checkbox = IregularOrderEntryCheckbox::where('id_iregular_order_entry', $data->id)->get();
-                $checkbox = [];
-                foreach ($order_entry_checkbox as $item) {
-                    $checkbox[] = [
-                        'id_iregular_delivery_plan' => $insert_delivery_plan->id,
-                        'id_value' => $item['id'],
-                        'type' => $item['type'],
-                        'value' => $item['value']
-                    ];
-                }
-                $insert_delivery_plan->manyDeliveryPlanCheckbox()->createMany($checkbox);
-    
-                $order_entry_part = IregularOrderEntryPart::where('id_iregular_order_entry', $data->id)->get();
-                $part = [];
-                foreach ($order_entry_part as $item) {
-                    $part[] = [
-                        "id_iregular_delivery_plan" => $insert_delivery_plan->id,
-                        "item_code" => $item->item_code,
-                        "item_name" => $item->item_name,
-                        "order_no" => $item->order_no,
-                        "qty" => $item->qty,
-                        "price" => $item->price,
-                        "net_weight" => $item->net_weight,
-                        "gross_weight" => $item->gross_weight,
-                        "measurement" => $item->measurement,
-                        "summary_box" => $item->summary_box,
-                    ];
-                }
-                $insert_delivery_plan->manyDeliveryPlanPart()->createMany($part);
-    
-                $order_entry_doc = IregularOrderEntryDoc::where('id_iregular_order_entry', $data->id)->get();
-                $doc = [];
-                foreach ($order_entry_doc as $item) {
-                    $doc[] = [
-                        'id_doc' => $item->id_doc,
-                        'path' => $item->path,
-                        'extension' => $item->extension,
-                        'filename' => $item->filename,
-                        'is_completed' => $item->is_completed,
-                    ];
-                }
-    
-                $insert_delivery_plan->manyDeliveryPlanDoc()->createMany($doc);
             }
             
             if($is_transaction) DB::commit();

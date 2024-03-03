@@ -43,5 +43,16 @@ class Constant
     const TRACKING = [2,3];
 
     const IS_ACTUAL = 1;
+
+    const STS_PROCESS_IREGULAR = [
+        1 => "Draft",
+        2 => "Send to DC Supervisor",
+        3 => "Send to DC Manager",
+        4 => "Send to CC Officer",
+        5 => "Input Invoice",
+        6 => "Send to CC Supervisor",
+        7 => "Send to CC Manager",
+        99 => "Reject",
+    ];
 }
 

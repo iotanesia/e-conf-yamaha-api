@@ -13,10 +13,11 @@ Route::prefix('v1/iregular')
     // order-entry
     Route::group(['prefix' => 'order-entry'],function (){
         Route::get('/',[OrderEntryController::class,'index']);
+        Route::get('/dc-spv',[OrderEntryController::class,'getDcSpv']);
+        Route::get('/dc-manager',[OrderEntryController::class,'getDcManager']);
         Route::post('/',[OrderEntryController::class,'store']);
         Route::post('/send-to-dc-spv',[OrderEntryController::class,'sendToDcSpv']);
         Route::post('/send-to-dc-manager',[OrderEntryController::class,'sendToDcManager']);
-        Route::post('/send-to-enquiry',[OrderEntryController::class,'sendToEnquiry']);
         Route::post('/reject-by-dc-spv',[OrderEntryController::class,'rejectByDcSpv']);
         Route::post('/reject-by-dc-manager',[OrderEntryController::class,'rejectByDcManager']);
         Route::get('/form-data/{id}',[OrderEntryController::class,'formData']);
@@ -37,8 +38,12 @@ Route::prefix('v1/iregular')
         Route::get('/shipping-instruction/draft-list/{id}',[DeliveryPlanController::class,'shippingInstructionDraftList']);
         Route::get('/form-data/{id}',[DeliveryPlanController::class,'formData']);
         Route::get('/form',[DeliveryPlanController::class,'form']);
+        Route::get('/download-files/{id_iregular_order_entry}',[DeliveryPlanController::class,'downloadFiles']);
         Route::get('/doc/{id}',[DeliveryPlanController::class,'getDoc']);
-        Route::post('/send-to-shipping',[DeliveryPlanController::class,'sendToShipping']);
+        Route::post('/invoice/{id_iregular_order_entry}',[DeliveryPlanController::class,'storeInvoice']);
+        Route::get('/invoice/{id_iregular_order_entry}',[DeliveryPlanController::class,'getInvoice']);
+        Route::get('/invoice-detail/{id_iregular_order_entry}',[DeliveryPlanController::class,'getInvoiceDetail']);
+        Route::post('/send-to-input-invoice',[DeliveryPlanController::class,'sendToInputInvoice']);
         Route::post('/reject-by-cc-officer',[DeliveryPlanController::class,'rejectByCcOfficer']);
      });
 });
