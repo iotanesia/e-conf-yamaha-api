@@ -87,6 +87,8 @@ class QueryIregularOrderEntry extends Model {
 
                     $item->tracking = $item->manyTracking;
                     $item->type_transaction = $item->refTypeTransaction;
+                    $item->shipped_by = $item->refShippedBy;
+                    unset($item->refShippedBy);
                     unset($item->refTypeTransaction);
                     unset($item->manyTracking);
                     
@@ -161,9 +163,10 @@ class QueryIregularOrderEntry extends Model {
                     $doc_name = preg_replace('/[^A-Za-z0-9\-]/', '_', $data["name_doc"]);
                     // Replace multiple underscores with a single underscore
                     $doc_name = preg_replace('/_+/', '_', $doc_name);
-                    $savedname = (string) Str::uuid().'.'.$ext;
+                    $uuid = (string) Str::uuid();
 
-                    $filename = 'OE-IREGULAR-'.$doc_name."-".$savedname;
+                    $filename = 'OE-IREGULAR-'.$doc_name."-".$uuid;
+                    $savedname = $uuid.'.'.$ext;
 
                     $ext = $files[$uploadIndex]->getClientOriginalExtension();
 
@@ -312,6 +315,20 @@ class QueryIregularOrderEntry extends Model {
             }),
             'last_page' => $data->lastPage()
         ];
+    }
+
+
+    public static function getFile($params, $id_iregular_order_entry, $id_doc)
+    {
+        $data = IregularOrderEntryDoc::where(['id_iregular_order_entry'=> $id_iregular_order_entry, 'id_doc' => $id_doc])->first();
+        if(!$data) throw new \Exception("id tidak ditemukan", 400);
+
+        $path = $data->filename.".".$data->extension;
+        $filename = basename($path);
+
+        $result["path"] = Storage::path($data->path);
+        $result["filename"] = $filename;
+        return $result;
     }
 
     public static function sendApproval($request, $to_tracking, $description = null, $is_transaction = true)

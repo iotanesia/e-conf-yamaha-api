@@ -13,9 +13,6 @@ Route::prefix('v1/iregular')
     // order-entry
     Route::group(['prefix' => 'order-entry'],function (){
         Route::get('/',[OrderEntryController::class,'index']);
-        Route::get('/dc-officer',[OrderEntryController::class,'getDcOfficer']);
-        Route::get('/dc-spv',[OrderEntryController::class,'getDcSpv']);
-        Route::get('/dc-manager',[OrderEntryController::class,'getDcManager']);
         Route::post('/',[OrderEntryController::class,'store']);
         Route::post('/send-to-dc-spv',[OrderEntryController::class,'sendToDcSpv']);
         Route::post('/send-to-dc-manager',[OrderEntryController::class,'sendToDcManager']);
@@ -27,6 +24,7 @@ Route::prefix('v1/iregular')
         Route::post('/part/{id}',[OrderEntryController::class,'storePart']);
         Route::post('/doc/{id}',[OrderEntryController::class,'storeDoc']);
         Route::get('/doc/{id}',[OrderEntryController::class,'getDoc']);
+        Route::get('/file/{id_iregular_order_entry}/{id_doc}',[OrderEntryController::class,'getFile']);
      });
 
      // delivery-plan

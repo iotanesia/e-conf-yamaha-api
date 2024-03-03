@@ -73,4 +73,8 @@ class IregularOrderEntry extends Model
     public function refTypeTransaction(){
         return $this->belongsTo(MstTypeTransaction::class,'id_type_transaction','id');
     }
+    
+    public function refShippedBy(){
+        return $this->belongsTo(MstShippedBy::class,'id_shipped','id');
+    }
 }

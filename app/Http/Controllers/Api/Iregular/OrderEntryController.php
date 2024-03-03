@@ -25,39 +25,6 @@ class OrderEntryController extends Controller
         }
     }
 
-    public function getDcOfficer(Request $request)
-    {
-        try {
-            return ResponseInterface::responseData(
-                QueryIregularOrderEntry::getAll($request, 1)
-            );
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
-
-    public function getDcSpv(Request $request)
-    {
-        try {
-            return ResponseInterface::responseData(
-                QueryIregularOrderEntry::getAll($request, 2)
-            );
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
-    
-    public function getDcManager(Request $request)
-    {
-        try {
-            return ResponseInterface::responseData(
-                QueryIregularOrderEntry::getAll($request, 3)
-            );
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
-
     public function sendToDcSpv(Request $request)
     {
         try {
@@ -162,6 +129,18 @@ class OrderEntryController extends Controller
         try {
             return ResponseInterface::responseData(
                 QueryIregularOrderEntry::getDoc($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function getFile(Request $request, $id_iregular_order_entry, $id_doc)
+    {
+        try {
+            $result = QueryIregularOrderEntry::getFile($request, $id_iregular_order_entry, $id_doc); 
+            return ResponseInterface::responseDownload(
+                $result['path'],$result['filename']
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
