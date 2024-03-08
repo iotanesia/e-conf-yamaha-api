@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class QueryIregularOrderEntry extends Model {
 
@@ -102,6 +103,11 @@ class QueryIregularOrderEntry extends Model {
         try {
             $params = $request->all();
 
+            $token = $request->header("Authorization");
+            $token = Str::replaceFirst('Bearer ', '', $token);
+            $tokenData = Helper::decodeJwtSignature($token, env("JWT_SECRET"));
+
+
             $files = $params["files"];
             foreach($files as $file){
                 $ext = $file->getClientOriginalExtension();
@@ -114,9 +120,12 @@ class QueryIregularOrderEntry extends Model {
             $insert = Model::create($order_entry);
 
             IregularOrderEntryTracking::create([
-                'id_iregular_order_entry' => $insert->id,
-                'status' => 1,
-                'description' => 'Draft'
+                "id_iregular_order_entry" => $insert->id,
+                "status" => 1,
+                "id_user" => $tokenData->sub->id,
+                "id_role" => $tokenData->sub->id_role,
+                "id_position" => $tokenData->sub->id_position,
+                'description' => Constant::STS_PROCESS_IREGULAR[1]
             ]);
             
             $checkbox = [];
@@ -195,29 +204,97 @@ class QueryIregularOrderEntry extends Model {
         }
     }
 
+    public static function storeApprovalDoc($request, $id, $is_transaction = true){
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $params = $request->all();
+
+            $token = $request->header("Authorization");
+            $token = Str::replaceFirst('Bearer ', '', $token);
+            $tokenData = Helper::decodeJwtSignature($token, env("JWT_SECRET"));
+
+            $file = $params["file"];
+            $ext = $file->getClientOriginalExtension();
+            if(!in_array($ext,['pdf'])) throw new \Exception("file format error", 400);
+                
+            $data = self::find($id);
+            if(!$data) throw new \Exception("id tidak ditemukan", 400);
+
+            // Replace multiple underscores with a single underscore
+            $uuid = (string) Str::uuid();
+            $filename = 'approval_doc_iregular-'.$id;
+            $savedname = $uuid.'.'.$ext;
+
+            $path = '/order-entry/iregular/approval-doc/'.$savedname;
+            Storage::putFileAs(str_replace($savedname,'',$path),$file,$savedname);
+            $data->update([
+                'approval_doc_filename' => $filename,
+                'approval_doc_path' => $path,
+                'approval_doc_extension' => $ext, 
+            ]);
+
+            IregularOrderEntryTracking::create([
+                "id_iregular_order_entry" => $id,
+                "status" => 2,
+                "id_user" => $tokenData->sub->id,
+                "id_role" => $tokenData->sub->id_role,
+                "id_position" => $tokenData->sub->id_position,
+                'description' => Constant::STS_PROCESS_IREGULAR[2]
+            ]);
+
+            IregularOrderEntryTracking::create([
+                "id_iregular_order_entry" => $id,
+                "status" => 3,
+                "id_user" => $tokenData->sub->id,
+                "id_role" => $tokenData->sub->id_role,
+                "id_position" => $tokenData->sub->id_position,
+                "description" => Constant::STS_PROCESS_IREGULAR[3]
+            ]);
+
+            $insert_delivery_plan = IregularDeliveryPlan::create([
+                'id_iregular_order_entry' => $id,
+            ]);
+            
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+            return ['items' => ['id' => $id]];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
     public static function getParamCheckbox($params) {
         $comodities = [];
-        foreach ($params['comodities'] as $value) {
-            $value['type'] = 'comodities';
-            array_push($comodities, $value);
+        if(isset($params['comodities'])){
+            foreach ($params['comodities'] as $value) {
+                $value['type'] = 'comodities';
+                array_push($comodities, $value);
+            }
         }
 
         $good_condition = [];
-        foreach ($params['good_condition'] as $value) {
-            $value['type'] = 'good_condition';
-            array_push($good_condition, $value);
+        if(isset($params['good_condition'])){
+            foreach ($params['good_condition'] as $value) {
+                $value['type'] = 'good_condition';
+                array_push($good_condition, $value);
+            }
         }
-
+        
         $good_status = [];
-        foreach ($params['good_status'] as $value) {
-            $value['type'] = 'good_status';
-            array_push($good_status, $value);
+        if(isset($params['good_status'])){
+            foreach ($params['good_status'] as $value) {
+                $value['type'] = 'good_status';
+                array_push($good_status, $value);
+            }
         }
 
         $incoterms = [];
-        foreach ($params['incoterms'] as $value) {
-            $value['type'] = 'incoterms';
-            array_push($incoterms, $value);
+        if(isset($params['incoterms'])){
+            foreach ($params['incoterms'] as $value) {
+                $value['type'] = 'incoterms';
+                array_push($incoterms, $value);
+            }
         }
 
         $res = array_merge($comodities,$good_condition,$good_status,$incoterms);
@@ -322,6 +399,20 @@ class QueryIregularOrderEntry extends Model {
         return $result;
     }
 
+    public static function getApprovalFile($params, $id_iregular_order_entry)
+    {
+        $data = self::find($id_iregular_order_entry);
+        if(!$data) throw new \Exception("id tidak ditemukan", 400);
+
+        $path = $data->approval_doc_filename.".".$data->approval_doc_extension;
+        $filename = basename($path);
+
+        $result["path"] = Storage::path($data->approval_doc_path);
+        $result["filename"] = $filename;
+        return $result;
+    }
+
+
     public static function sendApproval($request, $to_tracking, $description = null, $is_transaction = true)
     {
         if($is_transaction) DB::beginTransaction();
@@ -349,14 +440,6 @@ class QueryIregularOrderEntry extends Model {
                 "id_position" => $tokenData->sub->id_position,
                 "description" => $description
             ]);
-
-            if($to_tracking == 4){
-                $delivery_plan = [
-                    'id_iregular_order_entry' => $data->id,
-                ];
-    
-                $insert_delivery_plan = IregularDeliveryPlan::create($delivery_plan);
-            }
             
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
@@ -366,4 +449,19 @@ class QueryIregularOrderEntry extends Model {
         }
     }
 
+
+    public static function downloadApprovalDoc($params,$id,$filename,$pathToFile)
+    {
+        try {
+           Pdf::loadView('exports.order_entry_iregular',[
+
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
+    }
 }

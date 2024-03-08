@@ -45,13 +45,10 @@ class Constant
     const IS_ACTUAL = 1;
 
     const STS_PROCESS_IREGULAR = [
-        1 => "Draft",
-        2 => "Send to DC Supervisor",
-        3 => "Send to DC Manager",
-        4 => "Send to CC Officer",
-        5 => "Input Invoice",
-        6 => "Send to CC Supervisor",
-        7 => "Send to CC Manager",
+        1 => "Waiting Approval Doc",
+        2 => "Approval Doc Submitted",
+        3 => "CC Officer",
+        4 => "Form CC Submitted",
         99 => "Reject",
     ];
 }

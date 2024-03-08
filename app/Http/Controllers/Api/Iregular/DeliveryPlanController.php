@@ -28,6 +28,17 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function storeFormCc(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::storeFormCc($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function form(Request $request)
     {
         try {

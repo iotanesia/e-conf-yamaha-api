@@ -127,6 +127,42 @@ class QueryIregularDeliveryPlan extends Model {
         ];
     }
 
+    public static function storeFormCc($request,$id, $is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $params = $request->all();
+
+            $token = $request->header("Authorization");
+            $token = Str::replaceFirst('Bearer ', '', $token);
+            $tokenData = Helper::decodeJwtSignature($token, env("JWT_SECRET"));
+
+
+            $data = IregularDeliveryPlan::where(["id_iregular_order_entry" => $id])->first();
+            if(!$data) throw new \Exception("id tidak ditemukan", 400);
+
+            $order_entry = $params;
+
+            $data->update($order_entry);
+
+            IregularOrderEntryTracking::create([
+                "id_iregular_order_entry" => $data->id,
+                "status" => 4,
+                "id_user" => $tokenData->sub->id,
+                "id_role" => $tokenData->sub->id_role,
+                "id_position" => $tokenData->sub->id_position,
+                'description' => Constant::STS_PROCESS_IREGULAR[4]
+            ]);
+            
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+            return ['items' => ['id' => $data->id]];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
     public static function getFormData($request, $id)
     {
         $data = self::find($id);

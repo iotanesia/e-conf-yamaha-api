@@ -115,6 +115,17 @@ class OrderEntryController extends Controller
         }
     }
 
+    public function storeApprovalDoc(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularOrderEntry::storeApprovalDoc($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function form(Request $request)
     {
         try {
@@ -171,6 +182,18 @@ class OrderEntryController extends Controller
         }
     }
 
+    public function getApprovalFile(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            $result = QueryIregularOrderEntry::getApprovalFile($request, $id_iregular_order_entry); 
+            return ResponseInterface::responseDownload(
+                $result['path'],$result['filename']
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     
     public function storeDoc(Request $request, $id)
     {
@@ -178,6 +201,18 @@ class OrderEntryController extends Controller
             return ResponseInterface::responseData(
                 QueryIregularOrderEntry::storeDoc($request, $id)
             );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function downloadApprovalDoc(Request $request,$id)
+    {
+        try {
+            $filename = 'order_entry_iregular-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/order-entry/iregular/'.$filename;
+            $data = QueryIregularOrderEntry::downloadApprovalDoc($request,$id,$filename,$pathToFile);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }

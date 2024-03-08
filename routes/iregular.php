@@ -26,6 +26,9 @@ Route::prefix('v1/iregular')
         Route::post('/doc/{id}',[OrderEntryController::class,'storeDoc']);
         Route::get('/doc/{id}',[OrderEntryController::class,'getDoc']);
         Route::get('/file/{id_iregular_order_entry}/{id_doc}',[OrderEntryController::class,'getFile']);
+        Route::get('/approval-file/{id}',[OrderEntryController::class,'getApprovalFile']);
+        Route::get('/download-approval-doc/{id}',[OrderEntryController::class,'downloadApprovalDoc']);
+        Route::post('/approval-doc/{id}',[OrderEntryController::class,'storeApprovalDoc']);
      });
 
      // delivery-plan
@@ -45,5 +48,6 @@ Route::prefix('v1/iregular')
         Route::get('/invoice-detail/{id_iregular_order_entry}',[DeliveryPlanController::class,'getInvoiceDetail']);
         Route::post('/send-to-input-invoice',[DeliveryPlanController::class,'sendToInputInvoice']);
         Route::post('/reject-by-cc-officer',[DeliveryPlanController::class,'rejectByCcOfficer']);
+        Route::post('/form-cc/{id}',[DeliveryPlanController::class,'storeFormCc']);
      });
 });
