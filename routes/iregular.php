@@ -60,5 +60,8 @@ Route::prefix('v1/iregular')
     // packing
     Route::group(['prefix' => 'packing'],function (){
         Route::get('/',[PackingController::class,'index']);
+        Route::get('/delivery-note/{id}',[PackingController::class,'getDeliveryNote']);
+        Route::get('/delivery-note/detail/{id}',[PackingController::class,'getDeliveryNoteDetail']);
+        Route::post('/delivery-note/{id}',[PackingController::class,'updateDeliveryNote']);
      });
 });

@@ -6,6 +6,7 @@ use App\Constants\Constant;
 use App\Models\IregularPacking AS Model;
 use App\ApiHelper as Helper;
 use App\Models\IregularDeliveryPlan;
+use App\Models\IregularPackingDetail;
 use App\Models\MstComodities;
 use App\Models\MstDoc;
 use App\Models\MstDutyTax;
@@ -78,6 +79,58 @@ class QueryIregularPacking extends Model {
                 ]
             ];
         });
+    }
+
+    public static function getDeliveryNote($params, $id){
+        $data = self::find($id);
+        if(!$data) throw new \Exception("id tidak ditemukan", 400);
+                    
+        return [
+            'items' => $data,
+        ];
+    }
+
+    public static function getDeliveryNoteDetail($params, $id){
+                    
+        $key = self::cast.json_encode($params->query());
+        return Helper::storageCache($key, function () use ($params, $id){
+            $query = IregularPackingDetail::where('id_iregular_packing', $id);
+            $data = $query->paginate($params->limit ?? 10);
+            
+            $totalRow = IregularPackingDetail::where('id_iregular_packing', $id)->count();;
+            $lastPage = ceil($totalRow/($params->limit ?? 10));
+            return [
+                'items' => $data->getCollection(),
+                'last_page' => $lastPage,
+                'attributes' => [
+                    'total' => $data->total(),
+                    'current_page' => $data->currentPage(),
+                    'from' => $data->currentPage(),
+                    'per_page' => (int) $data->perPage(),
+                ]
+            ];
+        });
+    }
+
+    public static function updateDeliveryNote($request,$id,$is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $params = $request->all();
+
+            $data = self::find($id);
+            if(!$data) throw new \Exception("id tidak ditemukan", 400);
+
+            $params["status"] = 2;
+            $data->update($params);
+
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+            return ['items' => ['id' => $data->id]];
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
     }
 
 

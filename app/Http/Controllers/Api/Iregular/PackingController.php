@@ -23,5 +23,40 @@ class PackingController extends Controller
         }
     }
 
+    public function getDeliveryNote(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularPacking::getDeliveryNote($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+
+    public function getDeliveryNoteDetail(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularPacking::getDeliveryNoteDetail($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function updateDeliveryNote(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularPacking::updateDeliveryNote($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+
 
 }
