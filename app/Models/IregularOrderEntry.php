@@ -38,7 +38,7 @@ class IregularOrderEntry extends Model
         'entity_site',
         'rate',
         'receive_date',
-        'delivery_date',
+        'delivery_site',
         'etd_date',
         'stuffing_date',
         'id_freight',

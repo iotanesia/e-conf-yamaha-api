@@ -6,29 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class IregularDeliveryPlanInvoice extends Model
+class IregularDeliveryPlanPacking extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'iregular_delivery_plan_invoice';
+    protected $table = 'iregular_delivery_plan_packing';
     public $fillable = [
         'id',
         'id_iregular_delivery_plan',
-        'email',
+        'to',
         'date',
-        'bill_to',
-        'invoice_no',
         'shipped_to',
         'attn',
         'city',
         'phone_no',
         'shipped_by',
         'fax',
-        'description_invoice',
-        'type_package',
-        'to',
-        'trading_term',
-        'payment',
+        'description_packing',
+        'mark_number',
         'created_by',
 	    'created_at',
 	    'updated_by',

@@ -15,6 +15,7 @@ class IregularDeliveryPlanInvoiceDetail extends Model
         'id',
         'id_iregular_delivery_plan_invoice',
         'order_no',
+        'hs_code',
         'no_package',
         'description',
         'qty',

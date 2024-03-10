@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\Iregular\OrderEntryController;
 use App\Http\Controllers\Api\Iregular\DeliveryPlanController;
+use App\Http\Controllers\Api\Iregular\PackingController;
 
 //with middleware
 Route::prefix('v1/iregular')
@@ -46,8 +47,18 @@ Route::prefix('v1/iregular')
         Route::post('/invoice/{id_iregular_order_entry}',[DeliveryPlanController::class,'storeInvoice']);
         Route::get('/invoice/{id_iregular_order_entry}',[DeliveryPlanController::class,'getInvoice']);
         Route::get('/invoice-detail/{id_iregular_order_entry}',[DeliveryPlanController::class,'getInvoiceDetail']);
+        Route::get('/packing-list/{id_iregular_order_entry}',[DeliveryPlanController::class,'getPackingList']);
+        Route::get('/packing-list-detail/{id_iregular_order_entry}',[DeliveryPlanController::class,'getPackingListDetail']);
+        Route::post('/packing-list/{id_iregular_order_entry}',[DeliveryPlanController::class,'storePackingList']);
+        Route::get('/casemark/{id_iregular_order_entry}',[DeliveryPlanController::class,'getCaseMark']);
+        Route::post('/casemark/{id_iregular_order_entry}',[DeliveryPlanController::class,'storeCaseMark']);
         Route::post('/send-to-input-invoice',[DeliveryPlanController::class,'sendToInputInvoice']);
         Route::post('/reject-by-cc-officer',[DeliveryPlanController::class,'rejectByCcOfficer']);
         Route::post('/form-cc/{id}',[DeliveryPlanController::class,'storeFormCc']);
+     });
+
+    // packing
+    Route::group(['prefix' => 'packing'],function (){
+        Route::get('/',[PackingController::class,'index']);
      });
 });

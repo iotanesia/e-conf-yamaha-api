@@ -49,6 +49,9 @@ class Constant
         2 => "Approval Doc Submitted",
         3 => "CC Officer",
         4 => "Form CC Submitted",
+        5 => "Invoice Submitted",
+        6 => "Packing List Submitted",
+        7 => "Case Mark Submitted",
         99 => "Reject",
     ];
 }

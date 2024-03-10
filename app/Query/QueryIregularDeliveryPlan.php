@@ -8,14 +8,19 @@ use App\ApiHelper as Helper;
 use App\Models\IregularDeliveryPlan;
 use App\Models\IregularDeliveryPlanInvoice;
 use App\Models\IregularDeliveryPlanInvoiceDetail;
+use App\Models\IregularDeliveryPlanPacking;
+use App\Models\IregularDeliveryPlanPackingDetail;
+use App\Models\IregularDeliveryPlanCaseMark;
 use App\Models\IregularDeliveryPlanShippingInstruction;
 use App\Models\IregularDeliveryPlanShippingInstructionDraft;
 use App\Models\IregularOrderEntry;
 use App\Models\IregularOrderEntryDoc;
 use App\Models\IregularOrderEntryPart;
 use App\Models\IregularOrderEntryTracking;
+use App\Models\IregularPacking;
 use App\Models\MstComodities;
 use App\Models\MstDoc;
+use App\Models\MstPart;
 use App\Models\MstDutyTax;
 use App\Models\MstFreight;
 use App\Models\MstFreightCharge;
@@ -37,48 +42,36 @@ class QueryIregularDeliveryPlan extends Model {
 
     const cast = 'iregular-delivery-plan';
 
-    public static function getAll($params, $min_status_tracking = null)
+    public static function getAll($params)
     {
         $key = self::cast.json_encode($params->query());
-        return Helper::storageCache($key, function () use ($params, $min_status_tracking){
-            $query = self::select('iregular_order_entry.*')
-                ->leftJoin('iregular_order_entry', 'iregular_order_entry.id', '=', 'iregular_delivery_plan.id_iregular_order_entry')
-                ->leftJoin('iregular_order_entry_tracking', function($join) {
-                    $join->on('iregular_order_entry_tracking.id_iregular_order_entry', '=', 'iregular_delivery_plan.id_iregular_order_entry')
-                        ->where('iregular_order_entry_tracking.id', function($subquery) {
-                                $subquery->selectRaw('MAX(id)')
-                                    ->from('iregular_order_entry_tracking')
-                                    ->whereColumn('id_iregular_order_entry', 'iregular_delivery_plan.id_iregular_order_entry');
-                        });
-                });
+        return Helper::storageCache($key, function () use ($params){
+            $query = self::where(function ($query) use ($params){
 
-            if (isset($min_status_tracking)) {
-                $query->where('iregular_order_entry_tracking.status', '>=', $min_status_tracking);
-            }
+                $category = $params->category ?? null;
+                if($category) {
+                    $query->where($category, 'ilike', $params->kueri);
+                }
 
-            $category = $params->category ?? null;
-            if ($category) {
-                $query->where('iregular_order_entry.' . $category, 'ilike', $params->kueri);
-            }
-            
-            if ($params->withTrashed == 'true') {
-                $query->withTrashed();
-            }
-            
+            });
+
+            if($params->withTrashed == 'true') $query->withTrashed();
             $data = $query->paginate($params->limit ?? 10);
-            
-            if (isset($min_status_tracking)) {
-                $totalRow = $query->where('iregular_order_entry_tracking.status', '>=', $min_status_tracking)->count();
-            } else {
-                $totalRow = self::count();
-            }
-
+            $totalRow = self::count();
             $lastPage = ceil($totalRow/($params->limit ?? 10));
+
             return [
                 'items' => $data->getCollection()->transform(function($item){
-                    $item->shipped_by = MstShippedBy::find($item->id_shipped);
-                    $item->type_transaction = MstTypeTransaction::find($item->id_type_transaction);
-                    $item->tracking = IregularOrderEntryTracking::where('id_iregular_order_entry', $item->id)->orderBy('id', 'desc')->get();
+                    $item->order_entry = $item->refOrderEntry;
+                    $item->order_entry->shipped_by = $item->refOrderEntry->refShippedBy;
+                    $item->order_entry->type_transaction = $item->refOrderEntry->refTypeTransaction;
+                    $item->order_entry->tracking = $item->refOrderEntry->manyTracking;
+
+                    unset($item->order_entry->refShippedBy);
+                    unset($item->order_entry->refTypeTransaction);
+                    unset($item->order_entry->manyTracking);
+                    unset($item->refOrderEntry);
+                    
                     return $item;
                 }),
                 'last_page' => $lastPage,
@@ -138,22 +131,62 @@ class QueryIregularDeliveryPlan extends Model {
             $tokenData = Helper::decodeJwtSignature($token, env("JWT_SECRET"));
 
 
-            $data = IregularDeliveryPlan::where(["id_iregular_order_entry" => $id])->first();
-            if(!$data) throw new \Exception("id tidak ditemukan", 400);
+            $data = IregularOrderEntry::find($id);
+            $delivery_plan = self::where(["id_iregular_order_entry" => $id])->first();
+            if(!$data || !$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
 
             $order_entry = $params;
 
             $data->update($order_entry);
 
+            
+            $checkbox = [];
+            foreach ($params["incoterms"] as $item) {
+                $checkbox[] = [
+                    'id_iregular_order_entry' => $data->id,
+                    'id_value' => $item['id'],
+                    'type' => 'incoterms',
+                    'value' => $item['value']
+                ];
+            }
+            $data->manyOrderEntryCheckbox()->createMany($checkbox);            
+            
+            $packing = IregularPacking::create([
+                "id_iregular_delivery_plan" => $delivery_plan->id,
+                "status" => 1,
+                "jenis_truck" => "LCL",
+                "yth" => $data->requestor,
+                "username" => $data->company_consignee,
+                "delivery_date" => $data->etd_date,
+                "ref_invoice_no" => $params["invoice_no"]
+            ]);
+ 
+            $details = [];
+            $parts = IregularOrderEntryPart::where(["id_iregular_order_entry" => $id])->get();
+            foreach ($parts as $item) {
+                $part = MstPart::where(["item_no" => $item->item_code])->first();
+
+                $details[] = [
+                    'id_iregular_packing' => $packing->id,
+                    'item_name' => $part  ? $part->description : $item->item_name,
+                    'item_number' => $part  ? $part->item_serial : $item->code,
+                    'qty' => $item->qty,
+                    'po_no' => $item->order_no,
+                    'invoice_no' => $params["invoice_no"]
+                ];
+            }
+            $packing->manyDetail()->createMany($details);
+
+
             IregularOrderEntryTracking::create([
-                "id_iregular_order_entry" => $data->id,
+                "id_iregular_order_entry" => $id,
                 "status" => 4,
                 "id_user" => $tokenData->sub->id,
                 "id_role" => $tokenData->sub->id_role,
                 "id_position" => $tokenData->sub->id_position,
                 'description' => Constant::STS_PROCESS_IREGULAR[4]
             ]);
-            
+
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
             return ['items' => ['id' => $data->id]];
@@ -391,7 +424,11 @@ class QueryIregularDeliveryPlan extends Model {
         if($is_transaction) DB::beginTransaction();
         try {
             $params = $request->all();
-            
+
+            $token = $request->header("Authorization");
+            $token = Str::replaceFirst('Bearer ', '', $token);
+            $tokenData = Helper::decodeJwtSignature($token, env("JWT_SECRET"));
+
             $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
             if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
     
@@ -416,6 +453,14 @@ class QueryIregularDeliveryPlan extends Model {
                 }
             }
 
+            IregularOrderEntryTracking::create([
+                "id_iregular_order_entry" => $id_iregular_order_entry,
+                "status" => 5,
+                "id_user" => $tokenData->sub->id,
+                "id_role" => $tokenData->sub->id_role,
+                "id_position" => $tokenData->sub->id_position,
+                'description' => Constant::STS_PROCESS_IREGULAR[5]
+            ]);
            
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
@@ -438,15 +483,17 @@ class QueryIregularDeliveryPlan extends Model {
             if(!$order_entry) throw new \Exception("id tidak ditemukan", 400);
 
             $invoice_data = new \stdClass;
-            $invoice_data->messrs = $order_entry->company_consignee;
+            $invoice_data->to = $order_entry->requestor;
             $invoice_data->date = $order_entry->stuffing_date;
-            $invoice_data->bill_to = $order_entry->requestor;
+            $invoice_data->bill_to = $order_entry->name_consignee;
             $invoice_data->invoice_no = $order_entry->invoice_no;
-            $invoice_data->shipped_by = MstShippedBy::find($order_entry->id_shipped)->name;
+            $invoice_data->shipped_by = $order_entry->company_consignee;
             $invoice_data->shipped_to = $order_entry->entity_site;
-            $invoice_data->logistic_division = $order_entry->section;
+            $invoice_data->attn = $order_entry->section;
             $invoice_data->phone_no = $order_entry->phone_consignee;
             $invoice_data->fax = $order_entry->fax_consignee;
+            $invoice_data->email = $order_entry->email_consignee;
+            $invoice_data->city = $order_entry->entity_site;
         }
 
         return [ 'items' => $invoice_data ];
@@ -457,6 +504,9 @@ class QueryIregularDeliveryPlan extends Model {
         $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
         if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
 
+        $order_entry = IregularOrderEntry::find($id_iregular_order_entry);
+        if(!$order_entry) throw new \Exception("id tidak ditemukan", 400);
+
         $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
         $invoice_detail_data = [];
 
@@ -466,10 +516,13 @@ class QueryIregularDeliveryPlan extends Model {
                 $item = new  \stdClass;
                 $item->order_no = $part->order_no;
                 $item->no_package = 0;
+                $_part = MstPart::where(['item_no' => $part->item_code])->first();
+                $item->hs_code = isset($_part) ? $_part->hs_code : "";
                 $item->description = $part->item_code."   ".$part->item_name;
                 $item->qty = $part->qty;
-                $item->unit_price = $part->price;
-                $item->amount = $part->qty * $part->price;
+                $item->currency = $order_entry->currency;
+                $item->unit_price = $part->price / $order_entry->rate;
+                $item->amount = $part->qty * $part->price / $order_entry->rate;
 
                 array_push($invoice_detail_data, $item);
             }
@@ -491,6 +544,169 @@ class QueryIregularDeliveryPlan extends Model {
 
 
         return $filepath;
+    }
+
+    public static function getPackingList($params, $id_iregular_order_entry)
+    {
+        $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
+        if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
+
+        $packing_data = IregularDeliveryPlanPacking::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
+
+        if(!isset($packing_data)){
+            $order_entry = IregularOrderEntry::find($id_iregular_order_entry);
+            if(!$order_entry) throw new \Exception("id tidak ditemukan", 400);
+
+            $packing_data = new \stdClass;
+            $packing_data->to = $order_entry->requestor;
+            $packing_data->date = $order_entry->stuffing_date;
+            $packing_data->shipped_by = $order_entry->company_consignee;
+            $packing_data->shipped_to = $order_entry->entity_site;
+            $packing_data->attn = $order_entry->section;
+            $packing_data->phone_no = $order_entry->phone_consignee;
+            $packing_data->fax = $order_entry->fax_consignee;
+            $packing_data->city = $order_entry->entity_site;
+        }
+
+        return [ 'items' => $packing_data ];
+    }
+
+    public static function getPackingListDetail($params, $id_iregular_order_entry)
+    {
+        $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
+        if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
+
+        $order_entry = IregularOrderEntry::find($id_iregular_order_entry);
+        if(!$order_entry) throw new \Exception("id tidak ditemukan", 400);
+
+        $packing_data = IregularDeliveryPlanPacking::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
+        $packing_detail_data = [];
+
+        if(!isset($packing_data)){
+            $order_entry_part = IregularOrderEntryPart::where("id_iregular_order_entry", $id_iregular_order_entry)->get();
+            foreach($order_entry_part as $part){
+                $item = new  \stdClass;
+                $item->description = $part->item_code."   ".$part->item_name;
+                $item->qty = $part->qty;
+                $item->nett_weight = $part->net_weight;
+                $item->gross_weight = $part->gross_weight;
+                $item->measurement = $part->measurement;
+
+                array_push($packing_detail_data, $item);
+            }
+        } else {
+            $packing_detail_data = IregularDeliveryPlanPackingDetail::where('id_iregular_delivery_plan_packing', $packing_data->id)->get();
+        }      
+
+        return [ 'items' => $packing_detail_data ];
+    }
+
+    public static function storePackingList($request, $id_iregular_order_entry, $is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $params = $request->all();
+
+            $token = $request->header("Authorization");
+            $token = Str::replaceFirst('Bearer ', '', $token);
+            $tokenData = Helper::decodeJwtSignature($token, env("JWT_SECRET"));
+
+            $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
+            if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
+    
+            $packing_data = IregularDeliveryPlanPacking::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
+            $invoice_id = null;
+    
+            if(!isset($packing_data)){
+                $params["packing_list"]["id_iregular_delivery_plan"] = $delivery_plan->id;
+                $packing_data = IregularDeliveryPlanPacking::create($params["packing_list"]);
+            } else {
+                $packing_data->update($params["packing_list"]);          
+            }
+
+            $packing_id = $packing_data->id;
+
+            foreach($params["packing_list_detail"] as $item){
+                if(isset($item["id"])){
+                    IregularDeliveryPlanPackingDetail::find($item["id"])->update($item);
+                } else {
+                    $item["id_iregular_delivery_plan_packing"] = $packing_id;
+                    IregularDeliveryPlanPackingDetail::create($item);
+                }
+            }
+
+            IregularOrderEntryTracking::create([
+                "id_iregular_order_entry" => $id_iregular_order_entry,
+                "status" => 6,
+                "id_user" => $tokenData->sub->id,
+                "id_role" => $tokenData->sub->id_role,
+                "id_position" => $tokenData->sub->id_position,
+                'description' => Constant::STS_PROCESS_IREGULAR[6]
+            ]);
+           
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function getCaseMark($params, $id_iregular_order_entry)
+    {
+        $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
+        if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
+
+        $casemark_data = IregularDeliveryPlanCaseMark::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
+
+        if(!isset($casemark_data)){
+            $order_entry = IregularOrderEntry::find($id_iregular_order_entry);
+            if(!$order_entry) throw new \Exception("id tidak ditemukan", 400);
+
+            $casemark_data = new \stdClass;
+            $casemark_data->customer = "";
+        }
+
+        return [ 'items' => $casemark_data ];
+    }
+
+
+    public static function storeCaseMark($request, $id_iregular_order_entry, $is_transaction = true)
+    {
+        if($is_transaction) DB::beginTransaction();
+        try {
+            $params = $request->all();
+
+            $token = $request->header("Authorization");
+            $token = Str::replaceFirst('Bearer ', '', $token);
+            $tokenData = Helper::decodeJwtSignature($token, env("JWT_SECRET"));
+
+            $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
+            if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
+    
+            $casemark_data = IregularDeliveryPlanCaseMark::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
+            if(!isset($casemark_data)){
+                $params["id_iregular_delivery_plan"] = $delivery_plan->id;
+                $casemark_data = IregularDeliveryPlanCaseMark::create($params);
+            } else {
+                $casemark_data->update($params);
+            }
+
+            IregularOrderEntryTracking::create([
+                "id_iregular_order_entry" => $id_iregular_order_entry,
+                "status" => 7,
+                "id_user" => $tokenData->sub->id,
+                "id_role" => $tokenData->sub->id_role,
+                "id_position" => $tokenData->sub->id_position,
+                'description' => Constant::STS_PROCESS_IREGULAR[7]
+            ]);
+           
+            if($is_transaction) DB::commit();
+            Cache::flush([self::cast]); //delete cache
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
     }
 
 }

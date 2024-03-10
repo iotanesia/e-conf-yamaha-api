@@ -206,4 +206,59 @@ class DeliveryPlanController extends Controller
         }
     }
 
+
+    public function getPackingList(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::getPackingList($request, $id_iregular_order_entry)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function getPackingListDetail(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::getPackingListDetail($request, $id_iregular_order_entry)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function storePackingList(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::storePackingList($request, $id_iregular_order_entry)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function getCaseMark(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::getCaseMark($request, $id_iregular_order_entry)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function storeCaseMark(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::storeCaseMark($request, $id_iregular_order_entry)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }
