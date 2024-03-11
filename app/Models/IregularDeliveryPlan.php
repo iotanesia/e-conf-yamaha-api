@@ -43,4 +43,8 @@ class IregularDeliveryPlan extends Model
     public function refOrderEntry(){
         return $this->belongsTo(IregularOrderEntry::class,'id_iregular_order_entry','id');
     }
+
+    public function manyTracking(){
+        return $this->belongsTo(IregularOrderEntryTracking::class,'id_iregular_order_entry','id');
+    }
 }

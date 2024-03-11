@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Iregular\OrderEntryController;
 use App\Http\Controllers\Api\Iregular\DeliveryPlanController;
 use App\Http\Controllers\Api\Iregular\PackingController;
+use App\Http\Controllers\Api\Iregular\ShippingInstructionController;
 
 //with middleware
 Route::prefix('v1/iregular')
@@ -29,6 +30,8 @@ Route::prefix('v1/iregular')
      // delivery-plan
     Route::group(['prefix' => 'delivery-plan'],function (){
         Route::get('/',[DeliveryPlanController::class,'index']);
+        Route::get('/spv',[DeliveryPlanController::class,'getSpv']);
+        Route::get('/manager',[DeliveryPlanController::class,'getManager']);
         Route::get('/shipping-instruction',[DeliveryPlanController::class,'shippingInstructionList']);
         Route::post('/shipping-instruction',[DeliveryPlanController::class,'shippingInstructionStore']);
         Route::get('/shipping-instruction/{id}',[DeliveryPlanController::class,'shippingInstruction']);
@@ -69,5 +72,19 @@ Route::prefix('v1/iregular')
         Route::get('/delivery-note/{id}',[PackingController::class,'getDeliveryNote']);
         Route::get('/delivery-note/detail/{id}',[PackingController::class,'getDeliveryNoteDetail']);
         Route::post('/delivery-note/{id}',[PackingController::class,'updateDeliveryNote']);
+     });
+
+     // shipping instruction
+    Route::group(['prefix' => 'shipping-instruction'],function (){
+        Route::get('/',[ShippingInstructionController::class,'index']);
+        Route::get('/spv',[ShippingInstructionController::class,'getSpv']);
+        Route::get('/manager',[ShippingInstructionController::class,'getManager']);
+        Route::post('/',[ShippingInstructionController::class,'store']);
+        Route::get('/{id}',[ShippingInstructionController::class,'getById']);
+        Route::get('/creation/{id}',[ShippingInstructionController::class,'getCreation']);
+        Route::post('/approved-by-cc-spv',[ShippingInstructionController::class,'approvedByCcSpv']);
+        Route::post('/approved-by-cc-manager',[ShippingInstructionController::class,'approvedByCcManager']);
+        Route::post('/reject-by-cc-spv',[ShippingInstructionController::class,'rejectByCcSpv']);
+        Route::post('/reject-by-cc-manager',[ShippingInstructionController::class,'rejectByCcManager']);
      });
 });

@@ -64,7 +64,7 @@ class QueryIregularPacking extends Model {
 
                     $item->status_desc = "-";
                     if($item->status == 1)
-                        $item->status_desc = "Wating Delivery Note";
+                        $item->status_desc = "Waiting Delivery Note";
                     else if($item->status == 2)
                         $item->status_desc = "Delivery Note Created";
 
