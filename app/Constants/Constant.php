@@ -52,6 +52,11 @@ class Constant
         5 => "Invoice Submitted",
         6 => "Packing List Submitted",
         7 => "Case Mark Submitted",
+        8 => "Waiting Approval CC Supervisor",
+        9 => "Waiting Approval Document CC Supervisor",
+        10 => "Waiting Approval CC Manager",
+        11 => "Waiting Approval Document CC Manager",
+        12 => "Approved CC Manager",
         99 => "Reject",
     ];
 }

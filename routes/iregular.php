@@ -14,13 +14,7 @@ Route::prefix('v1/iregular')
     // order-entry
     Route::group(['prefix' => 'order-entry'],function (){
         Route::get('/',[OrderEntryController::class,'index']);
-        Route::get('/dc-spv',[OrderEntryController::class,'getDcSpv']);
-        Route::get('/dc-manager',[OrderEntryController::class,'getDcManager']);
         Route::post('/',[OrderEntryController::class,'store']);
-        Route::post('/send-to-dc-spv',[OrderEntryController::class,'sendToDcSpv']);
-        Route::post('/send-to-dc-manager',[OrderEntryController::class,'sendToDcManager']);
-        Route::post('/reject-by-dc-spv',[OrderEntryController::class,'rejectByDcSpv']);
-        Route::post('/reject-by-dc-manager',[OrderEntryController::class,'rejectByDcManager']);
         Route::get('/form-data/{id}',[OrderEntryController::class,'formData']);
         Route::get('/form',[OrderEntryController::class,'form']);
         Route::post('/part/{id}',[OrderEntryController::class,'storePart']);
@@ -52,9 +46,21 @@ Route::prefix('v1/iregular')
         Route::post('/packing-list/{id_iregular_order_entry}',[DeliveryPlanController::class,'storePackingList']);
         Route::get('/casemark/{id_iregular_order_entry}',[DeliveryPlanController::class,'getCaseMark']);
         Route::post('/casemark/{id_iregular_order_entry}',[DeliveryPlanController::class,'storeCaseMark']);
+        Route::get('/get_by_id_iregular_order_entry/{id_iregular_order_entry}',[DeliveryPlanController::class,'getByIdIregularOrderEntry']);
         Route::post('/send-to-input-invoice',[DeliveryPlanController::class,'sendToInputInvoice']);
         Route::post('/reject-by-cc-officer',[DeliveryPlanController::class,'rejectByCcOfficer']);
-        Route::post('/form-cc/{id}',[DeliveryPlanController::class,'storeFormCc']);
+        Route::post('/reject-by-cc-spv',[DeliveryPlanController::class,'rejectByCcSpv']);
+        Route::post('/reject-by-cc-manager',[DeliveryPlanController::class,'rejectByCcManager']);
+        Route::post('/form-cc/{id_iregular_order_entry}',[DeliveryPlanController::class,'storeFormCc']);
+        Route::post('/send-to-cc-spv',[DeliveryPlanController::class,'sentToCcSpv']);
+        Route::post('/send-to-cc-manager',[DeliveryPlanController::class,'sentToCcManager']);
+        Route::post('/approved-by-cc-spv',[DeliveryPlanController::class,'approvedByCcSpv']);
+        Route::post('/approved-by-cc-manager',[DeliveryPlanController::class,'approvedByCcManager']);
+        Route::post('/approved',[DeliveryPlanController::class,'approvedRequest']);
+        Route::post('/reject-doc-spv',[DeliveryPlanController::class,'rejectDocSpv']);
+        Route::post('/approved-doc-spv',[DeliveryPlanController::class,'approveDocSpv']);
+        Route::post('/reject-doc-manager',[DeliveryPlanController::class,'rejectDocManager']);
+        Route::post('/approved-doc-manager',[DeliveryPlanController::class,'approveDocManager']);
      });
 
     // packing

@@ -39,6 +39,62 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function sentToCcSpv(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::sendApproval($request, 8)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function sentToCcManager(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::sendApproval($request, 10)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function approvedRequest(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::sendApproval($request, 12)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function approvedByCcSpv(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::sendApproval($request, 9)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+
+    public function approvedByCcManager(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::sendApproval($request, 11)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+    
     public function form(Request $request)
     {
         try {
@@ -72,6 +128,18 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    
+    public function getByIdIregularOrderEntry(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::getByIdIregularOrderEntry($request, $id_iregular_order_entry)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function sendToInputInvoice(Request $request)
     {
         try {
@@ -88,6 +156,28 @@ class DeliveryPlanController extends Controller
         try {
             return ResponseInterface::responseData(
                 QueryIregularDeliveryPlan::sendApproval($request, 99, "Reject CC Officer")
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function rejectByCcSpv(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::sendApproval($request, 99, "Reject CC Supervisor")
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function rejectByCcManager(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::sendApproval($request, 99, "Reject CC Manager")
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -256,6 +346,50 @@ class DeliveryPlanController extends Controller
         try {
             return ResponseInterface::responseData(
                 QueryIregularDeliveryPlan::storeCaseMark($request, $id_iregular_order_entry)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function approveDocSpv(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::approveDoc($request, "spv")
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function approveDocManager(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::approveDoc($request, "manager")
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function rejectDocSpv(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::rejectDoc($request, "spv")
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function rejectDocManager(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::rejectDoc($request, "manager")
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

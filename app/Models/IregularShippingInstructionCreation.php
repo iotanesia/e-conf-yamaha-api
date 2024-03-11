@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class IregularDeliveryPlanShippingInstructionDraft extends Model
+class IregularShippingInstructionCreation extends Model
 {
     use HasFactory,SoftDeletes;
-    protected $table = 'iregular_delivery_plan_shipping_instruction_draft';
+    protected $table = 'iregular_shipping_instruction_creation';
     public $fillable = [
         "to",
-        "id_iregular_delivery_plan_shipping_instruction_creation",
+        "id_iregular_shipping_instruction",
         "cc",
         "attn_to",
         "attn_cc",

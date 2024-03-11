@@ -25,79 +25,11 @@ class OrderEntryController extends Controller
         }
     }
 
-    public function getDcSpv(Request $request)
-    {
-        try {
-            return ResponseInterface::responseData(
-                QueryIregularOrderEntry::getAll($request, 2)
-            );
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
-
-
-    public function getDcManager(Request $request)
-    {
-        try {
-            return ResponseInterface::responseData(
-                QueryIregularOrderEntry::getAll($request, 3)
-            );
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
-
-
-    public function sendToDcSpv(Request $request)
-    {
-        try {
-            return ResponseInterface::responseData(
-                QueryIregularOrderEntry::sendApproval($request, 2)
-            );
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
-
-    public function sendToDcManager(Request $request)
-    {
-        try {
-            return ResponseInterface::responseData(
-                QueryIregularOrderEntry::sendApproval($request, 3)
-            );
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
-
     public function sendToEnquiry(Request $request)
     {
         try {
             return ResponseInterface::responseData(
                 QueryIregularOrderEntry::sendApproval($request, 4)
-            );
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
-
-    public function rejectByDcSpv(Request $request)
-    {
-        try {
-            return ResponseInterface::responseData(
-                QueryIregularOrderEntry::sendApproval($request, 99, "Reject DC SPV")
-            );
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
-
-    public function rejectByDcManager(Request $request)
-    {
-        try {
-            return ResponseInterface::responseData(
-                QueryIregularOrderEntry::sendApproval($request, 99, "Reject DC Manager")
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
