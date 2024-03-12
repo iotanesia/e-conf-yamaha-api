@@ -72,4 +72,18 @@ Route::prefix('v1/iregular')
         Route::get('/delivery-note/detail/{id}',[PackingController::class,'getDeliveryNoteDetail']);
         Route::post('/delivery-note/{id}',[PackingController::class,'updateDeliveryNote']);
      });
+
+     // shipping instruction
+    Route::group(['prefix' => 'shipping-instruction'],function (){
+        Route::get('/',[ShippingInstructionController::class,'index']);
+        Route::get('/spv',[ShippingInstructionController::class,'getSpv']);
+        Route::get('/manager',[ShippingInstructionController::class,'getManager']);
+        Route::post('/',[ShippingInstructionController::class,'store']);
+        Route::get('/{id}',[ShippingInstructionController::class,'getById']);
+        Route::get('/creation/{id}',[ShippingInstructionController::class,'getCreation']);
+        Route::post('/approved-by-cc-spv',[ShippingInstructionController::class,'approvedByCcSpv']);
+        Route::post('/approved-by-cc-manager',[ShippingInstructionController::class,'approvedByCcManager']);
+        Route::post('/reject-by-cc-spv',[ShippingInstructionController::class,'rejectByCcSpv']);
+        Route::post('/reject-by-cc-manager',[ShippingInstructionController::class,'rejectByCcManager']);
+     }); 
 });
