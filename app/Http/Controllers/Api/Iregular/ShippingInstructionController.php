@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 
 class ShippingInstructionController extends Controller
-{
+{ 
     public function index(Request $request)
     {
         try {
