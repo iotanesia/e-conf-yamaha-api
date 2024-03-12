@@ -530,13 +530,14 @@ class QueryIregularDeliveryPlan extends Model {
             $invoice_data->to = $order_entry->requestor;
             $invoice_data->date = $order_entry->stuffing_date;
             $invoice_data->bill_to = $order_entry->name_consignee;
-            $invoice_data->invoice_no = $order_entry->invoice_no;
+            $invoice_data->invoice_no = "";
             $invoice_data->shipped_by = $order_entry->company_consignee;
             $invoice_data->shipped_to = $order_entry->entity_site;
-            $invoice_data->attn = $order_entry->section;
+            $invoice_data->attn = "Logistic Devision";
             $invoice_data->phone_no = $order_entry->phone_consignee;
             $invoice_data->fax = $order_entry->fax_consignee;
             $invoice_data->email = $order_entry->email_consignee;
+            $invoice_data->trading_term = $order_entry->invoice_no;
             $invoice_data->city = $order_entry->entity_site;
         }
 
