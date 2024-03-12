@@ -30,7 +30,7 @@ class DeliveryPlanController extends Controller
 
     public function getSpv(Request $request)
     {
-        try {
+        try { 
             return ResponseInterface::responseData(
                 QueryIregularDeliveryPlan::getAll($request, 8)
             );

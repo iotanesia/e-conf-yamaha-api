@@ -31,7 +31,7 @@ class ShippingInstructionController extends Controller
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }
-    }
+    } 
 
     public function getManager(Request $request)
     {
