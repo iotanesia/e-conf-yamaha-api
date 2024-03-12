@@ -86,5 +86,5 @@ Route::prefix('v1/iregular')
         Route::post('/approved-by-cc-manager',[ShippingInstructionController::class,'approvedByCcManager']);
         Route::post('/reject-by-cc-spv',[ShippingInstructionController::class,'rejectByCcSpv']);
         Route::post('/reject-by-cc-manager',[ShippingInstructionController::class,'rejectByCcManager']);
-     });
+     }); 
 });
