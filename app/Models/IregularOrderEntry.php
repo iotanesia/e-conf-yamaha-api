@@ -46,6 +46,7 @@ class IregularOrderEntry extends Model
         'id_good_criteria',
         'id_consumable',
         'currency',
+        'actual_condition',
         'approval_doc_path',
         'approval_doc_filename',
         'approval_doc_extension',
