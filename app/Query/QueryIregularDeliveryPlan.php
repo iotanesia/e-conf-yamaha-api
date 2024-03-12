@@ -42,22 +42,27 @@ class QueryIregularDeliveryPlan extends Model {
 
     const cast = 'iregular-delivery-plan';
 
-    public static function getAll($params)
+    public static function getAll($params, $min_tracking = null)
     {
         $key = self::cast.json_encode($params->query());
-        return Helper::storageCache($key, function () use ($params){
-            $query = self::where(function ($query) use ($params){
+        return Helper::storageCache($key, function () use ($params, $min_tracking){
+            $query = self::select('iregular_delivery_plan.*')
+                ->leftJoin('iregular_order_entry_tracking', function($join) {
+                    $join->on('iregular_order_entry_tracking.id_iregular_order_entry', '=', 'iregular_delivery_plan.id_iregular_order_entry')
+                        ->where('iregular_order_entry_tracking.id', function($subquery) {
+                                $subquery->selectRaw('MAX(id)')
+                                    ->from('iregular_order_entry_tracking')
+                                    ->whereColumn('id_iregular_order_entry', 'iregular_delivery_plan.id_iregular_order_entry');
+                        });
+                });
 
-                $category = $params->category ?? null;
-                if($category) {
-                    $query->where($category, 'ilike', $params->kueri);
-                }
-
-            });
+            if (isset($min_tracking)) {
+                $query->where('iregular_order_entry_tracking.status', '>=', $min_tracking);
+            }
 
             if($params->withTrashed == 'true') $query->withTrashed();
+            $totalRow = $query->count();
             $data = $query->paginate($params->limit ?? 10);
-            $totalRow = self::count();
             $lastPage = ceil($totalRow/($params->limit ?? 10));
 
             return [

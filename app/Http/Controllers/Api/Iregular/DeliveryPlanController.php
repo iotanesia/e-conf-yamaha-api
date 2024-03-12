@@ -28,6 +28,28 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function getSpv(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::getAll($request, 8)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function getManager(Request $request)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryIregularDeliveryPlan::getAll($request, 11)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function storeFormCc(Request $request, $id)
     {
         try {
