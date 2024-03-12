@@ -30,7 +30,7 @@ Route::prefix('v1/iregular')
      // delivery-plan
     Route::group(['prefix' => 'delivery-plan'],function (){
         Route::get('/',[DeliveryPlanController::class,'index']);
-        Route::get('/spv',[DeliveryPlanController::class,'getSpv']);
+        Route::get('/spv',[DeliveryPlanController::class,'getSpv']); 
         Route::get('/manager',[DeliveryPlanController::class,'getManager']);
         Route::get('/shipping-instruction',[DeliveryPlanController::class,'shippingInstructionList']);
         Route::post('/shipping-instruction',[DeliveryPlanController::class,'shippingInstructionStore']);
