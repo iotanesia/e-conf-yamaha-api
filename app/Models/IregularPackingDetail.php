@@ -14,7 +14,7 @@ class IregularPackingDetail extends Model
     public $fillable = [
         'id',
         'id_iregular_packing',
-        'item_number',
+        'item_no',
         'item_name',
         'po_no',
         'qty',
