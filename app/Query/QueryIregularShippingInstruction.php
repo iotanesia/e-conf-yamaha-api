@@ -72,7 +72,6 @@ class QueryIregularShippingInstruction extends Model {
             ];
         });
     }
-
     
     public static function getById($params, $id){
         $data = self::find($id);
