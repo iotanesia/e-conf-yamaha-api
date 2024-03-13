@@ -702,14 +702,21 @@ class QueryIregularDeliveryPlan extends Model {
         $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
         if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
 
-        $casemark_data = IregularDeliveryPlanCaseMark::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
+        $casemark_data = IregularDeliveryPlanCaseMark::where('id_iregular_delivery_plan', $delivery_plan->id)->get();
 
-        if(!isset($casemark_data)){
-            $order_entry = IregularOrderEntry::find($id_iregular_order_entry);
-            if(!$order_entry) throw new \Exception("id tidak ditemukan", 400);
+        if(sizeof($casemark_data) == 0){
+            $casemark_data = [];
+            $order_entry_part = IregularOrderEntryPart::where("id_iregular_order_entry", $id_iregular_order_entry)->get();
+            foreach($order_entry_part as $part){
+                $item = new  \stdClass;
+                $item->qty = $part->qty;
+                $item->gross_weight = $part->gross_weight;
+                $item->customer = "";
+                $_part = MstPart::where(['item_no' => $part->item_code])->first();
+                $item->item_no = isset($_part) ? $_part->item_serial : "";
 
-            $casemark_data = new \stdClass;
-            $casemark_data->customer = "";
+                array_push($casemark_data, $item);
+            }
         }
 
         return [ 'items' => $casemark_data ];
@@ -728,12 +735,14 @@ class QueryIregularDeliveryPlan extends Model {
             $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
             if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
     
-            $casemark_data = IregularDeliveryPlanCaseMark::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
-            if(!isset($casemark_data)){
-                $params["id_iregular_delivery_plan"] = $delivery_plan->id;
-                $casemark_data = IregularDeliveryPlanCaseMark::create($params);
-            } else {
-                $casemark_data->update($params);
+            foreach($params as $casemark){
+                $casemark_data = IregularDeliveryPlanCaseMark::where(['id_iregular_delivery_plan' => $delivery_plan->id, 'item_no' => $casemark["item_no"]])->first();
+                if(!isset($casemark_data)){
+                    $casemark["id_iregular_delivery_plan"] = $delivery_plan->id;
+                    $casemark_data = IregularDeliveryPlanCaseMark::create($casemark);
+                } else {
+                    $casemark_data->update($casemark);
+                }
             }
 
             IregularOrderEntryTracking::create([
