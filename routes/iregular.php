@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Iregular\OrderEntryController;
 use App\Http\Controllers\Api\Iregular\DeliveryPlanController;
 use App\Http\Controllers\Api\Iregular\PackingController;
+use App\Http\Controllers\Api\Iregular\ShippingInstructionController;
 
 //with middleware
 Route::prefix('v1/iregular')
