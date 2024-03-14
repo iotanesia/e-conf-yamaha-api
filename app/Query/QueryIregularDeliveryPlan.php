@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class QueryIregularDeliveryPlan extends Model {
 
@@ -764,6 +765,27 @@ class QueryIregularDeliveryPlan extends Model {
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
+        }
+    }
+
+    public static function printCaseMark($request,$id_iregular_order_entry,$pathToFile,$filename)
+    {
+        try {
+            $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
+            if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
+
+            $casemark_data = self::getCaseMark($request, $id_iregular_order_entry);
+
+            Pdf::loadView('pdf.iregular.casemarks.casemarks_doc',[
+                'data' => $casemark_data['items'],
+                'entity_site' => $delivery_plan->refOrderEntry->entity_site ?? null,
+                'invoice_no' => $delivery_plan->refOrderEntry->invoice_no ?? null,
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
         }
     }
 

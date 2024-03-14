@@ -374,6 +374,18 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function printCaseMark(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            $filename = 'casemarks-'.$id_iregular_order_entry.'.pdf';
+            $pathToFile =  storage_path().'/app/casemarks/'.$filename;
+            $data = QueryIregularDeliveryPlan::printCaseMark($request,$id_iregular_order_entry,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function approveDocSpv(Request $request)
     {
         try {
