@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Master\ContrainerController;
 use App\Http\Controllers\Api\Master\PartController;
 use App\Http\Controllers\Api\Master\PortController;
 use App\Http\Controllers\Api\Master\PortOfDischargeController;
+use App\Http\Controllers\Api\Master\PortOfLoadingController;
 use App\Http\Controllers\Api\Master\SupplierController;
 use App\Http\Controllers\Api\Master\GroupProductController;
 use App\Http\Controllers\Api\Master\PositionController;
@@ -95,6 +96,15 @@ Route::prefix('v1/master')
         Route::put('/',[PortOfDischargeController::class,'update']);
         Route::get('/{id}',[PortOfDischargeController::class,'show']);
         Route::delete('/{id}',[PortOfDischargeController::class,'destroy']);
+    });
+
+    // port of loading
+    Route::group(['prefix' => 'port-of-loading'],function (){
+        Route::get('/',[PortOfLoadingController::class,'index']);
+        Route::post('/',[PortOfLoadingController::class,'store']);
+        Route::put('/',[PortOfLoadingController::class,'update']);
+        Route::get('/{id}',[PortOfLoadingController::class,'show']);
+        Route::delete('/{id}',[PortOfLoadingController::class,'destroy']);
     });
 
     // supplier
