@@ -32,6 +32,7 @@ use App\Models\MstIncoterms;
 use App\Models\MstInlandCost;
 use App\Models\MstInsurance;
 use App\Models\MstShippedBy;
+use App\Models\MstConsignee;
 use App\Models\MstTypeTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -296,19 +297,21 @@ class QueryIregularDeliveryPlan extends Model {
                 IregularShippingInstructionCreation::create([
                     "id_iregular_shipping_instruction" => $insert->id,
                     "shipper_address" => "PT. YAMAHA MOTOR PARTS MANUFACTURING INDONESIA
-                    JL. PERMATA RAYA LOT F2 & F6
-                    KAWASAN INDUSTRI KIIC. KARAWANG 41361
-                    PO. BOX 157. WEST JAVA - INDONESIA",
+JL. PERMATA RAYA LOT F2 & F6
+KAWASAN INDUSTRI KIIC. KARAWANG 41361
+PO. BOX 157. WEST JAVA - INDONESIA",
                     "shipper_tel" => "+6221-8904581",
                     "shipper_fax" => "+6221-8904241",
                     "shipper_tax_id" => "01.071.650.4-055.000",
                     "si_number" => $deliveryPlanInvoice->invoice_no,
                     "consignee_address" => "$orderEntry->company_consignee
-                    $orderEntry->address_consignee",
+$orderEntry->address_consignee",
                     "consignee_tel" => $orderEntry->phone_consignee,
                     "consignee_fax" => $orderEntry->fax_consignee,
                     "notify_part_address" => "$orderEntry->company_consignee
-                    $orderEntry->address_consignee",
+$orderEntry->address_consignee",
+                    "id_shipped_by" => $orderEntry->id_shipped,
+                    "jenis_container" => $orderEntry->refShippedBy->name != "SEA" ? "-" : null,
                     "notify_part_tel" => $orderEntry->phone_consignee,
                     "notify_part_fax" => $orderEntry->fax_consignee,
                     "bl" => "Please issued as Sea WayBill",
@@ -325,143 +328,6 @@ class QueryIregularDeliveryPlan extends Model {
         }
     }
 
-
-    // public static function getShippingInstructionList($params, $status_tracking = null)
-    // {
-    //     $key = self::cast.json_encode($params->query());
-    //     return Helper::storageCache('shippinginstruction-'.$key.(isset($status_tracking) ? json_encode($status_tracking) : ''), function () use ($params, $status_tracking){
-    //         $query = IregularDeliveryPlanShippingInstruction::select('iregular_delivery_plan_shipping_instruction.*')
-    //             ->leftJoin('iregular_delivery_plan', function($join){
-    //                 $join->on('iregular_delivery_plan.id', '=', 'iregular_delivery_plan_shipping_instruction.id_iregular_delivery_plan');
-    //             })
-    //             ->leftJoin('iregular_order_entry_tracking', function($join) {
-    //                 $join->on('iregular_order_entry_tracking.id_iregular_order_entry', '=', 'iregular_delivery_plan.id_iregular_order_entry')
-    //                     ->where('iregular_order_entry_tracking.id', function($subquery) {
-    //                             $subquery->selectRaw('MAX(id)')
-    //                                 ->from('iregular_order_entry_tracking')
-    //                                 ->whereColumn('id_iregular_order_entry', 'iregular_delivery_plan.id_iregular_order_entry');
-    //                     });
-    //             });
-
-    //         if (isset($status_tracking)) {
-    //             $query->where('iregular_order_entry_tracking.status', $status_tracking);
-    //         }
-
-    //         $category = $params->category ?? null;
-    //         if ($category) {
-    //             $query->where('iregular_delivery_plan_shipping_instruction.' . $category, 'ilike', $params->kueri);
-    //         }
-            
-    //         if ($params->withTrashed == 'true') {
-    //             $query->withTrashed();
-    //         }
-            
-    //         $data = $query->paginate($params->limit ?? 10);
-            
-    //         if (isset($status_tracking)) {
-    //             $totalRow = $query->where('iregular_order_entry_tracking.status', $status_tracking)->count();
-    //         } else {
-    //             $totalRow = IregularDeliveryPlanShippingInstruction::count();
-    //         }
-
-    //         $lastPage = ceil($totalRow/($params->limit ?? 10));
-    //         return [
-    //             'items' => $data->getCollection()->transform(function($item){
-
-    //                 $item->delivery_plan = $item->refDeliveryPlan;
-    //                 $item->type_transaction = $item->refTypeTransaction;
-    //                 if(isset($item->delivery_plan)){
-    //                     $item->delivery_plan->tracking = $item->delivery_plan->manyTracking;
-    //                     unset($item->delivery_plan->manyTracking);
-    //                 }
-    //                 unset($item->refTypeTransaction);
-    //                 unset($item->refDeliveryPlan);
-                    
-    //                 return $item;
-    //             }),
-    //             'last_page' => $lastPage,
-    //             'attributes' => [
-    //                 'total' => $data->total(),
-    //                 'current_page' => $data->currentPage(),
-    //                 'from' => $data->currentPage(),
-    //                 'per_page' => (int) $data->perPage(),
-    //             ]
-    //         ];
-    //     });
-    // }
-
-    // public static function getShippingInstruction($params, $id)
-    // {
-    //     $data = IregularDeliveryPlanShippingInstruction::find($id);
-    //     $data->type_transaction = $data->refTypeTransaction;
-    //     $data->good_payment = $data->refGoodPayment;
-    //     $data->doc_type = $data->refDocType;
-    //     $data->freight_charge = $data->refFreightCharge;
-    //     $data->insurance = $data->refInsurance;
-    //     $data->duty_tax = $data->refDutyTax;
-    //     $data->inland_cost = $data->refInlandCost;
-    //     $data->shipped_by = $data->refShippedBy;
-    //     $data->freight = $data->refFreight;
-    //     $data->good_criteria = $data->refGoodCriteria;
-
-    //     unset($data->refTypeTransaction);
-    //     unset($data->refGoodPayment);
-    //     unset($data->refDocType);
-    //     unset($data->refFreightCharge);
-    //     unset($data->refInsurance);
-    //     unset($data->refDutyTax);
-    //     unset($data->refInlandCost);
-    //     unset($data->refShippedBy);
-    //     unset($data->refFreight);
-    //     unset($data->refGoodCriteria);
-    //     return [
-    //         'items' => $data
-    //     ];
-    // }
-
-    // public static function getShippingInstructionDraftList($params, $id){
-    //     $data = IregularDeliveryPlanShippingInstructionDraft::where('id_iregular_delivery_plan_shipping_instruction', $id)->get();
-    //     return [
-    //         'items' => $data
-    //     ];
-    // }
-
-    // public static function getShippingInstructionDraft($params, $id){
-    //     $data = IregularDeliveryPlanShippingInstructionDraft::where('id_iregular_delivery_plan_shipping_instruction', $id)->first();
-    //     return [
-    //         'items' => $data
-    //     ];
-    // }
-
-    // public static function shippingInstructionStore($request,$is_transaction = true)
-    // {
-    //     if($is_transaction) DB::beginTransaction();
-    //     try {
-    //         $request1 = $request->except(['container_count','container_value','container_type']);
-    //         $request2 = [
-    //                         'container_count' => implode(',',$request->container_count) == "" ? null : implode(',',$request->container_count),
-    //                         'container_value' => implode(',',$request->container_value) == "" ? null : implode(',',$request->container_value),
-    //                         'container_type' => implode(',',$request->container_type) == "" ? null : implode(',',$request->container_type),
-    //                     ];
-    //         $params = array_merge($request1,$request2);
-    //         Helper::requireParams([
-    //             'to',
-    //             'cc',
-    //         ]);
-
-    //         $data = IregularDeliveryPlanShippingInstructionDraft::where('id_iregular_delivery_plan_shipping_instruction', $params["id_iregular_delivery_plan_shipping_instruction"])->first();
-    //         if(isset($data)){
-    //             $update = $data->update($params);
-    //         } else {
-    //             $insert = IregularDeliveryPlanShippingInstructionDraft::create($params);
-    //         }
-    //         if($is_transaction) DB::commit();
-    //         Cache::flush([self::cast]); //delete cache
-    //     } catch (\Throwable $th) {
-    //         if($is_transaction) DB::rollBack();
-    //         throw $th;
-    //     }
-    // }
 
     public static function storeInvoice($request, $id_iregular_order_entry, $is_transaction = true)
     {
@@ -556,11 +422,23 @@ class QueryIregularDeliveryPlan extends Model {
         $invoice_detail_data = [];
 
         if(!isset($invoice_data)){
-            $order_entry_part = IregularOrderEntryPart::where("id_iregular_order_entry", $id_iregular_order_entry)->get();
+            $column = [
+                DB::raw('COUNT(id) as total_item'),
+                DB::raw('SUM(qty) as qty'),
+                DB::raw('SUM(price*2) as price'),
+                DB::raw('order_no'),
+                DB::raw('item_code'),
+                DB::raw('item_name')
+            ];
+            $order_entry_part = IregularOrderEntryPart::select($column)
+                    ->where("id_iregular_order_entry", $id_iregular_order_entry)
+                    ->groupBy("order_no", "item_code", "item_name")
+                    ->get();
+
             foreach($order_entry_part as $part){
                 $item = new  \stdClass;
                 $item->order_no = $part->order_no;
-                $item->no_package = 0;
+                $item->no_package = $part->total_item;
                 $_part = MstPart::where(['item_no' => $part->item_code])->first();
                 $item->hs_code = isset($_part) ? $_part->hs_code : "";
                 $item->description = $part->item_code."   ".$part->item_name;
@@ -711,11 +589,17 @@ class QueryIregularDeliveryPlan extends Model {
                 $item = new  \stdClass;
                 $item->qty = $part->qty;
                 $item->gross_weight = $part->gross_weight;
-                $item->customer = "";
+                $item->id_consignee = "";
                 $_part = MstPart::where(['item_no' => $part->item_code])->first();
                 $item->item_no = isset($_part) ? $_part->item_serial : "";
 
                 array_push($casemark_data, $item);
+            }
+        } else {
+            $i = 0;
+            foreach($casemark_data as $item){
+                $casemark_data[$i]->name_consignee = MstConsignee::find($item->id_consignee)->nick_name;
+                $i++;
             }
         }
 
@@ -736,13 +620,8 @@ class QueryIregularDeliveryPlan extends Model {
             if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
     
             foreach($params as $casemark){
-                $casemark_data = IregularDeliveryPlanCaseMark::where(['id_iregular_delivery_plan' => $delivery_plan->id, 'item_no' => $casemark["item_no"]])->first();
-                if(!isset($casemark_data)){
-                    $casemark["id_iregular_delivery_plan"] = $delivery_plan->id;
-                    $casemark_data = IregularDeliveryPlanCaseMark::create($casemark);
-                } else {
-                    $casemark_data->update($casemark);
-                }
+                $casemark["id_iregular_delivery_plan"] = $delivery_plan->id;
+                $casemark_data = IregularDeliveryPlanCaseMark::create($casemark);
             }
 
             IregularOrderEntryTracking::create([
