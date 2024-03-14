@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class QueryIregularPacking extends Model {
 
@@ -88,6 +89,22 @@ class QueryIregularPacking extends Model {
         return [
             'items' => $data,
         ];
+    }
+
+    public static function printDeliveryNote($id,$pathToFile,$filename){
+        try {
+            $data = Model::find($id);
+            if(!$data) throw new \Exception("id tidak ditemukan", 400);
+
+            Pdf::loadView('pdf.iregular.packing.delivery_note', [
+                'data' => $data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
+        }
     }
 
     public static function getDeliveryNoteDetail($params, $id){

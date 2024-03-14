@@ -720,7 +720,6 @@ class QueryIregularDeliveryPlan extends Model {
         return [ 'items' => $casemark_data ];
     }
 
-
     public static function storeCaseMark($request, $id_iregular_order_entry, $is_transaction = true)
     {
         if($is_transaction) DB::beginTransaction();
