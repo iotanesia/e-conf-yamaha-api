@@ -321,6 +321,23 @@ class QueryIregularDeliveryPlan extends Model {
 
         $orderEntry = IregularOrderEntry::find($data->id_iregular_order_entry);
         if(!$orderEntry) throw new \Exception("id tidak ditemukan", 400);
+
+        $deliveryPlanInvoiceDetail = IregularDeliveryPlanInvoiceDetail::where(["id_iregular_delivery_plan_invoice" => $deliveryPlanInvoice->id])->get();
+        $summaryBox = 0;
+        foreach ($deliveryPlanInvoiceDetail as $item){
+            $summaryBox = $summaryBox + $item->no_package;
+        }
+
+        $orderEntryPart = IregularOrderEntryPart::where(["id_iregular_order_entry" => $data->id_iregular_order_entry])->get();
+        $netWeight = 0;
+        $grossWeight = 0;
+        $measurement = 0;
+        foreach($orderEntryPart as $item){
+            $netWeight = $netWeight + $item->net_weight; 
+            $grossWeight = $grossWeight + $item->gross_weight; 
+            $measurement = $measurement + $item->measurement; 
+        }
+
         
         IregularShippingInstructionCreation::create([
             "id_iregular_shipping_instruction" => $insert->id,
@@ -344,7 +361,11 @@ $orderEntry->address_consignee",
             "notify_part_fax" => $orderEntry->fax_consignee,
             "bl" => "Please issued as Sea WayBill",
             "description_of_goods_1_detail" => $deliveryPlanInvoice->type_package,
-            "description_of_goods_2_detail" => "OF ".$deliveryPlanInvoice->description_invoice
+            "description_of_goods_2_detail" => "OF ".$deliveryPlanInvoice->description_invoice,
+            "summary_box" => $summaryBox,
+            "net_weight" => $netWeight,
+            "gross_weight" => $grossWeight,
+            "measurement" => $measurement
         ]);
     }
 

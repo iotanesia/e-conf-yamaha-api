@@ -138,12 +138,12 @@ class OrderEntryController extends Controller
         }
     }
 
-    public function downloadApprovalDoc(Request $request,$id)
+    public function printFormRequest(Request $request,$id)
     {
         try {
-            $filename = 'order_entry_iregular-'.$id.'.pdf';
-            $pathToFile =  storage_path().'/app/order-entry/iregular/'.$filename;
-            $data = QueryIregularOrderEntry::downloadApprovalDoc($request,$id,$filename,$pathToFile);
+            $filename = 'form_request-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/order-entry/iregular/form-request/'.$filename;
+            $data = QueryIregularOrderEntry::printFormRequest($request,$id,$filename,$pathToFile);
             return ResponseInterface::responseViewFile($pathToFile,$filename);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

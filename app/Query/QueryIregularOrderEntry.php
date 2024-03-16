@@ -251,9 +251,12 @@ class QueryIregularOrderEntry extends Model {
                 "description" => Constant::STS_PROCESS_IREGULAR[3]
             ]);
 
-            $insert_delivery_plan = IregularDeliveryPlan::create([
-                'id_iregular_order_entry' => $id,
-            ]);
+            $delivery_plan = IregularDeliveryPlan::where(['id_iregular_order_entry' => $id])->first();
+            if(!isset($delivery_plan)){
+                $insert_delivery_plan = IregularDeliveryPlan::create([
+                    'id_iregular_order_entry' => $id,
+                ]);
+            }
             
             if($is_transaction) DB::commit();
             Cache::flush([self::cast]); //delete cache
@@ -450,14 +453,19 @@ class QueryIregularOrderEntry extends Model {
     }
 
 
-    public static function downloadApprovalDoc($params,$id,$filename,$pathToFile)
+    public static function printFormRequest($params,$id,$filename,$pathToFile)
     {
         try {
-           Pdf::loadView('exports.order_entry_iregular',[
+            $data = self::find($id);
+            if(!$data) throw new \Exception("id tidak ditemukan", 400);
 
+            Pdf::loadView('pdf.iregular.order-entry.form_request',[
+                "data" => self::getFormData($params, $id)["items"],
+                "form" => self::getForm($params)["items"],
+                "doc" => MstDoc::select('*')->get()
             ])
             ->save($pathToFile)
-            ->setPaper('A4','potrait')
+            ->setPaper('F4','potrait')
             ->download($filename);
 
           } catch (\Throwable $th) {
