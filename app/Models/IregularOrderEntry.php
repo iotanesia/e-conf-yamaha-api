@@ -50,6 +50,7 @@ class IregularOrderEntry extends Model
         'approval_doc_path',
         'approval_doc_filename',
         'approval_doc_extension',
+        'revision',
         'created_by',
 	    'created_at',
 	    'updated_by',

@@ -57,7 +57,11 @@ class Constant
         10 => "Waiting Approval CC Manager",
         11 => "Waiting Approval Document CC Manager",
         12 => "Approved CC Manager",
-        99 => "Reject",
+        97 => "Reject CC Officer",
+        98 => "Reject CC Supervisor",
+        99 => "Reject CC Manager",
     ];
+
+    const MAX_IREGULAR_REVISION = 1;
 }
 

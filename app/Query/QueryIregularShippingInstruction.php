@@ -54,11 +54,15 @@ class QueryIregularShippingInstruction extends Model {
                     if($item->status == 1)
                         $item->status_desc = "Waiting SI";
                     else if($item->status == 2)
-                        $item->status_desc = "Approval CC Supervisor";
+                        $item->status_desc = "Waiting Approval CC Supervisor";
                     else if($item->status == 3)
-                        $item->status_desc = "Approval CC Manager";
+                        $item->status_desc = "Waiting Approval CC Manager";
                     else if($item->status == 4)
                         $item->status_desc = "Approved CC Manager";
+                    else if($item->status == 98)
+                        $item->status_desc = "Rejected  by CC Supervisor";
+                    else if($item->status == 99)
+                        $item->status_desc = "Rejected  by CC Manager";
 
                     return $item;
                 }),

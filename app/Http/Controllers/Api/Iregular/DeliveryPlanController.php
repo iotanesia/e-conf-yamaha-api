@@ -177,7 +177,7 @@ class DeliveryPlanController extends Controller
     {
         try {
             return ResponseInterface::responseData(
-                QueryIregularDeliveryPlan::sendApproval($request, 99, "Reject CC Officer")
+                QueryIregularDeliveryPlan::sendApproval($request, 97, "Reject CC Officer")
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -188,7 +188,7 @@ class DeliveryPlanController extends Controller
     {
         try {
             return ResponseInterface::responseData(
-                QueryIregularDeliveryPlan::sendApproval($request, 99, "Reject CC Supervisor")
+                QueryIregularDeliveryPlan::sendApproval($request, 98, "Reject CC Supervisor")
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -378,7 +378,7 @@ class DeliveryPlanController extends Controller
     {
         try {
             $filename = 'casemarks-'.$id_iregular_order_entry.'.pdf';
-            $pathToFile =  storage_path().'/app/casemarks/'.$filename;
+            $pathToFile =  storage_path().'/app/casemarks/iregular/'.$filename;
             $data = QueryIregularDeliveryPlan::printCaseMark($request,$id_iregular_order_entry,$pathToFile,$filename);
             return ResponseInterface::responseViewFile($pathToFile,$filename);
         } catch (\Throwable $th) {

@@ -85,6 +85,12 @@ class QueryIregularPacking extends Model {
     public static function getDeliveryNote($params, $id){
         $data = self::find($id);
         if(!$data) throw new \Exception("id tidak ditemukan", 400);
+
+        $data->delivery_plan = $data->refDeliveryPlan;
+
+        unset(
+            $data->refDeliveryPlan
+        );
                     
         return [
             'items' => $data,

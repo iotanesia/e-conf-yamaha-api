@@ -37,8 +37,8 @@ class PackingController extends Controller
     public function printDeliveryNote(Request $request, $id)
     {
         try {
-            $filename = 'outstock_delivery_note-'.$id.'.pdf';
-            $pathToFile =  storage_path().'/app/outstock-delivery-note/'.$filename;
+            $filename = 'delivery_note-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/delivery-note/iregular/'.$filename;
             $data = QueryIregularPacking::printDeliveryNote($id,$pathToFile,$filename);
             return ResponseInterface::responseViewFile($pathToFile,$filename);
         } catch (\Throwable $th) {

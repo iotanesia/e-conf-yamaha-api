@@ -14,7 +14,7 @@ class IregularDeliveryPlanCaseMark extends Model
     public $fillable = [
         'id',
         'id_iregular_delivery_plan',
-        'customer',
+        'id_consignee',
         'item_no',
         'qty',
         'gross_weight',
@@ -27,5 +27,9 @@ class IregularDeliveryPlanCaseMark extends Model
 
     public function refDeliveryPlan(){
         return $this->belongsTo(IregularDeliveryPlan::class,'id_iregular_delivery_plan','id');
+    }
+
+    public function refConsignee(){
+        return $this->belongsTo(MstConsignee::class,'id_consignee','id');
     }
 }
