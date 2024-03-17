@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class QueryIregularShippingInstruction extends Model {
 
@@ -98,6 +99,21 @@ class QueryIregularShippingInstruction extends Model {
         return [
             'items' => $data,
         ];
+    }
+    
+    public static function printDeliveryNote($request,$id,$pathToFile,$filename){
+        // try {
+            $data = self::getCreation($request,$id);
+
+            Pdf::loadView('pdf.iregular.shipping.shipping_actual', [
+                'data' => $data['items']
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+        // } catch (\Throwable $th) {
+        //     return Helper::setErrorResponse($th);
+        // }
     }
 
     public static function storeData($request,$is_transaction = true)
