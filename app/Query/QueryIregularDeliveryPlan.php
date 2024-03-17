@@ -524,6 +524,44 @@ $orderEntry->address_consignee",
         return [ 'items' => $invoice_detail_data ];
     }
 
+    public static function printInvoice($request,$id_iregular_order_entry,$pathToFile,$filename){
+        try {
+            $data = self::getInvoiceDetail($request, $id_iregular_order_entry);
+
+            $package = 0;
+            $qty = 0;
+            $unit_price = 0;
+            $amount = 0;
+            $id_iregular_delivery_plan_invoice = 0;
+            foreach ($data['items'] as $value) {
+                $package += $value->no_package;
+                $qty += $value->qty;
+                $unit_price += $value->unit_price;
+                $amount += (int)$value->amount;
+                $id_iregular_delivery_plan_invoice = $value->id_iregular_delivery_plan_invoice;
+            }
+            $total = [
+                'packages' => $package,
+                'qty' => $qty,
+                'unit_price' => $unit_price,
+                'amount' => $amount
+            ];
+
+            $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $id_iregular_delivery_plan_invoice)->first();
+
+            Pdf::loadView('pdf.iregular.invoice.invoice', [
+                'data' => $data['items'],
+                'total' => $total,
+                'invoice_data' => $invoice_data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
+        }
+    }
+
     public static function downloadFiles($params, $id_iregular_order_entry)
     {
         $order_entry_doc = IregularOrderEntryDoc::where('id_iregular_order_entry', $id_iregular_order_entry)->get();
@@ -590,6 +628,29 @@ $orderEntry->address_consignee",
         }      
 
         return [ 'items' => $packing_detail_data ];
+    }
+    
+    public static function printPackingList($request,$id_iregular_order_entry,$pathToFile,$filename){
+        try {
+            $data = self::getPackingListDetail($request, $id_iregular_order_entry);
+
+            $id_iregular_delivery_plan_packing = 0;
+            foreach ($data['items'] as $value) {
+                $id_iregular_delivery_plan_packing = $value->id_iregular_delivery_plan_packing;
+            }
+
+            $packing_data = IregularDeliveryPlanPacking::where('id', $id_iregular_delivery_plan_packing)->first();
+
+            Pdf::loadView('pdf.iregular.packing.packing_list', [
+                'data' => $data['items'],
+                'packing_data' => $packing_data
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','potrait')
+            ->download($filename);
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
+        }
     }
 
     public static function storePackingList($request, $id_iregular_order_entry, $is_transaction = true)

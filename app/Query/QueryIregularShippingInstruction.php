@@ -102,7 +102,7 @@ class QueryIregularShippingInstruction extends Model {
     }
     
     public static function printDeliveryNote($request,$id,$pathToFile,$filename){
-        // try {
+        try {
             $data = self::getCreation($request,$id);
 
             Pdf::loadView('pdf.iregular.shipping.shipping_actual', [
@@ -111,9 +111,9 @@ class QueryIregularShippingInstruction extends Model {
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
-        // } catch (\Throwable $th) {
-        //     return Helper::setErrorResponse($th);
-        // }
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
+        }
     }
 
     public static function storeData($request,$is_transaction = true)

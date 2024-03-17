@@ -44,8 +44,10 @@ Route::prefix('v1/iregular')
         Route::post('/invoice/{id_iregular_order_entry}',[DeliveryPlanController::class,'storeInvoice']);
         Route::get('/invoice/{id_iregular_order_entry}',[DeliveryPlanController::class,'getInvoice']);
         Route::get('/invoice-detail/{id_iregular_order_entry}',[DeliveryPlanController::class,'getInvoiceDetail']);
+        Route::get('/invoice/print/{id_iregular_order_entry}',[DeliveryPlanController::class,'printInvoice']);
         Route::get('/packing-list/{id_iregular_order_entry}',[DeliveryPlanController::class,'getPackingList']);
         Route::get('/packing-list-detail/{id_iregular_order_entry}',[DeliveryPlanController::class,'getPackingListDetail']);
+        Route::get('/packing-list/print/{id_iregular_order_entry}',[DeliveryPlanController::class,'printPackingList']);
         Route::post('/packing-list/{id_iregular_order_entry}',[DeliveryPlanController::class,'storePackingList']);
         Route::get('/casemark/{id_iregular_order_entry}',[DeliveryPlanController::class,'getCaseMark']);
         Route::post('/casemark/{id_iregular_order_entry}',[DeliveryPlanController::class,'storeCaseMark']);

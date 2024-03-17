@@ -263,6 +263,18 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function printInvoice(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            $filename = 'invoice-'.$id_iregular_order_entry.'.pdf';
+            $pathToFile =  storage_path().'/app/invoice/iregular/'.$filename;
+            $data = QueryIregularDeliveryPlan::printInvoice($request,$id_iregular_order_entry,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function shippingInstructionList(Request $request)
     {
         try {
@@ -336,6 +348,18 @@ class DeliveryPlanController extends Controller
             return ResponseInterface::responseData(
                 QueryIregularDeliveryPlan::getPackingListDetail($request, $id_iregular_order_entry)
             );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function printPackingList(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            $filename = 'packing_list-'.$id_iregular_order_entry.'.pdf';
+            $pathToFile =  storage_path().'/app/packing-list/iregular/'.$filename;
+            $data = QueryIregularDeliveryPlan::printPackingList($request,$id_iregular_order_entry,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }
