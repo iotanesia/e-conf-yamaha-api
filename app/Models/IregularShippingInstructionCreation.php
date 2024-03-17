@@ -56,6 +56,8 @@ class IregularShippingInstructionCreation extends Model
         "container_type",
         'count',
         "other",
+        "issued",
+        "summary_box",
         "description_of_goods_1",
         "description_of_goods_1_detail",
         "description_of_goods_2",

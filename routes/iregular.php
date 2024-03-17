@@ -23,7 +23,7 @@ Route::prefix('v1/iregular')
         Route::get('/doc/{id}',[OrderEntryController::class,'getDoc']);
         Route::get('/file/{id_iregular_order_entry}/{id_doc}',[OrderEntryController::class,'getFile']);
         Route::get('/approval-file/{id}',[OrderEntryController::class,'getApprovalFile']);
-        Route::get('/download-approval-doc/{id}',[OrderEntryController::class,'downloadApprovalDoc']);
+        Route::get('/form-request/print/{id}',[OrderEntryController::class,'printFormRequest']);
         Route::post('/approval-doc/{id}',[OrderEntryController::class,'storeApprovalDoc']);
      });
 
