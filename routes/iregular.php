@@ -84,6 +84,7 @@ Route::prefix('v1/iregular')
         Route::post('/',[ShippingInstructionController::class,'store']);
         Route::get('/{id}',[ShippingInstructionController::class,'getById']);
         Route::get('/creation/{id}',[ShippingInstructionController::class,'getCreation']);
+        Route::get('/creation/print/{id}',[ShippingInstructionController::class,'printCreation']);
         Route::post('/approved-by-cc-spv',[ShippingInstructionController::class,'approvedByCcSpv']);
         Route::post('/approved-by-cc-manager',[ShippingInstructionController::class,'approvedByCcManager']);
         Route::post('/reject-by-cc-spv',[ShippingInstructionController::class,'rejectByCcSpv']);

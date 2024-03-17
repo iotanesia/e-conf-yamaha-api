@@ -66,6 +66,18 @@ class ShippingInstructionController extends Controller
         }
     }
 
+    public function printCreation(Request $request, $id)
+    {
+        try {
+            $filename = 'shipping_instruction_creation-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/shipping/iregular/'.$filename;
+            $data = QueryIregularShippingInstruction::printDeliveryNote($request,$id,$pathToFile,$filename);
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function store(Request $request)
     {
         try {
