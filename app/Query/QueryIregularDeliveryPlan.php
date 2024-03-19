@@ -861,6 +861,7 @@ $orderEntry->address_consignee",
                 $item->id_consignee = "";
                 $_part = MstPart::where(['item_no' => $part->item_code])->first();
                 $item->item_no = isset($_part) ? $_part->item_serial : "";
+                $item->id_consignee = isset($_part) ? $_part->id_consignee : null;
 
                 array_push($casemark_data, $item);
             }
