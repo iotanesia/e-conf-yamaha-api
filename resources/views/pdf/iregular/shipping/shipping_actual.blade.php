@@ -89,11 +89,9 @@
             </tr>
             <tr>
                 <td style="vertical-align: top;"><u>Consignee:</u> 
-                    <br> {{ $data->refMstConsignee->name ?? null }}
-                    <br> {{ $data->refMstConsignee->address1 ?? null }}
-                    <br> {{ $data->refMstConsignee->address2 ?? null }}
-                    <br> {{ $data->refMstConsignee->tel ?? null }}
-                    <br> {{ $data->refMstConsignee->fax ?? null }}
+                    <br> {{$data->notify_part_address}}
+                    <br>
+                    <br>
                 </td>
                 <td style="vertical-align: top;"><u>Notify Part:</u> <br> {{$data->notify_part_address}}</td>
             </tr>
@@ -118,19 +116,7 @@
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">CONTAINER </td>
-                        @if ($data->count_container == 0)
-                            <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : -</td>
-                        @else
-                            <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : 
-                                @foreach (explode(',',$data->count_container) as $key => $item)
-                                    @if ($key > 0)
-                                        &nbsp; {{ $item }} x {{ explode(',',$data->container_value)[$key] }} <br>
-                                    @else
-                                        {{ $item }} x {{ explode(',',$data->container_value)[$key] }} <br>
-                                    @endif
-                                @endforeach
-                            </td>
-                        @endif
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->jenis_container}} x {{$data->size_container}}</td>
                         <td width="80" class="no-bo" style="padding: 0 0 0 5px; margin: 0;">DO No</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->do_no}}</td>
                     </tr>
@@ -225,7 +211,7 @@
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->measurement}}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Kgs</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="80">Container//Seal No.//Qty//GW//M3</td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="160"> : {{$data->seal_no}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="160"> : {{$data->other}}</td>
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">B/L </td>
@@ -246,36 +232,27 @@
             <table>
                 <table style="border: 1px solid #000; border-top:hidden;">
                     <table style="padding-right: 570px"> 
-                        {{-- @foreach ($actual_container as $key => $item)
-                            @foreach ($box as $jml => $box_jml)
-                                @foreach ($box[$jml] as $box_item) --}}
-                                    <tr>
-                                        <td width="80" class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->order_no ?? null }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">999999-9999</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->refPartOfDischarge->port ?? null }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $item->no_packaging ?? null }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $loop->iteration ?? null }}</td>
-                                    </tr>
-                                {{-- @break
-                                @endforeach
-                            @break
-                            @endforeach
-                        @break
-                        @endforeach  --}}
+                        <tr>
+                            <td width="80" class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
+                        </tr>
+                        <tr>
+                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->order_no ?? null }}</td>
+                        </tr>
+                        <tr>
+                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">999999-9999</td>
+                        </tr>
+                        <tr>
+                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->port ?? null }}</td>
+                        </tr>
+                        <tr>
+                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
+                        </tr>
+                        <tr>
+                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $data->invoice_no }}</td>
+                        </tr>
+                        <tr>
+                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">C/No. : 1</td>
+                        </tr>
                         <br>
                     </table>
                 </table>
@@ -336,7 +313,9 @@
             </tr>
             <tr>
                 @if ($data->issued)
-                    <td height="50"><p style="border: #800000 1px solid; text-align:center; color:#800000;"><b>ISSUED</b></p></td>
+                    @if ($data->peb !== null && $data->no_open !== null)
+                        <td height="50"><p style="border: #800000 1px solid; text-align:center; color:#800000;"><b>ISSUED</b></p></td>
+                    @endif
                 @else
                     <td height="50"></td>
                 @endif

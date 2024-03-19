@@ -80,7 +80,7 @@
                     </td>
                     <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
                         <p style="padding:0; margin: 0 0 10px 0;"><b>CUSTOMER :</b></p>
-                        <b>{{ $item->customer }}</b>
+                        <b>{{ $entity_site }}</b>
                         <hr>
                         <p style="padding:0; margin: 0 0 10px 0;"><b>PART NO.</b></p>
                         <b>{{ $item->item_no }}</b>

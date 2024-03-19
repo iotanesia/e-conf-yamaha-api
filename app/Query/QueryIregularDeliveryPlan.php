@@ -5,6 +5,8 @@ namespace App\Query;
 use App\Constants\Constant;
 use App\Models\IregularDeliveryPlan AS Model;
 use App\ApiHelper as Helper;
+use App\Exports\IregularCsvExport;
+use App\Exports\IregularExcelExport;
 use App\Models\IregularDeliveryPlan;
 use App\Models\IregularDeliveryPlanInvoice;
 use App\Models\IregularDeliveryPlanInvoiceDetail;
@@ -40,6 +42,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use Carbon\Carbon;
 
 class QueryIregularDeliveryPlan extends Model {
 
@@ -553,27 +557,32 @@ $orderEntry->address_consignee",
             $qty = 0;
             $unit_price = 0;
             $amount = 0;
+            $type_package = null;
             $id_iregular_delivery_plan_invoice = 0;
             foreach ($data['items'] as $value) {
                 $package += $value->no_package;
                 $qty += $value->qty;
                 $unit_price += $value->unit_price;
                 $amount += (int)$value->amount;
+                $type_package = $value->refDeliveryPlanInvoice->type_package ?? null;
                 $id_iregular_delivery_plan_invoice = $value->id_iregular_delivery_plan_invoice;
             }
             $total = [
                 'packages' => $package,
                 'qty' => $qty,
                 'unit_price' => $unit_price,
-                'amount' => $amount
+                'amount' => $amount,
+                'type_package' => $type_package
             ];
 
             $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $id_iregular_delivery_plan_invoice)->first();
+            $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
 
             Pdf::loadView('pdf.iregular.invoice.invoice', [
                 'data' => $data['items'],
                 'total' => $total,
-                'invoice_data' => $invoice_data
+                'invoice_data' => $invoice_data,
+                'delivery_plan' => $delivery_plan
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
@@ -594,6 +603,100 @@ $orderEntry->address_consignee",
 
 
         return $filepath;
+    }
+
+    public static function exportExcel($request, $id_iregular_order_entry)
+    {
+        $orderEntryPart = IregularOrderEntryPart::select('iregular_order_entry_part.item_code',
+                        DB::raw('SUM(iregular_order_entry_part.net_weight) as nett_weight'),
+                        DB::raw('SUM(iregular_order_entry_part.gross_weight) as gross_weight'),
+                        DB::raw('SUM(iregular_order_entry_part.measurement) as measurement'),
+                        )
+                        ->where('iregular_order_entry_part.id_iregular_order_entry', $id_iregular_order_entry)
+                        ->groupBy('iregular_order_entry_part.item_code')
+                        ->get();
+        if(!$orderEntryPart) throw new \Exception("id tidak ditemukan", 400);
+
+        $total = [];
+        foreach ($orderEntryPart as $item) {
+            $total[$item->item_code] = [
+                'nett_weight' => $item->nett_weight,
+                'gross_weight' => $item->gross_weight,
+                'measurement' => $item->measurement,
+            ];
+        }
+
+        $invoice_data = self::getInvoiceDetail($request, $id_iregular_order_entry);
+        $data = [];
+        foreach ($invoice_data['items'] as $key => $value) {
+            $data[] = [
+                'hs_code' => $value->hs_code,
+                'description' => $value->description,
+                'qty' => $value->qty,
+                'total_package' => $value->no_package,
+                'total_price' => $value->amount,
+                'measurement' => $total[explode(' ',$value->description)[0]]['measurement'],
+                'nett_weight' => $total[explode(' ',$value->description)[0]]['nett_weight'],
+                'gross_weight' => $total[explode(' ',$value->description)[0]]['gross_weight']
+            ];
+        }
+
+        $filename = 'excel-'.Carbon::now()->format('Ymd');
+        return Excel::download(new IregularExcelExport($data), $filename.'.xlsx');
+    }
+
+    public static function exportCSV($request, $id_iregular_order_entry)
+    {
+        $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
+        if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
+        
+        $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
+
+        $orderEntryPart = IregularOrderEntryPart::select('iregular_order_entry_part.item_code',
+                        DB::raw('SUM(iregular_order_entry_part.net_weight) as nett_weight'),
+                        DB::raw('SUM(iregular_order_entry_part.gross_weight) as gross_weight'),
+                        DB::raw('SUM(iregular_order_entry_part.measurement) as measurement'),
+                        )
+                        ->where('iregular_order_entry_part.id_iregular_order_entry', $id_iregular_order_entry)
+                        ->groupBy('iregular_order_entry_part.item_code')
+                        ->get();
+        if(!$orderEntryPart) throw new \Exception("id tidak ditemukan", 400);
+
+        $total = [];
+        foreach ($orderEntryPart as $item) {
+            $total[$item->item_code] = [
+                'nett_weight' => $item->nett_weight,
+                'gross_weight' => $item->gross_weight,
+                'measurement' => $item->measurement,
+            ];
+        }
+
+        $invoiceDetail = self::getInvoiceDetail($request, $id_iregular_order_entry);
+        $data = [];
+        foreach ($invoiceDetail['items'] as $key => $value) {
+            $data[] = [
+                'gl_account' => null,
+                'coa' => null,
+                'cost_center' => $delivery_plan->refOrderEntry->cost_center ?? null,
+                'container' => null,
+                'kosong' => null,
+                'po_no' => $value->order_no,
+                'part_no' => explode(' ', $value->description)[0],
+                'qty' => $value->qty,
+                'no' =>  $key +1,
+                'nett_weight' => $total[explode(' ',$value->description)[0]]['nett_weight'],
+                'gross_weight' => $total[explode(' ',$value->description)[0]]['gross_weight'],
+                'model_code' => null,
+                'type_box' => $invoice_data->type_package,
+                'length' => null,
+                'width' => null,
+                'height' => null,
+                'hs_code' => $value->hs_code
+            ];
+        }
+
+        $filename = 'file-'.Carbon::now()->format('Ymd');
+        return Excel::download(new IregularCsvExport($data), $filename.'.csv');
     }
 
     public static function getPackingList($params, $id_iregular_order_entry)
@@ -655,16 +758,32 @@ $orderEntry->address_consignee",
         try {
             $data = self::getPackingListDetail($request, $id_iregular_order_entry);
 
+            $qty = 0;
+            $nett_weight = 0;
+            $gross_weight = 0;
+            $measurement = 0;
             $id_iregular_delivery_plan_packing = 0;
             foreach ($data['items'] as $value) {
+                $qty += $value->qty;
+                $nett_weight += (float)$value->nett_weight;
+                $gross_weight += (float)$value->gross_weight;
+                $measurement += (float)$value->measurement;
                 $id_iregular_delivery_plan_packing = $value->id_iregular_delivery_plan_packing;
             }
+
+            $total = [
+                'qty' => $qty,
+                'nett_weight' => $nett_weight,
+                'gross_weight' => $gross_weight,
+                'measurement' => $measurement
+            ];
 
             $packing_data = IregularDeliveryPlanPacking::where('id', $id_iregular_delivery_plan_packing)->first();
 
             Pdf::loadView('pdf.iregular.packing.packing_list', [
                 'data' => $data['items'],
-                'packing_data' => $packing_data
+                'packing_data' => $packing_data,
+                'total' => $total
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')

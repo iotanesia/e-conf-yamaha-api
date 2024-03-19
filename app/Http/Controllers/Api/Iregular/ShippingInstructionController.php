@@ -71,7 +71,7 @@ class ShippingInstructionController extends Controller
         try {
             $filename = 'shipping_instruction_creation-'.$id.'.pdf';
             $pathToFile =  storage_path().'/app/shipping/iregular/'.$filename;
-            $data = QueryIregularShippingInstruction::printDeliveryNote($request,$id,$pathToFile,$filename);
+            $data = QueryIregularShippingInstruction::printShippingCreation($request,$id,$pathToFile,$filename);
             return ResponseInterface::responseViewFile($pathToFile,$filename);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

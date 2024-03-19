@@ -52,20 +52,11 @@
 </head>
 
 <body>
-        <table style="margin-bottom: 50px;">
+        <table style="margin-bottom: 20px;">
             <tr>
                 <td class="no-bo" width="230">
                     <P style="font-size: 24px; padding: 0 0 0 60px; margin: 0;"><b>INVOICE</b></P>
                     <P style="font-size: 10px; padding: 0 0 0 60px; margin: 0;">FACTURA/FACTURE</P>
-                    <P style="font-size: 14px; padding: 0; margin: 0;">CUSTOMER CODE :</P>
-                    <P style="font-size: 10px; padding: 0; margin: 0;">CLIENTE CODIGO/CLIENT CODE</P>
-                </td>
-                <td class="no-bo">
-                    <p style="font-size: 13px; padding: 0; margin: 0;"><b>PT. YAMAHA MOTOR PARTS MANUFACTURING INDONESIA</b></p>
-                    Jl Permata Raya Lot F2 & F6 <br>
-                    Kawasan Industri KIIC, Karawang 41361, <br>
-                    PO BOX 157, West Java - Indonesia. <br>
-                    Phone: +6221 890 4581. Fax: +6221 890 4541
                 </td>
             </tr>
         </table>
@@ -74,9 +65,9 @@
             <tr>
                 <td style="vertical-align: top;" rowspan="4" width="240">
                     Messrs : <br><br><br>
-                    BILL TO : <br>{{ $invoice_data->bill_to }}<br><br><br><br>
-                    SHIPPED TO : {{ $invoice_data->shipped_to }}<br>
-                    City : {{ $invoice_data->city }}<br>
+                    BILL TO : <br>{{ $delivery_plan->refOrderEntry->company_consignee ?? null }}<br><br><br><br>
+                    SHIPPED TO : {{ $delivery_plan->refOrderEntry->delivery_site ?? null }}<br>
+                    City : {{ $delivery_plan->refOrderEntry->address_consignee ?? null }}<br>
                     LOGISTIC DIVISION <br>
                     PHONE NO : {{ $invoice_data->phone_no }}<br>
                     FAX : {{ $invoice_data->fax }}
@@ -128,7 +119,7 @@
             @endforeach
             <tr>
                 <td class="no-br no-bl">Total</td>
-                <td class="no-br no-bl" colspan="2">{{ $total['packages'] }}</td>
+                <td class="no-br no-bl" colspan="2">{{ $total['packages'] }} {{ count($data) > 1 ? $total['type_package'].'ES' : $total['type_package'] }}</td>
                 <td class="no-br no-bl">{{ $total['qty'] }}</td>
                 <td class="no-br no-bl">{{ number_format($total['unit_price'], 2) }}</td>
                 <td class="no-br no-bl">{{ number_format($total['amount'], 2) }}</td>

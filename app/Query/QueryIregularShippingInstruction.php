@@ -101,7 +101,7 @@ class QueryIregularShippingInstruction extends Model {
         ];
     }
     
-    public static function printDeliveryNote($request,$id,$pathToFile,$filename){
+    public static function printShippingCreation($request,$id,$pathToFile,$filename){
         try {
             $data = self::getCreation($request,$id);
 

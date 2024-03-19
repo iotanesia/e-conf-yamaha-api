@@ -263,6 +263,24 @@ class DeliveryPlanController extends Controller
         }
     }
 
+    public function exportExcel(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return QueryIregularDeliveryPlan::exportExcel($request, $id_iregular_order_entry);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function exportCSV(Request $request, $id_iregular_order_entry)
+    {
+        try {
+            return QueryIregularDeliveryPlan::exportCSV($request, $id_iregular_order_entry);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
     public function printInvoice(Request $request, $id_iregular_order_entry)
     {
         try {
