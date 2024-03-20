@@ -675,8 +675,8 @@ $orderEntry->address_consignee",
         $data = [];
         foreach ($invoiceDetail['items'] as $key => $value) {
             $data[] = [
-                'gl_account' => null,
-                'coa' => null,
+                'gl_account' => 'G/L Account',
+                'coa' => '4421000010',
                 'cost_center' => $delivery_plan->refOrderEntry->cost_center ?? null,
                 'container' => null,
                 'kosong' => null,
