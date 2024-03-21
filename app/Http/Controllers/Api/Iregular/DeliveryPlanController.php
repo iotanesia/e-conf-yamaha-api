@@ -43,7 +43,7 @@ class DeliveryPlanController extends Controller
     {
         try {
             return ResponseInterface::responseData(
-                QueryIregularDeliveryPlan::getAll($request, 11)
+                QueryIregularDeliveryPlan::getAll($request, 10)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);

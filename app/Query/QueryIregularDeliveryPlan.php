@@ -176,12 +176,10 @@ class QueryIregularDeliveryPlan extends Model {
             $details = [];
             $parts = IregularOrderEntryPart::where(["id_iregular_order_entry" => $id])->get();
             foreach ($parts as $item) {
-                $part = MstPart::where(["item_no" => $item->item_code])->first();
-
                 $details[] = [
                     'id_iregular_packing' => $packing->id,
-                    'item_name' => $part  ? $part->description : $item->item_name,
-                    'item_no' => $part  ? $part->item_serial : $item->code,
+                    'item_name' => $item->item_name,
+                    'item_no' => $item->code,
                     'qty' => $item->qty,
                     'po_no' => $item->order_no,
                     'invoice_no' => $params["invoice_no"]
@@ -336,10 +334,12 @@ class QueryIregularDeliveryPlan extends Model {
         $netWeight = 0;
         $grossWeight = 0;
         $measurement = 0;
+        $qty = 0;
         foreach($orderEntryPart as $item){
             $netWeight = $netWeight + $item->net_weight; 
             $grossWeight = $grossWeight + $item->gross_weight; 
             $measurement = $measurement + $item->measurement; 
+            $qty = $qty + $item->qty;
         }
 
         
@@ -369,7 +369,10 @@ $orderEntry->address_consignee",
             "summary_box" => $summaryBox,
             "net_weight" => $netWeight,
             "gross_weight" => $grossWeight,
-            "measurement" => $measurement
+            "measurement" => $measurement,
+            "qty"   => $qty,
+            "invoice_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null,
+            "packing_list_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null
         ]);
     }
 
@@ -743,7 +746,9 @@ $orderEntry->address_consignee",
                 $item->qty = $part->qty;
                 $item->nett_weight = $part->net_weight;
                 $item->gross_weight = $part->gross_weight;
-                $item->measurement = $part->measurement;
+                $item->length = $part->length;
+                $item->width = $part->width;
+                $item->height = $part->height;
 
                 array_push($packing_detail_data, $item);
             }
@@ -850,6 +855,9 @@ $orderEntry->address_consignee",
         if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
 
         $casemark_data = IregularDeliveryPlanCaseMark::where('id_iregular_delivery_plan', $delivery_plan->id)->get();
+        $order_entry = IregularOrderEntry::find($id_iregular_order_entry);
+        if(!$order_entry) throw new \Exception("id tidak ditemukan", 400);
+
 
         if(sizeof($casemark_data) == 0){
             $casemark_data = [];
@@ -858,18 +866,12 @@ $orderEntry->address_consignee",
                 $item = new  \stdClass;
                 $item->qty = $part->qty;
                 $item->gross_weight = $part->gross_weight;
-                $item->id_consignee = "";
-                $_part = MstPart::where(['item_no' => $part->item_code])->first();
-                $item->item_no = isset($_part) ? $_part->item_serial : "";
-                $item->id_consignee = isset($_part) ? $_part->id_consignee : null;
+                $item->item_no = $part->item_code;
+                $item->customer = $order_entry->entity_site;
+                $item->model_code = "";
+                $item->destination = "";
 
                 array_push($casemark_data, $item);
-            }
-        } else {
-            $i = 0;
-            foreach($casemark_data as $item){
-                $casemark_data[$i]->name_consignee = MstConsignee::find($item->id_consignee)->nick_name;
-                $i++;
             }
         }
 

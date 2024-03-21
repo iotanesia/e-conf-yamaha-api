@@ -14,10 +14,12 @@ class IregularDeliveryPlanCaseMark extends Model
     public $fillable = [
         'id',
         'id_iregular_delivery_plan',
-        'id_consignee',
+        'customer',
         'item_no',
         'qty',
         'gross_weight',
+        'model_code',
+        'destination',
         'created_by',
 	    'created_at',
 	    'updated_by',
