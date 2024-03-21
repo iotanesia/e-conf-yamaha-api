@@ -744,8 +744,13 @@
                     <td>
                         <table cellpading="0" cellspacing="0" style="width: 100%">
                             <tr>
-                                <td style="width: 30%">..............................</td>
-                                <td style="width: 70%">Receive Date : .......................... (DD/MM/YY)</td>
+                                @if($role == "dc")
+                                    <td style="width: 30%">..............................</td>
+                                    <td style="width: 70%">Receive Date : .......................... (DD/MM/YY)</td>
+                                @elseif($role == "cc")
+                                    <td style="width: 30%">{{ $data->invoice_no }}</td>
+                                    <td style="width: 70%">Receive Date : {{ date('d/m/y', strtotime($data->receive_date)) }} </td>
+                                @endif
                             </tr>
                         </table>
                     </td>
@@ -757,9 +762,23 @@
                     <td>
                         <table cellpading="0" cellspacing="0" style="width: 100%">
                             <tr>
-                                <td style="width: 30%">..............................</td>
-                                <td style="width: 45%">Delivery Site : ..........................</td>
-                                <td style="width: 25%">Rate : .....................</td>
+                                @if($role == "dc")
+                                    <td colspan="3">.........................................................................................................................................</td>
+                                @elseif($role == "cc")
+                                    <td colspan="3">{{ $data->entity_site }}</td>
+                                @endif
+                            </tr>
+                                @if($role == "dc")
+                                    <td style="width: 40%">Delivery Site : ..............................</td>
+                                    <td style="width: 35%">Currency : ..........................</td>
+                                    <td style="width: 25%">Rate : .......................</td>
+                                @elseif($role == "cc")
+                                    <td style="width: 40%">Delivery Site : {{ $data->delivery_site }}</td>
+                                    <td style="width: 35%">Currency : {{ $data->currency }}</td>
+                                    <td style="width: 25%">Rate : {{ $data->rate }}</td>
+                                @endif
+                            <tr>
+
                             </tr>
                         </table>
                     </td>
@@ -775,8 +794,19 @@
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countIncoterm  < sizeof($form["incoterms"]))
+                                            @php($incotermChecked = false)
+                                            @foreach ($data->checkbox as $chk)
+                                                @if($chk->type == "incoterms" && $chk->id_value == $form["incoterms"][$countIncoterm]->id)
+                                                    @php($incotermChecked = true)
+                                                @endif
+                                            @endforeach
                                             <td style="width: 33%;" class="checkbox-container">
-                                                <input type="checkbox"> {{ $form["incoterms"][$countIncoterm]->name }}
+                                            
+                                                @if($incotermChecked && $role == "cc")
+                                                    <input type="checkbox" checked> {{ $form["incoterms"][$countIncoterm]->name }}
+                                                @else
+                                                    <input type="checkbox"> {{ $form["incoterms"][$countIncoterm]->name }}
+                                                @endif
                                             </td>
                                         @else
                                             <td  style="width: 33%"></td>
@@ -800,7 +830,11 @@
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countFreight  < sizeof($form["freight"]))
                                             <td style="width: 33%;" class="checkbox-container">
-                                                <input type="checkbox"> {{ $form["freight"][$countFreight]->name }}
+                                                @if($data->id_freight == $form["freight"][$countFreight]->id && $role == "cc")
+                                                    <input type="checkbox" checked> {{ $form["freight"][$countFreight]->name }}
+                                                @else
+                                                    <input type="checkbox"> {{ $form["freight"][$countFreight]->name }}
+                                                @endif
                                             </td>
                                         @else
                                             <td  style="width: 33%"></td>
@@ -824,7 +858,12 @@
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countGoodCriteria  < sizeof($form["good_criteria"]))
                                             <td style="width: 33%;" class="checkbox-container">
-                                                <input type="checkbox"> {{ $form["good_criteria"][$countGoodCriteria]->name }}
+                                            
+                                                @if($data->id_good_criteria == $form["good_criteria"][$countGoodCriteria]->id && $role == "cc")
+                                                    <input type="checkbox" checked> {{ $form["good_criteria"][$countGoodCriteria]->name }}
+                                                @else
+                                                    <input type="checkbox"> {{ $form["good_criteria"][$countGoodCriteria]->name }}
+                                                @endif
                                             </td>
                                         @else
                                             <td  style="width: 33%"></td>
@@ -840,7 +879,11 @@
                     <td style="width: 2%">f. </td>
                     <td style="width: 25%">ETD / ETA Date</td>
                     <td style="width: 2%">:</td>
-                    <td> ................................................... (DD/MM/YY)</td>
+                    @if($role == "dc")
+                        <td> ................................................... (DD/MM/YY)</td>
+                    @elseif($role == "cc")
+                        <td> {{ date('d/m/y', strtotime($data->etd_date)) }}</td>
+                    @endif
                 </tr>
             </table>
         </div>

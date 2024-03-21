@@ -24,6 +24,7 @@ Route::prefix('v1/iregular')
         Route::get('/file/{id_iregular_order_entry}/{id_doc}',[OrderEntryController::class,'getFile']);
         Route::get('/approval-file/{id}',[OrderEntryController::class,'getApprovalFile']);
         Route::get('/form-request/print/{id}',[OrderEntryController::class,'printFormRequest']);
+        Route::get('/form-request/print-cc/{id}',[OrderEntryController::class,'printFormRequestCc']);
         Route::post('/approval-doc/{id}',[OrderEntryController::class,'storeApprovalDoc']);
      });
 
