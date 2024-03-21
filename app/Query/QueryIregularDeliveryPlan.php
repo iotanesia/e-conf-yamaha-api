@@ -785,7 +785,7 @@ $orderEntry->address_consignee",
                 $qty += $value->qty;
                 $nett_weight += (float)$value->nett_weight;
                 $gross_weight += (float)$value->gross_weight;
-                $measurement += (float)$value->measurement;
+                $measurement += ($value->length * $value->width * $value->height / 1000000000);
                 $id_iregular_delivery_plan_packing = $value->id_iregular_delivery_plan_packing;
             }
 
