@@ -179,7 +179,7 @@ class QueryIregularDeliveryPlan extends Model {
                 $details[] = [
                     'id_iregular_packing' => $packing->id,
                     'item_name' => $item->item_name,
-                    'item_no' => $item->code,
+                    'item_no' => $item->item_code,
                     'qty' => $item->qty,
                     'po_no' => $item->order_no,
                     'invoice_no' => $params["invoice_no"]
@@ -334,12 +334,12 @@ class QueryIregularDeliveryPlan extends Model {
         $netWeight = 0;
         $grossWeight = 0;
         $measurement = 0;
-        $qty = 0;
+        $description_of_goods_2 = 0;
         foreach($orderEntryPart as $item){
             $netWeight = $netWeight + $item->net_weight; 
             $grossWeight = $grossWeight + $item->gross_weight; 
             $measurement = $measurement + $item->measurement; 
-            $qty = $qty + $item->qty;
+            $description_of_goods_2 = $description_of_goods_2 + $item->qty;
         }
 
         
@@ -370,7 +370,7 @@ $orderEntry->address_consignee",
             "net_weight" => $netWeight,
             "gross_weight" => $grossWeight,
             "measurement" => $measurement,
-            "qty"   => $qty,
+            "description_of_goods_2"   => $description_of_goods_2,
             "invoice_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null,
             "packing_list_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null
         ]);

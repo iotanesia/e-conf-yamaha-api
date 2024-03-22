@@ -453,23 +453,24 @@ class QueryIregularOrderEntry extends Model {
     }
 
 
-    public static function printFormRequest($params,$id,$filename,$pathToFile)
+    public static function printFormRequest($params,$id,$filename,$pathToFile, $role = "dc")
     {
-        try {
+        // try {
             $data = self::find($id);
             if(!$data) throw new \Exception("id tidak ditemukan", 400);
 
             Pdf::loadView('pdf.iregular.order-entry.form_request',[
                 "data" => self::getFormData($params, $id)["items"],
                 "form" => self::getForm($params)["items"],
-                "doc" => MstDoc::select('*')->get()
+                "doc" => MstDoc::select('*')->get(),
+                "role" => $role
             ])
             ->save($pathToFile)
             ->setPaper('F4','potrait')
             ->download($filename);
 
-          } catch (\Throwable $th) {
-              return Helper::setErrorResponse($th);
-          }
+        //   } catch (\Throwable $th) {
+        //       return Helper::setErrorResponse($th);
+        //   }
     }
 }
