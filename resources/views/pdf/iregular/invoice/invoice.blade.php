@@ -64,7 +64,7 @@
         <table>
             <tr>
                 <td style="vertical-align: top;" rowspan="4" width="240">
-                    Messrs : <br><br><br>
+                    Messrs : <br>{{ $delivery_plan->refOrderEntry->requestor ?? null }}<br><br>
                     BILL TO : <br>{{ $delivery_plan->refOrderEntry->company_consignee ?? null }}<br><br><br><br>
                     SHIPPED TO : {{ $delivery_plan->refOrderEntry->delivery_site ?? null }}<br>
                     City : {{ $delivery_plan->refOrderEntry->address_consignee ?? null }}<br>
@@ -76,7 +76,7 @@
             </tr>
             <tr>
                 <td style="vertical-align: top;">
-                    SHIPPED BY : {{ $invoice_data->shipped_by }}&nbsp; &nbsp; &nbsp; ETD JAKARTA : <br><br>
+                    SHIPPED BY : {{ $invoice_data->shipped_by }}&nbsp; &nbsp; &nbsp; ETD JAKARTA : {{ $delivery_plan->refOrderEntry->etd_date ?? null }}<br><br>
                     <p style="padding: 0 0 0 165px; margin:0;">ETA MANAUS :</p>
                 </td>
             </tr>
