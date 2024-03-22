@@ -58,7 +58,6 @@ class IregularShippingInstructionCreation extends Model
         "other",
         "issued",
         "summary_box",
-        "qty",
         "description_of_goods_1",
         "description_of_goods_1_detail",
         "description_of_goods_2",

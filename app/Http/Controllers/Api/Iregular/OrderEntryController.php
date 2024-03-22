@@ -149,4 +149,16 @@ class OrderEntryController extends Controller
             return ResponseInterface::setErrorResponse($th);
         }
     }
+
+    public function printFormRequestCc(Request $request,$id)
+    {
+        try {
+            $filename = 'form_request_cc-'.$id.'.pdf';
+            $pathToFile =  storage_path().'/app/order-entry/iregular/form-request/'.$filename;
+            $data = QueryIregularOrderEntry::printFormRequest($request,$id,$filename,$pathToFile, "cc");
+            return ResponseInterface::responseViewFile($pathToFile,$filename);
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
 }
