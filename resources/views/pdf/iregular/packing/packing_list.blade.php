@@ -124,7 +124,7 @@
                 <td class="no-bo" style="text-align: center;">{{ $item->qty }}</td>
                 <td class="no-bo" style="text-align: center;">{{ $item->nett_weight }}</td>
                 <td class="no-bo" style="text-align: center;">{{ $item->gross_weight }}</td>
-                <td class="no-bo" style="text-align: right;">{{ $item->measurement }}</td>
+                <td class="no-bo" style="text-align: right;">{{ number_format(($item->length * $item->width * $item->height / 1000000000), 3) }}</td>
             </tr>
         @endforeach
     </table>
