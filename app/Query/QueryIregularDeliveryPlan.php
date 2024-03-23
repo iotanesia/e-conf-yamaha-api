@@ -372,7 +372,8 @@ $orderEntry->address_consignee",
             "measurement" => $measurement,
             "description_of_goods_2"   => $description_of_goods_2,
             "invoice_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null,
-            "packing_list_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null
+            "packing_list_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null,
+            "order_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null
         ]);
     }
 

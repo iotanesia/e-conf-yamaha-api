@@ -154,8 +154,22 @@ class QueryIregularShippingInstruction extends Model {
         try {
             $params = $request->all();
            
+            
+            $token = $request->header("Authorization");
+            $token = Str::replaceFirst('Bearer ', '', $token);
+            $token_data = Helper::decodeJwtSignature($token, env("JWT_SECRET"));
+            
             $data = self::find($params["id"]);
             if(!$data) throw new \Exception("id tidak ditemukan", 400);
+
+            $creation = IregularShippingInstructionCreation::where(['id_iregular_shipping_instruction' => $params["id"]])->first();
+            if(!$creation) throw new \Exception("id tidak ditemukan", 400);
+
+            if($to_status == 3){
+                $creation->update(["checked" => $token_data->sub->name]);
+            } else if($to_status == 4){
+                $creation->update(["approved" => $token_data->sub->name]);
+            }
 
             $data->update([
                 "status" => $to_status
