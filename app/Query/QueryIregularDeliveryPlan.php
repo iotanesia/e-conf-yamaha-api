@@ -323,6 +323,8 @@ class QueryIregularDeliveryPlan extends Model {
 
         $orderEntry = IregularOrderEntry::find($data->id_iregular_order_entry);
         if(!$orderEntry) throw new \Exception("id tidak ditemukan", 400);
+        
+        $deliveryPlanCasemark = IregularDeliveryPlanCaseMark::where(["id_iregular_delivery_plan" => $data->id])->get();
 
         $deliveryPlanInvoiceDetail = IregularDeliveryPlanInvoiceDetail::where(["id_iregular_delivery_plan_invoice" => $deliveryPlanInvoice->id])->get();
         $summaryBox = 0;
@@ -373,7 +375,8 @@ $orderEntry->address_consignee",
             "description_of_goods_2"   => $description_of_goods_2,
             "invoice_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null,
             "packing_list_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null,
-            "order_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null
+            "order_no" => sizeof($orderEntryPart) > 0 ? $orderEntryPart[0]->order_no : null,
+            "destination" => sizeof($deliveryPlanCasemark) > 0 ? $deliveryPlanCasemark[0]->destination : null
         ]);
     }
 
