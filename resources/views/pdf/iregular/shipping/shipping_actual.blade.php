@@ -233,25 +233,25 @@
                 <table style="border: 1px solid #000; border-top:hidden;">
                     <table style="padding-right: 570px"> 
                         <tr>
-                            <td width="80" class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
+                            <td width="80" class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
                         </tr>
                         <tr>
-                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->order_no ?? null }}</td>
+                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $data->order_no ?? null }}</td>
                         </tr>
                         <tr>
-                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">999999-9999</td>
+                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">999999-9999</td>
                         </tr>
                         <tr>
-                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->port ?? null }}</td>
+                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $data->port ?? null }}</td>
                         </tr>
                         <tr>
-                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
+                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
                         </tr>
                         <tr>
-                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $data->invoice_no }}</td>
+                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $data->invoice_no }}</td>
                         </tr>
                         <tr>
-                            <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">C/No. : 1</td>
+                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : 1</td>
                         </tr>
                         <br>
                     </table>
@@ -315,19 +315,29 @@
                 @if ($data->issued)
                     @if ($data->peb !== null && $data->no_open !== null)
                         <td height="50"><p style="border: #800000 1px solid; text-align:center; color:#800000;"><b>ISSUED</b></p></td>
+                    @else
+                        <td height="50"></td>
                     @endif
                 @else
                     <td height="50"></td>
                 @endif
 
                 @if ($data->checked)
-                    <td><p style="border: #800000 1px solid; text-align:center; color:#800000;"><b>CHECKED</b></p></td>
+                    @if ($data->peb !== null && $data->no_open !== null)
+                        <td><p style="border: #800000 1px solid; text-align:center; color:#800000;"><b>CHECKED</b></p></td>
+                    @else
+                        <td height="50"></td>
+                    @endif
                 @else
                     <td></td> 
                 @endif
 
                 @if ($data->approved)
-                    <td><p style="border: #800000 1px solid; text-align:center; color:#800000;"><b>APPROVED</b></p></td>
+                    @if ($data->peb !== null && $data->no_open !== null)
+                        <td><p style="border: #800000 1px solid; text-align:center; color:#800000;"><b>APPROVED</b></p></td>
+                    @else
+                        <td height="50"></td>
+                    @endif
                 @else
                     <td></td>
                 @endif

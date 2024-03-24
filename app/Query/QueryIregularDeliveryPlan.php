@@ -657,27 +657,40 @@ $orderEntry->address_consignee",
         $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
         if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
         
-        $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
-
         $orderEntryPart = IregularOrderEntryPart::select('iregular_order_entry_part.item_code',
                         DB::raw('SUM(iregular_order_entry_part.net_weight) as nett_weight'),
                         DB::raw('SUM(iregular_order_entry_part.gross_weight) as gross_weight'),
                         DB::raw('SUM(iregular_order_entry_part.measurement) as measurement'),
+                        DB::raw("string_agg(DISTINCT iregular_order_entry_part.length::character varying, ',') as length"),
+                        DB::raw("string_agg(DISTINCT iregular_order_entry_part.width::character varying, ',') as width"),
+                        DB::raw("string_agg(DISTINCT iregular_order_entry_part.height::character varying, ',') as height"),
                         )
                         ->where('iregular_order_entry_part.id_iregular_order_entry', $id_iregular_order_entry)
                         ->groupBy('iregular_order_entry_part.item_code')
                         ->get();
         if(!$orderEntryPart) throw new \Exception("id tidak ditemukan", 400);
 
-        $total = [];
+        $arr = [];
         foreach ($orderEntryPart as $item) {
-            $total[$item->item_code] = [
+            $arr[$item->item_code] = [
                 'nett_weight' => $item->nett_weight,
                 'gross_weight' => $item->gross_weight,
                 'measurement' => $item->measurement,
+                'length' => $item->length,
+                'width' => $item->width,
+                'height' => $item->height,
             ];
         }
 
+        $casemark_data = IregularDeliveryPlanCaseMark::where('id_iregular_delivery_plan', $delivery_plan->id)->get();
+        $model_code = [];
+        foreach ($casemark_data as $val) {
+            $model_code[$val->item_no] = [
+                'model_code' => $val->model_code
+            ];
+        }
+
+        $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
         $invoiceDetail = self::getInvoiceDetail($request, $id_iregular_order_entry);
         $data = [];
         foreach ($invoiceDetail['items'] as $key => $value) {
@@ -691,13 +704,13 @@ $orderEntry->address_consignee",
                 'part_no' => explode(' ', $value->description)[0],
                 'qty' => $value->qty,
                 'no' =>  $key +1,
-                'nett_weight' => $total[explode(' ',$value->description)[0]]['nett_weight'],
-                'gross_weight' => $total[explode(' ',$value->description)[0]]['gross_weight'],
-                'model_code' => null,
+                'nett_weight' => $arr[explode(' ',$value->description)[0]]['nett_weight'],
+                'gross_weight' => $arr[explode(' ',$value->description)[0]]['gross_weight'],
+                'model_code' => $model_code[explode(' ',$value->description)[0]]['model_code'],
                 'type_box' => $invoice_data->type_package,
-                'length' => null,
-                'width' => null,
-                'height' => null,
+                'length' => $arr[explode(' ',$value->description)[0]]['length'],
+                'width' => $arr[explode(' ',$value->description)[0]]['width'],
+                'height' => $arr[explode(' ',$value->description)[0]]['height'],
                 'hs_code' => $value->hs_code
             ];
         }
@@ -776,7 +789,7 @@ $orderEntry->address_consignee",
                 $qty += $value->qty;
                 $nett_weight += (float)$value->nett_weight;
                 $gross_weight += (float)$value->gross_weight;
-                $measurement += (float)$value->measurement;
+                $measurement += ($value->length * $value->width * $value->height / 1000000000);
                 $id_iregular_delivery_plan_packing = $value->id_iregular_delivery_plan_packing;
             }
 
@@ -788,10 +801,14 @@ $orderEntry->address_consignee",
             ];
 
             $packing_data = IregularDeliveryPlanPacking::where('id', $id_iregular_delivery_plan_packing)->first();
+            $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
+            $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
 
             Pdf::loadView('pdf.iregular.packing.packing_list', [
                 'data' => $data['items'],
                 'packing_data' => $packing_data,
+                'invoice_data' => $invoice_data,
+                'order_entry' => $delivery_plan->refOrderEntry ?? null,
                 'total' => $total
             ])
             ->save($pathToFile)
@@ -929,6 +946,7 @@ $orderEntry->address_consignee",
                 'data' => $casemark_data['items'],
                 'entity_site' => $delivery_plan->refOrderEntry->entity_site ?? null,
                 'invoice_no' => $delivery_plan->refOrderEntry->invoice_no ?? null,
+                'part' => $delivery_plan->refOrderEntry->manyOrderEntryPart ?? null
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')

@@ -70,18 +70,18 @@
     <table>
         <tr>
             <td style="vertical-align: top;" rowspan="4" width="240">
-                Messrs : <br><br><br>
-                BILL TO : <br>{{ $packing_data->bill_to }}<br><br><br><br>
+                Messrs : <br>{{ $order_entry->requestor ?? null }}<br><br>
+                BILL TO : <br>{{ $invoice_data->bill_to }}<br><br><br><br>
                 SHIPPED TO : {{ $packing_data->shipped_to }}<br>
-                City : {{ $packing_data->city }}<br>
+                City : {{ $order_entry->address_consignee ?? null }}<br>
                 PHONE NO : {{ $packing_data->phone_no }}<br>
                 FAX : {{ $packing_data->fax }}
             </td>
-            <td style="vertical-align: top;">Date : {{ $packing_data->date }}&nbsp; &nbsp; &nbsp; INVOICE NO. : {{ $packing_data->invoice_no }}</td>
+            <td style="vertical-align: top;">Date : {{ $packing_data->date }}&nbsp; &nbsp; &nbsp; INVOICE NO. : {{ $order_entry->invoice_no ?? null }}</td>
         </tr>
         <tr>
             <td style="vertical-align: top;">
-                SHIPPED BY : {{ $packing_data->shipped_by }}&nbsp; &nbsp; &nbsp; ETD JAKARTA : <br><br>
+                SHIPPED BY : {{ $packing_data->shipped_by }}&nbsp; &nbsp; &nbsp; ETD JAKARTA : {{ $order_entry->etd_date ?? null }}<br><br>
                 <p style="padding: 0 0 0 165px; margin:0;">ETA MANAUS :</p>
             </td>
         </tr>
@@ -124,7 +124,7 @@
                 <td class="no-bo" style="text-align: center;">{{ $item->qty }}</td>
                 <td class="no-bo" style="text-align: center;">{{ $item->nett_weight }}</td>
                 <td class="no-bo" style="text-align: center;">{{ $item->gross_weight }}</td>
-                <td class="no-bo" style="text-align: right;">{{ $item->measurement }}</td>
+                <td class="no-bo" style="text-align: right;">{{ number_format(($item->length * $item->width * $item->height / 1000000000), 3) }}</td>
             </tr>
         @endforeach
     </table>
@@ -136,10 +136,10 @@
         <tr>
             <td class="no-bo">INVOICE NO</td>
             <td class="no-bo">:</td>
-            <td class="no-bo" width="250">{{ $packing_data->invoice_no }}</td>
+            <td class="no-bo" width="250">{{ $invoice_data->invoice_no }}</td>
             <td class="no-bo">SHIPPED BY</td>
             <td class="no-bo">:</td>
-            <td class="no-bo"></td>
+            <td class="no-bo">{{ $packing_data->shipped_by }}</td>
         </tr>
         <tr>
             <td class="no-bo">Date</td>
@@ -147,7 +147,7 @@
             <td class="no-bo">{{ $packing_data->date }}</td>
             <td class="no-bo">ETD JAKARTA </td>
             <td class="no-bo">:</td>
-            <td class="no-bo"></td>
+            <td class="no-bo">{{ $order_entry->etd_date ?? null}}</td>
         </tr>
         <tr>
             <td class="no-bo">Container No</td>
@@ -189,7 +189,7 @@
             999999-9999 <br>
                 <br>
             MADE IN INDONESIA <br>
-            INV. No. {{ $packing_data->invoice_no }} <br>
+            INV. No. {{ $invoice_data->invoice_no }} <br>
             C/No. : 1 - {{ count($data) }}
         </p>
             
@@ -215,7 +215,7 @@
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->qty }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->nett_weight }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->gross_weight }}</td>
-                <td style='padding-bottom:5px;' class='text-center'>{{ $item->measurement }}</td>
+                <td style='padding-bottom:5px;' class='text-center'>{{ number_format(($item->length * $item->width * $item->height / 1000000000), 3) }}</td>
             </tr>
         @endforeach
             
@@ -225,7 +225,7 @@
             <td class="text-center">{{ $total['qty'] }}</td>
             <td class="text-center">{{ $total['nett_weight'] }}</td>
             <td class="text-center">{{ $total['gross_weight'] }}</td>
-            <td class="text-center">{{ $total['measurement'] }}</td>
+            <td class="text-center">{{ number_format($total['measurement'], 3) }}</td>
         </tr>
     </table>
 
@@ -257,7 +257,7 @@
         <tr>
             <td class="no-bo" width="200px">Grand Total Measurement</td>
             <td class="no-bo" width="4">:</td>
-            <td width="50px" class="text-right no-bo">{{ $total['measurement'] }}</td>
+            <td width="50px" class="text-right no-bo">{{ number_format($total['measurement'], 3) }}</td>
             <td class="no-bo">M3</td>
         </tr>
     </table>

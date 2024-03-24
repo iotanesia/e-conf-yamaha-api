@@ -60,7 +60,7 @@
 
 <body style="font-family: Arial, Helvetica, sans-serif !important;">
 
-    @foreach ($data as $jml => $item) 
+    @foreach ($data as $key => $item) 
         @for ($i=1; $i<=2; $i++)
 
         @if ($i == 1)
@@ -71,12 +71,12 @@
                 <tr>
                     <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top; padding: 20px;">
                         <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
-                        <p style="margin:0 0 15px 0; padding:0;"><b>{{-- $item->manyFixedQuantityConfirmation[0]->order_no ?? null --}}</b></p>
-                        <p style="margin:0 0 15px 0; padding:0;"><b>{{-- $item->manyFixedQuantityConfirmation[0]->cust_item_no ?? null --}}</b></p>
-                        <p style="margin:0 0 15px 0; padding:0;"><b>{{ $entity_site }}</b></p>
+                        <p style="margin:0 0 15px 0; padding:0;"><b>{{ $part[$key]->order_no ?? null }}</b></p>
+                        <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->model_code }}</b></p>
+                        <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->destination }}</b></p>
                         <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>
                         <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $invoice_no }}</b></p>
-                        <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $jml+1 }}</b></p>
+                        <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $key+1 }}</b></p>
                     </td>
                     <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
                         <p style="padding:0; margin: 0 0 10px 0;"><b>CUSTOMER :</b></p>
