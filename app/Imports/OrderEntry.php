@@ -61,9 +61,15 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
             foreach ($collection->chunk(10000) as $i => $chunk) {
                 $filteredData = collect($chunk)->filter(function ($row){
                     $fillter_yearmonth = $this->params['year'].$this->params['month'];
-                    $deliver_yearmonth = Carbon::parse(trim($row[16]))->format('Ym'); // etd_jkt
+                    $col_etd = 16;
+                    if($this->params['datasource'] == "PYMAC")
+                        $col_etd = 16;
+                    else if($this->params['datasource'] == "YPMJ")
+                        $col_etd = 8;
+                
+                    $deliver_yearmonth = Carbon::parse(trim($row[$col_etd]))->format('Ym'); // etd_jkt
                     // return in_array($row[7],['940E']) && $fillter_yearmonth == $deliver_yearmonth;
-                    return $fillter_yearmonth == $deliver_yearmonth && trim($row[16]) !== "";
+                    return $fillter_yearmonth == $deliver_yearmonth && trim($row[$col_etd]) !== "";
                 });
 
                 //check mst part
@@ -227,7 +233,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                                 'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                                 // 'code_consignee' => $consignee == null ? null : $consignee->code,
                                 // 'model' => trim($row[4]),
-                                'item_no' => str_replace($item_serial),
+                                'item_no' => str_replace('-', '', $item_serial),
                                 // 'disburse' => trim($row[12]),
                                 'delivery' => trim($row[8]),
                                 'etd_jkt' => trim($row[8]),
