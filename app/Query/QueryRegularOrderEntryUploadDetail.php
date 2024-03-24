@@ -116,14 +116,14 @@ class QueryRegularOrderEntryUploadDetail extends Model {
               }
                 
                 $set["id"] = $item->id;
-                $set["id_box"] = $item->item_no == null ? $item_no_series->pluck('id')->toArray() : $item_no_series->id;
-                $set["no_box"] = $item->item_no == null ? $item_no_series->pluck('no_box')->toArray() : $item_no_series->no_box;
+                $set["id_box"] = $item->item_no == null ? ($item_no_series == null ? null : $item_no_series->pluck('id')->toArray()) : ($item_no_series == null ? null : $item_no_series->id);
+                $set["no_box"] = $item->item_no == null ? ($item_no_series == null ? null : $item_no_series->pluck('no_box')->toArray()) : ($item_no_series == null ? null : $item_no_series->no_box);
                 $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
                 $set["code_consignee"] = $item->code_consignee;
                 $set["cust_name"] = $custname;
                 $set["model"] = $item->model;
                 $set["item_name"] = $item->item_no == null ? $item_name : $itemname;
-                $set["item_no"] = $item->item_no == null ? $item_no_series->pluck('item_no_series')->toArray() : $item_no_series->item_no_series;
+                $set["item_no"] = $item->item_no == null ? ($item_no_series == null ? null : $item_no_series->pluck('item_no_series')->toArray()) : ($item_no_series == null ? MstPart::where("item_no", $item->item_no)->first()->item_serial : $item_no_series->item_no_series);
                 $set["disburse"] = $item->disburse;
                 $set["delivery"] = $item->delivery;
                 $set["qty"] = $item->qty;
