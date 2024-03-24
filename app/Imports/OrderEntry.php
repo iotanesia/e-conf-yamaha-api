@@ -72,6 +72,8 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                     return $fillter_yearmonth == $deliver_yearmonth && trim($row[$col_etd]) !== "";
                 });
 
+                dd($filteredData);
+
                 //check mst part
                 $mst_part_false =  $filteredData->map(function ($row) use ($id_regular_order_entry_upload) {
                     if($this->params['datasource'] == 'PYMAC'){
