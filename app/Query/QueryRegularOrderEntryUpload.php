@@ -205,6 +205,7 @@ class QueryRegularOrderEntryUpload extends Model {
             Excel::queueImport(new OrderEntry($store->id,[
                 'year' => $request->year,
                 'month' => $request->month,
+                'datasource' => $request->datasource
             ]),storage_path().'/app/'.$params['filepath']);
 
             if($is_transaction) DB::commit();
