@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Models\RegularOrderEntry;
+use App\Models\RegularOrderEntryUpload;
 use App\Models\RegularOrderEntryUploadDetail;
 use App\Models\RegularOrderEntryUploadDetailBox;
 use App\Models\RegularOrderEntryUploadDetailSet;
@@ -42,6 +44,9 @@ class OrderEntryBox implements ShouldQueue
        try {
             $params = $this->params;
 
+            $orderEntryUpload = RegularOrderEntryUpload::find($params['id_regular_order_entry_upload']);
+            $orderEntry = RegularOrderEntry::find($orderEntryUpload->id_regular_order_entry);
+
             //upload detail ke box
             RegularOrderEntryUploadDetail::where([
                 'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
@@ -52,66 +57,109 @@ class OrderEntryBox implements ShouldQueue
                 $detail_set = RegularOrderEntryUploadDetailSet::where('id_detail', $request['id'])->get();
                 if (count($detail_set) > 0) {
                     foreach ($detail_set as $key => $value) {
-                        $box = QueryMstBox::byItemNoCdConsigneeSet($value->item_no,$request['code_consignee']);
-                        if($box) {
-                            $box = $box->toArray();
-                            $box_capacity = $box['qty'];
-                            $qty = $request['qty'];
-                            $loops = (int) ceil($qty / $box_capacity);
-                            $ext = [];
-                            for ($i=0; $i < $loops ; $i++) {
-                                if($qty > $box_capacity)
-                                    $qty_pcs_box = $box_capacity;
-                                else
-                                    $qty_pcs_box = $qty;
-                                $ext[] = [
-                                    'uuid' => (string) Str::uuid(),
-                                    'id_regular_order_entry_upload_detail' => $request['id'],
-                                    'uuid_regular_order_entry_upload_detail' => $request['uuid'],
-                                    'id_box' => $box['id'],
-                                    'created_at' => now(),
-                                    'updated_at' => now(),
-                                    'qty_pcs_box' => $qty_pcs_box
-                                ];
-                                $sum = $qty - $box_capacity;
-                                $qty = $sum;
+                        if($orderEntry->datasource == "PYMAC"){
+
+                            $box = QueryMstBox::byItemNoCdConsigneeSet($value->item_no,$request['code_consignee']);
+                            if($box) {
+                                $box = $box->toArray();
+                                $box_capacity = $box['qty'];
+                                $qty = $request['qty'];
+                                $loops = (int) ceil($qty / $box_capacity);
+                                $ext = [];
+                                for ($i=0; $i < $loops ; $i++) {
+                                    if($qty > $box_capacity)
+                                        $qty_pcs_box = $box_capacity;
+                                    else
+                                        $qty_pcs_box = $qty;
+                                    $ext[] = [
+                                        'uuid' => (string) Str::uuid(),
+                                        'id_regular_order_entry_upload_detail' => $request['id'],
+                                        'uuid_regular_order_entry_upload_detail' => $request['uuid'],
+                                        'id_box' => $box['id'],
+                                        'created_at' => now(),
+                                        'updated_at' => now(),
+                                        'qty_pcs_box' => $qty_pcs_box
+                                    ];
+                                    $sum = $qty - $box_capacity;
+                                    $qty = $sum;
+                                }
+    
+                                foreach (array_chunk($ext,10000) as $chunk) {
+                                    RegularOrderEntryUploadDetailBox::insert($chunk);
+                                }
                             }
+
+                        } else if($orderEntry->datasource == "YPMJ"){
+                            $ext = [];
+
+                            $ext[] = [
+                                'uuid' => (string) Str::uuid(),
+                                'id_regular_order_entry_upload_detail' => $request['id'],
+                                'uuid_regular_order_entry_upload_detail' => $request['uuid'],
+                                // 'id_box' => $box['id'],
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                                'qty_pcs_box' => $request['qty']
+                            ];
 
                             foreach (array_chunk($ext,10000) as $chunk) {
                                 RegularOrderEntryUploadDetailBox::insert($chunk);
                             }
+
                         }
                     }
                 } 
 
-                $box = QueryMstBox::byItemNoCdConsignee($request['item_no'],$request['code_consignee']);
-                if($box) {
-                    $box = $box->toArray();
-                    $box_capacity = $box['qty'];
-                    $qty = $request['qty'];
-                    $loops = (int) ceil($qty / $box_capacity);
-                    $ext = [];
-                    for ($i=0; $i < $loops ; $i++) {
-                        if($qty > $box_capacity)
-                            $qty_pcs_box = $box_capacity;
-                        else
-                            $qty_pcs_box = $qty;
-                        $ext[] = [
-                            'uuid' => (string) Str::uuid(),
-                            'id_regular_order_entry_upload_detail' => $request['id'],
-                            'uuid_regular_order_entry_upload_detail' => $request['uuid'],
-                            'id_box' => $box['id'],
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                            'qty_pcs_box' => $qty_pcs_box
-                        ];
-                        $sum = $qty - $box_capacity;
-                        $qty = $sum;
+                if($orderEntry->datasource == "PYMAC") {
+
+                    $box = QueryMstBox::byItemNoCdConsignee($request['item_no'],$request['code_consignee']);
+                    if($box) {
+                        $box = $box->toArray();
+                        $box_capacity = $box['qty'];
+                        $qty = $request['qty'];
+                        $loops = (int) ceil($qty / $box_capacity);
+                        $ext = [];
+                        for ($i=0; $i < $loops ; $i++) {
+                            if($qty > $box_capacity)
+                                $qty_pcs_box = $box_capacity;
+                            else
+                                $qty_pcs_box = $qty;
+                            $ext[] = [
+                                'uuid' => (string) Str::uuid(),
+                                'id_regular_order_entry_upload_detail' => $request['id'],
+                                'uuid_regular_order_entry_upload_detail' => $request['uuid'],
+                                'id_box' => $box['id'],
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                                'qty_pcs_box' => $qty_pcs_box
+                            ];
+                            $sum = $qty - $box_capacity;
+                            $qty = $sum;
+                        }
+    
+                        foreach (array_chunk($ext,10000) as $chunk) {
+                            RegularOrderEntryUploadDetailBox::insert($chunk);
+                        }
                     }
+
+                } else if($orderEntry->datasource == "YPMJ") {
+
+                    $ext = [];
+                
+                    $ext[] = [
+                        'uuid' => (string) Str::uuid(),
+                        'id_regular_order_entry_upload_detail' => $request['id'],
+                        'uuid_regular_order_entry_upload_detail' => $request['uuid'],
+                        // 'id_box' => $box['id'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                        'qty_pcs_box' => $request['qty']
+                    ];
 
                     foreach (array_chunk($ext,10000) as $chunk) {
                         RegularOrderEntryUploadDetailBox::insert($chunk);
                     }
+                    
                 }
                  
             });

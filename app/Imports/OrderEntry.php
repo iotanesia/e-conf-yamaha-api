@@ -158,26 +158,27 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                         
                     } else if($this->params['datasource'] == 'YPMJ'){
 
-                        $item_serial = trim($row[4]);
-                        if(Str::length(trim($row[5])) > 0)
-                            $item_serial .= "-".trim($row[5]);
+                        // tidak cek ke master box
+                        // $item_serial = trim($row[4]);
+                        // if(Str::length(trim($row[5])) > 0)
+                        //     $item_serial .= "-".trim($row[5]);
 
-                        $check = MstBox::where('item_no_series', $item_serial)->first() ? null : [
-                            'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
-                            'item_no' => str_replace('-', '', $item_serial),
-                            'delivery' => trim($row[8]),
-                            'etd_jkt' => trim($row[8]),
-                            'etd_wh' => Carbon::parse(trim($row[8]))->subDays(2)->format('Ymd'),
-                            'etd_ypmi' => Carbon::parse(trim($row[8]))->subDays(4)->format('Ymd'),
-                            'qty' => (int)trim($row[7]),
-                            'status' => 'fixed',
-                            'order_no' => substr(trim($row[0]),0,-2),
-                            'uuid' => (string) Str::uuid(),
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                            'keterangan' => 'Part tidak terdaftar pada Master Part'
-                        ]; // check mst box
-                        return $check;
+                        // $check = MstBox::where('item_no_series', $item_serial)->first() ? null : [
+                        //     'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
+                        //     'item_no' => str_replace('-', '', $item_serial),
+                        //     'delivery' => trim($row[8]),
+                        //     'etd_jkt' => trim($row[8]),
+                        //     'etd_wh' => Carbon::parse(trim($row[8]))->subDays(2)->format('Ymd'),
+                        //     'etd_ypmi' => Carbon::parse(trim($row[8]))->subDays(4)->format('Ymd'),
+                        //     'qty' => (int)trim($row[7]),
+                        //     'status' => 'fixed',
+                        //     'order_no' => substr(trim($row[0]),0,-2),
+                        //     'uuid' => (string) Str::uuid(),
+                        //     'created_at' => now(),
+                        //     'updated_at' => now(),
+                        //     'keterangan' => 'Part tidak terdaftar pada Master Part'
+                        // ]; // check mst box
+                        // return $check;
 
                     }
                    
