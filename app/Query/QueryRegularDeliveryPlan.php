@@ -627,7 +627,7 @@ class QueryRegularDeliveryPlan extends Model {
             $request = $params->all();
             
             foreach($request["id"] as $id){
-                self::where(['id' => $id, 'id_regular_order_entry' => $id_regular_order_entry])->update(['is_produksi' => 1]);
+                self::where(['id' => $id])->update(['is_produksi' => 1]);
             }
 
             if($is_trasaction) DB::commit();
@@ -1404,7 +1404,7 @@ class QueryRegularDeliveryPlan extends Model {
     }
 
     public static function printLabelingYpmj($request,$id_iregular_order_entry,$pathToFile,$filename){
-        // try {
+        try {
             $data = self::getGeneratedBox($request, $id_iregular_order_entry);
 
             $pathQr = storage_path() . '/app//qrcode/label/'. $data['items'][0]['qrcode'];
@@ -1420,9 +1420,9 @@ class QueryRegularDeliveryPlan extends Model {
             ->save($pathToFile)
             ->setPaper('A4','landscape')
             ->download($filename);
-        // } catch (\Throwable $th) {
-        //     return Helper::setErrorResponse($th);
-        // }
+        } catch (\Throwable $th) {
+            return Helper::setErrorResponse($th);
+        }
     }
 
     public static function updateProspectContainerCreation($request,$is_transaction = true)
