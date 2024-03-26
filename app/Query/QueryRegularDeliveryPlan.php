@@ -471,7 +471,7 @@ class QueryRegularDeliveryPlan extends Model {
             $set["cust_name"] = $custname;
             $set["model"] = $item->model;
             $set["item_name"] = $item->item_no == null ? $item_name : $itemname;
-            $set["item_no"] = $item->item_no == null ? $item_no_series->toArray() : $item_no_series->item_no_series;
+            $set["item_no"] = $item->item_no == null ? ($item_no_series == null ? null : $item_no_series->toArray()) : ($item_no_series == null ? MstPart::where("item_no", $item->item_no)->first()->item_serial : $item_no_series->item_no_series);
             $set["disburse"] = $item->disburse;
             $set["delivery"] = $item->delivery;
             $set["qty"] = $item->qty;
@@ -488,6 +488,7 @@ class QueryRegularDeliveryPlan extends Model {
             $set["etd_ypmi"] = $item->etd_ypmi;
             $set["part_set"] = $item->part_set;
             $set["num_set"] = $item->num_set;
+            $set["is_produksi"] = $item->is_produksi;
             $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
 
             unset($item->refRegularOrderEntry);
@@ -499,6 +500,141 @@ class QueryRegularDeliveryPlan extends Model {
             'last_page' => $data->lastPage(),
 
         ];
+    }
+
+    public static function getSelectedDetailProduksi($params, $id_regular_order_entry){
+        $query = self::where('id_regular_order_entry',$id_regular_order_entry)
+        ->where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            $kueri = $params->kueri ?? null;
+        
+            if ($category && $kueri) {
+                if ($category == 'cust_name') {
+                    $query->whereHas('refConsignee', function ($q) use ($kueri) {
+                        $q->where('nick_name', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'item_name') {
+                    $query->whereHas('refPart', function ($q) use ($kueri) {
+                        $q->where('description', 'like', '%' . $kueri . '%');
+                    });
+                }elseif ($category == 'etd_ypmi') {
+                    $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_wh') {
+                    $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_jkt') {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%');
+                } else {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                        ->orWhere('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%')
+                        ->orWhere('order_no', 'like', '%' . $kueri . '%')
+                        ->orWhere('cust_item_no', 'like', '%' . $kueri . '%')
+                        ->orWhere('qty', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                }
+            }
+
+            // $filterdate = Helper::filterDate($params);
+            $date_from = str_replace('-','',$params->date_from);
+            $date_to = str_replace('-','',$params->date_to);
+            if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
+        })
+        ->where('is_produksi', 1);
+
+        if($params->dropdown == Constant::IS_ACTIVE) {
+            $params->limit = null;
+            $params->page = 1;
+        }
+        
+        $data = $query
+        ->orderBy('id','asc')
+        ->paginate($params->limit ?? null);
+
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage(),
+            'attributes' => [
+                'total' => $data->total(),
+                'last_page' => $data->lastPage(),
+                'current_page' => $data->currentPage(),
+                'from' => $data->currentPage(),
+                'per_page' => (int) $data->perPage(),
+            ]
+        ];
+    }
+
+    public static function generateBox($params, $is_transaction = true){
+        try {
+            $request = $params->all();
+
+            $etd_list = self::select('etd_jkt')
+                ->whereIn('id', $request["id"])
+                ->groupBy("etd_jkt")
+                ->orderBy("etd_jkt", "asc")
+                ->get();
+
+            $case_number_1st_week = 1;
+            $case_number_2nd_week = 1;
+
+            foreach($request["id"] as $id){
+                $delivery_plan = self::find($id);
+
+                $index = -1;
+                $loop = 0;
+
+                foreach($etd_list as $etd){
+                    if((string) $delivery_plan->etd_jkt === (string) $etd->etd_jkt)
+                        $index = $loop;
+                    $loop++;
+                }
+
+                if($index == -1)
+                    continue;
+
+                $case_number = 0;
+                $period = "";
+                $dateTime = new \DateTime($delivery_plan->etd_jkt);
+                $month = $dateTime->format('M');
+
+                if($index == 0){
+                    $case_number = $case_number_1st_week;
+                    $period = "1st ".$month;
+                    $case_number_1st_week++;
+                } else if($index == 1){
+                    $case_number = $case_number_2nd_week;
+                    $period = "2nd ".$month;
+                    $case_number_2nd_week++;
+                }
+
+                RegularDeliveryPlanBox::create([
+                    "id_regular_delivery_plan" => $id,
+                    "period" => $period,
+                    "case_number" => $case_number
+                ]);
+            }
+
+            if($is_transaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_transaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function saveSelectedDetailProduksi($params, $is_trasaction = true){
+        
+        try {
+            $request = $params->all();
+            
+            foreach($request["id"] as $id){
+                self::where(['id' => $id, 'id_regular_order_entry' => $id_regular_order_entry])->update(['is_produksi' => 1]);
+            }
+
+            if($is_trasaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_trasaction) DB::rollBack();
+            throw $th;
+        }
     }
 
     public static function detailProduksiBox($params,$id)
@@ -527,6 +663,40 @@ class QueryRegularDeliveryPlan extends Model {
         return [
             'items' => $data,
             'last_page' => 0
+        ];
+    }
+
+    public static function getGeneratedBox($params,$id_regular_order_entry)
+    {
+        $data = RegularDeliveryPlanBox::whereHas('refRegularDeliveryPlan', function($query) use ($id_regular_order_entry) {
+            $query->where('id_regular_order_entry', $id_regular_order_entry);
+        })
+        ->paginate($params->limit ?? null);
+        
+        $data->transform(function ($item)
+        {
+            return [
+                'id' => $item->id,
+                'id_regular_delivery_plan' => $item->id_regular_delivery_plan,
+                'item_no' => $item->refRegularDeliveryPlan->refPart->item_serial,
+                'item_name' => $item->refRegularDeliveryPlan->refPart->description,
+                'code_consignee' => $item->refRegularDeliveryPlan->code_consignee,
+                'name_consignee' => $item->refRegularDeliveryPlan->refConsignee->nick_name,
+                'case_number' => $item->case_number,
+                'period' => $item->period,
+                'qty_pcs_box' => $item->qty_pcs_box,
+                'qty' => $item->refRegularDeliveryPlan->qty,
+                'box'   => $item->box,
+                'lot_packing' => $item->lot_packing,
+                'packing_date' => $item->packing_date,
+                'is_labeling' => $item->is_labeling,
+                'qrcode' => $item->qrcode
+            ];
+        });
+
+        return [
+            'items' => $data->items(),
+            'last_page' => 1
         ];
     }
 
@@ -643,7 +813,7 @@ class QueryRegularDeliveryPlan extends Model {
             $data->map(function ($item){
                 $set['id'] = 0;
                 $set['id_box'] = $item->id_box;
-                $set['qty'] =  $item->refBox->qty." x ".$item->jml;
+                $set['qty'] =  ($item->refBox == null ? $item->qty : $item->refBox->qty)." x ".$item->jml;
                 $set['length'] =  "";
                 $set['width'] =  "";
                 $set['height'] =  "";
@@ -841,6 +1011,30 @@ class QueryRegularDeliveryPlan extends Model {
             $request['etd_ypmi'] =Carbon::parse($params->etd_jkt)->subDays(4)->format('Ymd');
             $request['etd_wh'] =Carbon::parse($params->etd_jkt)->subDays(2)->format('Ymd');
             $request['id_regular_order_entry'] = $chek->id;
+            $data->fill($request);
+            $data->save();
+
+            if($is_trasaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_trasaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function changeQty($params,$is_trasaction = true)
+    {
+        if($is_trasaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'id',
+                'qty'
+            ]);
+
+            $data = self::find($params->id);
+            if(!$data) throw new \Exception("Data not found", 400);
+
+            $request = $params->all();
             $data->fill($request);
             $data->save();
 
@@ -1121,6 +1315,114 @@ class QueryRegularDeliveryPlan extends Model {
             if($is_trasaction) DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function storeLabelYpmj($params,$is_trasaction = true)
+    {
+
+        if($is_trasaction) DB::beginTransaction();
+        try {
+
+            Helper::requireParams([
+                'data',
+            ]);
+
+
+            $request = $params->all();
+
+            foreach ($request['data'] as $validasi) {
+                if(!$validasi['packing_date']) throw new \Exception("Please input packing date", 400);
+                if(!$validasi['lot_packing']) throw new \Exception("Please input lot packing", 400);
+            }
+
+            $consignee = MstConsignee::where('code', $request['data'][0]['code_consignee'])->first();
+            $qr_name = (string) Str::uuid().'.png';
+            $qr_key = "YPMJ | ".$consignee->nick_name. " | ".$request['data'][0]['lot_packing']. " | ".date('d/m/Y', strtotime($request['data'][0]['packing_date']));
+            QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
+
+            foreach ($request['data'] as $item) {
+                $delivery_plan_box = RegularDeliveryPlanBox::find($item['id']);
+                $delivery_plan_box->update([
+                    "qtc_pcs_box" => $item['qty'],
+                    "lot_packing" => $item['lot_packing'],
+                    "packing_date" => $item['packing_date'],
+                    "is_labeling" => Constant::IS_ACTIVE,
+                    "box" => $item['box'],
+                    "qrcode" => $qr_name
+                ]);
+
+                $delivery_plan = RegularDeliveryPlan::find($item['id_regular_delivery_plan']);
+                $delivery_plan->update([
+                    'code_consignee' => $item['code_consignee']
+                ]);
+
+                $queryStok = RegularStokConfirmation::query();
+                $createStock = $queryStok->create([
+                    "id_regular_delivery_plan" => $item['id_regular_delivery_plan'],
+                    "count_box" => $item["box"],
+                    "production" => $item["qty"],
+                    "qty" => $item["qty"],
+                    "in_dc" => Constant::IS_NOL,
+                    "in_wh" => Constant::IS_NOL,
+                    "status_instock" => Constant::STS_STOK,
+                    "status_outstock" => Constant::STS_STOK,
+                    "etd_ypmi" => $delivery_plan->etd_ypmi,
+                    "etd_wh" => $delivery_plan->etd_wh,
+                    "etd_jkt" => $delivery_plan->etd_jkt,
+                    "code_consignee" => $item['code_consignee'],
+                    "datasource" => "YPMJ",
+                    "is_actual" => 0
+                ]);
+                $id_stock = $createStock->id;
+    
+                RegularStokConfirmationTemp::create([
+                    "id_stock_confirmation" => $id_stock, 
+                    "id_regular_delivery_plan" => $item['id_regular_delivery_plan'],
+                    "count_box" => $item["box"],
+                    "production" => $item["qty"],
+                    "qty" => $item["qty"],
+                    "in_dc" => Constant::IS_NOL,
+                    "in_wh" => Constant::IS_NOL,
+                    "status_instock" => Constant::STS_STOK,
+                    "status_outstock" => Constant::STS_STOK,
+                    "etd_ypmi" => $delivery_plan->etd_ypmi,
+                    "etd_wh" => $delivery_plan->etd_wh,
+                    "etd_jkt" => $delivery_plan->etd_jkt,
+                    "code_consignee" => $item['code_consignee'],
+                    "datasource" => "YPMJ",
+                    "is_actual" => 0,
+                    "qr_key" => $qr_key
+                ]);
+    
+            }
+
+            if($is_trasaction) DB::commit();
+        } catch (\Throwable $th) {
+            if($is_trasaction) DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public static function printLabelingYpmj($request,$id_iregular_order_entry,$pathToFile,$filename){
+        // try {
+            $data = self::getGeneratedBox($request, $id_iregular_order_entry);
+
+            $pathQr = storage_path() . '/app//qrcode/label/'. $data['items'][0]['qrcode'];
+            $typeQr = pathinfo($pathQr, PATHINFO_EXTENSION);
+            $dataQr = file_get_contents($pathQr);
+            $base64Qr = 'data:image/' . $typeQr . ';base64,' . base64_encode($dataQr);
+            
+            Pdf::loadView('pdf.labeling.labeling', [
+                'data' => $data['items'],
+                'qrcode' => $base64Qr,
+                'customer' => $data['items'][0]['name_consignee']
+            ])
+            ->save($pathToFile)
+            ->setPaper('A4','landscape')
+            ->download($filename);
+        // } catch (\Throwable $th) {
+        //     return Helper::setErrorResponse($th);
+        // }
     }
 
     public static function updateProspectContainerCreation($request,$is_transaction = true)
