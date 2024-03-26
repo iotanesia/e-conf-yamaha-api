@@ -37,7 +37,8 @@ class RegularDeliveryPlan extends Model
         "uuid",
         "datasource",
         "jenis",
-        "is_produksi"
+        "is_produksi",
+        "bucket_produksi"
     ];
 
     public static function boot()

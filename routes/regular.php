@@ -84,7 +84,7 @@ Route::prefix('v1/regular')
         Route::group(['prefix' => 'produksi'],function (){
             Route::get('/{id}',[DeliveryPlanController::class,'showProduksi']);
             Route::get('/selected/{id}',[DeliveryPlanController::class,'getSelectedDetailProduksi']);
-            Route::post('/selected',[DeliveryPlanController::class,'saveSelectedDetailProduksi']);
+            Route::post('/selected/{id}',[DeliveryPlanController::class,'saveSelectedDetailProduksi']);
             Route::get('box/{id}',[DeliveryPlanController::class,'showProduksiBox']);
             Route::post('/labeling',[DeliveryPlanController::class,'storeLabeling']);
             Route::post('/labeling-ypmj',[DeliveryPlanController::class,'storeLabelingYpmj']);

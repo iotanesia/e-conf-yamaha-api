@@ -427,7 +427,9 @@ class QueryRegularDeliveryPlan extends Model {
             });
 
         $data = $query
-        ->orderBy('id', 'asc')
+        ->orderBy('is_produksi', 'asc')
+        ->orderBy('code_consignee', 'asc')
+        ->orderBy('item_no', 'asc')
         ->paginate($params->limit ?? null);
 
         $data->transform(function ($item){
@@ -503,6 +505,8 @@ class QueryRegularDeliveryPlan extends Model {
     }
 
     public static function getSelectedDetailProduksi($params, $id_regular_order_entry){
+        $current_bucket = self::where('id_regular_order_entry', $id_regular_order_entry)->max('bucket_produksi') ?? 0;
+
         $query = self::where('id_regular_order_entry',$id_regular_order_entry)
         ->where(function ($query) use ($params){
             $category = $params->category ?? null;
@@ -539,7 +543,8 @@ class QueryRegularDeliveryPlan extends Model {
             $date_to = str_replace('-','',$params->date_to);
             if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
         })
-        ->where('is_produksi', 1);
+        ->where('is_produksi', 1)
+        ->where('bucket_produksi', $current_bucket);
 
         if($params->dropdown == Constant::IS_ACTIVE) {
             $params->limit = null;
@@ -621,13 +626,15 @@ class QueryRegularDeliveryPlan extends Model {
         }
     }
 
-    public static function saveSelectedDetailProduksi($params, $is_trasaction = true){
+    public static function saveSelectedDetailProduksi($params, $id_regular_order_entry, $is_trasaction = true){
         
         try {
             $request = $params->all();
             
+            $current_bucket = self::where('id_regular_order_entry', $id_regular_order_entry)->max('bucket_produksi') ?? 0;
+
             foreach($request["id"] as $id){
-                self::where(['id' => $id])->update(['is_produksi' => 1]);
+                self::where(['id' => $id])->update(['is_produksi' => 1, "bucket_produksi" => $current_bucket+1]);
             }
 
             if($is_trasaction) DB::commit();
@@ -668,8 +675,10 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function getGeneratedBox($params,$id_regular_order_entry)
     {
-        $data = RegularDeliveryPlanBox::whereHas('refRegularDeliveryPlan', function($query) use ($id_regular_order_entry) {
-            $query->where('id_regular_order_entry', $id_regular_order_entry);
+        $current_bucket = self::where('id_regular_order_entry', $id_regular_order_entry)->max('bucket_produksi') ?? 0;
+
+        $data = RegularDeliveryPlanBox::whereHas('refRegularDeliveryPlan', function($query) use ($id_regular_order_entry, $current_bucket) {
+            $query->where('id_regular_order_entry', $id_regular_order_entry)->where('bucket_produksi', $current_bucket);
         })
         ->paginate($params->limit ?? null);
         
@@ -680,8 +689,8 @@ class QueryRegularDeliveryPlan extends Model {
                 'id_regular_delivery_plan' => $item->id_regular_delivery_plan,
                 'item_no' => $item->refRegularDeliveryPlan->refPart->item_serial,
                 'item_name' => $item->refRegularDeliveryPlan->refPart->description,
-                'code_consignee' => $item->refRegularDeliveryPlan->code_consignee,
-                'name_consignee' => $item->refRegularDeliveryPlan->refConsignee->nick_name,
+                'code_consignee' => $item->refRegularDeliveryPlan->code_consignee ?? null,
+                'name_consignee' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
                 'case_number' => $item->case_number,
                 'period' => $item->period,
                 'qty_pcs_box' => $item->qty_pcs_box,
@@ -690,7 +699,8 @@ class QueryRegularDeliveryPlan extends Model {
                 'lot_packing' => $item->lot_packing,
                 'packing_date' => $item->packing_date,
                 'is_labeling' => $item->is_labeling,
-                'qrcode' => $item->qrcode
+                'qrcode' => $item->qrcode,
+                'qrcode_img' => route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling',
             ];
         });
 
@@ -1034,9 +1044,42 @@ class QueryRegularDeliveryPlan extends Model {
             $data = self::find($params->id);
             if(!$data) throw new \Exception("Data not found", 400);
 
-            $request = $params->all();
-            $data->fill($request);
-            $data->save();
+            $sisa_qty = $data->qty - (int) $params["qty"];
+            if($sisa_qty != 0){
+
+                $duplicate = [
+                    "id_regular_order_entry" => $data->id_regular_order_entry,
+                    "code_consignee" => $data->code_consignee,
+                    "model" => $data->model,
+                    "item_no" => $data->item_no,
+                    "disburse" => $data->disburse,
+                    "delivery" => $data->delivery,
+                    "status" => $data->status,
+                    "order_no" => $data->order_no,
+                    "cust_item_no" => $data->cust_item_no,
+                    "created_at" => now(),
+                    "updated_at" => now(),
+                    "uuid" => (string) Str::uuid(),
+                    "etd_ypmi" => $data->etd_ypmi,
+                    "etd_wh" => $data->etd_wh,
+                    "etd_jkt" => $data->etd_jkt,
+                    "is_inquiry" => $data->is_inquiry,
+                    "id_prospect_container" => $data->id_prospect_container,
+                    "id_prospect_container_creation" => $data->id_prospect_container_creation,
+                    "status_bml" => $data->status_bml,
+                    "qtc_box" => $data->qtc_box,
+                    "datasource" => $data->datasource,
+                    "jenis" => $data->jenis,
+                    "is_produksi" => $data->is_produksi,
+                    "qty" => $sisa_qty
+                ];
+                self::create($duplicate);    
+            }
+
+            $data->update([
+                "qty" => $params["qty"],
+                "udpated_at" => now()
+            ]);
 
             if($is_trasaction) DB::commit();
         } catch (\Throwable $th) {

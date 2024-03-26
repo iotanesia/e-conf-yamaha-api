@@ -63,5 +63,7 @@ class Constant
     ];
 
     const MAX_IREGULAR_REVISION = 1;
+    const PYMAC_DATASOURCE = "PYMAC";
+    const YPMJ_DATASOURCE = "YPMJ";
 }
 

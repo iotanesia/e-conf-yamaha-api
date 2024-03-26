@@ -65,11 +65,11 @@ class DeliveryPlanController extends Controller
         }
     }
 
-    public function saveSelectedDetailProduksi(Request $request)
+    public function saveSelectedDetailProduksi(Request $request, $id_iregular_order_entry)
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularDeliveryPlan::saveSelectedDetailProduksi($request)
+                QueryRegularDeliveryPlan::saveSelectedDetailProduksi($request, $id_iregular_order_entry)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
