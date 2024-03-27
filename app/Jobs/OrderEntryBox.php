@@ -43,6 +43,7 @@ class OrderEntryBox implements ShouldQueue
     {
        try {
             $params = $this->params;
+            
             $orderEntryUpload = RegularOrderEntryUpload::find(1289);
             $orderEntry = RegularOrderEntry::find($orderEntryUpload->id_regular_order_entry);
             $datasource = $orderEntry->datasource;
@@ -52,7 +53,6 @@ class OrderEntryBox implements ShouldQueue
                 'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
             ])
             ->each(function ($item) use ($datasource){
-                $datasource = $item->refRegularOrderEntryUploadDetail->refRegularOrderEntryUpload->refRegularOrderEntry->datasource;
                 $request = $item->toArray();
 
                 $detail_set = RegularOrderEntryUploadDetailSet::where('id_detail', $request['id'])->get();
