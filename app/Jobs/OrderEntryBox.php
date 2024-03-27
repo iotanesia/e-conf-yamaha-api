@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Models\RegularOrderEntry;
+use App\Models\RegularOrderEntryUpload;
 use App\Models\RegularOrderEntryUploadDetail;
 use App\Models\RegularOrderEntryUploadDetailBox;
 use App\Models\RegularOrderEntryUploadDetailSet;
@@ -41,12 +43,15 @@ class OrderEntryBox implements ShouldQueue
     {
        try {
             $params = $this->params;
+            $orderEntryUpload = RegularOrderEntryUpload::find(1289);
+            $orderEntry = RegularOrderEntry::find($orderEntryUpload->id_regular_order_entry);
+            $datasource = $orderEntry->datasource;
 
             //upload detail ke box
             RegularOrderEntryUploadDetail::where([
                 'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
             ])
-            ->each(function ($item){
+            ->each(function ($item) use ($datasource){
                 $datasource = $item->refRegularOrderEntryUploadDetail->refRegularOrderEntryUpload->refRegularOrderEntry->datasource;
                 $request = $item->toArray();
 
