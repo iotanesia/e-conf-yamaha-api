@@ -36,11 +36,12 @@ class MstBox extends Model
         'volume',
         'part_set',
         'id_box',
+        'datasource',
         'created_at',
         'created_by',
         'updated_at',
         'updated_by',
-        'deleted_at'
+        'deleted_at',
     ];
 
     public function refPart(){

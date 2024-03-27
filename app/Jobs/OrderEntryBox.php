@@ -47,12 +47,13 @@ class OrderEntryBox implements ShouldQueue
                 'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
             ])
             ->each(function ($item){
+                $datasource = $item->refRegularOrderEntryUploadDetail->refRegularOrderEntryUpload->datasource;
                 $request = $item->toArray();
 
                 $detail_set = RegularOrderEntryUploadDetailSet::where('id_detail', $request['id'])->get();
                 if (count($detail_set) > 0) {
                     foreach ($detail_set as $key => $value) {
-                        $box = QueryMstBox::byItemNoCdConsigneeSet($value->item_no,$request['code_consignee']);
+                        $box = QueryMstBox::byItemNoCdConsigneeSet($value->item_no,$request['code_consignee'],$datasource);
                         if($box) {
                             $box = $box->toArray();
                             $box_capacity = $box['qty'];
@@ -84,7 +85,7 @@ class OrderEntryBox implements ShouldQueue
                     }
                 } 
 
-                $box = QueryMstBox::byItemNoCdConsignee($request['item_no'],$request['code_consignee']);
+                $box = QueryMstBox::byItemNoCdConsignee($request['item_no'],$request['code_consignee'],$datasource);
                 if($box) {
                     $box = $box->toArray();
                     $box_capacity = $box['qty'];

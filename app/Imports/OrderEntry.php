@@ -61,91 +61,25 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
             foreach ($collection->chunk(10000) as $i => $chunk) {
                 $filteredData = collect($chunk)->filter(function ($row){
                     $fillter_yearmonth = $this->params['year'].$this->params['month'];
-                    $deliver_yearmonth = Carbon::parse(trim($row[16]))->format('Ym'); // etd_jkt
+                    $col_etd = 16;
+                    if($this->params['datasource'] == "PYMAC")
+                        $col_etd = 16;
+                    else if($this->params['datasource'] == "YPMJ")
+                        $col_etd = 8;
+                
+                    $deliver_yearmonth = Carbon::parse(trim($row[$col_etd]))->format('Ym'); // etd_jkt
                     // return in_array($row[7],['940E']) && $fillter_yearmonth == $deliver_yearmonth;
-                    return $fillter_yearmonth == $deliver_yearmonth && trim($row[16]) !== "";
+                    return $fillter_yearmonth == $deliver_yearmonth && trim($row[$col_etd]) !== "";
                 });
 
                 //check mst part
                 $mst_part_false =  $filteredData->map(function ($row) use ($id_regular_order_entry_upload) {
-                    // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
-                    //     ? '999999-9999'
-                    //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
-                    $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
-                    $check = MstPart::where('item_no',(trim($row[10]).trim($row[11])))->first() ? null : [
-                        'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
-                        'code_consignee' => $consignee == null ? null : $consignee->code,
-                        // 'model' => trim($row[4]),
-                        'item_no' => (trim($row[10]).trim($row[11])),
-                        // 'disburse' => trim($row[12]),
-                        'delivery' => trim($row[16]),
-                        'etd_jkt' => trim($row[16]),
-                        'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
-                        'etd_ypmi' => Carbon::parse(trim($row[16]))->subDays(4)->format('Ymd'),
-                        'qty' => (int)trim($row[17]),
-                        'status' => 'fixed',
-                        'order_no' => substr(trim($row[0]),0,-2),
-                        'cust_item_no' => (trim($row[7])."-".trim($row[8])),
-                        'uuid' => (string) Str::uuid(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                        'keterangan' => 'Part tidak terdaftar pada Master Part'
-                    ]; // check mst part
-                    return $check;
-                })->toArray();
-
-                $filter_mst_part_false = array_filter($mst_part_false);
-                if(count($filter_mst_part_false) > 0) {
-                    array_map(function ($item){
-                        DB::table('regular_order_entry_upload_detail_revision')->insert($item);
-                    },$filter_mst_part_false);
-                }
-
-                //check mst box
-                $mst_box_false =  $filteredData->map(function ($row) use ($id_regular_order_entry_upload) {
-                    // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
-                    //     ? '999999-9999'
-                    //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
-                    
-                    $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
-                    $check_consignee = $consignee == null ? null : $consignee->code;
-                    $check = MstBox::where('item_no',(trim($row[10]).trim($row[11])))->where('code_consignee', $check_consignee)->first() ? null : [
-                        'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
-                        'code_consignee' => $consignee == null ? null : $consignee->code,
-                        // 'model' => trim($row[4]),
-                        'item_no' => (trim($row[10]).trim($row[11])),
-                        // 'disburse' => trim($row[12]),
-                        'delivery' => trim($row[16]),
-                        'etd_jkt' => trim($row[16]),
-                        'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
-                        'etd_ypmi' => Carbon::parse(trim($row[16]))->subDays(4)->format('Ymd'),
-                        'qty' => (int)trim($row[17]),
-                        'status' => 'fixed',
-                        'order_no' => substr(trim($row[0]),0,-2),
-                        'cust_item_no' => (trim($row[7])."-".trim($row[8])),
-                        'uuid' => (string) Str::uuid(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                        'keterangan' => 'Part tidak terdaftar pada Master Box'
-                    ]; // check mst box
-                    return $check;
-                })->toArray();
-
-                $filter_mst_box_false = array_filter($mst_box_false);
-                if(count($filter_mst_box_false) > 0) {
-                    array_map(function ($item){
-                        DB::table('regular_order_entry_upload_detail_revision')->insert($item);
-                    },$filter_mst_box_false);
-                }
-
-                if(count($filter_mst_part_false) == 0 && count($filter_mst_box_false) == 0) {
-                    $filteredData->each(function ($row) use ($id_regular_order_entry_upload) {
+                    if($this->params['datasource'] == 'PYMAC'){
                         // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
                         //     ? '999999-9999'
                         //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
-                        
                         $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
-                        QueryRegularOrderEntryUploadDetail::created([
+                        $check = MstPart::where('item_no',(trim($row[10]).trim($row[11])))->first() ? null : [
                             'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                             'code_consignee' => $consignee == null ? null : $consignee->code,
                             // 'model' => trim($row[4]),
@@ -162,7 +96,159 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                             'uuid' => (string) Str::uuid(),
                             'created_at' => now(),
                             'updated_at' => now(),
-                        ]);
+                            'keterangan' => 'Part tidak terdaftar pada Master Part'
+                        ]; // check mst part
+                        return $check;
+                    } else if($this->params['datasource'] == 'YPMJ'){
+                        
+                        $item_serial = trim($row[4]);
+                        if(Str::length(trim($row[5])) > 0)
+                            $item_serial .= "-".trim($row[5]);
+
+                        $check = MstPart::where('item_serial', $item_serial)->first() ? null : [
+                            'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
+                            'item_no' => str_replace('-', '', $item_serial),
+                            'delivery' => trim($row[8]),
+                            'etd_jkt' => trim($row[8]),
+                            'etd_wh' => Carbon::parse(trim($row[8]))->subDays(2)->format('Ymd'),
+                            'etd_ypmi' => Carbon::parse(trim($row[8]))->subDays(4)->format('Ymd'),
+                            'qty' => (int)trim($row[7]),
+                            'status' => 'fixed',
+                            'order_no' => substr(trim($row[0]),0,-2),
+                            'uuid' => (string) Str::uuid(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                            'keterangan' => 'Part tidak terdaftar pada Master Part'
+                        ]; // check mst part
+                        return $check;
+                    }
+                })->toArray();
+
+                $filter_mst_part_false = array_filter($mst_part_false);
+                if(count($filter_mst_part_false) > 0) {
+                    array_map(function ($item){
+                        DB::table('regular_order_entry_upload_detail_revision')->insert($item);
+                    },$filter_mst_part_false);
+                }
+
+                //check mst box
+                $mst_box_false =  $filteredData->map(function ($row) use ($id_regular_order_entry_upload) {
+                    if($this->params['datasource'] == 'PYMAC'){
+
+                        // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
+                        //     ? '999999-9999'
+                        //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
+                        
+                        $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
+                        $check_consignee = $consignee == null ? null : $consignee->code;
+                        $check = MstBox::where('item_no',(trim($row[10]).trim($row[11])))->where('code_consignee', $check_consignee)->where('datasource',$this->params['datasource'])->first() ? null : [
+                            'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
+                            'code_consignee' => $consignee == null ? null : $consignee->code,
+                            // 'model' => trim($row[4]),
+                            'item_no' => (trim($row[10]).trim($row[11])),
+                            // 'disburse' => trim($row[12]),
+                            'delivery' => trim($row[16]),
+                            'etd_jkt' => trim($row[16]),
+                            'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
+                            'etd_ypmi' => Carbon::parse(trim($row[16]))->subDays(4)->format('Ymd'),
+                            'qty' => (int)trim($row[17]),
+                            'status' => 'fixed',
+                            'order_no' => substr(trim($row[0]),0,-2),
+                            'cust_item_no' => (trim($row[7])."-".trim($row[8])),
+                            'uuid' => (string) Str::uuid(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                            'keterangan' => 'Box tidak terdaftar pada Master Box'
+                        ]; // check mst box
+                        return $check;
+                        
+                    } else if($this->params['datasource'] == 'YPMJ'){
+
+                        $item_serial = trim($row[4]);
+                        if(Str::length(trim($row[5])) > 0)
+                            $item_serial .= "-".trim($row[5]);
+
+                        $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
+                        $check_consignee = $consignee == null ? null : $consignee->code;
+                        $check = MstBox::where('item_no_series', $item_serial)->where('code_consignee', $check_consignee)->where('datasource',$this->params['datasource'])->first() ? null : [
+                            'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
+                            'item_no' => str_replace('-', '', $item_serial),
+                            'delivery' => trim($row[8]),
+                            'etd_jkt' => trim($row[8]),
+                            'etd_wh' => Carbon::parse(trim($row[8]))->subDays(2)->format('Ymd'),
+                            'etd_ypmi' => Carbon::parse(trim($row[8]))->subDays(4)->format('Ymd'),
+                            'qty' => (int)trim($row[7]),
+                            'status' => 'fixed',
+                            'order_no' => substr(trim($row[0]),0,-2),
+                            'uuid' => (string) Str::uuid(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                            'keterangan' => 'Box tidak terdaftar pada Master Box'
+                        ]; // check mst box
+                        return $check;
+
+                    }
+                   
+                })->toArray();
+
+                $filter_mst_box_false = array_filter($mst_box_false);
+                if(count($filter_mst_box_false) > 0) {
+                    array_map(function ($item){
+                        DB::table('regular_order_entry_upload_detail_revision')->insert($item);
+                    },$filter_mst_box_false);
+                }
+
+                if(count($filter_mst_part_false) == 0 && count($filter_mst_box_false) == 0) {
+                    $filteredData->each(function ($row) use ($id_regular_order_entry_upload) {
+                        if($this->params['datasource'] == 'PYMAC'){
+                            // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
+                            //     ? '999999-9999'
+                            //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
+                            
+                            $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
+                            QueryRegularOrderEntryUploadDetail::created([
+                                'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
+                                'code_consignee' => $consignee == null ? null : $consignee->code,
+                                // 'model' => trim($row[4]),
+                                'item_no' => (trim($row[10]).trim($row[11])),
+                                // 'disburse' => trim($row[12]),
+                                'delivery' => trim($row[16]),
+                                'etd_jkt' => trim($row[16]),
+                                'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
+                                'etd_ypmi' => Carbon::parse(trim($row[16]))->subDays(4)->format('Ymd'),
+                                'qty' => (int)trim($row[17]),
+                                'status' => 'fixed',
+                                'order_no' => substr(trim($row[0]),0,-2),
+                                'cust_item_no' => (trim($row[7])."-".trim($row[8])),
+                                'uuid' => (string) Str::uuid(),
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        } else if($this->params['datasource'] == 'YPMJ'){
+
+                            $item_serial = trim($row[4]);
+                            if(Str::length(trim($row[5])) > 0)
+                                $item_serial .= "-".trim($row[5]);
+
+                            QueryRegularOrderEntryUploadDetail::created([
+                                'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
+                                // 'code_consignee' => $consignee == null ? null : $consignee->code,
+                                // 'model' => trim($row[4]),
+                                'item_no' => str_replace('-', '', $item_serial),
+                                // 'disburse' => trim($row[12]),
+                                'delivery' => trim($row[8]),
+                                'etd_jkt' => trim($row[8]),
+                                'etd_wh' => Carbon::parse(trim($row[8]))->subDays(2)->format('Ymd'),
+                                'etd_ypmi' => Carbon::parse(trim($row[8]))->subDays(4)->format('Ymd'),
+                                'qty' => (int)trim($row[7]),
+                                'status' => 'fixed',
+                                'order_no' => substr(trim($row[0]),0,-2),
+                                // 'cust_item_no' => (trim($row[7])."-".trim($row[8])),
+                                'uuid' => (string) Str::uuid(),
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
                     });
                 }
             }
