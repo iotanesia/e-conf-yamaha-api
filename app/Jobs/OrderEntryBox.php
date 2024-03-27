@@ -47,7 +47,7 @@ class OrderEntryBox implements ShouldQueue
                 'id_regular_order_entry_upload' => $params['id_regular_order_entry_upload']
             ])
             ->each(function ($item){
-                $datasource = $item->refRegularOrderEntryUploadDetail->refRegularOrderEntryUpload->datasource;
+                $datasource = $item->refRegularOrderEntryUploadDetail->refRegularOrderEntryUpload->refRegularOrderEntry->datasource;
                 $request = $item->toArray();
 
                 $detail_set = RegularOrderEntryUploadDetailSet::where('id_detail', $request['id'])->get();
