@@ -44,7 +44,7 @@ class OrderEntryBox implements ShouldQueue
        try {
             $params = $this->params;
             
-            $orderEntryUpload = RegularOrderEntryUpload::find(1289);
+            $orderEntryUpload = RegularOrderEntryUpload::find($params['id_regular_order_entry_upload']);
             $orderEntry = RegularOrderEntry::find($orderEntryUpload->id_regular_order_entry);
             $datasource = $orderEntry->datasource;
 
