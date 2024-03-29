@@ -563,9 +563,6 @@ class QueryRegularOrderEntryUpload extends Model {
             if($result){
                 foreach ($result as $item){
 
-                    if($items->datasource !== Constant::PYMAC_DATASOURCE)
-                        continue;
-
                     $store = RegularDeliveryPlan::create([
                         "model" => $item->model,
                         "item_no" => $item->item_no,
