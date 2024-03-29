@@ -610,9 +610,10 @@ class QueryRegularDeliveryPlan extends Model {
         ];
     }
 
-    public static function generateBox($params, $id_regular_order_entry, $is_transaction = true){
+    public static function generateBox($params, $id_regular_order_entry, $is_regenerate_box = false, $is_transaction = true){
         try {
-            $request = $params->all();
+            if($is_regenerate_box) $request = $params;
+            else $request = $params->all();
 
             $current_bucket = self::where('id_regular_order_entry', $id_regular_order_entry)->max('bucket_produksi') ?? 0;
 
@@ -660,12 +661,14 @@ class QueryRegularDeliveryPlan extends Model {
                     $case_number_2nd_week++;
                 }
 
-                $delivery_plan->update([
-                    'is_produksi' => 1, 
-                    "bucket_produksi" => $current_bucket+1,
-                    "period" => $period,
-                    "case_number" => $case_number
-                ]);
+                if(!$is_regenerate_box){
+                    $delivery_plan->update([
+                        'is_produksi' => 1, 
+                        "bucket_produksi" => $current_bucket+1,
+                        "period" => $period,
+                        "case_number" => $case_number
+                    ]);
+                }
 
                 $box = MstBox::where('item_no', $delivery_plan->item_no)
                     ->where('datasource', $delivery_plan->datasource)
@@ -674,7 +677,7 @@ class QueryRegularDeliveryPlan extends Model {
                 if($box){
                     $box = $box->toArray();
                     $box_capacity = $box['qty'];
-                    $qty = $delivery_plan->qty;
+                    $qty = $is_regenerate_box ? $request["qty"] : $delivery_plan->qty;
                     $loops = (int) ceil($qty / $box_capacity);
                     for ($i=0; $i < $loops ; $i++) {
                         if($qty > $box_capacity)
@@ -686,7 +689,11 @@ class QueryRegularDeliveryPlan extends Model {
                             'id_box' => $box['id'],
                             'created_at' => now(),
                             'updated_at' => now(),
-                            'qty_pcs_box' => $qty_pcs_box
+                            'qty_pcs_box' => $qty_pcs_box,
+                            'lot_packing' => $is_regenerate_box == false  ? null : $request['lot_packing'],
+                            'packing_date' => $is_regenerate_box == false ? null : $request['packing_date'],
+                            'is_labeling' => $is_regenerate_box == false ? null : $request['is_labeling'],
+                            'qrcode' => $is_regenerate_box == false ? null : $request['qrcode']
                         ];
                         $sum = $qty - $box_capacity;
                         $qty = $sum;
@@ -878,7 +885,7 @@ class QueryRegularDeliveryPlan extends Model {
         
         $data->transform(function ($item) use ($current_bucket)
         {
-            
+            $mstBox = MstBox::where('item_no', $item->item_no)->where('datasource', Constant::YPMJ_DATASOURCE)->first();            
             $totalBox = RegularDeliveryPlanBox::where('id_regular_delivery_plan', '=', $item->id)->count();
             $box = RegularDeliveryPlanBox::select('lot_packing', 'packing_date', 'qrcode')
                     ->where('id_regular_delivery_plan', '=', $item->id)
@@ -896,6 +903,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'period' => $item->period,
                 'qty' => $item->qty,
                 'box' => $totalBox,
+                'qty_per_box' => isset($mstBox) ? $mstBox->qty : 0,
                 'lot_packing' => isset($box) ? $box->lot_packing : 0,
                 'packing_date' => isset($box) ? $box->packing_date : "",
                 'qrcode' => isset($box) ? $box->qrcode : "",
@@ -1589,25 +1597,40 @@ class QueryRegularDeliveryPlan extends Model {
             }
 
             foreach ($request['data'] as $item) {
-                $delivery_plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item['id']);
-                $delivery_plan_box->update([
-                    "lot_packing" => $item['lot_packing'],
-                    "packing_date" => $item['packing_date'],
-                    "is_labeling" => Constant::IS_ACTIVE,
-                    "qrcode" => $qr_name
-                ]);
-
                 $delivery_plan = RegularDeliveryPlan::find($item['id']);
+                $current_qty = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item['id'])->sum("qty_pcs_box");
+                if($current_qty === $item["qty"]){
+                    $delivery_plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item['id']);
+                    $delivery_plan_box->update([
+                        "lot_packing" => $item['lot_packing'],
+                        "packing_date" => $item['packing_date'],
+                        "is_labeling" => Constant::IS_ACTIVE,
+                        "qrcode" => $qr_name
+                    ]);
+                } else {
+                    RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item['id'])->delete();
+                    $_param = [
+                        "id" => [$item["id"]],
+                        "lot_packing" => $item['lot_packing'],
+                        "packing_date" => $item['packing_date'],
+                        "is_labeling" => Constant::IS_ACTIVE,
+                        "qrcode" => $qr_name,
+                        "qty"  => $item['qty']
+                    ];
+                    self::generateBox($_param, $delivery_plan->id_regular_order_entry, true);
+                }
+
                 $delivery_plan->update([
-                    'code_consignee' => $item['code_consignee']
+                    'code_consignee' => $item['code_consignee'],
+                    'qty'   => $item["qty"]
                 ]);
 
                 $queryStok = RegularStokConfirmation::query();
                 $is_stok = $queryStok->where('id_regular_delivery_plan', $item['id'])->first();
                 if ($is_stok) {
                     $is_stok->update([
-                        'production' => count($id) > 1 ? $is_stok->production + $item['qty'] : $is_stok->production + $check->qty_pcs_box,
-                        'qty' => count($id) > 1 ? $is_stok->qty + $item['qty'] : $is_stok->qty + $check->qty_pcs_box,
+                        'production' => $is_stok->production + $item['qty'],
+                        'qty' => $is_stok->qty + $item['qty'],
                     ]);
                     $id_stock = $is_stok->id;
                 } else {
