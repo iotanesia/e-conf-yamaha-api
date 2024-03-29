@@ -143,9 +143,10 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 $set["num_set"] = $item->num_set;
                 // $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
                 $set["box"] = null;
-                if($item->datasource == Constant::PYMAC_DATASOURCE)
+                $datasource = $item->refRegularOrderEntryUpload->refRegularOrderEntry->datasource;
+                if($datasource == Constant::PYMAC_DATASOURCE)
                     $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
-                else if($item->datasource == Constant::YPMJ_DATASOURCE){
+                else if($datasource == Constant::YPMJ_DATASOURCE){
                     if(isset($item->bucket_produksi))
                         $set["box"] = self::getCountBox($item->id);
                     else {
