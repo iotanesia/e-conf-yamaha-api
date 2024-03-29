@@ -836,7 +836,12 @@ class QueryRegularDeliveryPlan extends Model {
                         $period = $p["period"];
                 }
 
-                
+                $ypmj_box = MstBox::where('item_no', $item->item_no)->where('datasource', 'YPMJ')->first();
+                $_temp = [];
+                if(isset($ypmj_box) && $ypmj_box->qty > 0)
+                    $_temp[] = ["qty" => $ypmj_box->qty. ' x '.ceil($item->qty / $ypmj_box->qty)];
+                $box = $_temp;
+
                 return [
                     'id' => $item->id,
                     'item_no' => $item->item_no,
@@ -845,6 +850,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'code_consignee' => $item->code_consignee ?? null,
                     'name_consignee' => $item->refConsignee->nick_name ?? null,
                     'period' => $period,
+                    'box' => $box
                 ];
             }),
             'last_page' => $data->lastPage(),
