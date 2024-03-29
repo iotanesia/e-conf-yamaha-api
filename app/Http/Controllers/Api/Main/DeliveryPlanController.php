@@ -65,22 +65,22 @@ class DeliveryPlanController extends Controller
         }
     }
 
-    public function saveSelectedDetailProduksi(Request $request, $id_iregular_order_entry)
+    public function getSummary(Request $request,$id)
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularDeliveryPlan::saveSelectedDetailProduksi($request, $id_iregular_order_entry)
+                QueryRegularDeliveryPlan::getSummary($request,$id)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }
     }
 
-    public function generateBox(Request $request)
+    public function generateBox(Request $request, $id_iregular_order_entry)
     {
         try {
             return ResponseInterface::responseData(
-                QueryRegularDeliveryPlan::generateBox($request)
+                QueryRegularDeliveryPlan::generateBox($request, $id_iregular_order_entry)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -92,6 +92,17 @@ class DeliveryPlanController extends Controller
         try {
             return ResponseInterface::responseData(
                 QueryRegularDeliveryPlan::getGeneratedBox($request, $id)
+            );
+        } catch (\Throwable $th) {
+            return ResponseInterface::setErrorResponse($th);
+        }
+    }
+
+    public function getSelectedPart(Request $request, $id)
+    {
+        try {
+            return ResponseInterface::responseData(
+                QueryRegularDeliveryPlan::getSelectedPart($request, $id)
             );
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
@@ -202,18 +213,6 @@ class DeliveryPlanController extends Controller
             return ResponseInterface::responseData(
                 QueryRegularDeliveryPlan::storeLabelYpmj($request)
             );
-        } catch (\Throwable $th) {
-            return ResponseInterface::setErrorResponse($th);
-        }
-    }
-
-    public function printLabelingYpmj(Request $request, $id_iregular_order_entry)
-    {
-        try {
-            $filename = 'labeling-ypmj-'.$id_iregular_order_entry.'.pdf';
-            $pathToFile =  storage_path().'/app/labeling/'.$filename;
-            $data = QueryRegularDeliveryPlan::printLabelingYpmj($request,$id_iregular_order_entry,$pathToFile,$filename);
-            return ResponseInterface::responseViewFile($pathToFile,$filename);
         } catch (\Throwable $th) {
             return ResponseInterface::setErrorResponse($th);
         }

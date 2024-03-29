@@ -28,10 +28,7 @@ class RegularDeliveryPlanBox extends Model
         "updated_at",
         "updated_by",
         "deleted_at",
-        "id_prospect_container_creation",
-        "case_number",
-        "period",
-        "box"
+        "id_prospect_container_creation"
     ];
 
     public function refBox()

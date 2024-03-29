@@ -38,7 +38,9 @@ class RegularDeliveryPlan extends Model
         "datasource",
         "jenis",
         "is_produksi",
-        "bucket_produksi"
+        "bucket_produksi",
+        "case_number",
+        "period"
     ];
 
     public static function boot()

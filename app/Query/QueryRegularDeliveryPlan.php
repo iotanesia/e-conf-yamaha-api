@@ -280,6 +280,7 @@ class QueryRegularDeliveryPlan extends Model {
             $set["etd_ypmi"] = $item->etd_ypmi;
             $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
 
+
             unset($item->refRegularOrderEntry);
             return $set;
         });
@@ -491,7 +492,22 @@ class QueryRegularDeliveryPlan extends Model {
             $set["part_set"] = $item->part_set;
             $set["num_set"] = $item->num_set;
             $set["is_produksi"] = $item->is_produksi;
-            $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
+            // $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
+            $set["box"] = null;
+            if($item->datasource == Constant::PYMAC_DATASOURCE)
+                $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
+            else if($item->datasource == Constant::YPMJ_DATASOURCE){
+                if(isset($item->bucket_produksi))
+                    $set["box"] = self::getCountBox($item->id);
+                else {
+                    $ypmj_box = MstBox::where('item_no', $item->item_no)->where('datasource', 'YPMJ')->first();
+                    $set["box"] = null;
+                    $_temp = [];
+                    if(isset($ypmj_box) && $ypmj_box->qty > 0)
+                        $_temp[] = ["qty" => $ypmj_box->qty. ' x '.ceil($item->qty / $ypmj_box->qty)];
+                    $set["box"] = $_temp;
+                }
+            }
 
             unset($item->refRegularOrderEntry);
             return $set;
@@ -569,12 +585,43 @@ class QueryRegularDeliveryPlan extends Model {
         ];
     }
 
-    public static function generateBox($params, $is_transaction = true){
+    public static function getSummary($params,$id_regular_order_entry)
+    {
+        $query = self::select([
+            'regular_delivery_plan.id_regular_order_entry',
+            'regular_order_entry.year',
+            'regular_order_entry.month',
+            'regular_order_entry.datasource',
+            'regular_delivery_plan.bucket_produksi'
+          ])
+            ->leftJoin('regular_order_entry', 'regular_order_entry.id', '=', 'regular_delivery_plan.id_regular_order_entry')
+            ->where('regular_delivery_plan.is_produksi', '=', 1)
+            ->where('regular_delivery_plan.id_regular_order_entry', '=', $id_regular_order_entry)
+            ->groupBy('regular_delivery_plan.id_regular_order_entry', 'regular_order_entry.year', 'regular_order_entry.month', 'regular_order_entry.datasource', 'regular_delivery_plan.bucket_produksi')
+            ->orderBy('regular_delivery_plan.bucket_produksi', 'asc');
+
+        $data = $query->paginate($params->limit ?? null);
+
+
+        return [
+            'items' => $data->items(),
+            'last_page' => $data->lastPage(),
+
+        ];
+    }
+
+    public static function generateBox($params, $id_regular_order_entry, $is_transaction = true){
         try {
             $request = $params->all();
 
+            $current_bucket = self::where('id_regular_order_entry', $id_regular_order_entry)->max('bucket_produksi') ?? 0;
+
+            foreach($request["id"] as $id){
+                
+            }
+
             $etd_list = self::select('etd_jkt')
-                ->whereIn('id', $request["id"])
+                ->where('id_regular_order_entry', $id_regular_order_entry)
                 ->groupBy("etd_jkt")
                 ->orderBy("etd_jkt", "asc")
                 ->get();
@@ -584,6 +631,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             foreach($request["id"] as $id){
                 $delivery_plan = self::find($id);
+                
 
                 $index = -1;
                 $loop = 0;
@@ -612,11 +660,41 @@ class QueryRegularDeliveryPlan extends Model {
                     $case_number_2nd_week++;
                 }
 
-                RegularDeliveryPlanBox::create([
-                    "id_regular_delivery_plan" => $id,
+                $delivery_plan->update([
+                    'is_produksi' => 1, 
+                    "bucket_produksi" => $current_bucket+1,
                     "period" => $period,
                     "case_number" => $case_number
                 ]);
+
+                $box = MstBox::where('item_no', $delivery_plan->item_no)
+                    ->where('datasource', $delivery_plan->datasource)
+                    ->first();
+
+                if($box){
+                    $box = $box->toArray();
+                    $box_capacity = $box['qty'];
+                    $qty = $delivery_plan->qty;
+                    $loops = (int) ceil($qty / $box_capacity);
+                    for ($i=0; $i < $loops ; $i++) {
+                        if($qty > $box_capacity)
+                            $qty_pcs_box = $box_capacity;
+                        else
+                            $qty_pcs_box = $qty;
+                        $item = [
+                            "id_regular_delivery_plan" => $id,
+                            'id_box' => $box['id'],
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                            'qty_pcs_box' => $qty_pcs_box
+                        ];
+                        $sum = $qty - $box_capacity;
+                        $qty = $sum;
+
+                        RegularDeliveryPlanBox::create($item);
+                    }
+
+                }
             }
 
             if($is_transaction) DB::commit();
@@ -626,25 +704,7 @@ class QueryRegularDeliveryPlan extends Model {
         }
     }
 
-    public static function saveSelectedDetailProduksi($params, $id_regular_order_entry, $is_trasaction = true){
-        
-        try {
-            $request = $params->all();
-            
-            $current_bucket = self::where('id_regular_order_entry', $id_regular_order_entry)->max('bucket_produksi') ?? 0;
-
-            foreach($request["id"] as $id){
-                self::where(['id' => $id])->update(['is_produksi' => 1, "bucket_produksi" => $current_bucket+1]);
-            }
-
-            if($is_trasaction) DB::commit();
-        } catch (\Throwable $th) {
-            if($is_trasaction) DB::rollBack();
-            throw $th;
-        }
-    }
-
-    public static function detailProduksiBox($params,$id)
+   public static function detailProduksiBox($params,$id)
     {
         $data = RegularDeliveryPlanBox::where('id_regular_delivery_plan',$id)
                                         ->orderBy('qty_pcs_box','desc')
@@ -673,34 +733,168 @@ class QueryRegularDeliveryPlan extends Model {
         ];
     }
 
+    public static function getSelectedPart($params,$id_regular_order_entry)
+    {
+        $ids = [];
+        $explode = explode(",", $params["id"]);
+        foreach($explode as $e){
+            array_push($ids, intval(trim($e)));
+        }
+
+        $etd_list = self::select('etd_jkt')
+                ->where('id_regular_order_entry',$id_regular_order_entry)
+                ->groupBy("etd_jkt")
+                ->orderBy("etd_jkt", "asc")
+                ->get();
+
+            
+        $periods = [];
+
+        foreach($ids as $id){
+            $delivery_plan = self::find($id);
+
+            $index = -1;
+            $loop = 0;
+
+            foreach($etd_list as $etd){
+                if((string) $delivery_plan->etd_jkt === (string) $etd->etd_jkt)
+                    $index = $loop;
+                $loop++;
+            }
+
+            if($index == -1)
+                continue;
+
+            $case_number = 0;
+            $period = "";
+            $dateTime = new \DateTime($delivery_plan->etd_jkt);
+            $month = $dateTime->format('M');
+
+            if($index == 0){
+                $period = "1st ".$month;
+            } else if($index == 1){
+                $period = "2nd ".$month;
+            }
+
+            array_push($periods, ["id" => $id, "period" => $period]);
+        }
+
+
+        $query = self::where('id_regular_order_entry',$id_regular_order_entry)
+            ->where(function ($query) use ($params){
+            $category = $params->category ?? null;
+            $kueri = $params->kueri ?? null;
+        
+            if ($category && $kueri) {
+                if ($category == 'cust_name') {
+                    $query->whereHas('refConsignee', function ($q) use ($kueri) {
+                        $q->where('nick_name', 'like', '%' . $kueri . '%');
+                    });
+                } elseif ($category == 'item_name') {
+                    $query->whereHas('refPart', function ($q) use ($kueri) {
+                        $q->where('description', 'like', '%' . $kueri . '%');
+                    });
+                }elseif ($category == 'etd_ypmi') {
+                    $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_wh') {
+                    $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                }elseif ($category == 'etd_jkt') {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%');
+                } else {
+                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                        ->orWhere('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%')
+                        ->orWhere('order_no', 'like', '%' . $kueri . '%')
+                        ->orWhere('cust_item_no', 'like', '%' . $kueri . '%')
+                        ->orWhere('qty', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                }
+            }
+
+            // $filterdate = Helper::filterDate($params);
+            $date_from = str_replace('-','',$params->date_from);
+            $date_to = str_replace('-','',$params->date_to);
+            if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
+        })
+        ->whereIn("id", $ids);
+
+        if($params->dropdown == Constant::IS_ACTIVE) {
+            $params->limit = null;
+            $params->page = 1;
+        }
+        
+        $data = $query
+        ->orderBy('id','asc')
+        ->paginate($params->limit ?? null);
+
+        return [
+            'items' => $data->transform(function ($item) use ($periods){
+
+                $period = "";
+                foreach($periods as $p){
+                    if($p["id"] == $item->id)
+                        $period = $p["period"];
+                }
+
+                
+                return [
+                    'id' => $item->id,
+                    'item_no' => $item->item_no,
+                    'item_name' => $item->refPart->description,
+                    'qty' => $item->qty,
+                    'code_consignee' => $item->code_consignee ?? null,
+                    'name_consignee' => $item->refConsignee->nick_name ?? null,
+                    'period' => $period,
+                ];
+            }),
+            'last_page' => $data->lastPage(),
+            'attributes' => [
+                'total' => $data->total(),
+                'last_page' => $data->lastPage(),
+                'current_page' => $data->currentPage(),
+                'from' => $data->currentPage(),
+                'per_page' => (int) $data->perPage(),
+            ]
+        ];
+    }
+
     public static function getGeneratedBox($params,$id_regular_order_entry)
     {
-        $current_bucket = self::where('id_regular_order_entry', $id_regular_order_entry)->max('bucket_produksi') ?? 0;
+        $bucket = isset($params["bucket_produksi"]) ? $params["bucket_produksi"] : null; 
+        $current_bucket = isset($bucket) ? $bucket : self::where('id_regular_order_entry', $id_regular_order_entry)->max('bucket_produksi') ?? 0;
 
-        $data = RegularDeliveryPlanBox::whereHas('refRegularDeliveryPlan', function($query) use ($id_regular_order_entry, $current_bucket) {
-            $query->where('id_regular_order_entry', $id_regular_order_entry)->where('bucket_produksi', $current_bucket);
-        })
+        $data = RegularDeliveryPlan::where('id_regular_order_entry', $id_regular_order_entry)
+        ->where('bucket_produksi', $current_bucket)
+        ->orderBy('etd_jkt', 'asc')
+        ->orderBy('case_number', 'asc')
+
         ->paginate($params->limit ?? null);
         
-        $data->transform(function ($item)
+        $data->transform(function ($item) use ($current_bucket)
         {
+            
+            $totalBox = RegularDeliveryPlanBox::where('id_regular_delivery_plan', '=', $item->id)->count();
+            $box = RegularDeliveryPlanBox::select('lot_packing', 'packing_date', 'qrcode')
+                    ->where('id_regular_delivery_plan', '=', $item->id)
+                    ->groupBy('lot_packing', 'packing_date', 'qrcode')
+                    ->first();
+
             return [
+                'id_regular_order_entry' => $item->id_regular_order_entry,
                 'id' => $item->id,
-                'id_regular_delivery_plan' => $item->id_regular_delivery_plan,
-                'item_no' => $item->refRegularDeliveryPlan->refPart->item_serial,
-                'item_name' => $item->refRegularDeliveryPlan->refPart->description,
-                'code_consignee' => $item->refRegularDeliveryPlan->code_consignee ?? null,
-                'name_consignee' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
+                'item_no' => $item->refPart->item_serial,
+                'item_name' => $item->refPart->description,
+                'code_consignee' => $item->code_consignee ?? null,
+                'name_consignee' => $item->refConsignee->nick_name ?? null,
                 'case_number' => $item->case_number,
                 'period' => $item->period,
-                'qty_pcs_box' => $item->qty_pcs_box,
-                'qty' => $item->refRegularDeliveryPlan->qty,
-                'box'   => $item->box,
-                'lot_packing' => $item->lot_packing,
-                'packing_date' => $item->packing_date,
-                'is_labeling' => $item->is_labeling,
-                'qrcode' => $item->qrcode,
-                'qrcode_img' => route('file.download').'?filename='.$item->qrcode.'&source=qr_labeling',
+                'qty' => $item->qty,
+                'box' => $totalBox,
+                'lot_packing' => isset($box) ? $box->lot_packing : 0,
+                'packing_date' => isset($box) ? $box->packing_date : "",
+                'qrcode' => isset($box) ? $box->qrcode : "",
+                'qrcode_img' => isset($box) ? route('file.download').'?filename='.$box->qrcode.'&source=qr_labeling' : "",
+                'bucket_produksi' => $current_bucket
             ];
         });
 
@@ -1374,53 +1568,65 @@ class QueryRegularDeliveryPlan extends Model {
             $request = $params->all();
 
             foreach ($request['data'] as $validasi) {
+                if(!$validasi['code_consignee']) throw new \Exception("Please input customer", 400);
                 if(!$validasi['packing_date']) throw new \Exception("Please input packing date", 400);
                 if(!$validasi['lot_packing']) throw new \Exception("Please input lot packing", 400);
             }
 
             $consignee = MstConsignee::where('code', $request['data'][0]['code_consignee'])->first();
             $qr_name = (string) Str::uuid().'.png';
-            $qr_key = "YPMJ | ".$consignee->nick_name. " | ".$request['data'][0]['lot_packing']. " | ".date('d/m/Y', strtotime($request['data'][0]['packing_date']));
-            QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
+            $qr_key = "";
+            if(sizeof($request['data']) > 0){
+                $delivery_plan = RegularDeliveryPlan::find($request['data'][0]['id']);
+                $qr_key = "YPMJ-".$delivery_plan->id_regular_order_entry."-".$delivery_plan->bucket_produksi; 
+                QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
+            }
 
             foreach ($request['data'] as $item) {
-                $delivery_plan_box = RegularDeliveryPlanBox::find($item['id']);
+                $delivery_plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item['id']);
                 $delivery_plan_box->update([
-                    "qtc_pcs_box" => $item['qty'],
                     "lot_packing" => $item['lot_packing'],
                     "packing_date" => $item['packing_date'],
                     "is_labeling" => Constant::IS_ACTIVE,
-                    "box" => $item['box'],
                     "qrcode" => $qr_name
                 ]);
 
-                $delivery_plan = RegularDeliveryPlan::find($item['id_regular_delivery_plan']);
+                $delivery_plan = RegularDeliveryPlan::find($item['id']);
                 $delivery_plan->update([
                     'code_consignee' => $item['code_consignee']
                 ]);
 
                 $queryStok = RegularStokConfirmation::query();
-                $createStock = $queryStok->create([
-                    "id_regular_delivery_plan" => $item['id_regular_delivery_plan'],
-                    "count_box" => $item["box"],
-                    "production" => $item["qty"],
-                    "qty" => $item["qty"],
-                    "in_dc" => Constant::IS_NOL,
-                    "in_wh" => Constant::IS_NOL,
-                    "status_instock" => Constant::STS_STOK,
-                    "status_outstock" => Constant::STS_STOK,
-                    "etd_ypmi" => $delivery_plan->etd_ypmi,
-                    "etd_wh" => $delivery_plan->etd_wh,
-                    "etd_jkt" => $delivery_plan->etd_jkt,
-                    "code_consignee" => $item['code_consignee'],
-                    "datasource" => "YPMJ",
-                    "is_actual" => 0
-                ]);
-                $id_stock = $createStock->id;
+                $is_stok = $queryStok->where('id_regular_delivery_plan', $item['id'])->first();
+                if ($is_stok) {
+                    $is_stok->update([
+                        'production' => count($id) > 1 ? $is_stok->production + $item['qty'] : $is_stok->production + $check->qty_pcs_box,
+                        'qty' => count($id) > 1 ? $is_stok->qty + $item['qty'] : $is_stok->qty + $check->qty_pcs_box,
+                    ]);
+                    $id_stock = $is_stok->id;
+                } else {
+                    $createStock = $queryStok->create([
+                        "id_regular_delivery_plan" => $item['id'],
+                        "count_box" => $item['box'],
+                        "production" => $item['qty'],
+                        "qty" => $item['qty'],
+                        "in_dc" => Constant::IS_NOL,
+                        "in_wh" => Constant::IS_NOL,
+                        "status_instock" => Constant::STS_STOK,
+                        "status_outstock" => Constant::STS_STOK,
+                        "etd_ypmi" => $delivery_plan->etd_ypmi,
+                        "etd_wh" => $delivery_plan->etd_wh,
+                        "etd_jkt" => $delivery_plan->etd_jkt,
+                        "code_consignee" => $item['code_consignee'],
+                        "datasource" => "YPMJ",
+                        "is_actual" => 0
+                    ]);
+                    $id_stock = $createStock->id;
+                }
     
                 RegularStokConfirmationTemp::create([
                     "id_stock_confirmation" => $id_stock, 
-                    "id_regular_delivery_plan" => $item['id_regular_delivery_plan'],
+                    "id_regular_delivery_plan" => $item['id'],
                     "count_box" => $item["box"],
                     "production" => $item["qty"],
                     "qty" => $item["qty"],
@@ -1443,28 +1649,6 @@ class QueryRegularDeliveryPlan extends Model {
         } catch (\Throwable $th) {
             if($is_trasaction) DB::rollBack();
             throw $th;
-        }
-    }
-
-    public static function printLabelingYpmj($request,$id_iregular_order_entry,$pathToFile,$filename){
-        try {
-            $data = self::getGeneratedBox($request, $id_iregular_order_entry);
-
-            $pathQr = storage_path() . '/app//qrcode/label/'. $data['items'][0]['qrcode'];
-            $typeQr = pathinfo($pathQr, PATHINFO_EXTENSION);
-            $dataQr = file_get_contents($pathQr);
-            $base64Qr = 'data:image/' . $typeQr . ';base64,' . base64_encode($dataQr);
-            
-            Pdf::loadView('pdf.labeling.labeling', [
-                'data' => $data['items'],
-                'qrcode' => $base64Qr,
-                'customer' => $data['items'][0]['name_consignee']
-            ])
-            ->save($pathToFile)
-            ->setPaper('A4','landscape')
-            ->download($filename);
-        } catch (\Throwable $th) {
-            return Helper::setErrorResponse($th);
         }
     }
 

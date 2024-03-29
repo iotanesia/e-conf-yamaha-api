@@ -563,27 +563,31 @@ class QueryRegularOrderEntryUpload extends Model {
             if($result){
                 foreach ($result as $item){
 
-                    $store = RegularDeliveryPlan::create([
-                       "model" => $item->model,
-                       "item_no" => $item->item_no,
-                       "code_consignee" => $item->code_consignee,
-                       "disburse" => $item->disburse,
-                       "delivery" => $item->delivery,
-                       "qty" => $item->qty,
-                       "order_no" => $item->order_no,
-                       "cust_item_no" => $item->cust_item_no,
-                       "etd_jkt" => $item->etd_jkt,
-                       "etd_ypmi" => $item->etd_ypmi,
-                       "etd_wh" => $item->etd_wh,
-                       "id_regular_order_entry" => $upload->id_regular_order_entry,
-                       "created_at" => now(),
-                       "is_inquiry" => 0,
-                       'datasource' => $item->datasource,
-                    //    "id_regular_order_entry_upload_detail" => $item->id,
-                       "uuid" => (string) Str::uuid(),
-                       "jenis" => $item->item_no == null ? 'set' : 'single',
-                       "is_produksi" => $item->datasource == Constant::YPMJ_DATASOURCE ? 0 : null
-                   ]);
+                    if($items->datasource == Constant::PYMAC_DATASOURCE){
+
+                        $store = RegularDeliveryPlan::create([
+                            "model" => $item->model,
+                            "item_no" => $item->item_no,
+                            "code_consignee" => $item->code_consignee,
+                            "disburse" => $item->disburse,
+                            "delivery" => $item->delivery,
+                            "qty" => $item->qty,
+                            "order_no" => $item->order_no,
+                            "cust_item_no" => $item->cust_item_no,
+                            "etd_jkt" => $item->etd_jkt,
+                            "etd_ypmi" => $item->etd_ypmi,
+                            "etd_wh" => $item->etd_wh,
+                            "id_regular_order_entry" => $upload->id_regular_order_entry,
+                            "created_at" => now(),
+                            "is_inquiry" => 0,
+                            'datasource' => $item->datasource,
+                         //    "id_regular_order_entry_upload_detail" => $item->id,
+                            "uuid" => (string) Str::uuid(),
+                            "jenis" => $item->item_no == null ? 'set' : 'single',
+                            "is_produksi" => $item->datasource == Constant::YPMJ_DATASOURCE ? 0 : null
+                        ]);
+     
+                    }
 
                    $box = VFinishBox::where([
                         "model" => $item->model,

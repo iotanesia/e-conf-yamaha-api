@@ -84,15 +84,15 @@ Route::prefix('v1/regular')
         Route::group(['prefix' => 'produksi'],function (){
             Route::get('/{id}',[DeliveryPlanController::class,'showProduksi']);
             Route::get('/selected/{id}',[DeliveryPlanController::class,'getSelectedDetailProduksi']);
-            Route::post('/selected/{id}',[DeliveryPlanController::class,'saveSelectedDetailProduksi']);
+            Route::get('/summary/{id}',[DeliveryPlanController::class,'getSummary']);
             Route::get('box/{id}',[DeliveryPlanController::class,'showProduksiBox']);
             Route::post('/labeling',[DeliveryPlanController::class,'storeLabeling']);
             Route::post('/labeling-ypmj',[DeliveryPlanController::class,'storeLabelingYpmj']);
-            Route::get('/labeling-ypmj/print/{id}',[DeliveryPlanController::class,'printLabelingYpmj']);
             Route::get('box/labeling/{id}',[DeliveryPlanController::class,'labeling']);
-            Route::post('/generate-box',[DeliveryPlanController::class,'generateBox']);
-            Route::put('/edit-qty',[DeliveryPlanController::class,'editQty']);
+            Route::post('/generate-box/{id}',[DeliveryPlanController::class,'generateBox']);
             Route::get('/generated-box/{id}',[DeliveryPlanController::class,'getGeneratedBox']);
+            Route::put('/edit-qty',[DeliveryPlanController::class,'editQty']);
+            Route::get('/selected-part/{id}',[DeliveryPlanController::class,'getSelectedPart']);
         });
 
         Route::group(['prefix' => 'prospect-container'],function (){
