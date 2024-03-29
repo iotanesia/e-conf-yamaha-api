@@ -141,7 +141,22 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 $set["etd_ypmi"] = $item->etd_ypmi;
                 $set["part_set"] = $item->part_set;
                 $set["num_set"] = $item->num_set;
-                $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
+                // $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
+                $set["box"] = null;
+                if($item->datasource == Constant::PYMAC_DATASOURCE)
+                    $set["box"] = $item->item_no == null ? [$box] : self::getCountBox($item->id);
+                else if($item->datasource == Constant::YPMJ_DATASOURCE){
+                    if(isset($item->bucket_produksi))
+                        $set["box"] = self::getCountBox($item->id);
+                    else {
+                        $ypmj_box = MstBox::where('item_no', $item->item_no)->where('datasource', 'YPMJ')->first();
+                        $set["box"] = null;
+                        $_temp = [];
+                        if(isset($ypmj_box) && $ypmj_box->qty > 0)
+                            $_temp[] = ["qty" => $ypmj_box->qty. ' x '.ceil($item->qty / $ypmj_box->qty)];
+                        $set["box"] = $_temp;
+                    }
+                }
 
                 unset($item->refRegularOrderEntryUpload);
                 return $set;
