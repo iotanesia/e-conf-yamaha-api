@@ -40,7 +40,8 @@ class RegularDeliveryPlan extends Model
         "is_produksi",
         "bucket_produksi",
         "case_number",
-        "period"
+        "period",
+        "customer_ypmj"
     ];
 
     public static function boot()

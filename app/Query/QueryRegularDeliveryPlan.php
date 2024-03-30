@@ -434,7 +434,11 @@ class QueryRegularDeliveryPlan extends Model {
         ->paginate($params->limit ?? null);
 
         $data->transform(function ($item){
-            $custname = self::getCustName($item->code_consignee);
+            $custname = "";
+            if($item->datasource == Constant::PYMAC_DATASOURCE)
+                $custname = self::getCustName($item->code_consignee);
+            else if($item->datasource == Constant::YPMJ_DATASOURCE)
+                $custname = $item->customer_ypmj;
 
             $itemname = self::getPart($item->item_no);
 
@@ -690,6 +694,7 @@ class QueryRegularDeliveryPlan extends Model {
                             'created_at' => now(),
                             'updated_at' => now(),
                             'qty_pcs_box' => $qty_pcs_box,
+                            'customer_ypmj' => "YMCDA",
                             'lot_packing' => $is_regenerate_box == false  ? null : $request['lot_packing'],
                             'packing_date' => $is_regenerate_box == false ? null : $request['packing_date'],
                             'is_labeling' => $is_regenerate_box == false ? null : $request['is_labeling'],
@@ -854,8 +859,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'item_no' => $item->item_no,
                     'item_name' => $item->refPart->description,
                     'qty' => $item->qty,
-                    'code_consignee' => $item->code_consignee ?? null,
-                    'name_consignee' => $item->refConsignee->nick_name ?? null,
+                    'customer_ypmj' => $item->customer_ypmj,
                     'period' => $period,
                     'box' => $box
                 ];
@@ -897,12 +901,12 @@ class QueryRegularDeliveryPlan extends Model {
                 'id' => $item->id,
                 'item_no' => $item->refPart->item_serial,
                 'item_name' => $item->refPart->description,
-                'code_consignee' => $item->code_consignee ?? null,
-                'name_consignee' => $item->refConsignee->nick_name ?? null,
+                'customer_ypmj' => $item->customer_ypmj,
                 'case_number' => $item->case_number,
                 'period' => $item->period,
                 'qty' => $item->qty,
                 'box' => $totalBox,
+                'box_no' => isset($mstBox) ? $mstBox->no_box : $totalBox,
                 'qty_per_box' => isset($mstBox) ? $mstBox->qty : 0,
                 'lot_packing' => isset($box) ? $box->lot_packing : 0,
                 'packing_date' => isset($box) ? $box->packing_date : "",
@@ -1582,12 +1586,12 @@ class QueryRegularDeliveryPlan extends Model {
             $request = $params->all();
 
             foreach ($request['data'] as $validasi) {
-                if(!$validasi['code_consignee']) throw new \Exception("Please input customer", 400);
+                if(!$validasi['customer_ypmj']) throw new \Exception("Please input customer", 400);
                 if(!$validasi['packing_date']) throw new \Exception("Please input packing date", 400);
                 if(!$validasi['lot_packing']) throw new \Exception("Please input lot packing", 400);
             }
 
-            $consignee = MstConsignee::where('code', $request['data'][0]['code_consignee'])->first();
+            // $consignee = MstConsignee::where('code', $request['data'][0]['code_consignee'])->first();
             $qr_name = (string) Str::uuid().'.png';
             $qr_key = "";
             if(sizeof($request['data']) > 0){
@@ -1621,7 +1625,7 @@ class QueryRegularDeliveryPlan extends Model {
                 }
 
                 $delivery_plan->update([
-                    'code_consignee' => $item['code_consignee'],
+                    'customer_ypmj' => $item['customer_ypmj'],
                     'qty'   => $item["qty"]
                 ]);
 
@@ -1646,7 +1650,8 @@ class QueryRegularDeliveryPlan extends Model {
                         "etd_ypmi" => $delivery_plan->etd_ypmi,
                         "etd_wh" => $delivery_plan->etd_wh,
                         "etd_jkt" => $delivery_plan->etd_jkt,
-                        "code_consignee" => $item['code_consignee'],
+                        // "code_consignee" => $item['code_consignee'],
+                        "customer_ypmj" => $item['customer_ypmj'],
                         "datasource" => "YPMJ",
                         "is_actual" => 0
                     ]);
@@ -1666,7 +1671,8 @@ class QueryRegularDeliveryPlan extends Model {
                     "etd_ypmi" => $delivery_plan->etd_ypmi,
                     "etd_wh" => $delivery_plan->etd_wh,
                     "etd_jkt" => $delivery_plan->etd_jkt,
-                    "code_consignee" => $item['code_consignee'],
+                    // "code_consignee" => $item['code_consignee'],
+                    "customer_ypmj" => $item['customer_ypmj'],
                     "datasource" => "YPMJ",
                     "is_actual" => 0,
                     "qr_key" => $qr_key
