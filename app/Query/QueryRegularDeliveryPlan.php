@@ -82,6 +82,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             });
 
+            if($params->datasource) $query->where('datasource', $params->datasource);
             if($params->withTrashed == 'true') $query->withTrashed();
             if($params->dropdown == Constant::IS_ACTIVE) {
                 $params->limit = null;
@@ -1597,7 +1598,7 @@ class QueryRegularDeliveryPlan extends Model {
             $qr_key = "";
             if(sizeof($request['data']) > 0){
                 $delivery_plan = RegularDeliveryPlan::find($request['data'][0]['id']);
-                $qr_key = "YPMJ-".$delivery_plan->id_regular_order_entry."-".$delivery_plan->bucket_produksi; 
+                $qr_key = "YPMJ-".$delivery_plan->id_regular_order_entry."-".$delivery_plan->bucket_produksi."|".$request['data'][0]['customer_ypmj']."|".$request['data'][0]['lot_packing'];
                 QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
             }
 
@@ -1676,7 +1677,7 @@ class QueryRegularDeliveryPlan extends Model {
                     "customer_ypmj" => $item['customer_ypmj'],
                     "datasource" => "YPMJ",
                     "is_actual" => 0,
-                    "qr_key" => $qr_key
+                    "qr_key" => explode("|", $qr_key)[0]
                 ]);
     
             }
