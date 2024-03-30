@@ -897,6 +897,10 @@ class QueryRegularDeliveryPlan extends Model {
                     ->groupBy('lot_packing', 'packing_date', 'qrcode')
                     ->first();
 
+            $labeling = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id)->where('is_labeling', 0)->get();
+            $is_labeling = 0;
+            if(sizeof($labeling) == 0)
+                $is_labeling = 1;
             return [
                 'id_regular_order_entry' => $item->id_regular_order_entry,
                 'id' => $item->id,
@@ -906,6 +910,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'case_number' => $item->case_number,
                 'period' => $item->period,
                 'qty' => $item->qty,
+                'is_labeling' => $is_labeling,
                 'box' => $totalBox,
                 'box_no' => isset($mstBox) && isset($mstBox->no_box) ? $mstBox->no_box : "-",
                 'qty_per_box' => isset($mstBox) ? $mstBox->qty : 0,
@@ -1666,8 +1671,8 @@ class QueryRegularDeliveryPlan extends Model {
                     "count_box" => $item["box"],
                     "production" => $item["qty"],
                     "qty" => $item["qty"],
-                    "in_dc" => Constant::IS_NOL,
-                    "in_wh" => Constant::IS_NOL,
+                    "in_dc" => $item["qty"],
+                    "in_wh" => $item["qty"],
                     "status_instock" => Constant::STS_STOK,
                     "status_outstock" => Constant::STS_STOK,
                     "etd_ypmi" => $delivery_plan->etd_ypmi,
