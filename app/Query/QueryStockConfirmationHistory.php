@@ -395,8 +395,9 @@ class QueryStockConfirmationHistory extends Model
                     }
                 }
 
+                $datasource = $item->refRegularDeliveryPlan->datasource;
                 $item->status_tracking = $status ?? null;
-                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+                $item->cust_name = $datasource == Constant::YPMJ_DATASOURCE ? $item->refRegularDeliveryPlan->customer_ypmj : $item->refRegularDeliveryPlan->refConsignee->nick_name;
                 $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_serial_set : $item->refRegularDeliveryPlan->refPart->item_serial;
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name_set : $item->refRegularDeliveryPlan->refPart->description;
                 $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;

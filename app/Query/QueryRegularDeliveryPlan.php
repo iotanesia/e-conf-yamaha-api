@@ -906,7 +906,7 @@ class QueryRegularDeliveryPlan extends Model {
                 'period' => $item->period,
                 'qty' => $item->qty,
                 'box' => $totalBox,
-                'box_no' => isset($mstBox) ? $mstBox->no_box : $totalBox,
+                'box_no' => isset($mstBox) && isset($mstBox->no_box) ? $mstBox->no_box : "-",
                 'qty_per_box' => isset($mstBox) ? $mstBox->qty : 0,
                 'lot_packing' => isset($box) ? $box->lot_packing : 0,
                 'packing_date' => isset($box) ? $box->packing_date : "",
@@ -1283,6 +1283,7 @@ class QueryRegularDeliveryPlan extends Model {
                     "datasource" => $data->datasource,
                     "jenis" => $data->jenis,
                     "is_produksi" => $data->is_produksi,
+                    "customer_ypmj" => $data->customer_ypmj,
                     "qty" => $sisa_qty
                 ];
                 self::create($duplicate);    
