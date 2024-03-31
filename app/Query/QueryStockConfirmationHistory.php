@@ -1085,21 +1085,38 @@ class QueryStockConfirmationHistory extends Model
 
     public static function outstockDeliveryNote($request)
     {
+        $datasource = explode("-", $request->id_stock_confirmation[0])[0] == Constant::YPMJ_DATASOURCE ? Constant::YPMJ_DATASOURCE : Constant::PYMAC_DATASOURCE;
+
         $stokTemp = RegularStokConfirmationTemp::whereIn('qr_key', $request->id_stock_confirmation)->get();
         $id_stock_confirmation = [];
         foreach ($stokTemp as $key => $value) {
             $id_stock_confirmation[] = $value->id_stock_confirmation;
         }
-        $data = RegularStokConfirmation::select(
-            DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),
-            DB::raw("string_agg(DISTINCT regular_stock_confirmation.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
-            DB::raw("string_agg(DISTINCT d.nick_name::character varying, ',') as username"),
-        )
-            ->whereIn('regular_stock_confirmation.id', $id_stock_confirmation)
-            ->join('regular_delivery_plan as a', 'a.id', 'regular_stock_confirmation.id_regular_delivery_plan')
-            ->join('mst_consignee as d', 'd.code', 'a.code_consignee')
-            ->paginate($request->limit ?? null);
 
+        if($datasource == Constant::YPMJ_DATASOURCE){
+
+            $data = RegularStokConfirmation::select(
+                DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),
+                DB::raw("string_agg(DISTINCT regular_stock_confirmation.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
+                DB::raw("string_agg(DISTINCT a.customer_ypmj::character varying, ',') as username"),
+            )
+                ->whereIn('regular_stock_confirmation.id', $id_stock_confirmation)
+                ->join('regular_delivery_plan as a', 'a.id', 'regular_stock_confirmation.id_regular_delivery_plan')
+                ->paginate($request->limit ?? null);
+
+        } else {
+
+            $data = RegularStokConfirmation::select(
+                DB::raw("string_agg(DISTINCT regular_stock_confirmation.id::character varying, ',') as id_stock_confirmation"),
+                DB::raw("string_agg(DISTINCT regular_stock_confirmation.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
+                DB::raw("string_agg(DISTINCT d.nick_name::character varying, ',') as username"),
+            )
+                ->whereIn('regular_stock_confirmation.id', $id_stock_confirmation)
+                ->join('regular_delivery_plan as a', 'a.id', 'regular_stock_confirmation.id_regular_delivery_plan')
+                ->join('mst_consignee as d', 'd.code', 'a.code_consignee')
+                ->paginate($request->limit ?? null);
+
+        }
         if (!$data) throw new \Exception("Data not found", 400);
 
         return [
@@ -1147,7 +1164,7 @@ class QueryStockConfirmationHistory extends Model
             $item->item_name = $item_name;
             $item->qty = count(explode(',', $item->id_stok_temp)) . ' x ' . $item->qty;
             $item->order_no = $item->refRegularDeliveryPlan->order_no;
-            $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+            $item->cust_name = $item->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $item->refRegularDeliveryPlan->customer_ypmj : $item->refRegularDeliveryPlan->refConsignee->nick_name;
 
             unset(
                 $item->refRegularDeliveryPlan

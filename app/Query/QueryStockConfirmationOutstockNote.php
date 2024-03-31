@@ -31,13 +31,17 @@ class QueryStockConfirmationOutstockNote extends Model {
     {
         if($is_transaction) DB::beginTransaction();
         try {
+            $datasource = explode("-", $request->id[0])[0] == Constant::YPMJ_DATASOURCE ? Constant::YPMJ_DATASOURCE : Constant::PYMAC_DATASOURCE;
+
             //update status outstock
             $stokTempUpdate = RegularStokConfirmationTemp::whereIn('qr_key',$request->id)->get();
             $id_stock_confirmation = [];
+            $id_regular_delivery_plan = [];
             foreach ($stokTempUpdate as $key => $value) {
                 $id_stock_confirmation[] = $value->id_stock_confirmation;
                 $update = RegularStokConfirmationTemp::where('id',$value->id)->first();
                 $update->update(['status_outstock' => 3]);
+                array_push($id_regular_delivery_plan, $update->id_regular_delivery_plan);
             }
 
             RegularStokConfirmation::whereIn('id',$id_stock_confirmation)->get()->map(function ($item){
@@ -47,94 +51,189 @@ class QueryStockConfirmationOutstockNote extends Model {
             });
 
             //update tracking
-            foreach ($request->id as $id_params) {
-                if (count(explode('-',$id_params)) > 1) {
-                    $id = explode('-',$id_params)[0];
-                    $id_plan_box = $id;
-                } else {
-                    $id_plan_box = $id_params;
-                }
+            if($datasource == Constant::PYMAC_DATASOURCE){
 
-                $delivery_plan_box = RegularDeliveryPlanBox::find($id_plan_box);
-
-                $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
-                $in_stock_wh = $stock_confirmation->in_wh;
-                $in_wh_total = $in_stock_wh + $delivery_plan_box->qty_pcs_box;
-                $in_dc_total = $stock_confirmation->in_dc - $delivery_plan_box->qty_pcs_box;
-
-                $stock_confirmation->in_dc = $in_dc_total;
-                $stock_confirmation->in_wh = $in_wh_total;
-                $stock_confirmation->save();
-
-                //update ke fix quantity
-                if ($stock_confirmation->in_dc == 0 && $stock_confirmation->in_wh == $stock_confirmation->qty && $stock_confirmation->production == 0) {
-                    $stock_confirmation->status_instock = 3;
+                foreach ($request->id as $id_params) {
+                    if (count(explode('-',$id_params)) > 1) {
+                        $id = explode('-',$id_params)[0];
+                        $id_plan_box = $id;
+                    } else {
+                        $id_plan_box = $id_params;
+                    }
+    
+                    $delivery_plan_box = RegularDeliveryPlanBox::find($id_plan_box);
+    
+                    $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+                    $in_stock_wh = $stock_confirmation->in_wh;
+                    $in_wh_total = $in_stock_wh + $delivery_plan_box->qty_pcs_box;
+                    $in_dc_total = $stock_confirmation->in_dc - $delivery_plan_box->qty_pcs_box;
+    
+                    $stock_confirmation->in_dc = $in_dc_total;
+                    $stock_confirmation->in_wh = $in_wh_total;
                     $stock_confirmation->save();
-                }  
-
-                $fixed_quantity_confirmation = new RegularFixedQuantityConfirmation;
-                $fixed_quantity_confirmation->id_regular_delivery_plan = $stock_confirmation->id_regular_delivery_plan;
-                $attr['id_regular_delivery_plan'] = $stock_confirmation->id_regular_delivery_plan;
-                $attr['datasource'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->datasource;
-                $attr['code_consignee'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->code_consignee;
-                $attr['model'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->model;
-                $attr['item_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no;
-                $attr['item_serial'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no == null ? null : $fixed_quantity_confirmation->refRegularDeliveryPlan->refPart->item_serial;
-                $attr['disburse'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->disburse;
-                $attr['delivery'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->delivery;
-                $attr['qty'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->qty;
-                $attr['order_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->order_no;
-                $attr['cust_item_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->cust_item_no;
-                $attr['etd_ypmi'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_ypmi;
-                $attr['etd_wh'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_wh;
-                $attr['etd_jkt'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_jkt;
-                $attr['in_dc'] = $stock_confirmation->in_dc;
-                $attr['in_wh'] = $stock_confirmation->in_wh;
-                $attr['production'] = $stock_confirmation->production;
-                $attr['is_actual'] = 0;
-                $attr['status'] = 1;
-                $fixed_quantity_confirmation->fill($attr);
-                $fixed_quantity_confirmation->save();
-
-                foreach ($fixed_quantity_confirmation->refRegularDeliveryPlan->manyDeliveryPlanBox as $item_box) {
-                    $check_outstock = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $item_box->id)->where('type', 'OUTSTOCK')->first();
-                    $qr_key = $item_box->id;
-                    if(count($item_box->refRegularDeliveryPlan->manyDeliveryPlanSet) > 0) $qr_key = $item_box->id.'-'.count($item_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
-                    $check_status_outstock = RegularStokConfirmationTemp::where('qr_key', $qr_key)->where('status_outstock', 3)->first();
-                    if ($check_outstock && $check_status_outstock) {
-                        $fixed_quantity_confirmation_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan_box', $item_box->id)->first();
-                        if(!$fixed_quantity_confirmation_box) {
-                            $fixed_quantity_confirmation_box = new RegularFixedQuantityConfirmationBox;
-                            $attr['id_fixed_quantity_confirmation'] = $fixed_quantity_confirmation->id;
-                            $attr['id_regular_delivery_plan'] = $fixed_quantity_confirmation->id_regular_delivery_plan;
-                            $attr['id_regular_delivery_plan_box'] = $item_box->id;
-                            $attr['id_box'] = $item_box->id_box;
-                            $attr['qty_pcs_box'] = $item_box->qty_pcs_box;
-                            $attr['id_proc'] = $item_box->id_proc;
-                            $attr['lot_packing'] = $item_box->lot_packing;
-                            $attr['packing_date'] = $item_box->packing_date;
-                            $attr['qrcode'] = $item_box->qrcode;
-                            $attr['is_labeling'] = $fixed_quantity_confirmation_box->is_labeling == 1 ? $fixed_quantity_confirmation_box->is_labeling : $item_box->is_labeling;
-                            $fixed_quantity_confirmation_box->fill($attr);
-                            $fixed_quantity_confirmation_box->save();
+    
+                    //update ke fix quantity
+                    if ($stock_confirmation->in_dc == 0 && $stock_confirmation->in_wh == $stock_confirmation->qty && $stock_confirmation->production == 0) {
+                        $stock_confirmation->status_instock = 3;
+                        $stock_confirmation->save();
+                    }  
+    
+                    $fixed_quantity_confirmation = new RegularFixedQuantityConfirmation;
+                    $fixed_quantity_confirmation->id_regular_delivery_plan = $stock_confirmation->id_regular_delivery_plan;
+                    $attr['id_regular_delivery_plan'] = $stock_confirmation->id_regular_delivery_plan;
+                    $attr['datasource'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->datasource;
+                    $attr['code_consignee'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->code_consignee;
+                    $attr['model'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->model;
+                    $attr['item_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no;
+                    $attr['item_serial'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no == null ? null : $fixed_quantity_confirmation->refRegularDeliveryPlan->refPart->item_serial;
+                    $attr['disburse'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->disburse;
+                    $attr['delivery'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->delivery;
+                    $attr['qty'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->qty;
+                    $attr['order_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->order_no;
+                    $attr['cust_item_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->cust_item_no;
+                    $attr['etd_ypmi'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_ypmi;
+                    $attr['etd_wh'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_wh;
+                    $attr['etd_jkt'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_jkt;
+                    $attr['in_dc'] = $stock_confirmation->in_dc;
+                    $attr['in_wh'] = $stock_confirmation->in_wh;
+                    $attr['production'] = $stock_confirmation->production;
+                    $attr['is_actual'] = 0;
+                    $attr['status'] = 1;
+                    $fixed_quantity_confirmation->fill($attr);
+                    $fixed_quantity_confirmation->save();
+    
+                    foreach ($fixed_quantity_confirmation->refRegularDeliveryPlan->manyDeliveryPlanBox as $item_box) {
+                        $check_outstock = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $item_box->id)->where('type', 'OUTSTOCK')->first();
+                        $qr_key = $item_box->id;
+                        if(count($item_box->refRegularDeliveryPlan->manyDeliveryPlanSet) > 0) $qr_key = $item_box->id.'-'.count($item_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                        $check_status_outstock = RegularStokConfirmationTemp::where('qr_key', $qr_key)->where('status_outstock', 3)->first();
+                        if ($check_outstock && $check_status_outstock) {
+                            $fixed_quantity_confirmation_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan_box', $item_box->id)->first();
+                            if(!$fixed_quantity_confirmation_box) {
+                                $fixed_quantity_confirmation_box = new RegularFixedQuantityConfirmationBox;
+                                $attr['id_fixed_quantity_confirmation'] = $fixed_quantity_confirmation->id;
+                                $attr['id_regular_delivery_plan'] = $fixed_quantity_confirmation->id_regular_delivery_plan;
+                                $attr['id_regular_delivery_plan_box'] = $item_box->id;
+                                $attr['id_box'] = $item_box->id_box;
+                                $attr['qty_pcs_box'] = $item_box->qty_pcs_box;
+                                $attr['id_proc'] = $item_box->id_proc;
+                                $attr['lot_packing'] = $item_box->lot_packing;
+                                $attr['packing_date'] = $item_box->packing_date;
+                                $attr['qrcode'] = $item_box->qrcode;
+                                $attr['is_labeling'] = $fixed_quantity_confirmation_box->is_labeling == 1 ? $fixed_quantity_confirmation_box->is_labeling : $item_box->is_labeling;
+                                $fixed_quantity_confirmation_box->fill($attr);
+                                $fixed_quantity_confirmation_box->save();
+                            }
                         }
                     }
+    
                 }
+            
+            } else {
 
+                foreach ($id_regular_delivery_plan as $id_params) {
+                    
+                    $delivery_plan_box_list = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $id_params)->get();
+   
+                    foreach($delivery_plan_box_list as $delivery_plan_box){
+                        $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+                        $in_stock_wh = $stock_confirmation->in_wh;
+                        $in_wh_total = $in_stock_wh + $delivery_plan_box->qty_pcs_box;
+                        $in_dc_total = $stock_confirmation->in_dc - $delivery_plan_box->qty_pcs_box;
+        
+                        $stock_confirmation->in_dc = $in_dc_total;
+                        $stock_confirmation->in_wh = $in_wh_total;
+                        $stock_confirmation->save();
+        
+                        //update ke fix quantity
+                        if ($stock_confirmation->in_dc == 0 && $stock_confirmation->in_wh == $stock_confirmation->qty && $stock_confirmation->production == 0) {
+                            $stock_confirmation->status_instock = 3;
+                            $stock_confirmation->save();
+                        }  
+        
+                        $fixed_quantity_confirmation = new RegularFixedQuantityConfirmation;
+                        $fixed_quantity_confirmation->id_regular_delivery_plan = $stock_confirmation->id_regular_delivery_plan;
+                        $attr['id_regular_delivery_plan'] = $stock_confirmation->id_regular_delivery_plan;
+                        $attr['datasource'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->datasource;
+                        $attr['code_consignee'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->code_consignee;
+                        $attr['model'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->model;
+                        $attr['item_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no;
+                        $attr['item_serial'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->item_no == null ? null : $fixed_quantity_confirmation->refRegularDeliveryPlan->refPart->item_serial;
+                        $attr['disburse'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->disburse;
+                        $attr['delivery'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->delivery;
+                        $attr['qty'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->qty;
+                        $attr['order_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->order_no;
+                        $attr['cust_item_no'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->cust_item_no;
+                        $attr['etd_ypmi'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_ypmi;
+                        $attr['etd_wh'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_wh;
+                        $attr['etd_jkt'] = $fixed_quantity_confirmation->refRegularDeliveryPlan->etd_jkt;
+                        $attr['in_dc'] = $stock_confirmation->in_dc;
+                        $attr['in_wh'] = $stock_confirmation->in_wh;
+                        $attr['production'] = $stock_confirmation->production;
+                        $attr['is_actual'] = 0;
+                        $attr['status'] = 1;
+                        $fixed_quantity_confirmation->fill($attr);
+                        $fixed_quantity_confirmation->save();
+        
+                        foreach ($fixed_quantity_confirmation->refRegularDeliveryPlan->manyDeliveryPlanBox as $item_box) {
+                            $check_outstock = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $item_box->id)->where('type', 'OUTSTOCK')->first();
+                            $qr_key = $item_box->id;
+                            if(count($item_box->refRegularDeliveryPlan->manyDeliveryPlanSet) > 0) $qr_key = $item_box->id.'-'.count($item_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                            $check_status_outstock = RegularStokConfirmationTemp::where('qr_key', $qr_key)->where('status_outstock', 3)->first();
+                            if ($check_outstock && $check_status_outstock) {
+                                $fixed_quantity_confirmation_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan_box', $item_box->id)->first();
+                                if(!$fixed_quantity_confirmation_box) {
+                                    $fixed_quantity_confirmation_box = new RegularFixedQuantityConfirmationBox;
+                                    $attr['id_fixed_quantity_confirmation'] = $fixed_quantity_confirmation->id;
+                                    $attr['id_regular_delivery_plan'] = $fixed_quantity_confirmation->id_regular_delivery_plan;
+                                    $attr['id_regular_delivery_plan_box'] = $item_box->id;
+                                    $attr['id_box'] = $item_box->id_box;
+                                    $attr['qty_pcs_box'] = $item_box->qty_pcs_box;
+                                    $attr['id_proc'] = $item_box->id_proc;
+                                    $attr['lot_packing'] = $item_box->lot_packing;
+                                    $attr['packing_date'] = $item_box->packing_date;
+                                    $attr['qrcode'] = $item_box->qrcode;
+                                    $attr['is_labeling'] = $fixed_quantity_confirmation_box->is_labeling == 1 ? $fixed_quantity_confirmation_box->is_labeling : $item_box->is_labeling;
+                                    $fixed_quantity_confirmation_box->fill($attr);
+                                    $fixed_quantity_confirmation_box->save();
+                                }
+                            }
+                        }
+
+                    }
+                   
+    
+                }
+            
             }
+            
 
             $lastData = Model::latest()->first();
             Helper::generateCodeLetter($lastData);
             $stokTemp = RegularStokConfirmationTemp::whereIn('qr_key', $request->id)->get()->pluck('id_stock_confirmation');
             $stokConfirmation = RegularStokConfirmation::whereIn('id',$stokTemp->toArray())->get();
             $idDeliveryPlan = $stokConfirmation->pluck('id_regular_delivery_plan')->toArray();
-            $deliveryPlan = RegularDeliveryPlan::select(
-                DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as code_consignee"),
-                DB::raw("string_agg(DISTINCT regular_delivery_plan.id_prospect_container_creation::character varying, ',') as id_prospect_container_creation")
-            )
-            ->whereIn('regular_delivery_plan.id',$idDeliveryPlan)
-            ->join('mst_consignee as b','b.code','regular_delivery_plan.code_consignee')
-            ->get();
+            
+            if($datasource == Constant::PYMAC_DATASOURCE){
+
+                $deliveryPlan = RegularDeliveryPlan::select(
+                    DB::raw("string_agg(DISTINCT b.nick_name::character varying, ',') as code_consignee"),
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan.id_prospect_container_creation::character varying, ',') as id_prospect_container_creation")
+                )
+                ->whereIn('regular_delivery_plan.id',$idDeliveryPlan)
+                ->join('mst_consignee as b','b.code','regular_delivery_plan.code_consignee')
+                ->get();
+
+            } else {
+
+                $deliveryPlan = RegularDeliveryPlan::select(
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan.customer_ypmj::character varying, ',') as code_consignee"),
+                    DB::raw("string_agg(DISTINCT regular_delivery_plan.id_prospect_container_creation::character varying, ',') as id_prospect_container_creation")
+                )
+                ->whereIn('regular_delivery_plan.id',$idDeliveryPlan)
+                ->get();
+                
+            }
 
             $dataSend =  $deliveryPlan->transform(function($item) use($lastData,$request,$stokTemp){
                 $creation = RegularDeliveryPlanProspectContainerCreation::where('id', $item->id_prospect_container_creation)->first();
