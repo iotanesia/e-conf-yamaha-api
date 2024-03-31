@@ -58,7 +58,7 @@
     <h4 class="text-center" style="font-size: 18px;">DELIVERY NOTE</h4>
     <table>
         <tr>
-            <td class="no-bo" width='70'>{{ $data->shipperFirstWords }} <br><br> JL. {{ $data->shipperLastWords }}</td>
+            <td style="padding-left: 0" class="no-bo" width='70'>{{ $data->shipperFirstWords }} <br><br> JL. {{ $data->shipperLastWords }}</td>
             <td class="no-bo" width='5'></td>
             <td class="no-bo text-right" width='100'>
                 Kepada Yth, <br>
@@ -76,7 +76,7 @@
     </table>
     <table style="margin-top: 10px;">
         <tr>
-            <td class="no-bo">Surat Jalan No</td>
+            <td class="no-bo" style="padding-left: 0">Surat Jalan No</td>
             <td class="no-bo">:</td>
             <td class="no-bo">{{ $data->no_letters }}</td>
             <td class="no-bo">Truck No</td>
@@ -84,7 +84,7 @@
             <td class="no-bo">{{ $data->truck_no }}</td>
         </tr>
         <tr>
-            <td class="no-bo">Delivery Date</td>
+            <td class="no-bo" style="padding-left: 0">Delivery Date</td>
             <td class="no-bo">:</td>
             <td class="no-bo">{{ $data->delivery_date }}</td>
             <td class="no-bo"></td>
@@ -92,7 +92,7 @@
             <td class="no-bo"></td>
         </tr>
         <tr>
-            <td class="no-bo">Jenis Truck</td>
+            <td class="no-bo" style="padding-left: 0">Jenis Truck</td>
             <td class="no-bo">:</td>
             <td class="no-bo">LCL</td>
             <td class="no-bo"></td>

@@ -40,7 +40,7 @@ class QueryRegularProspectContainer extends Model {
                     $items = [
                         "id" => $item->id,
                         "code_consignee" => $item->code_consignee,
-                        "customer_name" => $item->refMstConsignee->nick_name,
+                        "customer_name" => $item->datasource == Constant::YPMJ_DATASOURCE ? $item->code_consignee : $item->refMstConsignee->nick_name,
                         "no_packaging" => $item->no_packaging,
                         "datasource" => $item->datasource,
                         "etd_ypmi" => $item->etd_ypmi,

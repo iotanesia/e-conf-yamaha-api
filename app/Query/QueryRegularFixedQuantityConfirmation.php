@@ -133,7 +133,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
 
                     $item->status_desc = $status ?? null;
-                    $item->customer_name = $item->refConsignee->nick_name;
+                    $item->customer_name = $item->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $item->refRegularDeliveryPlan->customer_ypmj : $item->refConsignee->nick_name;
                     $item->production = $item->production ?? null;
                     $item->in_dc = $item->in_dc ?? null;
                     $item->in_wh = $item->in_wh ?? null;
@@ -165,6 +165,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             Helper::requireParams([
                 'id_fixed_quantity',
+                'datasource'
             ]);
 
             $id_fixed_quantity = [];
@@ -172,12 +173,24 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $id_fixed_quantity[] = explode(',',$value);
             }
 
-            $check = Model::select('code_consignee','etd_jkt','datasource')->whereIn('id',array_merge(...$id_fixed_quantity))
-                ->groupBy('code_consignee','datasource','etd_jkt')
-                ->get()
-                ->toArray();
+            if($params->datasource == Constant::PYMAC_DATASOURCE){
+                $check = Model::select('code_consignee','etd_jkt','datasource')->whereIn('id',array_merge(...$id_fixed_quantity))
+                    ->groupBy('code_consignee','datasource','etd_jkt')
+                    ->get()
+                    ->toArray();
+    
+                if(count($check) > 1) throw new \Exception("ETD JKT and Customer name not same", 400);
+            } else {
+                
+                $check = Model::select('etd_jkt','datasource')->whereIn('id',array_merge(...$id_fixed_quantity))
+                    ->groupBy('datasource','etd_jkt')
+                    ->get()
+                    ->toArray();
+    
+                if(count($check) > 1) throw new \Exception("ETD JKT not same", 400);
 
-            if(count($check) > 1) throw new \Exception("ETD JKT and Customer name not same", 400);
+                $check_qty_confirmation = Model::whereIn("id",array_merge(...$id_fixed_quantity))->get();
+            }
 
             $data = Model::select(DB::raw('count(order_no) as total'),'order_no')->whereIn('id',array_merge(...$id_fixed_quantity))
                 ->groupBy('order_no')
@@ -204,8 +217,38 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             $no_packaging = $data[0]['order_no'].$iteration;
             $tanggal = $check[0]['etd_jkt'];
-            $code_consignee = $check[0]['code_consignee'];
+            $code_consignee = $params->datasource == Constant::YPMJ_DATASOURCE ? $check_qty_confirmation[0]->refRegularDeliveryPlan->customer_ypmj : $check[0]['code_consignee'];
             $datasource = $check[0]['datasource'];
+
+            if($params->datasource == Constant::YPMJ_DATASOURCE){
+                
+                $etd_list = RegularDeliveryPlan::select('etd_jkt')
+                ->where('id_regular_order_entry', $check_qty_confirmation[0]->refRegularDeliveryPlan->id_regular_order_entry)
+                ->groupBy("etd_jkt")
+                ->orderBy("etd_jkt", "asc")
+                ->get();
+
+                $index = -1;
+                $loop = 0;
+
+                foreach($etd_list as $etd){
+                    if((string) $tanggal === (string) $etd->etd_jkt)
+                        $index = $loop;
+                    $loop++;
+                }
+
+                $period = "";
+                $dateTime = new \DateTime($tanggal);
+                $month = $dateTime->format('M');
+
+                if($index == 0){
+                    $period = "1st ".$month;
+                } else if($index == 1){
+                    $period = "2nd ".$month;
+                }
+
+                $no_packaging = $period;
+            }
 
             return [
                 "items" => [
@@ -290,7 +333,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                    $query->whereIn('id',array_merge(...$id_fixed_quantity));
                    $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
-                   $query->where('datasource','PYMAC');
+                   $query->where('datasource',$params->datasource);
            })
            ->chunk(1000,function ($data) use ($params,$store,$id_container_creation){
                 foreach ($data as $key => $item) {
@@ -377,7 +420,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         foreach ($data['items'] as $key => $value) {
             $res[] = [
                 'no' => $key +1,
-                'cust_name' => $value->refConsignee->nick_name ?? null,
+                'cust_name' => $value->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $value->refRegularDeliveryPlan->customer_ypmj : ($value->refConsignee->nick_name ?? null),
                 'item_no' => $value->refRegularDeliveryPlan->item_no == null ? implode(',', $value->item_no->toArray()) : $value->item_no,
                 'item_name' => $value->refRegularDeliveryPlan->item_no == null ? implode(',', $value->item_name) : $value->item_name,
                 'cust_item_no' => $value->cust_item_no,
@@ -434,7 +477,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         })->paginate($params->limit ?? null);
 
         $data->map(function ($item){
-            $item->cust_name = $item->refConsignee->nick_name ?? null;
+            $item->cust_name = $item->datasource == Constant::YPMJ_DATASOURCE ? $item->code_consignee : $item->refConsignee->nick_name ?? null;
             $item->mot = $item->refMot->name ?? null;
             $item->status_desc = 'Confirmed';
 
