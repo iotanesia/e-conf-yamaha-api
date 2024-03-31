@@ -140,7 +140,7 @@ class QueryStockConfirmationHistory extends Model
                         'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
                         'model' => $val->refRegularDeliveryPlan->model,
                         'item_no' => $val->refRegularDeliveryPlan->item_no == null ? $val->refRegularDeliveryPlan->manyDeliveryPlanSet()->with('refBox')->get()->pluck('refBox')->pluck('item_no_series') : $val->refRegularDeliveryPlan->refPart->item_serial,
-                        'qty' => $val->qty_pcs_box,
+                        'qty' =>  $val->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $val->refRegularDeliveryPlan->qty : $val->qty_pcs_box,
                         'disburse' => $val->refRegularDeliveryPlan->disburse,
                         'delivery' => $val->refRegularDeliveryPlan->delivery,
                         'status_regular_delivery_plan' => $val->refRegularDeliveryPlan->status_regular_delivery_plan,
@@ -161,8 +161,8 @@ class QueryStockConfirmationHistory extends Model
                         'status_bml' => $val->refRegularDeliveryPlan->status_bml,
                         'cust_name' => $val->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $val->refRegularDeliveryPlan->customer_ypmj : $val->refRegularDeliveryPlan->refConsignee->nick_name,
                         'status_desc' => 'Instock',
-                        'in_dc' => $val->qty_pcs_box,
-                        'box' => $val->qty_pcs_box . ' x 1 '
+                        'in_dc' => $val->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $val->refRegularDeliveryPlan->qty : $val->qty_pcs_box,
+                        'box' => $val->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $val->qty_pcs_box . ' x ' . ceil($val->refRegularDeliveryPlan->qty/$val->qty_pcs_box) : $val->qty_pcs_box . ' x 1 '
                     ];
                 }
 
@@ -282,7 +282,7 @@ class QueryStockConfirmationHistory extends Model
             $res['cust_name'] = $item->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $item->refRegularDeliveryPlan->customer_ypmj : $item->refRegularDeliveryPlan->refConsignee->nick_name;
             $res['status_desc'] = 'Instock';
             $res['in_wh'] = $item->qty;
-            $res['box'] = $item->qty . ' x 1 ';
+            $res['box'] = $item->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $item->refRegularDeliveryPlan->manyDeliveryPlanBox[0]->qty_pcs_box. ' x ' .ceil($item->qty/$item->refRegularDeliveryPlan->manyDeliveryPlanBox[0]->qty_pcs_box) : $item->qty . ' x 1 ';
 
             return $res;
         });
@@ -654,47 +654,52 @@ class QueryStockConfirmationHistory extends Model
 
                 $ids = explode(',', $params->id);
                 $qr_key = "";
-                $index = 0;
                 foreach($ids as $id){
                     $delivery_plan_box_list = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $id)->get();
                     if (sizeof($delivery_plan_box_list) == 0) throw new \Exception("Data not found", 400);
 
-                    foreach($delivery_plan_box_list as $delivery_plan_box){
+                    $check = null;
+                    $delivery_plan_box = null;
+                    $index = 0;
+                    foreach($delivery_plan_box_list as $item){
                         if($index == 0){
-                            $qr_key = "YPMJ-".$delivery_plan_box->refRegularDeliveryPlan->id_regular_order_entry."-".$delivery_plan_box->refRegularDeliveryPlan->bucket_produksi;
+                            $qr_key = "YPMJ-".$item->refRegularDeliveryPlan->id_regular_order_entry."-".$item->refRegularDeliveryPlan->bucket_produksi;
                             
                             $check_qr = RegularStokConfirmationTemp::where('qr_key', $qr_key)->first();
                             if (!$check_qr) throw new \Exception("QR key is invalid", 400);
+
+                            $delivery_plan_box = $item;
                         }
     
-                        $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->whereIn('type', [Constant::INSTOCK, Constant::OUTSTOCK])->first();
+                        $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $item->id)->whereIn('type', [Constant::INSTOCK, Constant::OUTSTOCK])->first();
                         if ($stock_confirmation_history) throw new \Exception("QR Code Done Scan", 400);
-    
-                        $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
-                        $qty = $stock_confirmation->qty;
-                        $status = $stock_confirmation->status;
-                        $in_stock_dc = $stock_confirmation->in_dc;
-                        $in_dc_total = $in_stock_dc + $delivery_plan_box->qty_pcs_box;
-    
-                        $stock_confirmation->in_dc = $in_dc_total;
-                        $stock_confirmation->production = $qty - $in_dc_total - $stock_confirmation->in_wh;
-                        $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
-                        $stock_confirmation->save();
-    
-                        $stokTemp = RegularStokConfirmationTemp::where('qr_key', $qr_key)->first();
-                        $stokTemp->update(['status_instock' => 2, 'is_reject' => null]);
-    
-                        self::create([
-                            'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
-                            'id_regular_delivery_plan_box' => $delivery_plan_box->id,
-                            'id_stock_confirmation' => $stock_confirmation->id,
-                            'id_box' => $delivery_plan_box->id_box,
-                            'type' => 'INSTOCK',
-                            'qty_pcs_perbox' => $delivery_plan_box->qty_pcs_box,
-                        ]);
-
+                        
                         $index++;
                     }
+
+                    $delivery_plan = $delivery_plan_box->refRegularDeliveryPlan;
+                    $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
+                    $qty = $stock_confirmation->qty;
+                    $status = $stock_confirmation->status;
+                    $in_stock_dc = $stock_confirmation->in_dc;
+                    $in_dc_total = $in_stock_dc + $delivery_plan->qty;
+
+                    $stock_confirmation->in_dc = $in_dc_total;
+                    $stock_confirmation->production = $qty - $in_dc_total - $stock_confirmation->in_wh;
+                    $stock_confirmation->status_instock = $status == Constant::IS_ACTIVE ? 2 : 2;
+                    $stock_confirmation->save();
+
+                    $stokTemp = RegularStokConfirmationTemp::where('qr_key', $qr_key)->first();
+                    $stokTemp->update(['status_instock' => 2, 'is_reject' => null]);
+
+                    self::create([
+                        'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
+                        'id_regular_delivery_plan_box' => $delivery_plan_box->id,
+                        'id_stock_confirmation' => $stock_confirmation->id,
+                        'id_box' => $delivery_plan_box->id_box,
+                        'type' => 'INSTOCK',
+                        'qty_pcs_perbox' => $delivery_plan->qty,
+                    ]);
                 }
             
             } else {
@@ -769,46 +774,41 @@ class QueryStockConfirmationHistory extends Model
             if($datasource == Constant::YPMJ_DATASOURCE){
                 $ids = explode(',', $params->id);
                 $qr_key = "";
-                $index = 0;
                 foreach($ids as $id){
                     $delivery_plan_box_list = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $id)->get();
                     if (sizeof($delivery_plan_box_list) == 0) throw new \Exception("Data not found", 400);
+                    
+                    $qr_key = "YPMJ-".$delivery_plan_box_list[0]->refRegularDeliveryPlan->id_regular_order_entry."-".$delivery_plan_box_list[0]->refRegularDeliveryPlan->bucket_produksi;
+                    
+                    $check_qr = RegularStokConfirmationTemp::where('qr_key', $qr_key)->first();
+                    if (!$check_qr) throw new \Exception("QR key is invalid", 400);
 
-                    foreach($delivery_plan_box_list as $delivery_plan_box){
-                        if($index == 0){
-                            $qr_key = "YPMJ-".$delivery_plan_box->refRegularDeliveryPlan->id_regular_order_entry."-".$delivery_plan_box->refRegularDeliveryPlan->bucket_produksi;
-                            
-                            $check_qr = RegularStokConfirmationTemp::where('qr_key', $qr_key)->first();
-                            if (!$check_qr) throw new \Exception("QR key is invalid", 400);
-                        }
+                    $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box_list[0]->id)->where('type', Constant::OUTSTOCK)->first();
+                    if ($stock_confirmation_history) throw new \Exception("QR Code Done Scan", 400);
+        
+                    $stock_confirmation_history_instock = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box_list[0]->id)->where('type', Constant::INSTOCK)->first();
+                    if (!$stock_confirmation_history_instock) throw new \Exception("QR Code Not In Instock Yet", 400);
 
-                        $stock_confirmation_history = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->where('type', Constant::OUTSTOCK)->first();
-                        if ($stock_confirmation_history) throw new \Exception("QR Code Done Scan", 400);
-            
-                        $stock_confirmation_history_instock = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->where('type', Constant::INSTOCK)->first();
-                        if (!$stock_confirmation_history_instock) throw new \Exception("QR Code Not In Instock Yet", 400);
-            
-                        $stock_confirmation = $delivery_plan_box->refRegularDeliveryPlan->refRegularStockConfirmation;
-                        $qty = $stock_confirmation->qty;
-                        $status = $stock_confirmation->status;
-                        $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
-                        $stock_confirmation->save();
-            
-                        $stokTemp = RegularStokConfirmationTemp::where('qr_key', $qr_key)->first();
-                        $stokTemp->update(['status_outstock' => 2, 'is_reject' => null]);
-            
-                        self::create([
-                            'id_regular_delivery_plan' => $delivery_plan_box->id_regular_delivery_plan,
-                            'id_regular_delivery_plan_box' => $delivery_plan_box->id,
-                            'id_stock_confirmation' => $stock_confirmation->id,
-                            'id_box' => $delivery_plan_box->id_box,
-                            'type' => 'OUTSTOCK',
-                            'qty_pcs_perbox' => $qty,
-                        ]);
-                        RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box->id)->where('type', Constant::INSTOCK)->first()->delete();
-                        
-                        $index++;
-                    }
+                    $regular_delivery_plan = $delivery_plan_box_list[0]->refRegularDeliveryPlan;
+                    $stock_confirmation = $delivery_plan_box_list[0]->refRegularDeliveryPlan->refRegularStockConfirmation;
+                    $qty = $stock_confirmation->qty;
+                    $status = $stock_confirmation->status;
+                    $stock_confirmation->status_outstock = $status == Constant::IS_ACTIVE ? 2 : 2;
+                    $stock_confirmation->save();
+        
+                    $stokTemp = RegularStokConfirmationTemp::where('qr_key', $qr_key)->first();
+                    $stokTemp->update(['status_outstock' => 2, 'is_reject' => null]);
+        
+                    self::create([
+                        'id_regular_delivery_plan' => $delivery_plan_box_list[0]->id_regular_delivery_plan,
+                        'id_regular_delivery_plan_box' => $delivery_plan_box_list[0]->id,
+                        'id_stock_confirmation' => $stock_confirmation->id,
+                        'id_box' => $delivery_plan_box_list[0]->id_box,
+                        'type' => 'OUTSTOCK',
+                        'qty_pcs_perbox' => $qty,
+                    ]);
+                    RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $delivery_plan_box_list[0]->id)->where('type', Constant::INSTOCK)->first()->delete();
+                    
                 }
             } else {
 
