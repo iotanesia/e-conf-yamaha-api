@@ -899,7 +899,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             $labeling = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id)->where('is_labeling', 0)->get();
             $is_labeling = 0;
-            if(sizeof($labeling) == 0)
+            if(sizeof($labeling) > 0)
                 $is_labeling = 1;
             return [
                 'id_regular_order_entry' => $item->id_regular_order_entry,
