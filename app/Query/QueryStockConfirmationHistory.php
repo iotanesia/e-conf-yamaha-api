@@ -581,13 +581,18 @@ class QueryStockConfirmationHistory extends Model
                 $item_no = [];
                 $qty = [];
                 $no_box = [];
+                $index=0;
                 foreach($regular_delivery_plan_list as $item){
                     array_push($id_regular_delivery_plan_list, $item->id);
                     array_push($item_name, $item->refPart->description);
                     array_push($item_no, $item->item_no);
                     array_push($qty, $item->qty);
                     $mst_box = MstBox::where('item_no', $item->item_no)->where('datasource', Constant::YPMJ_DATASOURCE)->first();
+                    
+                    $regular_delivery_plan_list[$index]->delivery_plan_box = $item->manyDeliveryPlanBox;
+                    unset($item->manyDeliveryPlanBox);
                     $no_box[] =  isset($mst_box->no_box) ? $mst_box->no_box : "-";
+                    $index++;
                 }
                 
                 $stock_confirmation = RegularStokConfirmation::whereIn('id_regular_delivery_plan', $id_regular_delivery_plan_list)->get();
@@ -611,7 +616,8 @@ class QueryStockConfirmationHistory extends Model
                             'packing_date' => $item->packing_date,
                             'no_box' => $item->refBox->no_box ?? "",
                             'qr_name' => $qr_key,
-                            'datasource' => Constant::YPMJ_DATASOURCE
+                            'datasource' => Constant::YPMJ_DATASOURCE,
+                            'detail' => $regular_delivery_plan_list
                         ];
                     }
 
@@ -968,13 +974,18 @@ class QueryStockConfirmationHistory extends Model
                 $item_no = [];
                 $qty = [];
                 $no_box = [];
+                $index=0;
                 foreach($regular_delivery_plan_list as $item){
                     array_push($id_regular_delivery_plan_list, $item->id);
                     array_push($item_name, $item->refPart->description);
                     array_push($item_no, $item->item_no);
                     array_push($qty, $item->qty);
                     $mst_box = MstBox::where('item_no', $item->item_no)->where('datasource', Constant::YPMJ_DATASOURCE)->first();
+                    
+                    $regular_delivery_plan_list[$index]->delivery_plan_box = $item->manyDeliveryPlanBox;
+                    unset($item->manyDeliveryPlanBox);
                     $no_box[] =  isset($mst_box->no_box) ? $mst_box->no_box : "-";
+                    $index++;
                 }
                 
                 $stock_confirmation = RegularStokConfirmation::whereIn('id_regular_delivery_plan', $id_regular_delivery_plan_list)->get();
@@ -998,7 +1009,8 @@ class QueryStockConfirmationHistory extends Model
                             'packing_date' => $item->packing_date,
                             'no_box' => $item->refBox->no_box ?? "",
                             'qr_name' => $qr_key,
-                            'datasource' => Constant::YPMJ_DATASOURCE
+                            'datasource' => Constant::YPMJ_DATASOURCE,
+                            'detail' => $regular_delivery_plan_list
                         ];
                     }
 
