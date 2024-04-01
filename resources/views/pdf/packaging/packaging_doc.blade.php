@@ -160,7 +160,7 @@
                         <tr>
                             @if ($key == 0)
                                 @if ($i == 0)
-                                    <td class="text-center" rowspan="{{ count($box[$order]) }}">
+                                    <td class="text-center" rowspan="{{ count($box[$order]) * count($box_item['item_no_series']) }}">
                                         YAMAHA <br>
                                         {{ $order ?? null }}  <br>
                                         999999-9999 <br>
@@ -169,8 +169,6 @@
                                         INV. No. {{ $item->no_packaging }} <br>
                                         C/No. : 1 - {{ count($box[$order]) }}
                                     </td>
-                                @else
-                                    <td class="no-bt"></td>
                                 @endif
                             @endif
                             @if ($i % 2 == 0 && $i == 0)
