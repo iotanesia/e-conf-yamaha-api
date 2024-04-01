@@ -435,16 +435,11 @@ class QueryStockConfirmationHistory extends Model
                 'etd_jkt'
             ]);
 
-            $history = RegularStokConfirmationHistory::where('id_stock_confirmation', $request->id)->first();
+            // $history = RegularStokConfirmationHistory::where('id_stock_confirmation', $request->id)->first();
+            // if (!$history) throw new \Exception("Data not found in history", 400);
 
-            if (!$history) {
-                throw new \Exception("Data not found in history", 400);
-            }
-
-            $confirmation = RegularStokConfirmation::find($history->id_stock_confirmation);
-            if (!$confirmation) {
-                throw new \Exception("Data not found in stock", 400);
-            }
+            $confirmation = RegularStokConfirmation::where('id_regular_delivery_plan', $request->id)->first();
+            if (!$confirmation) throw new \Exception("Data not found in stock", 400);
 
             $requestData = [
                 'etd_ypmi' => Carbon::parse($request->etd_ypmi)->format('Ymd'),
