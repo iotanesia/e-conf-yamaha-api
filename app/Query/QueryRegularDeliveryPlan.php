@@ -207,7 +207,8 @@ class QueryRegularDeliveryPlan extends Model {
         ->where('is_inquiry', 0);
 
         $data = $query
-        ->orderBy('id','asc')
+        ->orderBy('order_no','asc')
+        ->orderBy('cust_item_no','asc')
         ->paginate($params->limit ?? null);
 
         $data->transform(function ($item){

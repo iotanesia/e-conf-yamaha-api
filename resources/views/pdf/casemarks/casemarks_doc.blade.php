@@ -62,7 +62,8 @@
 
     @foreach ($data as $key => $item) 
     {{-- @if ($check == null) part set --}}
-        @foreach ($box as $jml => $box_item)
+    @foreach (array_unique($item->manyFixedQuantityConfirmation->pluck('order_no')->toArray()) as $key => $order)
+        @foreach ($box[$order] as $jml => $box_item)
             @for ($i=1; $i<=2; $i++)
 
             @if ($i == 1)
@@ -73,8 +74,8 @@
                     <tr>
                         <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top; padding: 20px;">
                             <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
-                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}</b></p>
-                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->cust_item_no ?? null }}</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order ?? null }}</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p>
@@ -108,6 +109,7 @@
                 </table>
             @endfor
         @endforeach
+    @endforeach
     {{-- @elseif ($item->refConsignee->nick_name == 'YMC') YMC
         @foreach ($box as $jml => $box_item)
             @for ($i=1; $i<=2; $i++)
