@@ -449,6 +449,11 @@ class QueryStockConfirmationHistory extends Model
 
             $confirmation->fill($requestData);
             $confirmation->refRegularDeliveryPlan()->update($requestData);
+            foreach ($confirmation->refRegularDeliveryPlan->manyFixedQuantityConfirmation as $value) {
+                if ($value) {
+                    $value->update($requestData);
+                }
+            }
             $confirmation->save();
 
             if ($is_transaction) {
