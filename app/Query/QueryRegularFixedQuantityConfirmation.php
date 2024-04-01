@@ -442,6 +442,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     public static function getActualContainer($params) {
         $data = RegularFixedActualContainer::where(function ($query) use ($params){
+            $datasource = $params->datasource ?? null;
             $category = $params->category ?? null;
             $kueri = $params->kueri ?? null;
         
@@ -472,7 +473,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $query->whereIn('is_actual', [0,99]);
             else
                 $query->where('is_actual', $params->is_actual);
-
+            
+            if($datasource)
+                $query->where('datasource', $datasource);
 
         })->paginate($params->limit ?? null);
 
