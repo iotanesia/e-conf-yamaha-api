@@ -159,15 +159,19 @@
                     @for ($i = 0; $i < count($box_item['item_no_series']); $i++)
                         <tr>
                             @if ($key == 0)
-                                <td class="text-center" rowspan="{{ count($box[$order]) }}">
-                                    YAMAHA <br>
-                                    {{ $order ?? null }}  <br>
-                                    999999-9999 <br>
-                                    {{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }} <br>
-                                    MADE IN INDONESIA <br>
-                                    INV. No. {{ $item->no_packaging }} <br>
-                                    C/No. : 1 - {{ count($box[$order]) }}
-                                </td>
+                                @if ($i == 0)
+                                    <td class="text-center" rowspan="{{ count($box[$order]) }}">
+                                        YAMAHA <br>
+                                        {{ $order ?? null }}  <br>
+                                        999999-9999 <br>
+                                        {{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }} <br>
+                                        MADE IN INDONESIA <br>
+                                        INV. No. {{ $item->no_packaging }} <br>
+                                        C/No. : 1 - {{ count($box[$order]) }}
+                                    </td>
+                                @else
+                                    <td class="no-bt"></td>
+                                @endif
                             @endif
                             @if ($i % 2 == 0 && $i == 0)
                                 <td style='padding-bottom:5px;' class='text-center'>{{ $key+1 }}</td>
@@ -187,7 +191,11 @@
                             @endif
                             <td style='padding-bottom:5px;' class='text-center'>{{ round($box_item['qty_pcs_box'][$i], 2) }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ number_format($box_item['unit_weight_kg'][$i], 2) }}</td>
-                            <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ?  number_format($box_item['total_gross_weight'][$i], 2) : null }}</td>
+                            @if (count($box_item['item_no_series']) > 1)
+                                <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ?  number_format(array_sum($gross_weight_per_part[$key]), 2) : null }}</td>
+                            @else
+                                <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ?  number_format($box_item['total_gross_weight'][$i], 2) : null }}</td>
+                            @endif
                             <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ? number_format((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000), 3) : null }}</td>
                         </tr>
                     @endfor
