@@ -75,7 +75,7 @@
                             <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation[0]->cust_item_no ?? null }}</b></p>
-                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge->port ?? null }}</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $jml+1 }}</b></p>
