@@ -343,16 +343,17 @@ class QueryMstBox extends Model {
         $closest = null;
         $minDifference = PHP_INT_MAX;
 
-        foreach ($box as $val) {
-            $difference = $val->qty - $target;
-            if ($difference <= 0 && abs($difference) < $minDifference) {
-                $closest = $val;
-                $minDifference = abs($difference);
+        if ($box) {
+            foreach ($box as $val) {
+                $difference = $val->qty - $target;
+                if ($difference <= 0 && abs($difference) < $minDifference) {
+                    $closest = $val;
+                    $minDifference = abs($difference);
+                }
             }
         }
 
-        $res = ($closest !== null) ? $closest : null;
-        return $res;
+        return $closest;
     }
 
     public static function byItemNoCdConsigneeSet($itemNo,$consingee)
