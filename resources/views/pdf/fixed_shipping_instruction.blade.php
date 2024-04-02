@@ -242,39 +242,38 @@
             </table>
             <table>
                 <table style="border: 1px solid #000; border-top:hidden;">
-                    <table style="padding-right: 570px"> 
-                        @foreach ($actual_container as $key => $item)
-                            @foreach ($box as $jml => $box_jml)
-                                @foreach ($box[$jml] as $box_item)
-                                    <tr>
-                                        <td width="80" class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->manyFixedQuantityConfirmation[0]->order_no ?? null }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">999999-9999</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">{{ $item->refPartOfDischarge->port ?? null }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $item->no_packaging }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="no-bo text-center" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $loop->iteration }}</td>
-                                    </tr>
-                                @break
-                                @endforeach
-                            @break
+                    <tr>
+                        @foreach ($actual_container as $item)
+                            @foreach (array_unique($item->manyFixedQuantityConfirmation->pluck('order_no')->toArray()) as $key => $order)
+                                <td class="{{ $key !== 0 ? 'no-bl' : null }}">
+                                    <table> 
+                                        <tr>
+                                            <td width="80" class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $order ?? null }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">999999-9999</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $item->no_packaging }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $loop->iteration }}</td>
+                                        </tr>
+                                        <br>
+                                    </table>
+                                </td>
                             @endforeach
-                        @break
                         @endforeach 
-                        <br>
-                    </table>
+                    </tr>
                 </table>
             
             {{-- <table>
