@@ -325,16 +325,16 @@ class QueryMstBox extends Model {
             ->where('item_no',trim($itemNo))
             ->where('code_consignee',trim($consingee))
             ->where('datasource',trim($datasource))
-            ->get() ?? null;
+            ->first() ?? null;
 
-        $res = self::getClosestQty($box, $qty);
+        // $res = self::getClosestQty($box, $qty);
 
         DB::table('box_temporary')->insert([
             'item_no' => trim($itemNo),
             'consignee' => trim($consingee),
             'status' => $box ? 1 : 0
         ]);
-        return $res;
+        return $box;
     }
 
     public static function getClosestQty($box, $qty)
