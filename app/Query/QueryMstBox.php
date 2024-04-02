@@ -317,22 +317,41 @@ class QueryMstBox extends Model {
         return $tes;
     }
 
-    public static function byItemNoCdConsigneeDatasource($itemNo,$consingee,$datasource)
+    public static function byItemNoCdConsigneeDatasource($itemNo,$consingee,$datasource,$qty)
     {
         // echo 'item no : '.$itemNo." consignee : ".$consingee;
         // die();
-        $tes = self::where('part_set', 'single')
+        $box = self::where('part_set', 'single')
             ->where('item_no',trim($itemNo))
             ->where('code_consignee',trim($consingee))
             ->where('datasource',trim($datasource))
-            ->first() ?? null;
+            ->get() ?? null;
+
+        $res = self::getClosestQty($box, $qty);
 
         DB::table('box_temporary')->insert([
             'item_no' => trim($itemNo),
             'consignee' => trim($consingee),
-            'status' => $tes ? 1 : 0
+            'status' => $box ? 1 : 0
         ]);
-        return $tes;
+        return $res;
+    }
+
+    public static function getClosestQty($box, $qty)
+    {
+        $target = $qty;
+        $closest = null;
+        $minDifference = PHP_INT_MAX;
+
+        foreach ($box as $val) {
+            $difference = abs($val->qty - $target);
+            if ($difference < $minDifference) {
+                $closest = $val;
+                $minDifference = $difference;
+            }
+        }
+
+        return $closest;
     }
 
     public static function byItemNoCdConsigneeSet($itemNo,$consingee)
@@ -352,22 +371,24 @@ class QueryMstBox extends Model {
         return $tes;
     }
 
-    public static function byItemNoCdConsigneeDatasourceSet($itemNo,$consingee,$datasource)
+    public static function byItemNoCdConsigneeDatasourceSet($itemNo,$consingee,$datasource,$qty)
     {
         // echo 'item no : '.$itemNo." consignee : ".$consingee;
         // die();
-        $tes = self::where('part_set', 'set')
+        $box = self::where('part_set', 'set')
             ->where('item_no',trim($itemNo))
             ->where('code_consignee',trim($consingee))
             ->where('datasource',trim($datasource))
-            ->first() ?? null;
+            ->get() ?? null;
+
+        $res = self::getClosestQty($box, $qty);
 
         DB::table('box_temporary')->insert([
             'item_no' => trim($itemNo),
             'consignee' => trim($consingee),
-            'status' => $tes ? 1 : 0
+            'status' => $box ? 1 : 0
         ]);
-        return $tes;
+        return $res;
     }
 
 
