@@ -114,7 +114,7 @@ class QueryIregularOrderEntry extends Model {
                 if(!in_array($ext,['pdf'])) throw new \Exception("file format error", 400);
             }
 
-            if(count(json_decode($params["files"], true)) !== count(json_decode($params["document"], true))) throw new \Exception("Please upload files to continue the process", 400);
+            if(count($params["files"]) !== count(json_decode($params["document"], true))) throw new \Exception("Please upload files to continue the process", 400);
 
             $order_entry = json_decode($params["order_entry"], true);
             $order_entry_checkbox = self::getParamCheckbox($order_entry);
