@@ -582,7 +582,7 @@ $orderEntry->address_consignee",
                 'type_package' => $type_package
             ];
 
-            $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $id_iregular_delivery_plan_invoice)->first();
+            $invoice_data = IregularDeliveryPlanInvoice::where('id', $id_iregular_delivery_plan_invoice)->first();
             $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
 
             Pdf::loadView('pdf.iregular.invoice.invoice', [
