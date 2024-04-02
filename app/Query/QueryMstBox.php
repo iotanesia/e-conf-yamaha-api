@@ -339,21 +339,34 @@ class QueryMstBox extends Model {
 
     public static function getClosestQty($box, $qty)
     {
-
         $target = $qty;
         $closest = null;
-
+        $closestDiff = INF;
         if ($box) {
-            foreach ($box as $val) {
-                if ($val->qty >= $target && ($closest === null || $val->qty < $closest)) {
-                    $closest = $val; 
+            foreach ($box as $value) {
+                if ($value->qty >= $target) {
+                    $diff = $value->qty - $target;
+                    if ($diff <= $closestDiff) {
+                        $closest = $value;
+                        $closestDiff = $diff;
+                    }
+                }
+            }
+
+            if ($closest == null) {
+                foreach ($box as $value) {
+                    if ($value->qty < $target) {
+                        $diff = $target - $value->qty;
+                        if ($diff <= $closestDiff) {
+                            $closest = $value;
+                            $closestDiff = $diff;
+                        }
+                    }
                 }
             }
         }
 
-        $res = ($closest !== null && $closest->qty >= $target) ? $closest : null;
-
-        return $res;
+        return $closest;
     }
 
     public static function byItemNoCdConsigneeSet($itemNo,$consingee)
