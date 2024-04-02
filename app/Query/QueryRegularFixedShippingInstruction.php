@@ -1019,6 +1019,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                             $res['length'] = $item->refMstBox->length;
                             $res['width'] = $item->refMstBox->width;
                             $res['height'] = $item->refMstBox->height;
+                            $res['order_no'] = $item->refRegularDeliveryPlan->order_no;
                             return $res;
                         }
                     });
@@ -1061,6 +1062,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $length = '';
                     $width = '';
                     $height = '';
+                    $order_no = '';
                     $count_net_weight = 0;
                     foreach ($mst_box as $key => $value) {
                         $qty_box[] = $value->qty;
@@ -1074,6 +1076,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $length = $value->length;
                         $width = $value->width;
                         $height = $value->height;
+                        $order_no = $deliv_value->order_no;
                     }
         
                     $id_deliv_box = [];
@@ -1130,6 +1133,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                             'length' => $length,
                             'width' => $width,
                             'height' => $height,
+                            'order_no' => $order_no,
                         ];
                     }
                     
@@ -1139,6 +1143,15 @@ class QueryRegularFixedShippingInstruction extends Model {
             }
             
             $box = array_merge((array_merge(...$res_box_set) ?? []), (array_merge(...$res_box_single) ?? []));
+            $boxArray = [];
+            foreach ($box as $box_item) {
+                $order_no = $box_item['order_no'];
+                if (!isset($boxArray[$order_no])) {
+                    $boxArray[$order_no] = [];
+                }
+                $boxArray[$order_no][] = $box_item;
+            }
+
             $count_qty = 0;
             $count_net_weight = 0;
             $count_gross_weight = 0;
@@ -1152,23 +1165,38 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $gross_weight_per_part[] = $box_item['total_gross_weight'];
             }
 
-            $count_data = [];
-            foreach ($box as $key => $box_item){
-                for ($i = 0; $i < count($box_item['item_no_series']); $i++){
-                    $count_data[] = 'count';
+            $sum_res_per_order = [];
+            foreach ($boxArray as $itemSum) {
+                $count_qty_per_order = 0;
+                $count_net_weight_per_order = 0;
+                $count_gross_weight_per_order = 0;
+                $count_meas_per_order = [];
+                $order_no = '';
+                foreach ($itemSum as $val) {
+                    $count_qty_per_order += array_sum($val['qty_pcs_box']);
+                    $count_net_weight_per_order += array_sum($val['unit_weight_kg']);
+                    $count_gross_weight_per_order += array_sum($val['total_gross_weight']);
+                    $count_meas_per_order[] = round((($val['length'] * $val['width'] * $val['height']) / 1000000000), 3);
+                    $order_no = $val['order_no'];
                 }
+                $sum_res_per_order[$order_no] = [
+                    'qty' => $count_qty_per_order,
+                    'nett_weight' => $count_net_weight_per_order,
+                    'gross_weight' => $count_gross_weight_per_order,
+                    'meas' => array_sum($count_meas_per_order)
+                ];
             }
 
             Pdf::loadView('pdf.packaging.packaging_doc',[
-                'count_data' => count($count_data),
                 'data' => $data,
-                'box' => $box,
+                'box' => $boxArray,
                 'gross_weight_per_part' => $gross_weight_per_part,
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
                 'count_gross_weight' => $count_gross_weight,
                 'count_meas' => array_sum($count_meas),
-                'check_shipping' => $check_shipping
+                'check_shipping' => $check_shipping,
+                'sum_per_order' => $sum_res_per_order
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
