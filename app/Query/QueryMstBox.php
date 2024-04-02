@@ -325,35 +325,35 @@ class QueryMstBox extends Model {
             ->where('item_no',trim($itemNo))
             ->where('code_consignee',trim($consingee))
             ->where('datasource',trim($datasource))
-            ->first() ?? null;
+            ->get() ?? null;
 
-        // $res = self::getClosestQty($box, $qty);
+        $res = self::getClosestQty($box, $qty);
 
         DB::table('box_temporary')->insert([
             'item_no' => trim($itemNo),
             'consignee' => trim($consingee),
             'status' => $box ? 1 : 0
         ]);
-        return $box;
+        return $res;
     }
 
     public static function getClosestQty($box, $qty)
     {
+
         $target = $qty;
         $closest = null;
-        $minDifference = PHP_INT_MAX;
 
         if ($box) {
             foreach ($box as $val) {
-                $difference = $val->qty - $target;
-                if ($difference <= 0 && abs($difference) < $minDifference) {
-                    $closest = $val;
-                    $minDifference = abs($difference);
+                if ($val->qty >= $target && ($closest === null || $val->qty < $closest)) {
+                    $closest = $val; 
                 }
             }
         }
 
-        return $closest;
+        $res = ($closest !== null && $closest->qty >= $target) ? $closest : null;
+
+        return $res;
     }
 
     public static function byItemNoCdConsigneeSet($itemNo,$consingee)
