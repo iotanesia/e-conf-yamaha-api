@@ -26,14 +26,18 @@ class QueryRegularFixedPackingCreation extends Model {
     public static function getAll($params)
     {
         $data = RegularFixedActualContainer::where(function ($query) use ($params){
+            $datasource = $params->datasource ?? null;
             $category = $params->category ?? null;
             $kueri = $params->kueri ?? null;
         
             if ($category && $kueri) {
                 if ($category == 'cust_name') {
-                    $query->whereHas('refConsignee', function ($q) use ($kueri) {
-                        $q->where('nick_name', 'like', '%' . $kueri . '%');
-                    });
+                    if($datasource == Constant::PYMAC_DATASOURCE)
+                        $query->whereHas('refConsignee', function ($q) use ($kueri) {
+                            $q->where('nick_name', 'like', '%' . $kueri . '%');
+                        });
+                    else if($datasource == Constant::YPMJ_DATASOURCE)
+                        $query->where('code_consignee', 'like', '%' . $kueri . '%');
                 }elseif ($category == 'etd_ypmi') {
                     $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
                 }elseif ($category == 'etd_wh') {
@@ -51,13 +55,13 @@ class QueryRegularFixedPackingCreation extends Model {
             $date_from = str_replace('-','',$params->date_from);
             $date_to = str_replace('-','',$params->date_to);
             if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
-
+            if($datasource) $query->where('datasource', $datasource);
 
         })->orderBy('created_at', 'asc')
         ->paginate($params->limit ?? null);
 
         $data->map(function ($item){
-            $item->cust_name = $item->refConsignee->nick_name ?? null;
+            $item->cust_name = $item->datasource == Constant::YPMJ_DATASOURCE ? $item->code_consignee : $item->refConsignee->nick_name ?? null;
             $item->mot = $item->refMot->name ?? null;
             $item->status_desc = 'Confirmed';
 

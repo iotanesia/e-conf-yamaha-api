@@ -28,6 +28,7 @@ class QueryMstBox extends Model {
             DB::raw("string_agg(DISTINCT mst_box.id_consignee::character varying, ',') as id_consignee"),
             DB::raw("string_agg(DISTINCT mst_box.id_part::character varying, ',') as id_part"),
             DB::raw("string_agg(DISTINCT mst_box.item_no::character varying, ',') as item_no"),
+            DB::raw("string_agg(DISTINCT mst_box.datasource::character varying, ',') as datasource"),
             DB::raw("string_agg(DISTINCT mst_box.item_no_series::character varying, ',') as item_no_series"),
             DB::raw("string_agg(DISTINCT mst_box.qty::character varying, ',') as qty"),
             DB::raw("string_agg(DISTINCT mst_box.unit_weight_gr::character varying, ',') as unit_weight_gr"),
@@ -54,9 +55,10 @@ class QueryMstBox extends Model {
                                         ->orWhere('item_no_series',"like", "%$params->kueri%")
                                         ->orWhere('qty',"like", "%$params->kueri%")
                                         ->orWhere('part_set',"like", "%$params->kueri%");
-
             });
+            if($params->datasource) $query->where('datasource', $params->datasource);
             if($params->withTrashed == 'true') $query->withTrashed();
+
             $data = $query
             ->groupBy('part_set','id_box')
             ->orderBy('id_mst_box','asc')
@@ -109,6 +111,7 @@ class QueryMstBox extends Model {
         $query = self::select('mst_box.id_box','mst_box.part_set',
             DB::raw("string_agg(DISTINCT mst_box.id::character varying, ',') as id_mst_box"),
             DB::raw("string_agg(DISTINCT mst_box.no_box::character varying, ',') as no_box"),
+            DB::raw("string_agg(DISTINCT mst_box.datasource::character varying, ',') as datasource"),
             DB::raw("string_agg(DISTINCT mst_box.id_group_product::character varying, ',') as id_group_product"),
             DB::raw("string_agg(DISTINCT mst_box.id_consignee::character varying, ',') as id_consignee"),
             DB::raw("string_agg(DISTINCT mst_box.id_part::character varying, ',') as id_part"),
@@ -190,6 +193,7 @@ class QueryMstBox extends Model {
                 $mst_part = MstPart::where('item_no', $params['item_no'][$i])->get();
                 self::create([
                     "no_box" => $params['no_box'] ?? null,
+                    "datasource" => $params['datasource'] ?? null,
                     "id_group_product" => $params['id_group_product'][$i] ?? null,
                     "id_part" => $mst_part[0]->id ?? null,
                     "item_no" => $params['item_no'][$i] ?? null,
@@ -246,6 +250,7 @@ class QueryMstBox extends Model {
                 $mst_part = MstPart::where('item_no', $params['item_no'][$i])->get();
                 $update_data->update([
                     "no_box" => $params['no_box'] ?? null,
+                    "datasource" => $params['datasource'] ?? null,
                     "id_group_product" => $params['id_group_product'][$i] ?? null,
                     "id_part" => $mst_part[0]->id ?? null,
                     "item_no" => $params['item_no'][$i] ?? null,
