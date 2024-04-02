@@ -307,9 +307,9 @@
         <p>Sincerelly Yours</p>
         <table style="width:320px">
             <tr>
-                <td class="text-center" width="50">Issued</td>
-                <td class="text-center" width="50">Checked</td>
-                <td class="text-center" width="50">Approved</td>
+                <td class="text-center" width="60">Issued</td>
+                <td class="text-center" width="60">Checked</td>
+                <td class="text-center" width="60">Approved</td>
             </tr>
             <tr>
                 @if ($data->issued)
