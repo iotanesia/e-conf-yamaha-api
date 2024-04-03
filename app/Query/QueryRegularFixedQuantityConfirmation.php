@@ -726,9 +726,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             }
 
             $creation = [
-                'id_type_delivery' => $lsp->id_type_delivery,
-                'id_mot' => $lsp->refTypeDelivery->id_mot,
-                'id_lsp' => $lsp->id,
+                'id_type_delivery' => $actual_container->id_type_delivery ?? 1,
+                'id_mot' => $actual_container->id_mot ?? null,
+                'id_lsp' => $lsp->id ?? null,
                 'code_consignee' => $actual_container->code_consignee,
                 'etd_jkt' => $actual_container->etd_jkt,
                 'etd_ypmi' => $actual_container->etd_ypmi,
@@ -738,42 +738,64 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'datasource' => $params->datasource,
             ];
 
-            $count_container = (int)ceil($sum_row_length / 12031);
-            $send_summary_box = self::ratioSummaryBox(array_sum($count_box), $sum_row_length, 12031);
-            for ($i=1; $i <= $count_container; $i++) { 
-                if ($sum_row_length < 5905) {
-                    $creation['id_container'] = 1;
-                    $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
-                    $creation['summary_box'] = (int)$send_summary_box[$i-1]['summary_box'];
-                    $creation['iteration'] = $i;
-                    $creation['space'] = 5905 - (int)$sum_row_length;
-                } else {
-                    $creation['id_container'] = 2;
-                    $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
-                    $creation['summary_box'] = (int)$send_summary_box[$i-1]['summary_box'];
-                    $creation['iteration'] = $i;
-                    $creation['space'] = (int)$send_summary_box[$i-1]['space'];
+            if($params->datasource == Constant::PYMAC_DATASOURCE){
+
+                $count_container = (int)ceil($sum_row_length / 12031);
+                $send_summary_box = self::ratioSummaryBox(array_sum($count_box), $sum_row_length, 12031);
+                for ($i=1; $i <= $count_container; $i++) { 
+                    if ($sum_row_length < 5905) {
+                        $creation['id_container'] = 1;
+                        $creation['measurement'] = MstContainer::find(1)->measurement ?? 0;
+                        $creation['summary_box'] = (int)$send_summary_box[$i-1]['summary_box'];
+                        $creation['iteration'] = $i;
+                        $creation['space'] = 5905 - (int)$sum_row_length;
+                    } else {
+                        $creation['id_container'] = 2;
+                        $creation['measurement'] = MstContainer::find(2)->measurement ?? 0;
+                        $creation['summary_box'] = (int)$send_summary_box[$i-1]['summary_box'];
+                        $creation['iteration'] = $i;
+                        $creation['space'] = (int)$send_summary_box[$i-1]['space'];
+                    }
+    
+                    $check = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $actual_container->id)->where('space', null)->first();
+                    if($check) $check->forceDelete();
+                    RegularFixedActualContainerCreation::create($creation);
+    
+                    $sum_row_length = $sum_row_length - 12031;
                 }
+                
+                $upd = RegularFixedActualContainer::where('id',$params->id)->first();
+                $upd->is_actual = 99;
+                $upd->save();
+    
+                $set = [
+                    'id' => $params->id,
+                    'colis' => $quantityConfirmationBox,
+                    'box_set_count' => $box_set_count,
+                    'type' => 'single'
+                ];
+    
+                ContainerActual::dispatch($set);
+
+            } else if($params->datasource == Constant::YPMJ_DATASOURCE){
+                
+                $mst_container = MstContainer::find($params->id_container);
+                $summary_box = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', $id_fixed_quantity)->get();
+
+                $creation['id_container'] = $params->id_container;
+                $creation['measurement'] = $mst_container->measurement ?? 0;
+                $creation['summary_box'] = count($summary_box);
+                $creation['iteration'] = 1;
+                $creation['space'] = floor($mst_container->capacity) ?? 0;
 
                 $check = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $actual_container->id)->where('space', null)->first();
                 if($check) $check->forceDelete();
                 RegularFixedActualContainerCreation::create($creation);
 
-                $sum_row_length = $sum_row_length - 12031;
+                $upd = RegularFixedActualContainer::where('id',$params->id)->first();
+                $upd->is_actual = 99;
+                $upd->save();
             }
-            
-            $upd = RegularFixedActualContainer::where('id',$params->id)->first();
-            $upd->is_actual = 99;
-            $upd->save();
-
-            $set = [
-                'id' => $params->id,
-                'colis' => $quantityConfirmationBox,
-                'box_set_count' => $box_set_count,
-                'type' => 'single'
-            ];
-
-            ContainerActual::dispatch($set);
             
            DB::commit();
 
@@ -971,7 +993,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
                 }
 
-                $item->cust_name = $item->refMstConsignee->nick_name ?? null;
+                $item->cust_name = $item->datasource == Constant::YPMJ_DATASOURCE ? $item->code_consignee : $item->refMstConsignee->nick_name ?? null;
                 $item->id_type_delivery = $item->id_type_delivery;
                 $item->type_delivery = $item->refMstTypeDelivery->name ?? null;
                 $item->lsp = $item->refMstLsp->name ?? null;
