@@ -104,9 +104,8 @@ class QueryRegularOrderEntryUploadRevision extends Model {
             $params['type'] = 'REJECTED';
             self::create($params);
 
-            return ['message' => 'Data Rejected'];
-
             if($is_transaction) DB::commit();
+            return ['message' => 'Data Rejected'];
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
             throw $th;
