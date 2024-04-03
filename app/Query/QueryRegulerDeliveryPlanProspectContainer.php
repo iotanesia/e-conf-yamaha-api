@@ -834,13 +834,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $delivery_plan[] = $item->id;
             }
             
-            $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
-                'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
-            ->whereIn('id_regular_delivery_plan',$delivery_plan)
-            // ->groupBy('id_box', 'id_regular_delivery_plan')
-            ->orderBy('count_box','desc')
-            ->get()
-            ->map(function ($item, $index){
+            $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',$delivery_plan)
+            ->get()->map(function ($item, $index){
                 
                 $row_length = $item->refBox->fork_side == 'Length' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
                 $count_box = $item->count_box;
