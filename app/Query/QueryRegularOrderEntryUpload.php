@@ -369,7 +369,7 @@ class QueryRegularOrderEntryUpload extends Model {
                     $result->id_upload = $item->id;
                     $result->filename = $item->filename;
                     $result->batch = $item->iteration;
-                    $result->status_desc = $item->status == Constant::STS_SEND_TO_DC_MANAGER ? "Waiting Approve" : "Finish";
+                    $result->status_desc = $item->status == Constant::STS_PROCESS_REJECTED ? "Rejected" : ($item->status == Constant::STS_SEND_TO_DC_MANAGER ? "Waiting Approve" : "Finish");
                     return $result;
                 }),
                 'last_page' => $data->lastPage(),
