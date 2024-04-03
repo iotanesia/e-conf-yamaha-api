@@ -835,10 +835,10 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             }
             
             $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',$delivery_plan)
+            ->orderBy('qty_pcs_box', 'desc')
             ->get()->map(function ($item, $index){
                 
-                $row_length = $item->refBox->fork_side == 'Length' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
-                $count_box = $item->count_box;
+                $row_length = $item->refBox->fork_side == 'Length' ? $item->refBox->width : $item->refBox->length;
                 $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
                                                 ->whereNull('id_prospect_container_creation')
                                                 ->orderBy('id', 'asc')
@@ -851,12 +851,12 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                     'label' => $item->refBox->no_box,
                     'width' =>  $item->refBox->width,
                     'length' => $item->refBox->length,
-                    'count_box' => $count_box,
-                    'sum_qty' => $item->sum_qty,
+                    'count_box' => 1,
+                    'sum_qty' => $item->qty_pcs_box,
                     'priority' => $index + 1,
                     'forkside' => $item->refBox->fork_side,
                     'stackingCapacity' => $item->refBox->stack_capacity,
-                    'row' => (int)ceil($count_box / 4),
+                    'row' => 1,
                     'first_row_length' => $item->refBox->fork_side == 'Length' ? $item->refBox->width : $item->refBox->length,
                     'row_length' => $row_length,
                     'box' => $box,
