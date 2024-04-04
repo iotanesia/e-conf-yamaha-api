@@ -327,13 +327,14 @@ class QueryMstBox extends Model {
             ->where('datasource',trim($datasource))
             ->get() ?? null;
 
-        $res = self::getClosestQty($box, $qty);
-
         DB::table('box_temporary')->insert([
             'item_no' => trim($itemNo),
             'consignee' => trim($consingee),
             'status' => $box ? 1 : 0
         ]);
+
+        $res = self::getClosestQty($box, $qty);
+
         return $res;
     }
 
@@ -396,13 +397,14 @@ class QueryMstBox extends Model {
             ->where('datasource',trim($datasource))
             ->get() ?? null;
 
-        $res = self::getClosestQty($box, $qty);
-
         DB::table('box_temporary')->insert([
             'item_no' => trim($itemNo),
             'consignee' => trim($consingee),
             'status' => $box ? 1 : 0
         ]);
+        
+        $res = self::getClosestQty($box, $qty);
+        
         return $res;
     }
 
