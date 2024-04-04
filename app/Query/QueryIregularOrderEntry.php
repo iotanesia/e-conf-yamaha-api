@@ -456,13 +456,48 @@ class QueryIregularOrderEntry extends Model {
 
     public static function printFormRequest($params,$id,$filename,$pathToFile, $role = "dc")
     {
-        // try {
+        try {
             $data = self::find($id);
             if(!$data) throw new \Exception("id tidak ditemukan", 400);
 
+            $print_data = self::getFormData($params, $id)["items"];
+            $form = self::getForm($params)["items"];
+
+            if($data->id_type_transaction == 1){
+
+                for($i = 0; $i < sizeof($form["freight_charge"]); $i++){
+                    if($form["freight_charge"][$i]->id == 2) $form["freight_charge"][$i]->name = "Consignee";
+                }
+                for($i = 0; $i < sizeof($form["insurance"]); $i++){
+                    if($form["insurance"][$i]->id == 2) $form["insurance"][$i]->name = "Consignee";
+                }
+                for($i = 0; $i < sizeof($form["duty_tax"]); $i++){
+                    if($form["duty_tax"][$i]->id == 2) $form["duty_tax"][$i]->name = "Consignee";
+                }
+                for($i = 0; $i < sizeof($form["inland_cost"]); $i++){
+                    if($form["inland_cost"][$i]->id == 2) $form["inland_cost"][$i]->name = "Consignee";
+                }
+
+            } else if($data->id_type_transaction == 2){
+
+                for($i = 0; $i < sizeof($form["freight_charge"]); $i++){
+                    if($form["freight_charge"][$i]->id == 2) $form["freight_charge"][$i]->name = "Shipper";
+                }
+                for($i = 0; $i < sizeof($form["insurance"]); $i++){
+                    if($form["insurance"][$i]->id == 2) $form["insurance"][$i]->name = "Shipper";
+                }
+                for($i = 0; $i < sizeof($form["duty_tax"]); $i++){
+                    if($form["duty_tax"][$i]->id == 2) $form["duty_tax"][$i]->name = "Shipper";
+                }
+                for($i = 0; $i < sizeof($form["inland_cost"]); $i++){
+                    if($form["inland_cost"][$i]->id == 2) $form["inland_cost"][$i]->name = "Shipper";
+                }
+
+            }
+
             Pdf::loadView('pdf.iregular.order-entry.form_request',[
-                "data" => self::getFormData($params, $id)["items"],
-                "form" => self::getForm($params)["items"],
+                "data" => $print_data,
+                "form" => $form,
                 "doc" => MstDoc::select('*')->get(),
                 "role" => $role
             ])
@@ -470,8 +505,8 @@ class QueryIregularOrderEntry extends Model {
             ->setPaper('F4','potrait')
             ->download($filename);
 
-        //   } catch (\Throwable $th) {
-        //       return Helper::setErrorResponse($th);
-        //   }
+          } catch (\Throwable $th) {
+              return Helper::setErrorResponse($th);
+          }
     }
 }
