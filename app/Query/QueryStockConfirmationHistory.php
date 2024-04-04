@@ -121,7 +121,24 @@ class QueryStockConfirmationHistory extends Model
 
         $result = [];
         foreach ($data as $key => $value) {
-            $plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $value->id_regular_delivery_plan)->get();
+            $plan_box = RegularDeliveryPlanBox::whereHas('refRegularDeliveryPlan', function($query) use ($request) {
+                $category = $request->category ?? null;
+                $kueri = $request->kueri ?? null;
+                if ($category) {
+                    if ($category == 'cust_name') {
+                        $query->whereHas('refConsignee', function($q) use ($kueri) {
+                            $q->where('nick_name', 'like', '%' . $kueri . '%');
+                        });
+                    } elseif ($category == 'etd_ypmi' || $category == 'etd_wh' || $category == 'etd_jkt') {
+                        $query->where($category, 'like', '%' . $kueri . '%');
+                    } else {
+                        $query->where($category, 'ilike', $kueri);
+                    }
+                }
+            })
+            ->where('id_regular_delivery_plan', $value->id_regular_delivery_plan)
+            ->get();
+            
             $check_scan = RegularStokConfirmationHistory::where('id_regular_delivery_plan', $value->id_regular_delivery_plan)->where('type', 'INSTOCK')->get()->pluck('id_regular_delivery_plan_box');
 
             $result_qty = [];
