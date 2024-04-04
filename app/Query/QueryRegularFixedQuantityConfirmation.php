@@ -1111,6 +1111,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'id'
             ]);
             
+            dd($params->id);
             foreach ($params->id as $val) {
                 $params_id = explode(',',$val);
             }
