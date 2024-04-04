@@ -1146,9 +1146,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $ins = RegularFixedActualContainerCreation::create($creation);
                 RegularFixedQuantityConfirmation::whereIn('id',$params_id)->update(['id_fixed_actual_container_creation'=>$ins->id]);
                 RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation',$params_id)->update(['id_prospect_container_creation'=>$ins->id]);
+                $prospect->update(['summary_box' => $prospect->summary_box - $ins->summary_box]);
             }else {
                 RegularFixedQuantityConfirmation::whereIn('id',$params_id)->update(['id_fixed_actual_container_creation'=>$nextprospect->id]);
                 RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation',$params_id)->update(['id_prospect_container_creation'=>$nextprospect->id]);
+                $prospect->update(['summary_box' => $prospect->summary_box - $nextprospect->summary_box]);
             }
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
