@@ -1110,14 +1110,19 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             Helper::requireParams([
                 'id'
             ]);
-            $check = RegularFixedQuantityConfirmation::select('id_fixed_actual_container_creation')
+            
+            foreach ($params->id as $val) {
+                $params_id = explode(',',$val);
+            }
+
+            $check = RegularFixedQuantityConfirmation::select('id_fixed_actual_container')
                 ->with('manyFixedQuantityConfirmationBox')
-                ->whereIn('id', $params->id)
-                ->groupBy('id_fixed_actual_container_creation')
+                ->whereIn('id', $params_id)
+                ->groupBy('id_fixed_actual_container')
                 ->get();
             if(count($check) > 1) throw new \Exception("Code consignee, ETD JKT and datasource not same", 400);
             $drp = $check[0];
-            $prospect = RegularFixedActualContainerCreation::find($drp->id_fixed_actual_container_creation);
+            $prospect = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $drp->id_fixed_actual_container)->first();
             $nextprospect = RegularFixedActualContainerCreation::where(function ($query) use ($prospect){
                 $query->where('code_consignee',$prospect->code_consignee);
                 $query->where('datasource',$prospect->datasource);
@@ -1129,18 +1134,21 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $creation['id_mot'] = $prospect->id_mot;
                 $creation['id_container'] = $prospect->id_container;
                 $creation['id_lsp'] =  $prospect->id_lsp;
-                $creation['summary_box'] = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation',$params->id)->count() ?? 0;
+                $creation['summary_box'] = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation',$params_id)->count() ?? 0;
                 $creation['code_consignee'] = $prospect->code_consignee;
                 $creation['etd_jkt'] = $prospect->etd_jkt;
                 $creation['etd_ypmi'] = $prospect->etd_ypmi;
                 $creation['etd_wh'] = $prospect->etd_wh;
                 $creation['measurement'] = $prospect->measurement;
+                $creation['datasource'] = $prospect->datasource;
                 $creation['iteration'] = $prospect->iteration+1;
                 $creation['id_fixed_actual_container'] = $prospect->id_fixed_actual_container;
                 $ins = RegularFixedActualContainerCreation::create($creation);
-                RegularFixedQuantityConfirmation::whereIn('id',$params->id)->update(['id_fixed_actual_container_creation'=>$ins->id]);
+                RegularFixedQuantityConfirmation::whereIn('id',$params_id)->update(['id_fixed_actual_container_creation'=>$ins->id]);
+                RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation',$params_id)->update(['id_prospect_container_creation'=>$ins->id]);
             }else
-                RegularFixedQuantityConfirmation::whereIn('id',$params->id)->update(['id_fixed_actual_container_creation'=>$nextprospect->id]);
+                RegularFixedQuantityConfirmation::whereIn('id',$params_id)->update(['id_fixed_actual_container_creation'=>$nextprospect->id]);
+                RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation',$params_id)->update(['id_prospect_container_creation'=>$nextprospect->id]);
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
