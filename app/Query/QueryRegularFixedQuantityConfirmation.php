@@ -1110,12 +1110,6 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             Helper::requireParams([
                 'id'
             ]);
-            
-            return [
-                'items' => [
-                    'tes' => $params->id,
-                    ]
-            ];
 
             foreach ($params->id as $val) {
                 $params_id = explode(',',$val);
@@ -1152,9 +1146,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $ins = RegularFixedActualContainerCreation::create($creation);
                 RegularFixedQuantityConfirmation::whereIn('id',$params_id)->update(['id_fixed_actual_container_creation'=>$ins->id]);
                 RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation',$params_id)->update(['id_prospect_container_creation'=>$ins->id]);
-            }else
+            }else {
                 RegularFixedQuantityConfirmation::whereIn('id',$params_id)->update(['id_fixed_actual_container_creation'=>$nextprospect->id]);
                 RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation',$params_id)->update(['id_prospect_container_creation'=>$nextprospect->id]);
+            }
             if($is_transaction) DB::commit();
         } catch (\Throwable $th) {
             if($is_transaction) DB::rollBack();
