@@ -266,7 +266,7 @@
                                             <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $item->no_packaging }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $loop->iteration }}</td>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : 1 - {{ $loop->iteration }}</td>
                                         </tr>
                                         <br>
                                     </table>
