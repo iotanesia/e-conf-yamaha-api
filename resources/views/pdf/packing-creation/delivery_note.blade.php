@@ -68,7 +68,7 @@
             <td class="no-bo" width='70'></td>
             <td class="no-bo" width='5'></td>
             <td class="no-bo text-right" width='100'>
-                User Name, <br>
+                Customer Name, <br>
                 {{ $data->nick_name }}
             </td>
         </tr>
