@@ -110,8 +110,8 @@ class QueryIregularOrderEntry extends Model {
 
             $files = $params["files"];
             foreach($files as $file){
-                $ext = $file->getClientOriginalExtension();
-                if(!in_array($ext,['pdf'])) throw new \Exception("file format error", 400);
+                $ext = strtolower($file->getClientOriginalExtension());
+                if(!in_array($ext,['pdf','png','jpg','jpeg'])) throw new \Exception("file format error", 400);
             }
 
             if(count($params["files"]) !== count(json_decode($params["document"], true))) throw new \Exception("Please upload files to continue the process", 400);
@@ -215,8 +215,8 @@ class QueryIregularOrderEntry extends Model {
             $tokenData = Helper::decodeJwtSignature($token, env("JWT_SECRET"));
 
             $file = $params["file"];
-            $ext = $file->getClientOriginalExtension();
-            if(!in_array($ext,['pdf'])) throw new \Exception("file format error", 400);
+            $ext = strtolower($file->getClientOriginalExtension());
+            if(!in_array($ext,['pdf','png','jpg','jpeg'])) throw new \Exception("file format error", 400);
                 
             $data = self::find($id);
             if(!$data) throw new \Exception("id tidak ditemukan", 400);
