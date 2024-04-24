@@ -158,7 +158,7 @@ class QueryRegularFixedPackingCreation extends Model {
                             ->first();
 
         $ret['yth'] = $fixed_packing_creation->yth;
-        $ret['username'] = $data->refConsignee->name;
+        $ret['username'] = $data->refConsignee->name ?? $data->code_consignee;
         $ret['jenis_truck'] = "LCL";
         $ret['surat_jalan'] = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first());
         $ret['delivery_date'] = date('d-m-Y');
