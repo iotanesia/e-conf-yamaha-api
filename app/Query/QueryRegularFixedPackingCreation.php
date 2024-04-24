@@ -203,7 +203,7 @@ class QueryRegularFixedPackingCreation extends Model {
 
                 $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $part_set : [$item->item_serial];
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $mst_part->toArray() : trim($item->refRegularDeliveryPlan->refPart->description);
-                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null;
+                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name ?? ($item->refFixedActualContainer->code_consignee ?? null);
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;
                 // $item->in_wh = count(explode(',', $item->count)) . ' x ' . array_sum($qty_pcs_box->pluck('qty_pcs_box')->toArray());
                 $item->in_wh = $item->count.' x '.array_sum(explode(',', $item->qty_pcs_box));
