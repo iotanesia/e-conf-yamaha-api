@@ -4,18 +4,36 @@
 
     <style>
         #table1 td, #table2 td {
-            vertical-align:top
+            vertical-align:top;
+            margin: 0; 
+            padding: 0; 
         }
 
         body {
-            font-size: 9pt; 
+            font-size: 7pt; 
             /* font-family: 'Times New Roman', Times, serif; */
             font-family: Arial, Helvetica, sans-serif;
             /* margin-right: 4cm; */
+            margin: 0; 
+
         }
         input[type="checkbox"] {
             vertical-align: top;
+            /* transform: scale(0.6); */
+            margin: 0; 
+            /* padding: 0;  */
+            font-size: 14px;
+
         }
+
+        .checkbox-container {
+            padding: 0;
+            margin: 0; 
+        }
+
+        /* .checkbox-label {
+            font-size: 15px;
+        } */
 
     </style>
 </head>
@@ -24,32 +42,32 @@
     <table style="width: 100%">
         <tr>
             <td style="width: 50%">
-                <strong style="font-size: 16px">PT. Yamaha Motor Parts Mfg Indonesia</strong>
+                <strong style="font-size: 14px">PT. Yamaha Motor Parts Mfg Indonesia</strong>
             </td>
             <td rowspan="2" style="width: 50%; text-align: right;">
                 <strong style="
-                    font-size: 14px; 
+                    font-size: 12px; 
                     color: red;
-                    padding-left: 15px; 
-                    padding-right: 15px; 
-                    padding-top: 5px;
-                    padding-bottom: 5px;
+                    padding-left: 5px; 
+                    padding-right: 5px;
+                    padding-top: 1px;
+                    padding-bottom: 1px; 
                     border: 2px solid red; 
                     border-radius: 5px">INTERNAL USE ONLY</strong>
             </td>
         </tr>
         <tr>
             <td>
-                <strong style="font-size: 13px">Finance Division</strong>
+                <strong style="font-size: 11px">Finance Division</strong>
             </td>
         </tr>
         <tr>
             <td colspan="2" style="text-align: right;">
-                <a style="font-size: 11px">01/FORM/REV-2/CC/2022</a>
+                <a style="font-size: 9px">01/FORM/REV-2/CC/2022</a>
             </td>
         </tr>
         <tr>
-            <td colspan="2" style="text-align: center; background-color:#275673; padding-top: 5px; padding-bottom: 5px;"><a style="color: white; font-size: 18px; font-weight: 600;"><i>FORM REQUEST FOR IRREGULAR EXPORT / IMPORT</i></a></td>
+            <td colspan="2" style="text-align: center; background-color:#275673; padding-top: 3px; padding-bottom: 3px;"><a style="color: white; font-size: 16px; font-weight: 450;"><i>FORM REQUEST FOR IRREGULAR EXPORT / IMPORT</i></a></td>
         </tr>
     </table>
 
@@ -87,20 +105,20 @@
                     <td style="width: 2%">:</td>
                     <td>
                         @php($countTypeTransaction = 0)
-                        <table cellpading="0" cellspacing="0" style="width: 100%">
+                        <table cellpading="0" cellspacing="0" style="width: 100%;">
                             @for ($i = 0; $i < ceil(sizeof($form["type_transaction"])/3); $i++)
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countTypeTransaction  < sizeof($form["type_transaction"]))
-                                            <td style="width: 33%;" class="checkbox-container">
+                                            <td style="width: 10%;" class="checkbox-container">
                                                 @if($data->id_type_transaction == $form["type_transaction"][$countTypeTransaction]->id)
                                                     <input type="checkbox" checked> {{ $form["type_transaction"][$countTypeTransaction]->name }}
                                                 @else
-                                                    <input type="checkbox"> {{ $form["type_transaction"][$countTypeTransaction]->name }}
+                                                    <input type="checkbox" > {{ $form["type_transaction"][$countTypeTransaction]->name }}
                                                 @endif
                                             </td>
                                         @else
-                                            <td  style="width: 33%"></td>
+                                            <td  style="width: 10%"></td>
                                         @endif
                                         @php($countTypeTransaction = $countTypeTransaction+1)
                                     @endfor
@@ -120,7 +138,7 @@
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countComodities  < sizeof($form["comodities"]))
-                                            <td style="width: 33%;" class="checkbox-container">
+                                            <td style="width: 10%;" class="checkbox-container">
                                                 @php($comoditiesChecked = false)
                                                 @foreach ($data->checkbox as $chk)
                                                     @if($chk->type == "comodities" && $chk->id_value == $form["comodities"][$countComodities]->id)
@@ -134,7 +152,7 @@
                                                 @endif
                                             </td>
                                         @else
-                                            <td  style="width: 33%"></td>
+                                            <td  style="width: 10%"></td>
                                         @endif
                                         @php($countComodities = $countComodities+1)
                                     @endfor
@@ -155,7 +173,7 @@
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countGoodCondition  < sizeof($form["good_condition"]))
-                                            <td style="width: 33%;" class="checkbox-container">
+                                            <td style="width: 10%;" class="checkbox-container">
                                                 @php($goodConditionChecked = false)
                                                 @foreach ($data->checkbox as $chk)
                                                     @if($chk->type == "good_condition" && $chk->id_value == $form["good_condition"][$countGoodCondition]->id)
@@ -169,7 +187,7 @@
                                                 @endif
                                             </td>
                                         @else
-                                            <td  style="width: 33%"></td>
+                                            <td  style="width: 10%"></td>
                                         @endif
                                         @php($countGoodCondition = $countGoodCondition+1)
                                     @endfor
@@ -189,7 +207,7 @@
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countGoodStatus  < sizeof($form["good_status"]))
-                                            <td style="width: 33%;" class="checkbox-container">
+                                            <td style="width: 10%;" class="checkbox-container">
                                                 @php($goodStatusChecked = false)
                                                 @foreach ($data->checkbox as $chk)
                                                     @if($chk->type == "good_status" && $chk->id_value == $form["good_status"][$countGoodStatus]->id)
@@ -203,7 +221,7 @@
                                                 @endif
                                             </td>
                                         @else
-                                            <td  style="width: 33%"></td>
+                                            <td  style="width: 10%"></td>
                                         @endif
                                         @php($countGoodStatus = $countGoodStatus+1)
                                     @endfor
@@ -217,14 +235,14 @@
                     <td style="width: 25%"></td>
                     <td style="width: 2%"></td>
                     <td>
-                        <table cellpading="0" cellspacing="0" style="width: 100%; margin-top: 15px">
+                        <table cellpading="0" cellspacing="0" style="width: 100%; margin-top: 3px">
                             <tr>
-                                <td style="width: 33%">
+                                <td style="width: 10%">
                                 </td>
-                                <td style="width: 33%; text-align: right">
+                                <td style="width: 10%; text-align: right">
                                     <span style="margin-right: 10px;">Actual Condition</span>
                                 </td>
-                                <td style="width: 33%">
+                                <td style="width: 10%">
                                     <div>
                                         @if ($data->actual_condition == "0-25")
                                             <input type="checkbox" checked> 0%-25%
@@ -269,7 +287,7 @@
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countGoodPayment  < sizeof($form["good_payment"]))
-                                            <td style="width: 33%;" class="checkbox-container">
+                                            <td style="width: 15%;" class="checkbox-container">
                                                 @if($data->id_good_payment == $form["good_payment"][$countGoodPayment]->id)
                                                     <input type="checkbox" checked> {{ $form["good_payment"][$countGoodPayment]->name }}
                                                 @else
@@ -277,7 +295,7 @@
                                                 @endif
                                             </td>
                                         @else
-                                            <td  style="width: 33%"></td>
+                                            <td  style="width: 15%"></td>
                                         @endif
                                         @php($countGoodPayment = $countGoodPayment+1)
                                     @endfor
@@ -291,7 +309,7 @@
                     <td style="width: 25%"></td>
                     <td style="width: 2%"></td>
                     <td>
-                        <div style="margin-top: 10px;overflow-wrap: break-word;">
+                        <div style="margin-top: 3px; overflow-wrap: break-word;">
                             For FOC, please add the reason &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
                             @if (isset($data->reason_foc))
                                 <span style="border-bottom: 1px dotted black">{{ $data->reason_foc }}</span> <br>
@@ -314,7 +332,7 @@
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countFreightCharge  < sizeof($form["freight_charge"]))
-                                            <td style="width: 33%;" class="checkbox-container">
+                                            <td style="width: 10%;" class="checkbox-container">
                                                 @if($data->id_freight_charge == $form["freight_charge"][$countFreightCharge]->id)
                                                     <input type="checkbox" checked> {{ $form["freight_charge"][$countFreightCharge]->name }}
                                                 @else
@@ -322,7 +340,7 @@
                                                 @endif
                                             </td>
                                         @else
-                                            <td  style="width: 33%"></td>
+                                            <td  style="width: 10%"></td>
                                         @endif
                                         @php($countFreightCharge = $countFreightCharge+1)
                                     @endfor
@@ -342,7 +360,7 @@
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countInsurance  < sizeof($form["insurance"]))
-                                            <td style="width: 33%;" class="checkbox-container">
+                                            <td style="width: 10%;" class="checkbox-container">
                                                 @if($data->id_insurance == $form["insurance"][$countInsurance]->id)
                                                     <input type="checkbox" checked> {{ $form["insurance"][$countInsurance]->name }}
                                                 @else
@@ -350,7 +368,7 @@
                                                 @endif
                                             </td>
                                         @else
-                                            <td  style="width: 33%"></td>
+                                            <td  style="width: 10%"></td>
                                         @endif
                                         @php($countInsurance = $countInsurance+1)
                                     @endfor
@@ -370,7 +388,7 @@
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countDutyTax  < sizeof($form["duty_tax"]))
-                                            <td style="width: 33%;" class="checkbox-container">
+                                            <td style="width: 10%;" class="checkbox-container">
                                                 @if($data->id_duty_tax == $form["duty_tax"][$countDutyTax]->id)
                                                     <input type="checkbox" checked> {{ $form["duty_tax"][$countDutyTax]->name }}
                                                 @else
@@ -378,7 +396,7 @@
                                                 @endif
                                             </td>
                                         @else
-                                            <td  style="width: 33%"></td>
+                                            <td  style="width: 10%"></td>
                                         @endif
                                         @php($countDutyTax = $countDutyTax+1)
                                     @endfor
@@ -398,7 +416,7 @@
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countInlandCost  < sizeof($form["inland_cost"]))
-                                            <td style="width: 33%;" class="checkbox-container">
+                                            <td style="width: 10%;" class="checkbox-container">
                                                 @if($data->id_inland_cost == $form["inland_cost"][$countInlandCost]->id)
                                                     <input type="checkbox" checked> {{ $form["inland_cost"][$countInlandCost]->name }}
                                                 @else
@@ -406,7 +424,7 @@
                                                 @endif
                                             </td>
                                         @else
-                                            <td  style="width: 33%"></td>
+                                            <td  style="width: 10%"></td>
                                         @endif
                                         @php($countInlandCost = $countInlandCost+1)
                                     @endfor
@@ -426,7 +444,7 @@
                                 <tr>
                                     @for ($j = 0; $j < 3; $j++)
                                         @if($countShippedBy  < sizeof($form["shipped_by"]))
-                                            <td style="width: 33%;" class="checkbox-container">
+                                            <td style="width: 10%;" class="checkbox-container">
                                                 @if($data->id_shipped == $form["shipped_by"][$countShippedBy]->id)
                                                     <input type="checkbox" checked> {{ $form["shipped_by"][$countShippedBy]->name }}
                                                 @else
@@ -434,7 +452,7 @@
                                                 @endif
                                             </td>
                                         @else
-                                            <td  style="width: 33%"></td>
+                                            <td  style="width: 10%"></td>
                                         @endif
                                         @php($countShippedBy = $countShippedBy+1)
                                     @endfor
@@ -515,12 +533,14 @@
                 
                 <tr>
                     <td colspan="4">
-                        <table id="table-item" border="1" cellpading="0" cellspacing="0" style="margin-top: 25px; margin-bottom: 25px; width: 100%;">
+                        <table id="table-item" border="1" cellpading="0" cellspacing="0" style="margin: 5px 0 10px; width: 100%;">
                             <tr>
                                 <th style="font-size: 10px; width: 5%">NO</th>
                                 <th style="font-size: 10px; width: 20%">ITEM CODE</th>
                                 <th style="font-size: 10px; width: 20%">ITEM NAME</th>
                                 <th style="font-size: 10px; width: 20%">PO. NUMBER</th>
+                                <th style="font-size: 10px; width: 10%">QTY</th>
+                                <th style="font-size: 10px; width: 14%">PRICE/UNIT</th>
                                 <th style="font-size: 10px; width: 11%">NW (Gram/Pcs)</th>
                                 <th style="font-size: 10px; width: 11%">GW (Kgs)</th>
                                 <th style="font-size: 10px; width: 11%">MEASURE (mm)</th>
@@ -531,6 +551,8 @@
                                     <td style="padding: 3px">{{ $data->part[$i]->item_code }}</td>
                                     <td style="padding: 3px">{{ $data->part[$i]->item_name }}</td>
                                     <td style="padding: 3px">{{ $data->part[$i]->order_no }}</td>
+                                    <td style="padding: 3px">{{ $data->part[$i]->qty }}</td>
+                                    <td style="padding: 3px">{{ $data->part[$i]->price }}</td>
                                     <td style="padding: 3px">{{ $data->part[$i]->net_weight }}</td>
                                     <td style="padding: 3px">{{ $data->part[$i]->gross_weight }}</td>
                                     <td style="padding: 3px">{{ $data->part[$i]->measurement }}</td>
@@ -541,18 +563,18 @@
                 </tr>
 
                 
-                <tr>
-                    <td style="width: 2%">q. </td>
-                    <td style="width: 25%">Attachment Documents</td>
-                    <td style="width: 2%">:</td>
+                <tr style="width: 100%; margin-bottom: 10px;">
+                    <td style="width: 2%;">q. </td>
+                    <td style="width: 25%;">Attachment Documents</td>
+                    <td style="width: 2%;">:</td>
                     <td>
                         <table cellpading="0" cellspacing="0" style="width: 100%;">
                             <tr>
-                                <td style="width: 25%">
+                                <td style="width: 5%">
                                     <div><strong>Commercial Parts</strong></div>
                                     @foreach ($doc as $item)
                                         @if($item->id_doc_type == 1)
-                                            <div>
+                                            <div >
                                                 @php($checkedDoc = false)
                                                 @foreach ($data->doc as $data_doc)
                                                     @if ($data_doc->id_doc == $item->id)
@@ -560,20 +582,20 @@
                                                     @endif
                                                 @endforeach
                                                 @if($checkedDoc)
-                                                    <input type="checkbox" checked> {{ $item->name }}
+                                                    <input type="checkbox" style="margin: 0;" checked> {{ $item->name }}
                                                 @else
-                                                    <input type="checkbox"> {{ $item->name }}
+                                                    <input type="checkbox" style="margin: 0;"> {{ $item->name }}
                                                 @endif               
                                             </div>
                                         @endif
                                     @endforeach
 
                                 </td>
-                                <td style="width: 25%">
+                                <td style="width: 5%">
                                     <div><strong>Replacement Parts</strong></div>
                                     @foreach ($doc as $item)
                                         @if($item->id_doc_type == 2)
-                                            <div>
+                                            <div >
                                                 @php($checkedDoc = false)
                                                 @foreach ($data->doc as $data_doc)
                                                     @if ($data_doc->id_doc == $item->id)
@@ -581,19 +603,19 @@
                                                     @endif
                                                 @endforeach
                                                 @if($checkedDoc)
-                                                    <input type="checkbox" checked> {{ $item->name }}
+                                                    <input type="checkbox" style="margin: 0;" checked> {{ $item->name }}
                                                 @else
-                                                    <input type="checkbox"> {{ $item->name }}
+                                                    <input type="checkbox" style="margin: 0;"> {{ $item->name }}
                                                 @endif               
                                             </div>
                                         @endif
                                     @endforeach
                                 </td>
-                                <td style="width: 25%">
+                                <td style="width: 5%">
                                     <div><strong>Sample Parts</strong></div>
                                     @foreach ($doc as $item)
                                         @if($item->id_doc_type == 3)
-                                            <div>
+                                            <div >
                                                 @php($checkedDoc = false)
                                                 @foreach ($data->doc as $data_doc)
                                                     @if ($data_doc->id_doc == $item->id)
@@ -601,19 +623,19 @@
                                                     @endif
                                                 @endforeach
                                                 @if($checkedDoc)
-                                                    <input type="checkbox" checked> {{ $item->name }}
+                                                    <input type="checkbox" style="margin: 0;" checked> {{ $item->name }}
                                                 @else
-                                                    <input type="checkbox"> {{ $item->name }}
+                                                    <input type="checkbox" style="margin: 0;"> {{ $item->name }}
                                                 @endif               
                                             </div>
                                         @endif
                                     @endforeach
                                 </td>
-                                <td style="width: 25%">
+                                <td style="width: 5%">
                                     <div><strong>Others</strong></div>
                                     @foreach ($doc as $item)
                                         @if($item->id_doc_type == 4)
-                                            <div>
+                                            <div >
                                                 @php($checkedDoc = false)
                                                 @foreach ($data->doc as $data_doc)
                                                     @if ($data_doc->id_doc == $item->id)
@@ -621,9 +643,9 @@
                                                     @endif
                                                 @endforeach
                                                 @if($checkedDoc)
-                                                    <input type="checkbox" checked> {{ $item->name }}
+                                                    <input type="checkbox" style="margin: 0;" checked> {{ $item->name }}
                                                 @else
-                                                    <input type="checkbox"> {{ $item->name }}
+                                                    <input type="checkbox" style="margin: 0;"> {{ $item->name }}
                                                 @endif               
                                             </div>
                                         @endif
@@ -639,19 +661,19 @@
                     <td colspan="4">&nbsp;</td>
                 </tr>
                 <tr>
-                    <td colspan="4"><i><u>must be filled:</u></i></td>
+                    <td colspan="4" style="margin: 0;"><i><u>must be filled:</u></i></td>
                     </td>
                 </tr>
                 
                 <tr>
-                    <td style="width: 2%"><input type="checkbox" checked></td>
-                    <td colspan="3"><span style="color: red"><i>I have confirmed compliance with "Control Standard of Enviromentally Hazardous Substances YGK-A-119"</i></span></td>
+                    <td style="width: 2%;"><input type="checkbox" checked></td>
+                    <td colspan="3" style="padding-top:4px;"><span style="color: red;"><i>I have confirmed compliance with "Control Standard of Enviromentally Hazardous Substances YGK-A-119"</i></span></td>
                 </tr>
 
                 
                 <tr>
-                    <td style="width: 2%"></td>
-                    <td colspan="3"><i>Hereby we declared that above data is correct</i></td>
+                    <td style="width: 2%; margin:0;"></td>
+                    <td colspan="3" style="margin:0;"><i>Hereby we declared that above data is correct</i></td>
                 </tr>
 
                 
@@ -663,7 +685,7 @@
                                 <td style="width: 55%">
                                     <table style="width: 100%" border="1" cellpading="0" cellspacing="0">
                                         <tr>
-                                            <td colspan="4" style="text-align: center; font-size: 9px">REQUESTOR</td>
+                                            <td colspan="4" style="text-align: center; font-size: 7px">REQUESTOR</td>
                                         </tr>
                                         <tr>
                                             <td><br><br><br><br><br></td>
@@ -672,10 +694,10 @@
                                             <td></td>
                                         </tr>
                                         <tr>
-                                            <td style="text-align: center; width: 25%; font-size: 9px">USER</td>
-                                            <td style="text-align: center; width: 25%; font-size: 9px">SUPERVISOR</td>
-                                            <td style="text-align: center; width: 25%; font-size: 9px">MANAGER</td>
-                                            <td style="text-align: center; width: 25%; font-size: 9px">DIRECTOR***</td>
+                                            <td style="text-align: center; width: 25%; font-size: 7px">USER</td>
+                                            <td style="text-align: center; width: 25%; font-size: 7px">SUPERVISOR</td>
+                                            <td style="text-align: center; width: 25%; font-size: 7px">MANAGER</td>
+                                            <td style="text-align: center; width: 25%; font-size: 7px">DIRECTOR***</td>
                                         </tr>
 
                                     </table>
@@ -683,7 +705,7 @@
                                 <td style="width: 5%">
 
                                 </td>
-                                <td style="width: 40%">
+                                <td style="width: 60%">
                                     <table style="width: 100%" border="1" cellpading="0" cellspacing="0">
                                         <tr>
                                             <td colspan="3" style="text-align: center; font-size: 9px">CUSTOM CLEARANCE</td>
@@ -723,14 +745,14 @@
         <div style="border-top: 1px solid black; border-bottom: 1px solid black; padding:1px">
         </div> 
 
-        <div style="color: red; font-size: 9px; text-align: center;margin-top: 5px;"><strong><i>#For Export : Please submit this form with complete supporting document to CC within 3 days before stuffing date</i></strong></div>
-        <div style="color: red; font-size: 9px; text-align: center; margin-top: 5px;"><strong><i>##For Import : Please submit this form with complete supporting document to CC within 7 days before ETD from Departure Port</i></strong></div>
+        <div style="color: red; font-size: 11px; text-align: center;margin-top: 16px;"><strong><i>#For Export : Please submit this form with complete supporting document to CC within 3 days before stuffing date</i></strong></div>
+        <div style="color: red; font-size: 11px; text-align: center; margin-top: 16px;"><strong><i>##For Import : Please submit this form with complete supporting document to CC within 7 days before ETD from Departure Port</i></strong></div>
         
-        <div style="border-top: 1px solid black; border-bottom: 1px solid black; padding: 1px;margin-top: 5px;">
+        <div style="border-top: 1px solid black; border-bottom: 1px solid black; padding: 1px;margin-top: 16px;">
         </div> 
 
         
-        <div style="padding: 5px">
+        <div style="padding: 5px;">
             <span style="color: red;"><i>Please choose one</i></span>
         </div>
 
