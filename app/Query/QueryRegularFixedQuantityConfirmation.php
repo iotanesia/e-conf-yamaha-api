@@ -795,6 +795,15 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $upd = RegularFixedActualContainer::where('id',$params->id)->first();
                 $upd->is_actual = 99;
                 $upd->save();
+                
+                $set = [
+                    'id' => $params->id,
+                    'colis' => $quantityConfirmationBox,
+                    'box_set_count' => $box_set_count,
+                    'type' => 'single'
+                ];
+    
+                ContainerActual::dispatch($set);
             }
             
            DB::commit();
