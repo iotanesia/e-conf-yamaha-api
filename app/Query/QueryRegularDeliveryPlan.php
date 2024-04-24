@@ -1604,7 +1604,7 @@ class QueryRegularDeliveryPlan extends Model {
             $qr_key = "";
             if(sizeof($request['data']) > 0){
                 $delivery_plan = RegularDeliveryPlan::find($request['data'][0]['id']);
-                $qr_key = "YPMJ-".$delivery_plan->id_regular_order_entry."-".$delivery_plan->bucket_produksi."|".$request['data'][0]['customer_ypmj']."|".$request['data'][0]['lot_packing'];
+                $qr_key = "YPMJ-".$delivery_plan->id_regular_order_entry."-".$delivery_plan->bucket_produksi. " | ".$request['data'][0]['item_no']. " | ".$request['data'][0]['customer_ypmj']. " | ".$request['data'][0]['lot_packing']. " | ".date('d/m/Y', strtotime($request['data'][0]['packing_date'])). " | ".$request['data'][0]['qty']. " | ".$request['data'][0]['case_number']. " | ".$request['data'][0]['period'];
                 QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
             }
 
