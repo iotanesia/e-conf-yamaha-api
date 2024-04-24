@@ -331,7 +331,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
            self::where(function ($query) use ($params,$id_fixed_quantity){
                    $query->whereIn('id',array_merge(...$id_fixed_quantity));
-                   $query->where('code_consignee',$params->code_consignee);
+                   if($params->datasource == Constant::PYMAC_DATASOURCE) $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
                    $query->where('datasource',$params->datasource);
            })
@@ -644,7 +644,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         try {
 
             $actual_container = RegularFixedActualContainer::where('id',$params->id)->first();
-            $lsp = MstLsp::where('code_consignee',$actual_container->code_consignee)
+            $lsp = MstLsp::where(function($query) use($actual_container, $params) {
+                   if($params->datasource == Constant::PYMAC_DATASOURCE) $query->where('code_consignee',$actual_container->code_consignee);
+                })
                 ->where('id_type_delivery', ($actual_container->id_type_delivery ?? 1))
                 ->first();
             
