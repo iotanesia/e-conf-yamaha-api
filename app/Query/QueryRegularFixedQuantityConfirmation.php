@@ -644,9 +644,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         try {
 
             $actual_container = RegularFixedActualContainer::where('id',$params->id)->first();
-            $lsp = MstLsp::where(function($query) use($actual_container, $params) {
-                   if($params->datasource == Constant::PYMAC_DATASOURCE) $query->where('code_consignee',$actual_container->code_consignee);
-                })
+            $lsp = MstLsp::where('code_consignee',$actual_container->code_consignee)
                 ->where('id_type_delivery', ($actual_container->id_type_delivery ?? 1))
                 ->first();
             

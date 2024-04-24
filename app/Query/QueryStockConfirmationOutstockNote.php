@@ -177,8 +177,7 @@ class QueryStockConfirmationOutstockNote extends Model {
         
                         foreach ($fixed_quantity_confirmation->refRegularDeliveryPlan->manyDeliveryPlanBox as $item_box) {
                             $check_outstock = RegularStokConfirmationHistory::where('id_regular_delivery_plan_box', $item_box->id)->where('type', 'OUTSTOCK')->first();
-                            $qr_key = $item_box->id;
-                            if(count($item_box->refRegularDeliveryPlan->manyDeliveryPlanSet) > 0) $qr_key = $item_box->id.'-'.count($item_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                            $qr_key = $request->id[0];
                             $check_status_outstock = RegularStokConfirmationTemp::where('qr_key', $qr_key)->where('status_outstock', 3)->first();
                             if ($check_outstock && $check_status_outstock) {
                                 $fixed_quantity_confirmation_box = RegularFixedQuantityConfirmationBox::where('id_regular_delivery_plan_box', $item_box->id)->first();
