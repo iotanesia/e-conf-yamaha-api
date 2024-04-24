@@ -1603,8 +1603,22 @@ class QueryRegularDeliveryPlan extends Model {
             $qr_name = (string) Str::uuid().'.png';
             $qr_key = "";
             if(sizeof($request['data']) > 0){
+                $item_no = [];
+                $lot_packing = [];
+                $packing_date = [];
+                $qty = [];
+                $case_number = [];
+                $period = [];
+                foreach ($request['data'] as $val) {
+                    $item_no[] = $val['item_no'];
+                    $lot_packing[] = $val['lot_packing'];
+                    $packing_date[] = date('d/m/Y', strtotime($val['packing_date']));
+                    $qty[] = $val['qty'];
+                    $case_number[] = $val['case_number'];
+                    $period[] = $val['period'];
+                }
                 $delivery_plan = RegularDeliveryPlan::find($request['data'][0]['id']);
-                $qr_key = "YPMJ-".$delivery_plan->id_regular_order_entry."-".$delivery_plan->bucket_produksi. " | ".$request['data'][0]['item_no']. " | ".$request['data'][0]['customer_ypmj']. " | ".$request['data'][0]['lot_packing']. " | ".date('d/m/Y', strtotime($request['data'][0]['packing_date'])). " | ".$request['data'][0]['qty']. " | ".$request['data'][0]['case_number']. " | ".$request['data'][0]['period'];
+                $qr_key = "YPMJ-".$delivery_plan->id_regular_order_entry."-".$delivery_plan->bucket_produksi. " | ".implode(', ', $item_no). " | ".$request['data'][0]['customer_ypmj']. " | ".implode(', ',$lot_packing). " | ".implode(', ',$packing_date). " | ".implode(', ',$qty). " | ".implode(', ',$case_number). " | ".implode(', ',array_unique($period));
                 QrCode::format('png')->generate($qr_key,storage_path().'/app/qrcode/label/'.$qr_name);
             }
 
