@@ -645,10 +645,10 @@ class QueryStockConfirmationHistory extends Model
                             'lot_packing' => $item->lot_packing,
                             'packing_date' => $item->packing_date,
                             'no_box' => $item->refBox->no_box ?? "",
-                            'qr_name' => $qr_key,
+                            // 'qr_name' => $qr_key,
                             'datasource' => Constant::YPMJ_DATASOURCE,
                             'detail' => $regular_delivery_plan_list,
-                            'qr_key' => $qr_key = "YPMJ-".$item->refRegularDeliveryPlan->id_regular_order_entry."-".$item->refRegularDeliveryPlan->bucket_produksi. " | ".implode(', ', $item_no). " | ".$item->refRegularDeliveryPlan->customer_ypmj. " | ".implode(', ',$lot_packing_arr). " | ".implode(', ',$packing_date_arr). " | ".implode(', ',$qty). " | ".implode(', ',$case_number_arr). " | ".implode(', ',array_unique($period_arr))
+                            'qr_name' => "YPMJ-".$item->refRegularDeliveryPlan->id_regular_order_entry."-".$item->refRegularDeliveryPlan->bucket_produksi. " | ".implode(', ', $item_no). " | ".$item->refRegularDeliveryPlan->customer_ypmj. " | ".implode(', ',$lot_packing_arr). " | ".implode(', ',$packing_date_arr). " | ".implode(', ',$qty). " | ".implode(', ',$case_number_arr). " | ".implode(', ',array_unique($period_arr))
                         ];
                     }
 
