@@ -1697,7 +1697,7 @@ class QueryRegularDeliveryPlan extends Model {
                     "customer_ypmj" => $item['customer_ypmj'],
                     "datasource" => "YPMJ",
                     "is_actual" => 0,
-                    "qr_key" => explode("|", $qr_key)[0]
+                    "qr_key" => trim(explode("|", $qr_key)[0])
                 ]);
     
             }
