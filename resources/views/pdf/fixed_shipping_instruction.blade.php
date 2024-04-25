@@ -86,7 +86,7 @@
             </tr>
             <tr>
                 <td style="vertical-align: top;"><u>Consignee:</u> 
-                    <br> {{ $data->refMstConsignee->name ?? $data->code_consignee }} 
+                    <br> {{ $data->refMstConsignee->name ?? $data->consignee }} 
                     <br> {{ $data->refMstConsignee->address1 ?? null }} 
                     <br> {{ $data->refMstConsignee->address2 ?? null }} 
                     <br> {{ $data->refMstConsignee->tel ?? null }} 

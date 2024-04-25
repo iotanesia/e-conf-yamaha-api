@@ -189,10 +189,10 @@ class QueryRegularFixedShippingInstruction extends Model {
                     }
                 }
 
-                $item->cust_name = $item->refMstConsignee->nick_name;
+                $item->cust_name = $item->refMstConsignee->nick_name ?? $item->code_consignee;
                 $item->id_type_delivery = $item->id_type_delivery;
                 $item->type_delivery = $item->refMstTypeDelivery->name;
-                $item->lsp = $item->refMstLsp->name;
+                $item->lsp = $item->refMstLsp->name ?? null;
                 $item->net_weight = number_format($total_net_weight, 2);
                 $item->gross_weight = number_format($total_gross_weight, 2);
                 $item->measurement = number_format($count_meas,3);
