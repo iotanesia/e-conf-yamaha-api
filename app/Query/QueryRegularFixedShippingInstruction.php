@@ -1212,8 +1212,8 @@ class QueryRegularFixedShippingInstruction extends Model {
         $data = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->first();
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
 
-        $ret['yth'] = $data->refMstLsp->name;
-        $ret['username'] = $data->refMstConsignee->name;
+        $ret['yth'] = $data->refMstLsp->name ?? $data->id_lsp;
+        $ret['username'] = $data->refMstConsignee->name ?? $data->code_consignee;
         $ret['jenis_truck'] = $data->refMstContainer->container_type."'";
         $ret['surat_jalan'] = Helper::generateCodeLetter(RegularFixedPackingCreationNote::latest()->first());
         $ret['delivery_date'] = date('d-m-Y');
@@ -1259,7 +1259,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name_set : trim($item->refRegularDeliveryPlan->refPart->description);
                 $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_set : $item->refRegularDeliveryPlan->item_no;
-                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name;
+                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name ?? $item->code_consignee;
                 $item->no_invoice = $item->refFixedActualContainer->no_packaging;
                 // $item->in_wh = count(explode(',', $item->count)) . ' x ' . array_sum($qty_pcs_box->pluck('qty_pcs_box')->toArray());
                 $item->in_wh = $item->count.' x '.array_sum(explode(',', $item->qty_pcs_box));
