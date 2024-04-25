@@ -34,6 +34,7 @@ use App\Http\Controllers\Api\Master\GoodStatusController;
 use App\Http\Controllers\Api\Master\IncotermsController;
 use App\Http\Controllers\Api\Master\InlandCostController;
 use App\Http\Controllers\Api\Master\InsuranceController;
+use App\Http\Controllers\Api\Master\OuterSteelCaseController;
 use App\Http\Controllers\Api\Master\ShippedByController;
 use App\Http\Controllers\Api\Master\TypeTransactionController;
 use App\Query\QueryRegularOrderEntryUploadDetail;
@@ -78,6 +79,15 @@ Route::prefix('v1/master')
         Route::put('/',[PortController::class,'update']);
         Route::get('/{id}',[PortController::class,'show']);
         Route::delete('/{id}',[PortController::class,'destroy']);
+    });
+
+    // outer steel case
+    Route::group(['prefix' => 'outer-steel-case'],function (){
+        Route::get('/',[OuterSteelCaseController::class,'index']);
+        Route::post('/',[OuterSteelCaseController::class,'store']);
+        Route::put('/',[OuterSteelCaseController::class,'update']);
+        Route::get('/{id}',[OuterSteelCaseController::class,'show']);
+        Route::delete('/{id}',[OuterSteelCaseController::class,'destroy']);
     });
 
     // box
