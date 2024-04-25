@@ -483,6 +483,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $count_meas = 0;
                 $total_net_weight = 0;
                 $total_gross_weight = 0;
+                $seenIds = [];
                 foreach ($box as $key => $box_item){
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
                         $master = [];
@@ -501,12 +502,16 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         $count_meas += (($set->refBox->length * $set->refBox->width * $set->refBox->height) / 1000000000);
                     } else {
                         if ($box_item->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE) {
-                            $count_net_weight = $box_item->refBox->unit_weight_gr;
-                            $count_outer_carton_weight = $box_item->refBox->outer_carton_weight;
-                            $need_cartoon = ceil($box_item->refRegularDeliveryPlan->qty / $box_item->refBox->qty);
-                            $count_meas = $box_item->refRegularDeliveryPlan->refOuterType->measurement;
-                            $total_net_weight += ($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000;
-                            $total_gross_weight += (($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $box_item->refBox->weight_inner_carton) + $box_item->refRegularDeliveryPlan->refOuterType->outer_weight;
+                            $id_unique = $box_item->id_regular_delivery_plan;
+                            if (!in_array($id_unique, $seenIds)) {
+                                $seenIds[] = $id_unique;
+                                $count_net_weight = $box_item->refBox->unit_weight_gr;
+                                $count_outer_carton_weight = $box_item->refBox->outer_carton_weight;
+                                $need_cartoon = ceil($box_item->refRegularDeliveryPlan->qty / $box_item->refBox->qty);
+                                $count_meas = $box_item->refRegularDeliveryPlan->refOuterType->measurement;
+                                $total_net_weight += ($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000;
+                                $total_gross_weight += (($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $box_item->refBox->weight_inner_carton) + $box_item->refRegularDeliveryPlan->refOuterType->outer_weight;
+                            }
                         } else {
                             $count_net_weight = $box_item->refBox->unit_weight_gr;
                             $count_outer_carton_weight = $box_item->refBox->outer_carton_weight;
