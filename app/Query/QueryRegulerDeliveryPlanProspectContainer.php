@@ -84,7 +84,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         $data->map(function ($item){
             $type_delivery = MstTypeDelivery::where('id', $item->id_type_delivery)->first();
 
-            $item->cust_name = $item->refConsignee->nick_name ?? null;
+            $item->cust_name = $item->refConsignee->nick_name ?? $item->code_consignee;
             $item->type_delivery = $type_delivery !== null ? (str_contains($type_delivery->name, 'SEA') ? 'SEA' : 'AIR') : null;
             $item->mot = $item->refMot->name ?? null;
             $item->status = $item->is_prospect;
@@ -820,7 +820,8 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
         try {
 
             $prospect_container = Model::find($params->id);
-            $lsp = MstLsp::where('code_consignee',$prospect_container->code_consignee)
+            $consignee = MstConsignee::where('nick_name', $prospect_container->code_consignee)->orWhere('code', $prospect_container->code_consignee)->first();
+            $lsp = MstLsp::where('code_consignee',$consignee->code)
                 ->where('id_type_delivery', ($prospect_container->id_type_delivery ?? 1))
                 ->first();
             
@@ -888,9 +889,9 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             }
 
             $creation = [
-                'id_type_delivery' => $lsp->id_type_delivery,
-                'id_mot' => $lsp->refTypeDelivery->id_mot,
-                'id_lsp' => $lsp->id,
+                'id_type_delivery' => $lsp->id_type_delivery ?? null,
+                'id_mot' => $lsp->refTypeDelivery->id_mot ?? null,
+                'id_lsp' => $lsp->id ?? null,
                 'code_consignee' => $prospect_container->code_consignee,
                 'etd_jkt' => $prospect_container->etd_jkt,
                 'etd_ypmi' => $prospect_container->etd_ypmi,
