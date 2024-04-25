@@ -510,7 +510,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $set["box"] = null;
                     $_temp = [];
                     if(isset($ypmj_box) && $ypmj_box->qty > 0)
-                        $_temp[] = ["qty" => $ypmj_box->qty. ' x '.ceil($item->qty / $ypmj_box->qty)];
+                        $_temp[] = ["qty" => $ypmj_box->qty. ' x '.round($item->qty / $ypmj_box->qty)];
                     $set["box"] = $_temp;
                 }
             }
@@ -1286,7 +1286,7 @@ class QueryRegularDeliveryPlan extends Model {
                     "id_prospect_container" => $data->id_prospect_container,
                     "id_prospect_container_creation" => $data->id_prospect_container_creation,
                     "status_bml" => $data->status_bml,
-                    "qtc_box" => $data->qtc_box,
+                    "qty_box" => $data->qty_box,
                     "datasource" => $data->datasource,
                     "jenis" => $data->jenis,
                     "is_produksi" => $data->is_produksi,
