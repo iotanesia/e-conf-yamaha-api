@@ -83,7 +83,7 @@
                         </td>
                         <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
                             <p style="padding:0; margin: 0 0 10px 0;"><b>CUSTOMER :</b></p>
-                            <b>{{ $item->refConsignee->nick_name }}</b>
+                            <b>{{ $item->refConsignee->nick_name ?? $item->code_consignee }}</b>
                             <hr>
                             <p style="padding:0; margin: 0 0 10px 0;"><b>PART NO.</b></p>
                             @foreach ($box_item['item_no_series'] as $item_no_series)

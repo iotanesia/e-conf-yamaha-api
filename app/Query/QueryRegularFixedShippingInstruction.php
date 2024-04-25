@@ -553,7 +553,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         $data->transform(function ($item) {
             return [
                 'id' => $item->id_actual_container_creation,
-                'cust_name' => $item->refMstConsignee->nick_name,
+                'cust_name' => $item->refMstConsignee->nick_name ?? $item->code_consignee,
                 'etd_jkt' => $item->etd_jkt,
                 'etd_wh' => $item->etd_wh,
                 'etd_ypmi' => $item->etd_ypmi,

@@ -1389,7 +1389,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
 
 
-        })->orderBy('created_at', 'asc')
+        })->where('datasource', $params->datasource)
+        ->orderBy('created_at', 'asc')
         ->paginate($params->limit ?? null);
 
         $data->map(function ($item){
