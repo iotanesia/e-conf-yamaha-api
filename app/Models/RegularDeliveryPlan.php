@@ -41,7 +41,8 @@ class RegularDeliveryPlan extends Model
         "bucket_produksi",
         "case_number",
         "period",
-        "customer_ypmj"
+        "customer_ypmj",
+        "outer_type",
     ];
 
     public static function boot()
@@ -50,6 +51,11 @@ class RegularDeliveryPlan extends Model
         static::creating(function ($model){
             // $model->uuid = (string) Str::uuid();
         });
+    }
+
+    public function refOuterType()
+    {
+        return $this->belongsTo(MstOuterSteelCase::class,'outer_type','type_outer');
     }
 
     public function refPart()

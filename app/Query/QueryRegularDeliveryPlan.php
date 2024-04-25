@@ -510,7 +510,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $set["box"] = null;
                     $_temp = [];
                     if(isset($ypmj_box) && $ypmj_box->qty > 0)
-                        $_temp[] = ["qty" => $ypmj_box->qty. ' x '.round($item->qty / $ypmj_box->qty)];
+                        $_temp[] = ["qty" => $ypmj_box->qty. ' x '.ceil($item->qty / $ypmj_box->qty)];
                     $set["box"] = $_temp;
                 }
             }
@@ -1648,7 +1648,8 @@ class QueryRegularDeliveryPlan extends Model {
 
                 $delivery_plan->update([
                     'customer_ypmj' => $item['customer_ypmj'],
-                    'qty'   => $item["qty"]
+                    'qty'   => $item["qty"],
+                    'outer_type'   => $item["outer_type"]
                 ]);
 
                 $queryStok = RegularStokConfirmation::query();
