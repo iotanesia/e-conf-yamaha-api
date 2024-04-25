@@ -261,7 +261,7 @@ class QueryRegularDeliveryPlan extends Model {
             }
 
             $set["id"] = $item->id;
-            $set["code_consignee"] = $item->code_consignee ?? 'YMCDA';
+            $set["code_consignee"] = $item->code_consignee;
             $set["cust_name"] = $custname;
             $set["model"] = $item->model;
             $set["item_name"] = $item->item_no == null ? $item_name : $itemname;
@@ -1056,6 +1056,7 @@ class QueryRegularDeliveryPlan extends Model {
             'id',
             'no_packaging',
             'etd_jkt',
+            'code_consignee',
             'datasource',
         ]);
 
@@ -1112,7 +1113,7 @@ class QueryRegularDeliveryPlan extends Model {
 
            self::where(function ($query) use ($params,$id){
                    $query->whereIn('id',$id);
-                   if(Constant::PYMAC_DATASOURCE) $query->where('code_consignee',$params->code_consignee);
+                   $query->where('code_consignee',$params->code_consignee);
                    $query->where('etd_jkt',str_replace('-','',$params->etd_jkt));
                    $query->where('datasource',$params->datasource);
            })

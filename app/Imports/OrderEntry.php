@@ -232,7 +232,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
 
                             QueryRegularOrderEntryUploadDetail::created([
                                 'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
-                                // 'code_consignee' => $consignee == null ? null : $consignee->code,
+                                'code_consignee' => 'YMCDA',
                                 // 'model' => trim($row[4]),
                                 'item_no' => str_replace('-', '', $item_serial),
                                 // 'disburse' => trim($row[12]),
