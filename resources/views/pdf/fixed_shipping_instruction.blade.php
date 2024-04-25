@@ -86,11 +86,11 @@
             </tr>
             <tr>
                 <td style="vertical-align: top;"><u>Consignee:</u> 
-                    <br> {{ $data->refMstConsignee->name }} 
-                    <br> {{ $data->refMstConsignee->address1 }} 
-                    <br> {{ $data->refMstConsignee->address2 }} 
-                    <br> {{ $data->refMstConsignee->tel }} 
-                    <br> {{ $data->refMstConsignee->fax }} 
+                    <br> {{ $data->refMstConsignee->name ?? $data->code_consignee }} 
+                    <br> {{ $data->refMstConsignee->address1 ?? null }} 
+                    <br> {{ $data->refMstConsignee->address2 ?? null }} 
+                    <br> {{ $data->refMstConsignee->tel ?? null }} 
+                    <br> {{ $data->refMstConsignee->fax ?? null }} 
                 </td>
                 <td style="vertical-align: top;"><u>Notify Part:</u> <br> {{$data->notify_part}}</td>
             </tr>
