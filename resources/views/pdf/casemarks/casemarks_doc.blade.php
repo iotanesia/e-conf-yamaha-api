@@ -74,7 +74,7 @@
                     <tr>
                         <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top; padding: 20px;">
                             <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
-                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order ?? null }}</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->no_packaging ?? null }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>

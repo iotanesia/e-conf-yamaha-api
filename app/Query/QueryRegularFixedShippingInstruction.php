@@ -57,7 +57,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             $date_from = str_replace('-','',$params->date_from);
             $date_to = str_replace('-','',$params->date_to);
             if($params->date_from || $params->date_to) $query->whereBetween('booking_date',[$date_from, $date_to]);
-        })->paginate($params->limit ?? null);
+        })->where('datasource', $params->datasource)->paginate($params->limit ?? null);
 
         if(!$data) throw new \Exception("Data not found", 400);
 
@@ -828,8 +828,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                 return [
                     'id_actual_container_creation' => $params->id,
                     'code_consignee' => $item->code_consignee,
-                    'consignee_address' => $item->refMstConsignee->name.'<br>'.$item->refMstConsignee->address1.'<br>'.$item->refMstConsignee->address2.'<br>'.$item->refMstConsignee->tel.'<br>'.$item->refMstConsignee->fax,
-                    'customer_name' => $item->refMstConsignee->nick_name ?? null,
+                    'consignee_address' => ($item->refMstConsignee->name ?? $item->code_consignee).'<br>'.($item->refMstConsignee->address1 ?? null).'<br>'.($item->refMstConsignee->address2 ?? null).'<br>'.($item->refMstConsignee->tel ?? null).'<br>'.($item->refMstConsignee->fax ?? null),
+                    'customer_name' => $item->refMstConsignee->nick_name ?? $item->code_consignee,
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
                     'summary_container' => count($summary_box),
