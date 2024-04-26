@@ -2053,7 +2053,8 @@ class QueryRegularDeliveryPlan extends Model {
                                                                             DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.code_consignee::character varying, ',') as code_consignee"),
                                                                             DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.etd_jkt::character varying, ',') as etd_jkt"),
                                                                             DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.datasource::character varying, ',') as datasource"),
-                                                                            DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_prospect_container::character varying, ',') as id_prospect_container")
+                                                                            DB::raw("string_agg(DISTINCT regular_delivery_plan_prospect_container_creation.id_prospect_container::character varying, ',') as id_prospect_container"),
+                                                                            DB::raw("COUNT(regular_delivery_plan_prospect_container_creation.id_container) as count_container")
                                                                             )
                                                                             ->where('regular_delivery_plan_prospect_container_creation.code_consignee', $item->code_consignee)
                                                                             ->where('regular_delivery_plan_prospect_container_creation.etd_jkt', $item->etd_jkt)
@@ -2064,7 +2065,8 @@ class QueryRegularDeliveryPlan extends Model {
                                                                                 $items = [
                                                                                     'summary_box' => $q->summary_box,
                                                                                     'container' => $q->refMstContainer->container_type ?? null,
-                                                                                    'id_container' => $q->id_container
+                                                                                    'id_container' => $q->id_container,
+                                                                                    'count_container' => $q->count_container
                                                                                 ];
                                                                                 return $items;
                                                                             });
@@ -2075,7 +2077,7 @@ class QueryRegularDeliveryPlan extends Model {
                 foreach ($summary_box_data as $key => $value) {
                     $summary_box[] = $value['summary_box'];
                     $container_type[] = $value['container'];
-                    $jml_container[] = $value['id_container'];
+                    $jml_container[] = $value['count_container'];
                 }
 
                 return [
