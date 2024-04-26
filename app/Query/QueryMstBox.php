@@ -159,7 +159,7 @@ class QueryMstBox extends Model {
                 );
             }
 
-            $id_group_product = $item->id_group_product ?? [0];
+            $id_group_product = (array)$item->id_group_product ?? [0];
 
             $item->consignee = $item->refConsignee->nick_name ?? null;
             $item->part_item_no = $part_item_no;
