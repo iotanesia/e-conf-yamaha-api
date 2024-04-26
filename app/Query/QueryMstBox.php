@@ -54,7 +54,10 @@ class QueryMstBox extends Model {
                                         ->orWhere('item_no',"like", "%$params->kueri%")
                                         ->orWhere('item_no_series',"like", "%$params->kueri%")
                                         ->orWhere('qty',"like", "%$params->kueri%")
-                                        ->orWhere('part_set',"like", "%$params->kueri%");
+                                        ->orWhere('part_set',"like", "%$params->kueri%")
+                                        ->orWhereHas('refConsignee', function ($q) use ($params) {
+                                            $q->where('nick_name', 'like', '%' . $params->kueri . '%');
+                                        });
             });
             if($params->datasource) $query->where('datasource', $params->datasource);
             if($params->withTrashed == 'true') $query->withTrashed();
@@ -156,6 +159,8 @@ class QueryMstBox extends Model {
                 );
             }
 
+            $id_group_product = $item->id_group_product ?? [0];
+
             $item->consignee = $item->refConsignee->nick_name ?? null;
             $item->part_item_no = $part_item_no;
             $item->part_description = $part_description;
@@ -164,7 +169,7 @@ class QueryMstBox extends Model {
             $item->id_part = explode(',',$item->id_part);
             $item->item_no = explode(',',$item->item_no);
             $item->item_no_series = explode(',',$item->item_no_series);
-            $item->group_product = MstGroupProduct::whereIn('id', $item->id_group_product)->get()->pluck('group_product') ?? null;
+            $item->group_product = MstGroupProduct::whereIn('id', $id_group_product)->get()->pluck('group_product') ?? null;
             
             unset(
                 $item->refConsignee,
@@ -216,7 +221,8 @@ class QueryMstBox extends Model {
                     "size" => $params['size'] ?? null,
                     "volume" => (float)substr((($params['length'] * $params['width'] * $params['height']) / 1000000000),0,4),
                     "part_set" => count($params['item_no']) > 1 ? 'set' : 'single',
-                    "id_box" => $id_box == null ? 1 : $id_box +1
+                    "id_box" => $id_box == null ? 1 : $id_box +1,
+                    "weight_inner_carton" => $params['weight_inner_carton'] ?? null,
                 ]);
                 
                 $id_box = $id_box; 
@@ -273,6 +279,7 @@ class QueryMstBox extends Model {
                     "size" => $params['size'] ?? null,
                     "volume" => (float)substr((($params['length'] * $params['width'] * $params['height']) / 1000000000),0,4),
                     "part_set" => count($params['item_no']) > 1 ? 'set' : 'single',
+                    "weight_inner_carton" => $params['weight_inner_carton'] ?? null,
                 ]);
             }
 

@@ -37,6 +37,7 @@ class MstBox extends Model
         'part_set',
         'id_box',
         'datasource',
+        'weight_inner_carton',
         'created_at',
         'created_by',
         'updated_at',
