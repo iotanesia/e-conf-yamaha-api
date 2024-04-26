@@ -139,6 +139,7 @@ class QueryMstBox extends Model {
             DB::raw("string_agg(DISTINCT mst_box.size::character varying, ',') as size"),
             DB::raw("string_agg(DISTINCT mst_box.volume::character varying, ',') as volume"),
             DB::raw("string_agg(DISTINCT mst_box.num_set::character varying, ',') as num_set"),
+            DB::raw("string_agg(DISTINCT mst_box.weight_inner_carton::character varying, ',') as weight_inner_carton"),
             )->whereIn('id',explode(',',$id))
             ->groupBy('part_set','id_box')
             ->orderBy('id_mst_box','asc')
@@ -198,7 +199,7 @@ class QueryMstBox extends Model {
                 self::create([
                     "no_box" => $params['no_box'] ?? null,
                     "datasource" => $params['datasource'] ?? null,
-                    "id_group_product" => $params['id_group_product'][$i] ?? null,
+                    "id_group_product" => count($params['item_no']) > 1 ? $params['id_group_product'][$i] : $params['id_group_product'],
                     "id_part" => $mst_part[0]->id ?? null,
                     "item_no" => $params['item_no'][$i] ?? null,
                     "item_no_series" => $mst_part[0]->item_serial ?? null,
@@ -255,7 +256,7 @@ class QueryMstBox extends Model {
                 $update_data->update([
                     "no_box" => $params['no_box'] ?? null,
                     "datasource" => $params['datasource'] ?? null,
-                    "id_group_product" => $params['id_group_product'][$i] ?? null,
+                    "id_group_product" => count($params['item_no']) > 1 ? $params['id_group_product'][$i] : $params['id_group_product'],
                     "id_part" => $mst_part[0]->id ?? null,
                     "item_no" => $params['item_no'][$i] ?? null,
                     "item_no_series" => $mst_part[0]->item_serial ?? null,
