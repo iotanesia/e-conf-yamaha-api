@@ -524,9 +524,9 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
                 $item->cust_name = $item->refRegularDeliveryPlanPropspectContainer->refConsignee->nick_name;
                 $item->id_type_delivery = $item->id_type_delivery;
-                $item->type_delivery = $item->refMstTypeDelivery->name;
-                $item->lsp = $item->refMstLsp->name;
-                $item->id_mot = $item->refMstMot->id;
+                $item->type_delivery = $item->refMstTypeDelivery->name ?? null;
+                $item->lsp = $item->refMstLsp->name ?? null;
+                $item->id_mot = $item->refMstMot->id ?? null;
                 $item->net_weight = number_format($total_net_weight, 2);
                 $item->gross_weight = number_format($total_gross_weight, 2);
                 $item->measurement = number_format($count_meas,3);
