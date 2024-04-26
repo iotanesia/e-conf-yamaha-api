@@ -856,7 +856,6 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
             ->whereIn('id_regular_delivery_plan',$delivery_plan)
             ->where('is_labeling',0)
-            ->whereNotNull('qrcode')
             ->groupBy('id_box', 'id_regular_delivery_plan')
             ->orderBy('count_box','desc')
             ->get()
