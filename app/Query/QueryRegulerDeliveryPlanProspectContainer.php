@@ -908,7 +908,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
             }
 
             $creation = [
-                'id_type_delivery' => $lsp->id_type_delivery ?? null,
+                'id_type_delivery' => $prospect_container->id_type_delivery ?? null,
                 'id_mot' => $prospect_container->id_mot,
                 'id_lsp' => $lsp->id ?? null,
                 'code_consignee' => $prospect_container->code_consignee,
