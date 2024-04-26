@@ -849,11 +849,21 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $delivery_plan[] = $item->id;
             }
             
-            $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',$delivery_plan)
-            ->orderBy('qty_pcs_box', 'desc')
-            ->get()->map(function ($item, $index){
+            // $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',$delivery_plan)
+            // ->orderBy('qty_pcs_box', 'desc')
+            // ->get()
+            $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
+                'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
+            ->whereIn('id_regular_delivery_plan',$delivery_plan)
+            ->where('is_labeling',0)
+            ->whereNotNull('qrcode')
+            ->groupBy('id_box', 'id_regular_delivery_plan')
+            ->orderBy('count_box','desc')
+            ->get()
+            ->map(function ($item, $index){
                 
-                $row_length = $item->refBox->fork_side == 'Length' ? $item->refBox->width : $item->refBox->length;
+                // $row_length = $item->refBox->fork_side == 'Length' ? $item->refBox->width : $item->refBox->length;
+                $row_length = $item->refBox->fork_side == 'Length' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
                 $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
                                                 ->whereNull('id_prospect_container_creation')
                                                 ->orderBy('id', 'asc')
