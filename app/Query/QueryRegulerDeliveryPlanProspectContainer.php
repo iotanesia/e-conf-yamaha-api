@@ -849,20 +849,13 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 $delivery_plan[] = $item->id;
             }
             
-            // $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',$delivery_plan)
-            // ->orderBy('qty_pcs_box', 'desc')
-            // ->get()
-            $delivery_plan_box = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
-                'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
-            ->whereIn('id_regular_delivery_plan',$delivery_plan)
-            ->where('is_labeling',0)
-            ->groupBy('id_box', 'id_regular_delivery_plan')
-            ->orderBy('count_box','desc')
+            $delivery_plan_box = RegularDeliveryPlanBox::whereIn('id_regular_delivery_plan',$delivery_plan)
+            ->orderBy('qty_pcs_box', 'desc')
+            ->whereNull('id_prospect_container_creation')
             ->get()
             ->map(function ($item, $index){
                 
-                // $row_length = $item->refBox->fork_side == 'Length' ? $item->refBox->width : $item->refBox->length;
-                $row_length = $item->refBox->fork_side == 'Length' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
+                $row_length = $item->refBox->fork_side == 'Length' ? $item->refBox->width : $item->refBox->length;
                 $box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)
                                                 ->whereNull('id_prospect_container_creation')
                                                 ->orderBy('id', 'asc')
@@ -888,27 +881,30 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                 ];
             });
 
-            $box_set_count = 0;
+            //sum row length
+            $get_row_length = RegularDeliveryPlanBox::select('id_regular_delivery_plan',
+                'id_box', DB::raw('count(id_box) as count_box'),DB::raw("SUM(regular_delivery_plan_box.qty_pcs_box) as sum_qty"))
+            ->whereIn('id_regular_delivery_plan',$delivery_plan)
+            ->where('is_labeling',0)
+            ->groupBy('id_box', 'id_regular_delivery_plan')
+            ->orderBy('count_box','desc')
+            ->get()
+            ->map(function ($item){
+                $row_length = $item->refBox->fork_side == 'Length' ? ($item->refBox->width * (int)ceil($item->count_box / 4)) : ($item->refBox->length * (int)ceil($item->count_box / 4));
+                
+                return [
+                    'row_length' => $row_length,
+                ];
+            });
+
             $sum_row_length = 0;
-            $sum_count_box = 0;
-            $sum_qty_box = [];
-            $first_row_length = [];
-            $first_row = [];
-            $first_count_box = [];
-            $row_length = [];
+            foreach ($get_row_length as $length) {
+                $sum_row_length += $length['row_length'];
+            }
+
             $count_box = [];
-            $big_row_length = [];
             foreach ($delivery_plan_box as $key => $value) {
-                $box_set_count += $value['box_set_count'];
-                $sum_row_length += $value['row_length'];
-                $sum_count_box += $value['count_box'];
-                $sum_qty_box[] = $value['sum_qty'];
-                $first_row_length[] = $delivery_plan_box[$key]['first_row_length'];
-                $first_row[] = $delivery_plan_box[$key]['row'];
-                $first_count_box[] = $delivery_plan_box[$key]['count_box'];
-                $row_length[] = $delivery_plan_box[$key]['row_length'];
                 $count_box[] = $delivery_plan_box[$key]['count_box'];
-                $big_row_length[] = $delivery_plan_box[$key]['first_row_length'] * $delivery_plan_box[$key]['row'];
             }
 
             $creation = [
@@ -953,9 +949,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
 
             $set = [
                 'id' => $params->id,
-                'colis' => $delivery_plan_box,
-                'box_set_count' => $box_set_count,
-                'type' => 'single'
+                'colis' => $delivery_plan_box
             ];
 
                 
