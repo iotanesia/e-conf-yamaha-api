@@ -1076,6 +1076,7 @@ class QueryRegularDeliveryPlan extends Model {
                         "datasource" => $params->datasource,
                         "created_at" => now(),
                         "id_mot" => $params->id_mot,
+                        "id_type_delivery" => 1,
                         "is_prospect" => $params->id_mot == 2 ? 2 : 0
             ]);
 
