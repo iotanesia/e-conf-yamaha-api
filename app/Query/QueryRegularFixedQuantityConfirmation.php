@@ -200,7 +200,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             if(count($data) == 0) throw new \Exception("Data not found", 400);
 
-            $check_no_packaging = RegularFixedActualContainer::orderByDesc('updated_at')->first();
+            $check_no_packaging = RegularFixedActualContainer::orderByDesc('created_at')->first();
 
             if ($check_no_packaging == null) {
                 $iteration = 'P01';
