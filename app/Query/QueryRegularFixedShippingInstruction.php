@@ -88,7 +88,10 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function shippingCCspv($params)
     {
-        $data = Model::where('status', 3)->paginate($params->limit ?? null);
+        $data = Model::where(function($query) use($params){
+            $query->where('status', 3);
+            if(isset($params->datasource)) $query->where('datasource', $params->datasource);
+        })->paginate($params->limit ?? null);
         if(!$data) throw new \Exception("Data not found", 400);
 
         return [
