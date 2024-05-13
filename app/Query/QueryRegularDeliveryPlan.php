@@ -931,7 +931,9 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function exportExcel($params,$id)
     {
-        $query = self::where('id_regular_order_entry',$id)
+        $check = self::where('id_regular_order_entry',$id)->first() ? 'id_regular_order_entry' : 'id';
+
+        $query = self::where($check, $id)
         ->where(function ($query) use ($params){
             $category = $params->category ?? null;
             $kueri = $params->kueri ?? null;
