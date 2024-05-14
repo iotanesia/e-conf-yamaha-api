@@ -1966,6 +1966,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         $id_fixed_quantity = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $id)->get();
         $query = RegularFixedQuantityConfirmationBox::select('id_regular_delivery_plan',
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation::character varying, ',') as id_fixed_quantity_confirmation"),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.created_at::character varying, ',') as created_at"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.qty_pcs_box::character varying, ',') as qty_pcs_box"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan_box::character varying, ',') as id_regular_delivery_plan_box"),
@@ -1985,7 +1986,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $item_no[] = $value->item_no;
                     }
     
-                    $mst_box = MstBox::whereIn('item_no', $item_no)->get();
+                    $mst_box = MstBox::whereIn('id', explode(',', $item->id_box))->get();
                     $nw_gw = self::nettWeightGrossWeight(explode(',', $item->qty_pcs_box), $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
                     $netto = array_sum($nw_gw[0]['unit_weight_kg']);
                     $qty_ratio = self::inputQuantity(explode(',', $item->qty_pcs_box), $mst_box->pluck('qty')->toArray());
@@ -2018,13 +2019,17 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $kode_barang = $item->refRegularDeliveryPlan->item_no.', '.trim($item->refRegularDeliveryPlan->refPart->description);
                     $hs_code = $item->refRegularDeliveryPlan->refPart->hs_code;
                     
-                    $mst_box = MstBox::where('item_no', $item->refRegularDeliveryPlan->item_no)->get();
+                    $mst_box = MstBox::whereIn('id', explode(',', $item->id_box))->get();
                     $nw_gw = self::nettWeightGrossWeight(explode(',', $item->qty_pcs_box), $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
-                    $netto = array_sum($nw_gw[0]['unit_weight_kg']);
+                    
+                    $netto = 0;
+                    foreach ($nw_gw as $val) {
+                        $netto += array_sum($val['unit_weight_kg']);
+                    }
                     
                     $volume = 0;
                     foreach ($mst_box as $vol) {
-                        $volume = ($vol->length * $vol->width * $vol->height) / 1000000000;
+                        $volume += ($vol->length * $vol->width * $vol->height) / 1000000000;
                     }
     
                     $res['no_packaging'] = $fixedQuantity->refFixedActualContainer->no_packaging ?? null;
