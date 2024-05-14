@@ -189,7 +189,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     } else {
                         $count_net_weight = $box_item->refMstBox->unit_weight_gr;
                         $count_outer_carton_weight = $box_item->refMstBox->outer_carton_weight;
-                        $count_meas += (($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) / 1000000000);
+                        $count_meas += round(($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) / 1000000000, 3);
                         $total_net_weight += ($count_net_weight * $box_item->qty_pcs_box)/1000;
                         $total_gross_weight += (($count_net_weight * $box_item->qty_pcs_box)/1000) + $count_outer_carton_weight;
                     }
@@ -997,7 +997,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
     public static function printPackagingShipping($request,$id,$pathToFile,$filename)
     {
-        try {
+        // try {
             $cek = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->get();
             foreach ($cek  as $value) {
                 $data = RegularFixedActualContainer::where('id', $value->id_fixed_actual_container)->get();
@@ -1172,7 +1172,9 @@ class QueryRegularFixedShippingInstruction extends Model {
             }
 
             $sum_res_per_order = [];
+            $grandTotal = 0;
             foreach ($boxArray as $itemSum) {
+                $grandTotal += count($itemSum);
                 $count_qty_per_order = 0;
                 $count_net_weight_per_order = 0;
                 $count_gross_weight_per_order = 0;
@@ -1202,15 +1204,16 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'count_gross_weight' => $count_gross_weight,
                 'count_meas' => array_sum($count_meas),
                 'check_shipping' => $check_shipping,
-                'sum_per_order' => $sum_res_per_order
+                'sum_per_order' => $sum_res_per_order,
+                'grand_total' => $grandTotal
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
 
-        } catch (\Throwable $th) {
-            return Helper::setErrorResponse($th);
-        }
+        // } catch (\Throwable $th) {
+        //     return Helper::setErrorResponse($th);
+        // }
     }
 
     public static function packingCreationDeliveryNoteHead($request,$id)
