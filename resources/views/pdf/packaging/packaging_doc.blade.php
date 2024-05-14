@@ -214,7 +214,7 @@
                 <tr>
                     <td class="no-bo" width="200px">Grand Total Number Of Cartons</td>
                     <td class="no-bo" width="4">:</td>
-                    <td width="50px" class="text-right no-bo">{{ count($box[$order]) }}</td>
+                    <td width="50px" class="text-right no-bo">{{ $grand_total }}</td>
                     <td class="no-bo">Cartons Boxes</td>
                 </tr>
                 <tr>
