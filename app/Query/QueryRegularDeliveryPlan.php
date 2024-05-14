@@ -2042,7 +2042,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $count_qty += array_sum($box_item['qty_pcs_box']);
                     $count_net_weight += array_sum($box_item['unit_weight_kg']);
                     $count_gross_weight += array_sum($box_item['total_gross_weight']);
-                    $count_meas += (($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000);
+                    $count_meas += round(($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000, 3);
                 }
 
                 $container_count = [];
