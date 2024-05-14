@@ -243,7 +243,7 @@
             <table>
                 <table style="border: 1px solid #000; border-top:hidden;">
                     <tr>
-                        @foreach ($actual_container as $item)
+                        @foreach ($actual_container as $iteration => $item)
                             @foreach (array_unique($item->manyFixedQuantityConfirmation->pluck('order_no')->toArray()) as $key => $order)
                                 <td class="{{ $key !== 0 ? 'no-bl' : null }}">
                                     <table> 
@@ -266,7 +266,7 @@
                                             <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $item->no_packaging }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : 1 - {{ $loop->iteration }}</td>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $key > 0 ? $key+1 : $iteration+1 }} - {{ $key > 0 ? count($box[$key]) + $key : count($box[$key]) }}</td>
                                         </tr>
                                         <br>
                                     </table>
