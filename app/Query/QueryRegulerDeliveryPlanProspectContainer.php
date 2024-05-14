@@ -515,7 +515,7 @@ class QueryRegulerDeliveryPlanProspectContainer extends Model {
                         } else {
                             $count_net_weight = $box_item->refBox->unit_weight_gr;
                             $count_outer_carton_weight = $box_item->refBox->outer_carton_weight;
-                            $count_meas += (($box_item->refBox->length * $box_item->refBox->width * $box_item->refBox->height) / 1000000000);
+                            $count_meas += round(($box_item->refBox->length * $box_item->refBox->width * $box_item->refBox->height) / 1000000000, 3);
                             $total_net_weight += ($count_net_weight * $box_item->qty_pcs_box)/1000;
                             $total_gross_weight += (($count_net_weight * $box_item->qty_pcs_box)/1000) + $count_outer_carton_weight;
                         }
