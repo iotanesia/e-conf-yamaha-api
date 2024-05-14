@@ -112,7 +112,7 @@
         <hr>
 
             {{-- per order no --}}
-            @foreach (array_unique($item->manyFixedQuantityConfirmation->pluck('order_no')->toArray()) as $order)
+            @foreach (array_unique($item->manyFixedQuantityConfirmation->pluck('order_no')->toArray()) as $iteration => $order)
             <table style="margin-top: 10px;">
                 <tr>
                     <td class="no-bt no-bl no-br">Order No. {{ $order ?? null }}</td>
@@ -167,12 +167,13 @@
                                         {{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }} <br>
                                         MADE IN INDONESIA <br>
                                         INV. No. {{ $item->no_packaging }} <br>
-                                        C/No. : 1 - {{ count($box[$order]) }}
+                                        {{-- C/No. : 1 - {{ count($box[$order]) }} --}}
+                                        C/No. : {{ $iteration > 0 ? $iteration+1 : $key+1 }} - {{ $iteration > 0 ? count($box[$order]) + $iteration : count($box[$order]) }}
                                     </td>
                                 @endif
                             @endif
                             @if ($i % 2 == 0 && $i == 0)
-                                <td style='padding-bottom:5px;' class='text-center'>{{ $key+1 }}</td>
+                                <td style='padding-bottom:5px;' class='text-center'>{{ $iteration > 0 ? $iteration+1 : $key+1 }}</td>
                             @else
                                 <td class="no-bt"></td>
                             @endif
