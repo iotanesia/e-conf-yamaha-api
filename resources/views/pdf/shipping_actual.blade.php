@@ -243,7 +243,7 @@
             <table>
                 <table style="border: 1px solid #000; border-top:hidden;">
                     <tr>
-                        @foreach ($actual_container as $item)
+                        @foreach ($actual_container as $iteration => $item)
                             @foreach (array_unique($item->manyFixedQuantityConfirmation->pluck('order_no')->toArray()) as $key => $order)
                                 <td class="{{ $key !== 0 ? 'no-bl' : null }}">
                                     <table> 
