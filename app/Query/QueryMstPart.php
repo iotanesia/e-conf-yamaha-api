@@ -24,11 +24,11 @@ class QueryMstPart extends Model {
                                         ->orWhere('description',"like", "%$params->kueri%")
                                         ->orWhere('hs_code',"like", "%$params->kueri%")
                                         ->orWhere('customer_use',"like", "%$params->kueri%")
-                                        ->orWhere('code_consignee',"like", "%$params->kueri%")
                                         ->orWhere('cost_center',"like", "%$params->kueri%")
                                         ->orWhere('coa',"like", "%$params->kueri%")
                                         ->orWhere('gl_account',"like", "%$params->kueri%")
-                                        ->orWhere('item_serial',"like", "%$params->kueri%");
+                                        ->orWhere('item_serial',"like", "%$params->kueri%")
+                                        ->orWhereRelation('refConsignee', 'nick_name', "like", "%$params->kueri%");
 
             });
             if($params->withTrashed == 'true') $query->withTrashed();
