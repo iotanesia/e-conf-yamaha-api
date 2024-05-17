@@ -173,7 +173,7 @@
                                 @endif
                             @endif
                             @if ($i % 2 == 0 && $i == 0)
-                                <td style='padding-bottom:5px;' class='text-center'>{{ $iteration > 0 ? $iteration+1 : $key+1 }}</td>
+                                <td style='padding-bottom:5px;' class='text-center'>{{ $iteration > 0 ? $iteration+$key+1 : $key+1 }}</td>
                             @else
                                 <td class="no-bt"></td>
                             @endif
