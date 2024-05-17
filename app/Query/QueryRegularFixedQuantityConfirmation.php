@@ -1995,8 +1995,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $qty_ratio = self::inputQuantity(explode(',', $item->sum_qty), $mst_box->pluck('qty')->toArray());
     
                     $volume = 0;
-                    foreach ($mst_box as $vol) {
-                        $volume = ($vol->length * $vol->width * $vol->height) / 1000000000;
+                    foreach ($fixedQuantity->manyFixedQuantityConfirmationBox as $vol) {
+                        $volume += ($vol->refMstBox->length * $vol->refMstBox->width * $vol->refMstBox->height) / 1000000000;
                     }
     
                     $res = [];
@@ -2006,7 +2006,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                 'tanggal' => date('Ymd', strtotime($fixedQuantity->refFixedActualContainer->created_at)) ?? null,
                                 'seri_barang' => null,
                                 'hs' => $value->refPart->hs_code,
-                                'kode_barang' => $value->item_no.', '.trim($value->refPart->description),
+                                'kode_barang' => $value->refPart->item_serial.', '.trim($value->refPart->description),
                                 'uraian' => 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES',
                                 'kode_satuan' => 'PCE',
                                 'jumlah_satuan' => $qty_ratio[0][$i],
@@ -2019,7 +2019,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     
                     return $res;
                 } else {
-                    $kode_barang = $item->refRegularDeliveryPlan->item_no.', '.trim($item->refRegularDeliveryPlan->refPart->description);
+                    $kode_barang = $item->refRegularDeliveryPlan->refPart->item_serial.', '.trim($item->refRegularDeliveryPlan->refPart->description);
                     $hs_code = $item->refRegularDeliveryPlan->refPart->hs_code;
                     
                     $mst_box = MstBox::whereIn('id', explode(',', $item->id_box))->get();
@@ -2031,8 +2031,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
                     
                     $volume = 0;
-                    foreach ($mst_box as $vol) {
-                        $volume += ($vol->length * $vol->width * $vol->height) / 1000000000;
+                    foreach ($fixedQuantity->manyFixedQuantityConfirmationBox as $vol) {
+                        $volume += ($vol->refMstBox->length * $vol->refMstBox->width * $vol->refMstBox->height) / 1000000000;
                     }
     
                     $res['no_packaging'] = $fixedQuantity->refFixedActualContainer->no_packaging ?? null;
