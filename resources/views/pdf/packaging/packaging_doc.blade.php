@@ -163,7 +163,7 @@
                                     <td class="text-center" rowspan="{{ count($box[$order]) * count($box_item['item_no_series']) }}">
                                         YAMAHA <br>
                                         {{ $order ?? null }}  <br>
-                                        999999-9999 <br>
+                                        {{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }} <br>
                                         {{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }} <br>
                                         MADE IN INDONESIA <br>
                                         INV. No. {{ $item->no_packaging }} <br>
