@@ -82,10 +82,10 @@ class QueryMstBox extends Model {
                         );
                     }
 
-                    $division = MstGroupProduct::whereIn('id', explode(',', $item->id_group_product))->get();
+                    if($item->id_group_product !== null) $division = MstGroupProduct::whereIn('id', explode(',', $item->id_group_product))->get()->pluck('group_product');
                     
                     $item->consignee = $item->refConsignee->nick_name ?? null;
-                    $item->division = $division->pluck('group_product') ?? null;
+                    $item->division = $division ?? null;
                     $item->part_item_no = $part_item_no;
                     $item->part_description = $part_description;
                     $item->id_group_product = explode(',',$item->id_group_product);
