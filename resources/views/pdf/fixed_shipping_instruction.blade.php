@@ -254,7 +254,7 @@
                                             <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $order ?? null }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">999999-9999</td>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }}</td>
                                         </tr>
                                         <tr>
                                             <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</td>
