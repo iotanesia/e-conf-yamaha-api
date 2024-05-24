@@ -1397,7 +1397,7 @@ class QueryRegularDeliveryPlan extends Model {
                         if ($check->qty_pcs_box != $item['qty_pcs_box']) {
                             RegularDeliveryPlanBox::create([
                                 "id_regular_delivery_plan" => $check->id_regular_delivery_plan,
-                                "id_box" => $check->id_box,
+                                "id_box" => QueryMstBox::byItemNoCdConsigneeDatasource($check->refRegularDeliveryPlan->item_no,$check->refRegularDeliveryPlan->code_consignee,$check->refRegularDeliveryPlan->datasource,($check->qty_pcs_box - $item['qty_pcs_box']))->toArray()['id'],
                                 "qty_pcs_box" => $check->qty_pcs_box - $item['qty_pcs_box'],
                                 "is_labeling" => $check->is_labeling,
                             ]);
