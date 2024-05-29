@@ -1856,6 +1856,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             Pdf::loadView('pdf.packaging.packaging_doc',[
                 'data' => $data,
                 'box' => $boxArray,
+                'boxYPMJ' => self::groupByQRCode($box),
                 'gross_weight_per_part' => $gross_weight_per_part,
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
@@ -1872,6 +1873,37 @@ class QueryRegularFixedQuantityConfirmation extends Model {
           } catch (\Throwable $th) {
               return Helper::setErrorResponse($th);
           }
+    }
+
+    public static function groupByQRCode($data) {
+        $groupedData = [];
+
+        foreach ($data as $entry) {
+            $id = $entry['qrcode'];
+
+            if (!isset($groupedData[$id])) {
+                $groupedData[$id] = $entry;
+            } else {
+                foreach ($entry as $key => $value) {
+                    if ($key !== 'qrcode') {
+                        if ($groupedData[$id][$key] !== $value) {
+                            if (!is_array($groupedData[$id][$key])) {
+                                $groupedData[$id][$key] = [$groupedData[$id][$key]]; //jadikan array jika value beda, merge jika value sama
+                            }
+                            if (!is_null($value)) {
+                                if (in_array($key, ['item_no', 'qty_pcs_box', 'item_no_series', 'unit_weight_kg', 'total_gross_weight'])) {
+                                    $groupedData[$id][$key][] = $value[0];
+                                } else {
+                                    $groupedData[$id][$key][] = $value;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return array_values($groupedData);
     }
 
     public static function inputQuantity($value, $ratio) 
