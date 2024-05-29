@@ -168,9 +168,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                         if(Str::length(trim($row[5])) > 0)
                             $item_serial .= "-".trim($row[5]);
 
-                        $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
-                        $check_consignee = $consignee == null ? null : $consignee->code;
-                        $check = MstBox::where('item_no_series', $item_serial)->where('code_consignee', $check_consignee)->where('datasource',$this->params['datasource'])->first() ? null : [
+                        $check = MstBox::where('item_no_series', $item_serial)->where('datasource',$this->params['datasource'])->first() ? null : [
                             'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                             'item_no' => str_replace('-', '', $item_serial),
                             'delivery' => trim($row[8]),
