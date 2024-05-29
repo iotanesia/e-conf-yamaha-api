@@ -821,7 +821,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             } else if($params->datasource == Constant::YPMJ_DATASOURCE){
                 
                 $mst_container = MstContainer::find($params->id_container);
-                $summary_box = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', $id_fixed_quantity)->get();
+                $summary_box = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', $id_fixed_quantity)->get()->groupBy('id_regular_delivery_plan');;
 
                 $creation['id_container'] = $params->id_container;
                 $creation['measurement'] = $mst_container->measurement ?? 0;
