@@ -226,12 +226,12 @@ class QueryStockConfirmationHistory extends Model
         $last_page = ceil(count($collection) / $perPage);
 
         return [
-            'items' => self::groupByQRCode(array_values($paginator->items())) ?? [],
+            'items' => self::groupByQRKey(array_values($paginator->items())) ?? [],
             'last_page' => $last_page
         ];
     }
 
-    public static function groupByQRCode($data) {
+    public static function groupByQRKey($data) {
         $groupedData = [];
 
         foreach ($data as $entry) {
@@ -341,7 +341,7 @@ class QueryStockConfirmationHistory extends Model
         });
 
         return [
-            'items' => self::groupByQRCode($data->items()) ?? [],
+            'items' => self::groupByQRKey($data->items()) ?? [],
             'last_page' => $data->lastPage()
         ];
     }

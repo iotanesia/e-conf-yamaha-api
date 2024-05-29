@@ -29,6 +29,7 @@ use App\Exports\PebExport;
 use App\Exports\FixedQuantityExport;
 use App\Models\RegularFixedShippingInstructionCreation;
 use App\Models\RegularStokConfirmationHistory;
+use App\Models\RegularStokConfirmationTemp;
 
 class QueryRegularFixedQuantityConfirmation extends Model {
 
@@ -106,48 +107,52 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             }
 
             $data = $query->paginate($params->limit ?? null);
-            return [
-                'items' => $data->getCollection()->transform(function($item){
 
-                    if ($item->refRegularDeliveryPlan !== null) {
+            $collection = $data->getCollection()->transform(function($item){
 
-                        if (Carbon::now() <= Carbon::parse($item->refRegularDeliveryPlan->etd_ypmi)) {
-                            if ($item->qty !== $item->in_wh) $status = 'In Process';
-                            if ($item->qty == $item->in_wh) $status = 'Finish Production';
-                        } else {
-                            $status = 'Out Of Date';
-                        }
+                if ($item->refRegularDeliveryPlan !== null) {
 
-                        if ($item->refRegularDeliveryPlan->item_no == null) {
-                            $item_no_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
-                            $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get()->pluck('item_no_series');
-                            $mst_part = MstPart::select('mst_part.item_no',
-                                                DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
-                                                ->whereIn('mst_part.item_no', $item_no_set->toArray())
-                                                ->groupBy('mst_part.item_no')->get();
-                            $item_name = [];
-                            foreach ($mst_part as $value) {
-                                $item_name[] = $value->description;
-                            }
-                        }
+                    if (Carbon::now() <= Carbon::parse($item->refRegularDeliveryPlan->etd_ypmi)) {
+                        if ($item->qty !== $item->in_wh) $status = 'In Process';
+                        if ($item->qty == $item->in_wh) $status = 'Finish Production';
+                    } else {
+                        $status = 'Out Of Date';
                     }
 
-                    $item->status_desc = $status ?? null;
-                    $item->customer_name = $item->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $item->refRegularDeliveryPlan->customer_ypmj : $item->refConsignee->nick_name;
-                    $item->production = $item->production ?? null;
-                    $item->in_dc = $item->in_dc ?? null;
-                    $item->in_wh = $item->in_wh ?? null;
-                    $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series : $item->refRegularDeliveryPlan->refPart->item_serial;
-                    // $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_set : $item->refRegularDeliveryPlan->item_no;
-                    $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name : $item->refRegularDeliveryPlan->refPart->description;
+                    if ($item->refRegularDeliveryPlan->item_no == null) {
+                        $item_no_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+                        $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get()->pluck('item_no_series');
+                        $mst_part = MstPart::select('mst_part.item_no',
+                                            DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
+                                            ->whereIn('mst_part.item_no', $item_no_set->toArray())
+                                            ->groupBy('mst_part.item_no')->get();
+                        $item_name = [];
+                        foreach ($mst_part as $value) {
+                            $item_name[] = $value->description;
+                        }
+                    }
+                }
 
-                    unset(
-                        $item->refConsignee,
-                        $item->refRegularDeliveryPlan,
-                    );
+                $item->qr_key = RegularStokConfirmationTemp::where('id_regular_delivery_plan', $item->refRegularDeliveryPlan->id)->first()->qr_key ?? null;
+                $item->status_desc = $status ?? null;
+                $item->customer_name = $item->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $item->refRegularDeliveryPlan->customer_ypmj : $item->refConsignee->nick_name;
+                $item->production = $item->production ?? null;
+                $item->in_dc = $item->in_dc ?? null;
+                $item->in_wh = $item->in_wh ?? null;
+                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series : $item->refRegularDeliveryPlan->refPart->item_serial;
+                // $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_set : $item->refRegularDeliveryPlan->item_no;
+                $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name : $item->refRegularDeliveryPlan->refPart->description;
 
-                    return $item;
-                }),
+                unset(
+                    $item->refConsignee,
+                    $item->refRegularDeliveryPlan,
+                );
+
+                return $item;
+            });
+
+            return [
+                'items' => self::groupByQRKey($collection->toArray()),
                 'attributes' => [
                     'total' => $data->total(),
                     'current_page' => $data->currentPage(),
@@ -157,6 +162,42 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'last_page' => $data->lastPage()
             ];
         });
+    }
+
+    public static function groupByQRKey($data) {
+        $groupedData = [];
+
+        foreach ($data as $entry) {
+            $id = $entry['qr_key'];
+
+            if (!isset($groupedData[$id])) {
+                $groupedData[$id] = $entry;
+            } else {
+                foreach ($entry as $key => $value) {
+                    if ($key !== 'qr_key') {
+                        if (in_array($key, ['qty', 'in_dc', 'box'])) {
+                            // Always concatenate into an array
+                            if (!is_array($groupedData[$id][$key])) {
+                                $groupedData[$id][$key] = [$groupedData[$id][$key]];
+                            }
+                            $groupedData[$id][$key][] = $value;
+                        } else {
+                            // Merge if values are the same, otherwise concatenate into an array
+                            if ($groupedData[$id][$key] !== $value) {
+                                if (!is_array($groupedData[$id][$key])) {
+                                    $groupedData[$id][$key] = [$groupedData[$id][$key]];
+                                }
+                                if (!is_null($value)) {
+                                    $groupedData[$id][$key][] = $value;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return array_values($groupedData);
     }
 
     public static function noPackaging($params)
