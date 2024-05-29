@@ -242,10 +242,22 @@ class QueryStockConfirmationHistory extends Model
             } else {
                 foreach ($entry as $key => $value) {
                     if ($key !== 'id') {
-                        if (!isset($groupedData[$id][$key])) {
-                            $groupedData[$id][$key] = $value;
+                        if (in_array($key, ['qty', 'in_dc', 'box'])) {
+                            // Always concatenate into an array
+                            if (!is_array($groupedData[$id][$key])) {
+                                $groupedData[$id][$key] = [$groupedData[$id][$key]];
+                            }
+                            $groupedData[$id][$key][] = $value;
                         } else {
-                            $groupedData[$id][$key] .= ', ' . $value;
+                            // Merge if values are the same, otherwise concatenate into an array
+                            if ($groupedData[$id][$key] !== $value) {
+                                if (!is_array($groupedData[$id][$key])) {
+                                    $groupedData[$id][$key] = [$groupedData[$id][$key]];
+                                }
+                                if (!is_null($value)) {
+                                    $groupedData[$id][$key][] = $value;
+                                }
+                            }
                         }
                     }
                 }
