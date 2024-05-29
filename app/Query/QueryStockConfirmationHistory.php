@@ -341,7 +341,7 @@ class QueryStockConfirmationHistory extends Model
         });
 
         return [
-            'items' => $data->items(),
+            'items' => self::groupByQRCode($data->items()) ?? [],
             'last_page' => $data->lastPage()
         ];
     }
