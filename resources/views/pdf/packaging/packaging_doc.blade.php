@@ -189,7 +189,7 @@
                             <td style='padding-bottom:5px;' class='text-center'>{{ round(array_sum($box_item['qty_pcs_box']), 2) }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ number_format(array_sum($box_item['unit_weight_kg']), 2) }}</td>
                             <td style='padding-bottom:5px;' class='text-center'>{{ $key == 0 ?  number_format(array_sum($box_item['total_gross_weight']), 2) : null }}</td>
-                            <td style='padding-bottom:5px;' class='text-center'>{{ $key == 0 ? number_format((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000), 3) : null }}</td>
+                            <td style='padding-bottom:5px;' class='text-center'>{{ array_sum($box_item['meas_ypmj']) }}</td>
                         </tr>
                     @endforeach
                 @else
@@ -245,7 +245,7 @@
                     <td class="text-center">{{ $sum_per_order[$order]['qty'] }}</td>
                     <td class="text-center">{{ number_format(($sum_per_order[$order]['nett_weight']),2) }}</td>
                     <td class="text-center">{{ number_format(($sum_per_order[$order]['gross_weight']),2) }}</td>
-                    <td class="text-center">{{ number_format(($sum_per_order[$order]['meas']),3) }}</td>
+                    <td class="text-center">{{ $item->datasource == "YPMJ" ? $count_meas_ypmj : number_format(($sum_per_order[$order]['meas']),3) }}</td>
                 </tr>
             </table>
             @endforeach
@@ -278,7 +278,7 @@
                 <tr>
                     <td class="no-bo" width="200px">Grand Total Measurement</td>
                     <td class="no-bo" width="4">:</td>
-                    <td width="50px" class="text-right no-bo">{{ number_format($count_meas,3) }}</td>
+                    <td width="50px" class="text-right no-bo">{{ $item->datasource == "YPMJ" ? $count_meas_ypmj : number_format($count_meas,3) }}</td>
                     <td class="no-bo">M3</td>
                 </tr>
             </table>

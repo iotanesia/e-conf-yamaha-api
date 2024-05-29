@@ -1045,7 +1045,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                 $need_cartoon = ceil($box_item->refRegularDeliveryPlan->qty / $box_item->refMstBox->qty);
                                 $count_meas = $box_item->refRegularDeliveryPlan->refOuterType->measurement;
                                 $total_net_weight += ($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000;
-                                $total_gross_weight += (($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $box_item->refMstBox->weight_inner_carton) + $box_item->refRegularDeliveryPlan->refOuterType->outer_weight;
+                                if ($key+1 == count($box)) {
+                                    $total_gross_weight += (($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $box_item->refMstBox->weight_inner_carton) + $box_item->refRegularDeliveryPlan->refOuterType->outer_weight;
+                                } else {
+                                    $total_gross_weight += (($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $box_item->refMstBox->weight_inner_carton);
+                                }
                             }
                         } else {
                             $count_net_weight = $box_item->refMstBox->unit_weight_gr;
@@ -1672,14 +1676,35 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $res_box_set = [];
             foreach ($deliv_plan as $key => $deliv_value) {
                 if ($deliv_value->item_no !== null) {
-                    $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) use($id) {
+                    $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item, $i) use($id, $deliv_value, $deliv_plan, $key) {
                         if ($item->refFixedQuantityConfirmation->id_fixed_actual_container == $id) {
                             $res['qrcode'] = $item->qrcode;
                             $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
                             $res['qty_pcs_box'] = [$item->qty_pcs_box];
                             $res['item_no_series'] = [$item->refMstBox->item_no_series];
                             $res['unit_weight_kg'] = [($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000];
-                            $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
+                            if ($item->refRegularDeliveryPlan->datasource == 'YPMJ') {
+                                if ($key+1 == count($deliv_plan)) {
+                                    if ($i+1 == count($deliv_value->manyFixedQuantityConfirmationBox)) {
+                                        $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->refRegularDeliveryPlan->qty)/1000) + (ceil($item->refRegularDeliveryPlan->qty / $item->refMstBox->qty) * $item->refMstBox->weight_inner_carton) + $item->refRegularDeliveryPlan->refOuterType->outer_weight];
+                                        $res['meas_ypmj'] = $item->refRegularDeliveryPlan->refOuterType->measurement;
+                                    } else {
+                                        $res['total_gross_weight'] = [0];
+                                        $res['meas_ypmj'] = 0;
+                                    }
+                                } else {
+                                    if ($i+1 == count($deliv_value->manyFixedQuantityConfirmationBox)) {
+                                        $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->refRegularDeliveryPlan->qty)/1000) + (ceil($item->refRegularDeliveryPlan->qty / $item->refMstBox->qty) * $item->refMstBox->weight_inner_carton)];
+                                        $res['meas_ypmj'] = 0;
+                                    } else {
+                                        $res['total_gross_weight'] = [0];
+                                        $res['meas_ypmj'] = 0;
+                                    }
+                                }
+                            } else {
+                                $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
+                                $res['meas_ypmj'] = [0];
+                            }
                             $res['length'] = $item->refMstBox->length;
                             $res['width'] = $item->refMstBox->width;
                             $res['height'] = $item->refMstBox->height;
@@ -1820,12 +1845,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $count_net_weight = 0;
             $count_gross_weight = 0;
             $count_meas = [];
+            $count_meas_ypmj = [];
             $gross_weight_per_part = [];
             foreach ($box as $box_item){
                 $count_qty += array_sum($box_item['qty_pcs_box']);
                 $count_net_weight += array_sum($box_item['unit_weight_kg']);
                 $count_gross_weight += array_sum($box_item['total_gross_weight']);
                 $count_meas[] = round((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000), 3);
+                $count_meas_ypmj[] = $box_item['meas_ypmj'] ?? 0;
                 $gross_weight_per_part[] = $box_item['total_gross_weight'];
             }
 
@@ -1837,19 +1864,22 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $count_net_weight_per_order = 0;
                 $count_gross_weight_per_order = 0;
                 $count_meas_per_order = [];
+                $count_meas_ypmj_per_order = [];
                 $order_no = '';
                 foreach ($itemSum as $val) {
                     $count_qty_per_order += array_sum($val['qty_pcs_box']);
                     $count_net_weight_per_order += array_sum($val['unit_weight_kg']);
                     $count_gross_weight_per_order += array_sum($val['total_gross_weight']);
                     $count_meas_per_order[] = round((($val['length'] * $val['width'] * $val['height']) / 1000000000), 3);
+                    $count_meas_ypmj_per_order[] = $val['meas_ypmj'] ?? null;
                     $order_no = $val['order_no'];
                 }
                 $sum_res_per_order[$order_no] = [
                     'qty' => $count_qty_per_order,
                     'nett_weight' => $count_net_weight_per_order,
                     'gross_weight' => $count_gross_weight_per_order,
-                    'meas' => array_sum($count_meas_per_order)
+                    'meas' => array_sum($count_meas_per_order),
+                    'meas_ypmj' => $count_meas_ypmj_per_order
                 ];
             }
 
@@ -1862,6 +1892,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'count_net_weight' => $count_net_weight,
                 'count_gross_weight' => $count_gross_weight,
                 'count_meas' => array_sum($count_meas),
+                'count_meas_ypmj' => array_sum($count_meas_ypmj),
                 'check_shipping' => $check_shipping,
                 'sum_per_order' => $sum_res_per_order,
                 'grand_total' => $grandTotal
