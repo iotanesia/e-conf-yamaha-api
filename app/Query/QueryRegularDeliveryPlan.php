@@ -696,7 +696,7 @@ class QueryRegularDeliveryPlan extends Model {
                             'created_at' => now(),
                             'updated_at' => now(),
                             'qty_pcs_box' => $qty_pcs_box,
-                            'customer_ypmj' => "YMCDA",
+                            'customer_ypmj' => "YMBP",
                             'lot_packing' => $is_regenerate_box == false  ? null : $request['lot_packing'],
                             'packing_date' => $is_regenerate_box == false ? null : $request['packing_date'],
                             'is_labeling' => $is_regenerate_box == false ? null : $request['is_labeling'],

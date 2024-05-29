@@ -583,7 +583,7 @@ class QueryRegularOrderEntryUpload extends Model {
                         "uuid" => (string) Str::uuid(),
                         "jenis" => $item->item_no == null ? 'set' : 'single',
                         "is_produksi" => $item->datasource == Constant::YPMJ_DATASOURCE ? 0 : null,
-                        "customer_ypmj" => $item->datasource == Constant::YPMJ_DATASOURCE ? "YMCDA" : null,
+                        "customer_ypmj" => $item->datasource == Constant::YPMJ_DATASOURCE ? "YMBP" : null,
                     ]);
 
                    $box = VFinishBox::where([
