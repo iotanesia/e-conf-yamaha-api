@@ -1018,6 +1018,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $count_meas = 0;
                 $total_net_weight = 0;
                 $total_gross_weight = 0;
+                $outer_weight = 0;
                 $seenIds = [];
                 foreach ($box as $key => $box_item){
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
@@ -1045,11 +1046,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                 $need_cartoon = ceil($box_item->refRegularDeliveryPlan->qty / $box_item->refMstBox->qty);
                                 $count_meas = $box_item->refRegularDeliveryPlan->refOuterType->measurement;
                                 $total_net_weight += ($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000;
-                                if ($key+1 == count($box)) {
-                                    $total_gross_weight += (($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $box_item->refMstBox->weight_inner_carton) + $box_item->refRegularDeliveryPlan->refOuterType->outer_weight;
-                                } else {
-                                    $total_gross_weight += (($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $box_item->refMstBox->weight_inner_carton);
-                                }
+                                $outer_weight = $box_item->refRegularDeliveryPlan->refOuterType->outer_weight;
+                                $total_gross_weight += (($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $box_item->refMstBox->weight_inner_carton);
                             }
                         } else {
                             $count_net_weight = $box_item->refMstBox->unit_weight_gr;
@@ -1066,7 +1064,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $item->type_delivery = $item->refMstTypeDelivery->name ?? null;
                 $item->lsp = $item->refMstLsp->name ?? null;
                 $item->net_weight = number_format($total_net_weight, 2);
-                $item->gross_weight = number_format($total_gross_weight, 2);
+                $item->gross_weight = number_format($total_gross_weight+$outer_weight, 2);
                 $item->measurement = number_format($count_meas,3);
                 $item->container_type = $item->id_mot == 2 ? null : ($item->refMstContainer->container_type ?? null);
                 $item->load_extension_length = $item->refMstContainer->long ?? null;
