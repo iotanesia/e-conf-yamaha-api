@@ -560,7 +560,7 @@ class QueryStockConfirmationHistory extends Model
                     $item_no = [];
                     foreach ($delivery_plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet as $key => $value) {
                         $description[] = $value->refPart->description;
-                        $item_no[] = $value->item_no;
+                        $item_no[] = $value->refPart->item_serial ?? null;
                     }
     
                     $part_no = $delivery_plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
@@ -600,7 +600,7 @@ class QueryStockConfirmationHistory extends Model
                         'id' => count(explode('-', $params->qr_code)) > 1 ? $params->qr_code : $item->id,
                         'item_name' => count(explode('-', $params->qr_code)) > 1 ? $description : $item->refRegularDeliveryPlan->refPart->description,
                         'cust_name' => $item->refRegularDeliveryPlan->refConsignee->nick_name ?? null,
-                        'item_no' => count(explode('-', $params->qr_code)) > 1 ? $item_no : $item->refRegularDeliveryPlan->item_no,
+                        'item_no' => count(explode('-', $params->qr_code)) > 1 ? $item_no : ($item->refRegularDeliveryPlan->refPart->item_serial ?? null),
                         'order_no' => $item->refRegularDeliveryPlan->order_no ?? null,
                         'qty_pcs_box' => $item->qty_pcs_box,
                         'namebox' => $no . " " . $qty . " pcs",
@@ -643,7 +643,7 @@ class QueryStockConfirmationHistory extends Model
                 foreach($regular_delivery_plan_list as $item){
                     array_push($id_regular_delivery_plan_list, $item->id);
                     array_push($item_name, $item->refPart->description);
-                    array_push($item_no, $item->item_no);
+                    array_push($item_no, $item->refPart->item_serial);
                     array_push($qty, $item->qty);
                     $mst_box = MstBox::where('item_no', $item->item_no)->where('datasource', Constant::YPMJ_DATASOURCE)->first();
                     
