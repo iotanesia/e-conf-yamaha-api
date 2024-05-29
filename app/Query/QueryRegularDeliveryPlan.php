@@ -433,6 +433,7 @@ class QueryRegularDeliveryPlan extends Model {
         ->orderBy('is_produksi', 'asc')
         ->orderBy('code_consignee', 'asc')
         ->orderBy('item_no', 'asc')
+        ->orderBy('etd_jkt', 'asc')
         ->paginate($params->limit ?? null);
 
         $data->transform(function ($item){
