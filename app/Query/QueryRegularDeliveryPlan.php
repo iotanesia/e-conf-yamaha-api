@@ -434,6 +434,7 @@ class QueryRegularDeliveryPlan extends Model {
         ->orderBy('code_consignee', 'asc')
         ->orderBy('item_no', 'asc')
         ->orderBy('etd_jkt', 'asc')
+        ->orderBy('qty', 'desc')
         ->paginate($params->limit ?? null);
 
         $data->transform(function ($item){
