@@ -175,17 +175,17 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             } else {
                 foreach ($entry as $key => $value) {
                     if ($key !== 'qr_key') {
-                        if (in_array($key, ['qty', 'in_dc', 'box'])) {
-                            // Always concatenate into an array
+                        if ($key == "id_fixed_quantity") {
+                            $groupedData[$id][$key] = $groupedData[$id][$key] . ', ' . $value; //gabungkan menggunakan koma jika value beda
+                        } elseif (in_array($key, ['qty', 'in_dc', 'box'])) {
                             if (!is_array($groupedData[$id][$key])) {
-                                $groupedData[$id][$key] = [$groupedData[$id][$key]];
+                                $groupedData[$id][$key] = [$groupedData[$id][$key]]; //jadikan array jika value beda
                             }
                             $groupedData[$id][$key][] = $value;
                         } else {
-                            // Merge if values are the same, otherwise concatenate into an array
                             if ($groupedData[$id][$key] !== $value) {
                                 if (!is_array($groupedData[$id][$key])) {
-                                    $groupedData[$id][$key] = [$groupedData[$id][$key]];
+                                    $groupedData[$id][$key] = [$groupedData[$id][$key]]; //jadikan array jika value beda, merge jika value sama
                                 }
                                 if (!is_null($value)) {
                                     $groupedData[$id][$key][] = $value;
