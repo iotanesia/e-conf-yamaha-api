@@ -1408,7 +1408,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         ->paginate($params->limit ?? null);
 
         $data->map(function ($item){
-            $item->cust_name = $item->refConsignee->nick_name ?? null;
+            $item->cust_name = $item->refConsignee->nick_name ?? $item->code_consignee;
             $item->status_desc = 'Case Marks Finished';
             $item->invoice_no = $item->no_packaging;
 
