@@ -658,17 +658,39 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $id_fixed_actual = $item->id_fixed_actual_container;
                 foreach ($deliv_plan as $key => $deliv_value) {
                     if ($deliv_value->item_no !== null) {
-                        $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) use($id_fixed_actual){
+                        $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item, $i) use($id_fixed_actual, $deliv_value, $deliv_plan, $key) {
                             if ($item->refFixedQuantityConfirmation->id_fixed_actual_container == $id_fixed_actual) {
                                 $res['qrcode'] = $item->qrcode;
                                 $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
                                 $res['qty_pcs_box'] = [$item->qty_pcs_box];
                                 $res['item_no_series'] = [$item->refMstBox->item_no_series];
                                 $res['unit_weight_kg'] = [($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000];
-                                $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
+                                if ($item->refRegularDeliveryPlan->datasource == 'YPMJ') {
+                                    if ($key+1 == count($deliv_plan)) {
+                                        if ($i+1 == count($deliv_value->manyFixedQuantityConfirmationBox)) {
+                                            $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->refRegularDeliveryPlan->qty)/1000) + (ceil($item->refRegularDeliveryPlan->qty / $item->refMstBox->qty) * $item->refMstBox->weight_inner_carton) + $item->refRegularDeliveryPlan->refOuterType->outer_weight];
+                                            $res['meas_ypmj'] = $item->refRegularDeliveryPlan->refOuterType->measurement;
+                                        } else {
+                                            $res['total_gross_weight'] = [0];
+                                            $res['meas_ypmj'] = 0;
+                                        }
+                                    } else {
+                                        if ($i+1 == count($deliv_value->manyFixedQuantityConfirmationBox)) {
+                                            $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->refRegularDeliveryPlan->qty)/1000) + (ceil($item->refRegularDeliveryPlan->qty / $item->refMstBox->qty) * $item->refMstBox->weight_inner_carton)];
+                                            $res['meas_ypmj'] = 0;
+                                        } else {
+                                            $res['total_gross_weight'] = [0];
+                                            $res['meas_ypmj'] = 0;
+                                        }
+                                    }
+                                } else {
+                                    $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
+                                    $res['meas_ypmj'] = [0];
+                                }
                                 $res['length'] = $item->refMstBox->length;
                                 $res['width'] = $item->refMstBox->width;
                                 $res['height'] = $item->refMstBox->height;
+                                $res['order_no'] = $item->refRegularDeliveryPlan->order_no;
                                 return $res;
                             }
                         });
@@ -793,11 +815,13 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $count_net_weight = 0;
                 $count_gross_weight = 0;
                 $count_meas = [];
+                $count_meas_ypmj = [];
                 foreach ($box as $box_item){
                     $count_qty += array_sum($box_item['qty_pcs_box']);
                     $count_net_weight += array_sum($box_item['unit_weight_kg']);
                     $count_gross_weight += array_sum($box_item['total_gross_weight']);
                     $count_meas[] = round(($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000, 3);
+                    $count_meas_ypmj[] = $box_item['meas_ypmj'] ?? null;
                 }
 
                 $summary_box_data = RegularFixedActualContainerCreation::select('id_container',
@@ -850,7 +874,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'container_type' => $item->container_value,
                     'net_weight' => number_format($count_net_weight,2),
                     'gross_weight' => number_format($count_gross_weight,2),
-                    'measurement' => number_format(array_sum($count_meas),3),
+                    'measurement' => $params->datasource == 'YPMJ' ? array_sum($count_meas_ypmj) : number_format(array_sum($count_meas),3),
                     'port_of_discharge' => $item->port,
                     'port_of_loading' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
