@@ -180,7 +180,7 @@ class QueryStockConfirmationHistory extends Model
                         'status_desc' => 'Instock',
                         'in_dc' => $val->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $val->refRegularDeliveryPlan->qty : $val->qty_pcs_box,
                         // 'box' => $val->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $val->qty_pcs_box . ' x ' . ceil($val->refRegularDeliveryPlan->qty/$val->qty_pcs_box) : $val->qty_pcs_box . ' x 1 '
-                        'box' => $val->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $val->refBox->qty . ' x ' . ceil($val->qty_pcs_box/$val->refBox->qty) : $val->qty_pcs_box . ' x 1 '
+                        'box' => $val->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $val->refBox->qty . ' x ' . ceil($val->refRegularDeliveryPlan->qty/$val->refBox->qty) : $val->qty_pcs_box . ' x 1 '
                     ];
                 }
 
