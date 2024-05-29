@@ -683,7 +683,10 @@ class QueryStockConfirmationHistory extends Model
                             'no_box' => $item->refBox->no_box ?? "",
                             // 'qr_name' => $qr_key,
                             'datasource' => Constant::YPMJ_DATASOURCE,
-                            'detail' => $regular_delivery_plan_list,
+                            'detail' => $regular_delivery_plan_list->transform(function($item) {
+                                            $item->item_no = $item->refPart->item_serial ?? null;
+                                            return $item;
+                                        }),
                             'qr_name' => "YPMJ-".$item->refRegularDeliveryPlan->id_regular_order_entry."-".$item->refRegularDeliveryPlan->bucket_produksi. " | ".implode(', ', $item_no). " | ".$item->refRegularDeliveryPlan->customer_ypmj. " | ".implode(', ',$lot_packing_arr). " | ".implode(', ',$packing_date_arr). " | ".implode(', ',$qty). " | ".implode(', ',$case_number_arr). " | ".implode(', ',array_unique($period_arr))
                         ];
                     }
