@@ -144,17 +144,12 @@ class QueryRegularFixedPackingCreation extends Model {
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
 
         $fixed_packing_creation = RegularFixedActualContainer::
-                        select(DB::raw("string_agg(DISTINCT d.name::character varying, ',') as yth"),
-                                 DB::raw("string_agg(DISTINCT e.nick_name::character varying, ',') as username"),
-                                 DB::raw("string_agg(DISTINCT g.container_type::character varying, ',') as jenis_truck"),
+                        select(
+                                DB::raw("string_agg(DISTINCT b.name::character varying, ',') as yth"),
                                  DB::raw("string_agg(DISTINCT regular_fixed_actual_container.is_actual::character varying, ',') as is_actual")
                         )->where('regular_fixed_actual_container.id',$id)
-                            ->join('regular_fixed_quantity_confirmation as b','b.id_fixed_actual_container','regular_fixed_actual_container.id')
-                            ->join('regular_fixed_actual_container_creation as c','regular_fixed_actual_container.id','c.id_fixed_actual_container')
-                            ->join('mst_lsp as d','d.id','c.id_lsp')
-                            ->join('mst_consignee as e','e.code','c.code_consignee')
-                            ->join('mst_type_delivery as f','f.id','c.id_type_delivery')
-                            ->join('mst_container as g','g.id','c.id_container')
+                            ->join('regular_fixed_actual_container_creation as a','regular_fixed_actual_container.id','a.id_fixed_actual_container')
+                            ->join('mst_lsp as b','b.id','a.id_lsp')
                             ->first();
 
         $ret['yth'] = $fixed_packing_creation->yth;
