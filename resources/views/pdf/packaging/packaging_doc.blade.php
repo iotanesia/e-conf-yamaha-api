@@ -167,7 +167,7 @@
                                     MADE IN INDONESIA <br>
                                     INV. No. {{ $item->no_packaging }} <br>
                                     {{-- C/No. : 1 - {{ count($box[$order]) }} --}}
-                                    C/No. : {{ $iteration > 0 ? $iteration+1 : $key+1 }} - {{ $iteration > 0 ? count($box[$order]) + $iteration : count($box[$order]) }}
+                                    C/No. : {{ $iteration > 0 ? $iteration+1 : $key+1 }} - {{ $iteration > 0 ? count($boxYPMJ) + $iteration : count($boxYPMJ) }}
                                 </td>
                             @endif
                             @if ($key == 0)
