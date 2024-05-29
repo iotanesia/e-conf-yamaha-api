@@ -226,9 +226,33 @@ class QueryStockConfirmationHistory extends Model
         $last_page = ceil(count($collection) / $perPage);
 
         return [
-            'items' => array_values($paginator->items()) ?? [],
+            'items' => self::groupByQRCode(array_values($paginator->items())) ?? [],
             'last_page' => $last_page
         ];
+    }
+
+    public static function groupByQRCode($data) {
+        $groupedData = [];
+
+        foreach ($data as $entry) {
+            $id = $entry['id'];
+
+            if (!isset($groupedData[$id])) {
+                $groupedData[$id] = $entry;
+            } else {
+                foreach ($entry as $key => $value) {
+                    if ($key !== 'id') {
+                        if (!isset($groupedData[$id][$key])) {
+                            $groupedData[$id][$key] = $value;
+                        } else {
+                            $groupedData[$id][$key] .= ', ' . $value;
+                        }
+                    }
+                }
+            }
+        }
+
+        return array_values($groupedData);
     }
 
     public static function getOutStock($request)
