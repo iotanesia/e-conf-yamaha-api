@@ -879,7 +879,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'port_of_loading' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
                     'count' => $item->summary_container,
-                    'summary_box' => count($box),
+                    'summary_box' => $params->datasource == 'YPMJ' ? array_sum($summary_box) : count($box),
                     'to' => $item->refMstLsp->name ?? null,
                     'status' => $item->status ?? null,
                     'id_fixed_shipping_instruction_creation' => $item->id_fixed_shipping_instruction_creation ?? null,
@@ -898,7 +898,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'description_of_goods_2' => $count_qty,
                     'seal_no' => '',
                     'connecting_vessel' => '',
-                    'carton_box_qty' => count($box)
+                    'carton_box_qty' => $params->datasource == 'YPMJ' ? array_sum($summary_box) : count($box)
                 ];
             }
         });
