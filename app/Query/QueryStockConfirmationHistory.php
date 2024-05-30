@@ -844,7 +844,7 @@ class QueryStockConfirmationHistory extends Model
                 $ids = explode(',', $params->id);
                 $qr_key = "";
                 foreach($ids as $id){
-                    $delivery_plan_box_list = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $id)->get();
+                    $delivery_plan_box_list = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $id)->whereNotNull('qrcode')->get();
                     if (sizeof($delivery_plan_box_list) == 0) throw new \Exception("Data not found", 400);
                     
                     $qr_key = "YPMJ-".$delivery_plan_box_list[0]->refRegularDeliveryPlan->id_regular_order_entry."-".$delivery_plan_box_list[0]->refRegularDeliveryPlan->bucket_produksi;
