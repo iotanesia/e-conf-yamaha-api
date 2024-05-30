@@ -2069,6 +2069,21 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
                     return $res;
                 } else {
+                    $qrcode = [];
+                    $seenIds = [];
+                    $total_net_weight = 0;
+                    $total_gross_weight = 0;
+                    foreach ($fixedQuantity->manyFixedQuantityConfirmationBox as $value) {
+                        $qrcode[] = $value->qrcode;
+                        $id_unique = $value->id_regular_delivery_plan;
+                        if (!in_array($id_unique, $seenIds)) {
+                            $seenIds[] = $id_unique;
+                            $outer_weight = $value->refRegularDeliveryPlan->refOuterType->outer_weight;
+                            $need_cartoon = ceil($value->refRegularDeliveryPlan->qty / $value->refMstBox->qty);
+                            $total_net_weight += ($value->refMstBox->unit_weight_gr * $value->refRegularDeliveryPlan->qty)/1000;
+                            $total_gross_weight += (($value->refMstBox->unit_weight_gr * $value->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $value->refMstBox->weight_inner_carton);
+                        }
+                    }
                     $mst_box = MstBox::where('id', $plan_box->id_box)->get();
                     $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_box], [$plan_box->refBox->qty], $mst_box, $plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
                     
@@ -2080,14 +2095,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res["po_no"] = $fixedQuantity->order_no ?? null;
                     $res["part_no"] = $plan_box->refRegularDeliveryPlan->refPart->item_serial;
                     $res["qty"] = $item->qty_pcs_box ?? null;
-                    $res['no'] = '0';
-                    $res['nw'] = str_replace('.',',',number_format($nw_gw[0]['unit_weight_kg'][0], 2)) ?? null;
-                    $res['gw'] = str_replace('.',',',number_format($nw_gw[0]['total_gross_weight'][0], 2)) ?? null;
+                    $res['no'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? count(array_unique($qrcode)) : '0';
+                    $res['nw'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? number_format($total_net_weight, 2) : str_replace('.',',',number_format($nw_gw[0]['unit_weight_kg'][0], 2)) ?? null;
+                    $res['gw'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? number_format($total_gross_weight+$outer_weight, 2) : str_replace('.',',',number_format($nw_gw[0]['total_gross_weight'][0], 2)) ?? null;
                     $res["model_code"] = $fixedQuantity->cust_item_no ?? null;
                     $res["type_box"] = 'CARTON BOX';
-                    $res["panjang"] = $plan_box->refBox->length ?? null;
-                    $res["lebar"] = $plan_box->refBox->width ?? null;
-                    $res["tinggi"] = $plan_box->refBox->height ?? null;
+                    $res["panjang"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->length : ($plan_box->refBox->length ?? null);
+                    $res["lebar"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->width : ($plan_box->refBox->width ?? null);
+                    $res["tinggi"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->height : ($plan_box->refBox->height ?? null);
                     $res["hs_code"] = $plan_box->refRegularDeliveryPlan->refPart->hs_code;
                     
                     return [$res];
@@ -2100,9 +2115,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $filteredData = array_values(array_filter($data->toArray()));
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
-        $no = 1;
-        foreach ($flattenedArray as $key => &$subarray) {
-            $subarray["no"] = $subarray["no"] == '0' ? $no++ : $flattenedArray[$key-1]["no"];
+        if($id_fixed_quantity[0]->refRegularDeliveryPlan->datasource == "PYMAC") {
+            $no = 1;
+            foreach ($flattenedArray as $key => &$subarray) {
+                $subarray["no"] = $subarray["no"] == '0' ? $no++ : $flattenedArray[$key-1]["no"];
+            }
         }
         $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
