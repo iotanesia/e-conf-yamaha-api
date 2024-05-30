@@ -68,7 +68,7 @@
                 @for ($i=1; $i<=2; $i++)
                 <table style="margin-bottom: 45px;">
                     <tr>
-                        <td class="text-center" style="font-size: 37px; font-weight: 500; vertical-align=top; padding: 20px;">
+                        <td class="text-center" style="font-size: 35px; font-weight: 500; vertical-align=top; padding: 20px;">
                             <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order ?? null }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>-</b></p>
