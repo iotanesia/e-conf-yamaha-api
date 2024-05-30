@@ -2176,22 +2176,24 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
                     
                     $volume = 0;
+                    $qrcode = [];
                     foreach ($fixedQuantity->manyFixedQuantityConfirmationBox as $vol) {
                         $volume += ($vol->refMstBox->length * $vol->refMstBox->width * $vol->refMstBox->height) / 1000000000;
+                        $qrcode[] = $vol->qrcode;
                     }
     
                     $res['no_packaging'] = $fixedQuantity->refFixedActualContainer->no_packaging ?? null;
                     $res['tanggal'] = date('Ymd', strtotime($fixedQuantity->refFixedActualContainer->created_at)) ?? null;
-                    $res['seri_barang'] = null;
+                    $res['seri_barang'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? count(array_unique($qrcode)) : null;
                     $res['hs'] = $hs_code;
                     $res['kode_barang'] = $kode_barang;
                     $res['uraian'] = 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES';
                     $res['kode_satuan'] = 'PCE';
                     $res['jumlah_satuan'] = $item->sum_qty;
                     $res['kode_kemasan'] = 'CT';
-                    $res['jumlah_kemasan'] = count(explode(',', $item->id_regular_delivery_plan_box));
+                    $res['jumlah_kemasan'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? count(array_unique($qrcode)) : count(explode(',', $item->id_regular_delivery_plan_box));
                     $res['netto'] = number_format($netto, 2);
-                    $res['volume'] = number_format($volume, 3);
+                    $res['volume'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->measurement : number_format($volume, 3);
     
                     return [$res];
                 }
@@ -2200,8 +2202,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         });
         $filteredData = array_values(array_filter($data->toArray()));
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
-        foreach ($flattenedArray as $key => &$subarray) {
-            $subarray["seri_barang"] = $key +1;
+        if($id_fixed_quantity[0]->refRegularDeliveryPlan->datasource == "PYMAC") {
+            foreach ($flattenedArray as $key => &$subarray) {
+                $subarray["seri_barang"] = $key +1;
+            }
         }
         $filename = 'peb-'.Carbon::now()->format('Ymd');
 
