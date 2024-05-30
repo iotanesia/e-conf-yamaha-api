@@ -317,19 +317,35 @@ class QueryRegularFixedPackingCreation extends Model {
             $data->nick_name = $data->username;
             $data->shipper = MstShipment::Where('is_active', 1)->first()->shipment ?? null;
 
-            $items = RegularFixedQuantityConfirmation::select('regular_fixed_quantity_confirmation.id_regular_delivery_plan',
-                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
-                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
-                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
-                        DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.code_consignee::character varying, ',') as code_consignee"),
-                        DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
-                        DB::raw('count(regular_fixed_quantity_confirmation.id) as count'),
-                        DB::raw("string_agg(DISTINCT a.qty_pcs_box::character varying, ',') as qty_pcs_box")
-                    )
-                    ->where('id_fixed_actual_container', $id)
-                    ->join('regular_fixed_quantity_confirmation_box as a','a.id_fixed_quantity_confirmation','regular_fixed_quantity_confirmation.id')
-                    ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan', 'a.qty_pcs_box')
-                    ->get();
+            if ($actual->datasource == "YPMJ") {
+                $items = RegularFixedQuantityConfirmation::select('regular_fixed_quantity_confirmation.id_regular_delivery_plan',
+                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
+                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
+                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
+                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.code_consignee::character varying, ',') as code_consignee"),
+                            DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
+                            DB::raw('count(regular_fixed_quantity_confirmation.id) as count'),
+                            DB::raw("SUM(DISTINCT a.qty_pcs_box) as qty_pcs_box")
+                        )
+                        ->where('id_fixed_actual_container', $id)
+                        ->join('regular_fixed_quantity_confirmation_box as a','a.id_fixed_quantity_confirmation','regular_fixed_quantity_confirmation.id')
+                        ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan')
+                        ->get();
+            } else {
+                $items = RegularFixedQuantityConfirmation::select('regular_fixed_quantity_confirmation.id_regular_delivery_plan',
+                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
+                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
+                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
+                            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.code_consignee::character varying, ',') as code_consignee"),
+                            DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
+                            DB::raw('count(regular_fixed_quantity_confirmation.id) as count'),
+                            DB::raw("string_agg(DISTINCT a.qty_pcs_box::character varying, ',') as qty_pcs_box")
+                        )
+                        ->where('id_fixed_actual_container', $id)
+                        ->join('regular_fixed_quantity_confirmation_box as a','a.id_fixed_quantity_confirmation','regular_fixed_quantity_confirmation.id')
+                        ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan', 'a.qty_pcs_box')
+                        ->get();
+            }
 
             Pdf::loadView('pdf.packing-creation.delivery_note',[
               'data' => $data,
