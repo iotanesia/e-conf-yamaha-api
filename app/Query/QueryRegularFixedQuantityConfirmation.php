@@ -313,8 +313,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             'no_packaging',
             'etd_jkt',
             'code_consignee',
-            'datasource',
-            'order_no'
+            'datasource'
         ]);
 
         if($is_trasaction) DB::beginTransaction();
@@ -379,7 +378,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
            })
            ->chunk(1000,function ($data) use ($params,$store,$id_container_creation){
                 foreach ($data as $key => $item) {
-                    $item->refRegularDeliveryPlan()->update(["order_no" => $params->order_no]);
+                    if ($params->datasource == "YPMJ") {
+                        $item->refRegularDeliveryPlan()->update(["order_no" => $params->order_no]);
+                    }
                     $item->order_no = $params->order_no;
                     $item->is_actual = Constant::IS_ACTIVE;
                     $item->id_fixed_actual_container = $store->id;
