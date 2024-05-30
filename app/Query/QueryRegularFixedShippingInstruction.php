@@ -169,6 +169,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $count_meas = 0;
                 $total_net_weight = 0;
                 $total_gross_weight = 0;
+                $outer_weight = 0;
+                $seenIds = [];
                 foreach ($box as $key => $box_item){
                     if ($box_item->refRegularDeliveryPlan->item_no == null) {
                         $master = [];
@@ -187,11 +189,25 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $total_gross_weight += array_sum($nw_gw[$key]['total_gross_weight']);
                        $count_meas += ($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) / 1000000000;
                     } else {
-                        $count_net_weight = $box_item->refMstBox->unit_weight_gr;
-                        $count_outer_carton_weight = $box_item->refMstBox->outer_carton_weight;
-                        $count_meas += round(($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) / 1000000000, 3);
-                        $total_net_weight += ($count_net_weight * $box_item->qty_pcs_box)/1000;
-                        $total_gross_weight += (($count_net_weight * $box_item->qty_pcs_box)/1000) + $count_outer_carton_weight;
+                        if ($box_item->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE) {
+                            $id_unique = $box_item->id_regular_delivery_plan;
+                            if (!in_array($id_unique, $seenIds)) {
+                                $seenIds[] = $id_unique;
+                                $count_net_weight = $box_item->refMstBox->unit_weight_gr;
+                                $count_outer_carton_weight = $box_item->refMstBox->outer_carton_weight;
+                                $need_cartoon = ceil($box_item->refRegularDeliveryPlan->qty / $box_item->refMstBox->qty);
+                                $count_meas = $box_item->refRegularDeliveryPlan->refOuterType->measurement;
+                                $total_net_weight += ($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000;
+                                $outer_weight = $box_item->refRegularDeliveryPlan->refOuterType->outer_weight;
+                                $total_gross_weight += (($count_net_weight * $box_item->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $box_item->refMstBox->weight_inner_carton);
+                            }
+                        } else {
+                            $count_net_weight = $box_item->refMstBox->unit_weight_gr;
+                            $count_outer_carton_weight = $box_item->refMstBox->outer_carton_weight;
+                            $count_meas += round(($box_item->refMstBox->length * $box_item->refMstBox->width * $box_item->refMstBox->height) / 1000000000, 3);
+                            $total_net_weight += ($count_net_weight * $box_item->qty_pcs_box)/1000;
+                            $total_gross_weight += (($count_net_weight * $box_item->qty_pcs_box)/1000) + $count_outer_carton_weight;
+                        }
                     }
                 }
 
@@ -200,7 +216,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $item->type_delivery = $item->refMstTypeDelivery->name;
                 $item->lsp = $item->refMstLsp->name ?? null;
                 $item->net_weight = number_format($total_net_weight, 2);
-                $item->gross_weight = number_format($total_gross_weight, 2);
+                $item->gross_weight = number_format($total_gross_weight+$outer_weight, 2);
                 $item->measurement = number_format($count_meas,3);
                 $item->container_type = $item->refMstContainer->container_type;
                 $item->load_extension_length = $item->refMstContainer->long;
