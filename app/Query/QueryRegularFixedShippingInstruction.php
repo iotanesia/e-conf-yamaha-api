@@ -1267,7 +1267,7 @@ class QueryRegularFixedShippingInstruction extends Model {
             Pdf::loadView('pdf.packaging.packaging_doc',[
                 'data' => $data,
                 'box' => $boxArray,
-                'boxYPMJ' => QueryRegularFixedQuantityConfirmation::groupByQRCode($box),
+                'boxYPMJ' => $cek[0]->datasource == "YPMJ" ? QueryRegularFixedQuantityConfirmation::groupByQRCode($box) : [],
                 'gross_weight_per_part' => $gross_weight_per_part,
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
