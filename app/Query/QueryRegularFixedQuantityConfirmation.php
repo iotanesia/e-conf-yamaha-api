@@ -2069,12 +2069,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
                     return $res;
                 } else {
-                    $qrcode = [];
                     $seenIds = [];
                     $total_gross_weight = 0;
                     $outer_weight = 0;
                     foreach ($query as $value) {
-                        $qrcode[] = $value->qrcode;
                         $id_unique = $value->id_regular_delivery_plan;
                         if (!in_array($id_unique, $seenIds)) {
                             $seenIds[] = $id_unique;
@@ -2083,12 +2081,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                             $total_gross_weight += (($value->refMstBox->unit_weight_gr * $value->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $value->refMstBox->weight_inner_carton);
                         }
                     }
+                    $seenIds_nett = [];
+                    $qrcode = [];
                     $total_net_weight = 0;
                     foreach ($fixedQuantity->manyFixedQuantityConfirmationBox as $value) {
                         $qrcode[] = $value->qrcode;
                         $id_unique = $value->id_regular_delivery_plan;
-                        if (!in_array($id_unique, $seenIds)) {
-                            $seenIds[] = $id_unique;
+                        if (!in_array($id_unique, $seenIds_nett)) {
+                            $seenIds_nett[] = $id_unique;
                             $total_net_weight += ($value->refMstBox->unit_weight_gr * $value->refRegularDeliveryPlan->qty)/1000;
                         }
                     }
