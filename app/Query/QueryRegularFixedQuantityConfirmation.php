@@ -1756,7 +1756,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     
                     $box_single = [];
                     foreach ($res as $key => $item) {
-                        if ($item !== null && $item['qrcode'] !== null && !in_array($item, $box_single)) {
+                        if ($item !== null && $item['qrcode'] !== null && !in_array($item, $box_single) && $item['qty_pcs_box'] !== [0]) {
                             $box_single[] = $item;
                         }
                     }
