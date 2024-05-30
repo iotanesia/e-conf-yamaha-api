@@ -55,10 +55,16 @@ class ContainerActual implements ShouldQueue
             foreach ($value['box'] as $val) {
                 $fill = RegularFixedQuantityConfirmationBox::where('id',$val['id'])->first();
                 if ($fill->id_prospect_container_creation == null) {
-                    $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
+                    if ($params['type'] == "PYMAC") {
+                        $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
                                                                     ->where('iteration', $iteration)
                                                                     ->orderBy('id', 'asc')
                                                                     ->first();
+                    } else {
+                        $id_prop = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $params['id'])
+                                                                        ->orderBy('id', 'asc')
+                                                                        ->first();
+                    }
 
                     $fill = RegularFixedQuantityConfirmationBox::where('id',$val['id'])->first();
                     $fill->id_prospect_container_creation = $id_prop->id;

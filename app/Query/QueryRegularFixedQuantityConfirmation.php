@@ -817,7 +817,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     'id' => $params->id,
                     'colis' => $quantityConfirmationBox,
                     'box_set_count' => $box_set_count,
-                    'type' => 'single'
+                    'type' => 'PYMAC'
                 ];
     
                 ContainerActual::dispatch($set);
@@ -845,7 +845,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     'id' => $params->id,
                     'colis' => $quantityConfirmationBox,
                     'box_set_count' => $box_set_count,
-                    'type' => 'single'
+                    'type' => 'YPMJ'
                 ];
     
                 ContainerActual::dispatch($set);
