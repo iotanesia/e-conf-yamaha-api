@@ -380,8 +380,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 foreach ($data as $key => $item) {
                     if ($params->datasource == "YPMJ") {
                         $item->refRegularDeliveryPlan()->update(["order_no" => $params->order_no]);
+                        $item->order_no = $params->order_no;
                     }
-                    $item->order_no = $params->order_no;
                     $item->is_actual = Constant::IS_ACTIVE;
                     $item->id_fixed_actual_container = $store->id;
                     if ($params->id_mot == 2) {
