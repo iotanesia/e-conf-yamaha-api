@@ -2071,7 +2071,6 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 } else {
                     $qrcode = [];
                     $seenIds = [];
-                    $total_net_weight = 0;
                     $total_gross_weight = 0;
                     $outer_weight = 0;
                     foreach ($query as $value) {
@@ -2081,8 +2080,16 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                             $seenIds[] = $id_unique;
                             $outer_weight = $value->refRegularDeliveryPlan->refOuterType->outer_weight;
                             $need_cartoon = ceil($value->refRegularDeliveryPlan->qty / $value->refMstBox->qty);
-                            $total_net_weight += ($value->refMstBox->unit_weight_gr * $value->refRegularDeliveryPlan->qty)/1000;
                             $total_gross_weight += (($value->refMstBox->unit_weight_gr * $value->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $value->refMstBox->weight_inner_carton);
+                        }
+                    }
+                    $total_net_weight = 0;
+                    foreach ($fixedQuantity->manyFixedQuantityConfirmationBox as $value) {
+                        $qrcode[] = $value->qrcode;
+                        $id_unique = $value->id_regular_delivery_plan;
+                        if (!in_array($id_unique, $seenIds)) {
+                            $seenIds[] = $id_unique;
+                            $total_net_weight += ($value->refMstBox->unit_weight_gr * $value->refRegularDeliveryPlan->qty)/1000;
                         }
                     }
                     $mst_box = MstBox::where('id', $plan_box->id_box)->get();
