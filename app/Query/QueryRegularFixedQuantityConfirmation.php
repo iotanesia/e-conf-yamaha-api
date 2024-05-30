@@ -1473,7 +1473,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
     public static function printCasemarks($request,$id,$pathToFile,$filename)
     {
-        try {
+        // try {
             $data = RegularFixedActualContainer::where('id', $id)->get();
             $id_delivery_plan = [];
             foreach ($data[0]->manyFixedQuantityConfirmation as $id_delivery) {
@@ -1485,14 +1485,39 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $res_box_set = [];
             foreach ($deliv_plan as $key => $deliv_value) {
                 if ($deliv_value->item_no !== null) {
-                    $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item) use($id) {
+                    $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item, $i) use($id, $deliv_value, $deliv_plan, $key) {
                         if ($item->refFixedQuantityConfirmation->id_fixed_actual_container == $id) {
                             $res['qrcode'] = $item->qrcode;
                             $res['item_no'] = [$item->refRegularDeliveryPlan->item_no];
-                            $res['qty_pcs_box'] = [$item->qty_pcs_box];
                             $res['item_no_series'] = [$item->refMstBox->item_no_series];
                             $res['unit_weight_kg'] = [($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000];
-                            $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
+                            if ($item->refRegularDeliveryPlan->datasource == 'YPMJ') {
+                                if ($key+1 == count($deliv_plan)) {
+                                    if ($i+1 == count($deliv_value->manyFixedQuantityConfirmationBox)) {
+                                        $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->refRegularDeliveryPlan->qty)/1000) + (ceil($item->refRegularDeliveryPlan->qty / $item->refMstBox->qty) * $item->refMstBox->weight_inner_carton) + $item->refRegularDeliveryPlan->refOuterType->outer_weight];
+                                        $res['meas_ypmj'] = $item->refRegularDeliveryPlan->refOuterType->measurement;
+                                        $res['qty_pcs_box'] = [$item->refRegularDeliveryPlan->qty];
+                                    } else {
+                                        $res['total_gross_weight'] = [0];
+                                        $res['meas_ypmj'] = 0;
+                                        $res['qty_pcs_box'] = [0];
+                                    }
+                                } else {
+                                    if ($i+1 == count($deliv_value->manyFixedQuantityConfirmationBox)) {
+                                        $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->refRegularDeliveryPlan->qty)/1000) + (ceil($item->refRegularDeliveryPlan->qty / $item->refMstBox->qty) * $item->refMstBox->weight_inner_carton)];
+                                        $res['meas_ypmj'] = 0;
+                                        $res['qty_pcs_box'] = [$item->refRegularDeliveryPlan->qty];
+                                    } else {
+                                        $res['total_gross_weight'] = [0];
+                                        $res['meas_ypmj'] = 0;
+                                        $res['qty_pcs_box'] = [0];
+                                    }
+                                }
+                            } else {
+                                $res['total_gross_weight'] = [(($item->refMstBox->unit_weight_gr * $item->qty_pcs_box)/1000) + $item->refMstBox->outer_carton_weight];
+                                $res['meas_ypmj'] = [0];
+                                $res['qty_pcs_box'] = [$item->qty_pcs_box];
+                            }
                             $res['length'] = $item->refMstBox->length;
                             $res['width'] = $item->refMstBox->width;
                             $res['height'] = $item->refMstBox->height;
@@ -1647,19 +1672,20 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $count_data[] = 'count';
                 }
             }
-            
+            // dd(self::groupByQRCode($box));
             Pdf::loadView('pdf.casemarks.casemarks_doc',[
                 'count_data' => count($count_data),
                 'data' => $data,
-                'box' => $boxArray
+                'box' => $boxArray,
+                'boxYPMJ' => self::groupByQRCode($box)
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
             ->download($filename);
 
-        } catch (\Throwable $th) {
-            return Helper::setErrorResponse($th);
-        }
+        // } catch (\Throwable $th) {
+        //     return Helper::setErrorResponse($th);
+        // }
     }
 
     public static function printPackaging($request,$id,$pathToFile,$filename)

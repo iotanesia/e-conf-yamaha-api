@@ -63,56 +63,124 @@
     @foreach ($data as $key => $item) 
     {{-- @if ($check == null) part set --}}
     @foreach (array_unique($item->manyFixedQuantityConfirmation->pluck('order_no')->toArray()) as $key => $order)
-        @foreach ($box[$order] as $jml => $box_item)
-            @for ($i=1; $i<=2; $i++)
+        @if ($item->datasource == "YPMJ")
+            @foreach ($boxYPMJ as $jml => $box_item)
+                @for ($i=1; $i<=2; $i++)
 
-            @if ($i == 1)
-                <table style="margin-bottom: 45px;">
-            @else
-                <table>
-            @endif
-                    <tr>
-                        <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top; padding: 20px;">
-                            <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
-                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order ?? null }}</b></p>
-                            @if ($item->datasource == 'YPMJ')
-                                <p style="margin:0 0 15px 0; padding:0;"><b>YMBP</b></p>
-                            @else
+                @if ($i == 1)
+                    <table style="margin-bottom: 45px;">
+                @else
+                    <table>
+                @endif
+                        <tr>
+                            <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top; padding: 20px;">
+                                <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order ?? null }}</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>-</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $key > 0 ? $key+1 : $jml+1 }}</b></p>
+                            </td>
+                            <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
+                                <p style="padding:0; margin: 0 0 10px 0;"><b>CUSTOMER :</b></p>
+                                <b>{{ $item->refConsignee->nick_name ?? $item->code_consignee }}</b>
+                                <hr>
+                                <table>
+                                    <tr>
+                                        <td class="no-bl no-bt no-bb text-center" rowspan="2"><p style="padding:0; margin:0 0 20px 0;"><b>PART NO.</b></p> </td>
+                                        <td class="no-br no-bt text-center"><p style="padding:0; margin:0;"><b>QTY</b></p> </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-br no-bb text-center"><p style="padding:0; margin:0;"><b>PCS</b></p> </td>
+                                    </tr>
+                                </table>
+                                <hr>
+                                <table>
+                                    <tr>
+                                        <td class="no-bo">
+                                            <table>
+                                                @foreach ($box_item['item_no'] as $item_no)
+                                                    <tr>
+                                                        <td class="no-br no-bl no-bb no-bt text-center"><b>{{ $item_no }}</b></td>
+                                                    </tr>
+                                                @endforeach
+                                            </table>
+                                        </td>
+                                        <td class="no-bo">
+                                            <table>
+                                                @foreach ($box_item['qty_pcs_box'] as $qty_pcs_box)
+                                                    @if ($qty_pcs_box !== 0)
+                                                        <tr>
+                                                            <td class="no-br no-bb no-bt text-center"><b>{{ $qty_pcs_box }}</b></td>
+                                                        </tr>
+                                                    @endif
+                                                @endforeach
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <hr>
+                                <table>
+                                    <tr>
+                                        <td class="no-bl no-br no-bt no-bb text-center"><p style="padding:0; margin:0 0 20px 0;"><b>GW :</b></p> </td>
+                                        <td class="no-br no-bt no-bb text-center"><p style="padding:0; margin:0 0 20px 0;"><b>{{ array_sum($box_item['total_gross_weight']) }}</b></p> </td>
+                                        <td class="no-br no-bt no-bb text-center"><p style="padding:0; margin:0 0 20px 0;"><b>KG</b></p> </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                @endfor
+            @endforeach
+        @else
+            @foreach ($box[$order] as $jml => $box_item)
+                @for ($i=1; $i<=2; $i++)
+
+                @if ($i == 1)
+                    <table style="margin-bottom: 45px;">
+                @else
+                    <table>
+                @endif
+                        <tr>
+                            <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top; padding: 20px;">
+                                <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order ?? null }}</b></p>
                                 <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }}</b></p>
-                            @endif
-                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</b></p>
-                            <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>
-                            <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p>
-                            <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $key > 0 ? $key+1 : $jml+1 }}</b></p>
-                        </td>
-                        <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
-                            <p style="padding:0; margin: 0 0 10px 0;"><b>CUSTOMER :</b></p>
-                            <b>{{ $item->refConsignee->nick_name ?? $item->code_consignee }}</b>
-                            <hr>
-                            <p style="padding:0; margin: 0 0 10px 0;"><b>PART NO.</b></p>
-                            @foreach ($box_item['item_no_series'] as $item_no_series)
-                            <b>{{ substr($item_no_series,0,-3) }}</b> <br>
-                            @endforeach
-                            <hr>
-                            <table>
-                                <tr>
-                                    <td class="no-bl no-bt no-bb text-center"><p style="padding:0; margin:0 0 20px 0;"><b>QTY</b></p> </td>
-                                    <td class="no-br no-bt no-bb text-center"><p style="padding:0; margin:0 0 20px 0;"><b>GW</b></p> </td>
-                                </tr>
-                                <tr>
-                                    <td class="no-bl text-center"><b>{{ $box_item['qty_pcs_box'][0] ?? null }}</b></td>
-                                    <td class="no-br text-center"><b>{{ round(array_sum($box_item['total_gross_weight']),2) }}</b></td>
-                                </tr>
-                                <tr>
-                                    <td class="no-bl no-bb text-center"><p style="padding:0; margin:15px 0 0 0;"><b>{{ count($box_item['qty_pcs_box']) > 1 ? 'SET' : 'PCS' }}</b></p></td>
-                                    <td class="no-br no-bb text-center"><p style="padding:0; margin:15px 0 0 0;"><b>KG</b></p></td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            @endfor
-        @endforeach
+                                <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $key > 0 ? $key+1 : $jml+1 }}</b></p>
+                            </td>
+                            <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
+                                <p style="padding:0; margin: 0 0 10px 0;"><b>CUSTOMER :</b></p>
+                                <b>{{ $item->refConsignee->nick_name ?? $item->code_consignee }}</b>
+                                <hr>
+                                <p style="padding:0; margin: 0 0 10px 0;"><b>PART NO.</b></p>
+                                @foreach ($box_item['item_no_series'] as $item_no_series)
+                                <b>{{ substr($item_no_series,0,-3) }}</b> <br>
+                                @endforeach
+                                <hr>
+                                <table>
+                                    <tr>
+                                        <td class="no-bl no-bt no-bb text-center"><p style="padding:0; margin:0 0 20px 0;"><b>QTY</b></p> </td>
+                                        <td class="no-br no-bt no-bb text-center"><p style="padding:0; margin:0 0 20px 0;"><b>GW</b></p> </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bl text-center"><b>{{ $box_item['qty_pcs_box'][0] ?? null }}</b></td>
+                                        <td class="no-br text-center"><b>{{ round(array_sum($box_item['total_gross_weight']),2) }}</b></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="no-bl no-bb text-center"><p style="padding:0; margin:15px 0 0 0;"><b>{{ count($box_item['qty_pcs_box']) > 1 ? 'SET' : 'PCS' }}</b></p></td>
+                                        <td class="no-br no-bb text-center"><p style="padding:0; margin:15px 0 0 0;"><b>KG</b></p></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                @endfor
+            @endforeach
+        @endif
     @endforeach
     {{-- @elseif ($item->refConsignee->nick_name == 'YMC') YMC
         @foreach ($box as $jml => $box_item)
