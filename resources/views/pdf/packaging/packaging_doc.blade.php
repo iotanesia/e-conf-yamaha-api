@@ -259,7 +259,7 @@
                     <td class="no-bo" width="4">:</td>
                     <td width="50px" class="text-right no-bo">{{ $item->datasource == "YPMJ" ? count($boxYPMJ) : $grand_total }}</td>
                     <td class="no-bo">
-                        {{ $item->datasource == "YPMJ" ? (count($boxYPMJ) > 1 ? "Cartons Boxes" : "Cartons Box") : ($grand_total > 1 ? "Cartons Boxes" : "Cartons Box") }}
+                        {{ $item->datasource == "YPMJ" ? (count($boxYPMJ) > 1 ? "Cartons Boxes" : "Carton Box") : ($grand_total > 1 ? "Cartons Boxes" : "Carton Box") }}
                     </td>
                 </tr>
                 <tr>
