@@ -1683,7 +1683,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'count_data' => count($count_data),
                 'data' => $data,
                 'box' => $boxArray,
-                'boxYPMJ' => self::groupByQRCode($box)
+                'boxYPMJ' => $data[0]->datasource == "YPMJ" ? self::groupByQRCode($box) : []
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
