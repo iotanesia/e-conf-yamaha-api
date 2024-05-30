@@ -65,6 +65,7 @@
     @foreach (array_unique($item->manyFixedQuantityConfirmation->pluck('order_no')->toArray()) as $key => $order)
         @if ($item->datasource == "YPMJ")
             @foreach ($boxYPMJ as $jml => $box_item)
+                @for ($i=1; $i<=2; $i++)
                 <table style="margin-bottom: 45px;">
                     <tr>
                         <td class="text-center" style="font-size: 37px; font-weight: 500; vertical-align=top; padding: 20px;">
@@ -127,6 +128,7 @@
                         </td>
                     </tr>
                 </table>
+                @endfor
             @endforeach
         @else
             @foreach ($box[$order] as $jml => $box_item)
