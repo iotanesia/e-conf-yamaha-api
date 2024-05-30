@@ -1919,7 +1919,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             Pdf::loadView('pdf.packaging.packaging_doc',[
                 'data' => $data,
                 'box' => $boxArray,
-                'boxYPMJ' => self::groupByQRCode($box),
+                'boxYPMJ' => $data[0]->datasource == "YPMJ" ? self::groupByQRCode($box) : [],
                 'gross_weight_per_part' => $gross_weight_per_part,
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
