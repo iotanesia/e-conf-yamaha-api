@@ -1312,7 +1312,22 @@ class QueryRegularFixedShippingInstruction extends Model {
               $id_fixed_actual_container[] = $value->id_fixed_actual_container;
         }
 
-        $data = RegularFixedQuantityConfirmation::select('regular_fixed_quantity_confirmation.id_regular_delivery_plan',
+        if ($cek[0]->datasource == "YPMJ") {
+            $data = RegularFixedQuantityConfirmation::select('regular_fixed_quantity_confirmation.id_regular_delivery_plan',
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
+                DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id::character varying, ',') as id_quantity_confirmation"),
+                DB::raw('MAX(regular_fixed_quantity_confirmation.in_wh) as in_wh'),
+                DB::raw('count(regular_fixed_quantity_confirmation.id) as count'),
+                DB::raw("SUM(DISTINCT a.qty_pcs_box) as qty_pcs_box")
+            )
+            ->whereIn('id_fixed_actual_container', $id_fixed_actual_container)
+            ->join('regular_fixed_quantity_confirmation_box as a','a.id_fixed_quantity_confirmation','regular_fixed_quantity_confirmation.id')
+            ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan')
+            ->paginate($params->limit ?? null);
+        } else {
+            $data = RegularFixedQuantityConfirmation::select('regular_fixed_quantity_confirmation.id_regular_delivery_plan',
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container"),
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.item_no::character varying, ',') as item_no"),
                 DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation.order_no::character varying, ',') as order_no"),
@@ -1325,6 +1340,8 @@ class QueryRegularFixedShippingInstruction extends Model {
             ->join('regular_fixed_quantity_confirmation_box as a','a.id_fixed_quantity_confirmation','regular_fixed_quantity_confirmation.id')
             ->groupBy('regular_fixed_quantity_confirmation.id_regular_delivery_plan', 'a.qty_pcs_box')
             ->paginate($params->limit ?? null);
+        }
+        
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
         return [
             'items' => $data->getCollection()->transform(function($item){
