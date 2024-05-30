@@ -254,7 +254,11 @@
                                             <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $order ?? null }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }}</td>
+                                            @if ($item->datasource == 'YPMJ')
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">-</td>
+                                            @else
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }}</td>
+                                            @endif
                                         </tr>
                                         <tr>
                                             <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</td>
@@ -266,7 +270,11 @@
                                             <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $item->no_packaging }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $key > 0 ? $key+1 : $iteration+1 }} - {{ $key > 0 ? count($box[$key]) + $key : count($box[$key]) }}</td>
+                                            @if ($item->datasource == 'YPMJ')
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $key > 0 ? $key+1 : $iteration+1 }} - {{ $key > 0 ? count($bucket[$key]) + $key : count($bucket[$key]) }}</td>
+                                            @else
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $key > 0 ? $key+1 : $iteration+1 }} - {{ $key > 0 ? count($box[$key]) + $key : count($box[$key]) }}</td>
+                                            @endif
                                         </tr>
                                         <br>
                                     </table>
