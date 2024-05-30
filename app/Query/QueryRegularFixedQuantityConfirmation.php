@@ -2032,7 +2032,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         ->orderBy('id_prospect_container_creation','asc')
         ->get();
 
-        $data = $query->map(function ($item, $key){
+        $data = $query->map(function ($item, $key) use($query){
             $plan_box = RegularDeliveryPlanBox::where('id', $item->id_regular_delivery_plan_box)->first();
             $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)->first();
             $container_creation = RegularFixedActualContainerCreation::where('id', $item->id_prospect_container_creation)->first();
@@ -2073,7 +2073,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $seenIds = [];
                     $total_net_weight = 0;
                     $total_gross_weight = 0;
-                    foreach ($fixedQuantity->manyFixedQuantityConfirmationBox as $value) {
+                    $outer_weight = 0;
+                    foreach ($query as $value) {
                         $qrcode[] = $value->qrcode;
                         $id_unique = $value->id_regular_delivery_plan;
                         if (!in_array($id_unique, $seenIds)) {
@@ -2222,6 +2223,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         if($id_fixed_quantity[0]->refRegularDeliveryPlan->datasource == "PYMAC") {
             foreach ($flattenedArray as $key => &$subarray) {
                 $subarray["seri_barang"] = $key +1;
+            }
+        } else {
+            foreach ($flattenedArray as $key => &$subarray) {
+                if ($key+1 !== count($flattenedArray)) {
+                    $subarray["volume"] = null;
+                }
             }
         }
         $filename = 'peb-'.Carbon::now()->format('Ymd');
