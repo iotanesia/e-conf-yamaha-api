@@ -1589,7 +1589,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'count_data' => count($count_data),
                 'data' => $data,
                 'box' => $boxArray,
-                'boxYPMJ' => QueryRegularFixedQuantityConfirmation::groupByQRCode($box)
+                'boxYPMJ' => $cek[0]->datasource == "YPMJ" ? QueryRegularFixedQuantityConfirmation::groupByQRCode($box) : []
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
