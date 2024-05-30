@@ -674,8 +674,7 @@ class QueryRegularDeliveryPlan extends Model {
                         'is_produksi' => 1, 
                         "bucket_produksi" => $current_bucket+1,
                         "period" => $period,
-                        // "case_number" => $case_number
-                        "case_number" => 1
+                        "case_number" => $case_number
                     ]);
                 }
 
