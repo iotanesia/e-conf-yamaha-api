@@ -1259,7 +1259,9 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $count_meas_per_order = [];
                 $count_meas_ypmj_per_order = [];
                 $order_no = '';
+                $countItemNo = 0;
                 foreach ($itemSum as $val) {
+                    $countItemNo += count($val['item_no_series']);
                     $count_qty_per_order += array_sum($val['qty_pcs_box']);
                     $count_net_weight_per_order += array_sum($val['unit_weight_kg']);
                     $count_gross_weight_per_order += array_sum($val['total_gross_weight']);
@@ -1272,7 +1274,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'nett_weight' => $count_net_weight_per_order,
                     'gross_weight' => $count_gross_weight_per_order,
                     'meas' => array_sum($count_meas_per_order),
-                    'meas_ypmj' => $count_meas_ypmj_per_order
+                    'meas_ypmj' => $count_meas_ypmj_per_order,
+                    'count_item_no' => $countItemNo
                 ];
             }
 
