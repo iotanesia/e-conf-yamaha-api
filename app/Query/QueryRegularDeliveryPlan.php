@@ -670,16 +670,13 @@ class QueryRegularDeliveryPlan extends Model {
                     $case_number_2nd_week++;
                 }
 
-                if(!$is_regenerate_box){
+                if($is_regenerate_box){
                     $delivery_plan->update([
+                        'is_produksi' => 1, 
                         "bucket_produksi" => $current_bucket+1,
                         "period" => $period,
                         // "case_number" => $case_number
                         "case_number" => 1
-                    ]);
-                } else {
-                    $delivery_plan->update([
-                        'is_produksi' => 1, 
                     ]);
                 }
 
