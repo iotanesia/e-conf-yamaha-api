@@ -201,7 +201,7 @@
                             <tr>
                                 @if ($key == 0)
                                     @if ($i == 0)
-                                        <td class="text-center" rowspan="{{ $sum_res_per_order[$order]['count_item_no'] }}">
+                                        <td class="text-center" rowspan="{{ $sum_per_order[$order]['count_item_no'] }}">
                                             YAMAHA <br>
                                             {{ $order ?? null }}  <br>
                                             {{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }} <br>
