@@ -201,7 +201,7 @@
                             <tr>
                                 @if ($key == 0)
                                     @if ($i == 0)
-                                        @if (count($box_item['item_no_series']) > 1)
+                                        @if (count($box_item['item_no_series']) > 1 && count($box[$order]) > 1)
                                             <td class="text-center" rowspan="{{ count($box[$order]) + count($box_item['item_no_series']) }}">
                                         @else
                                             <td class="text-center" rowspan="{{ count($box[$order]) * count($box_item['item_no_series']) }}">
