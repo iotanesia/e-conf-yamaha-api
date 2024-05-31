@@ -201,7 +201,11 @@
                             <tr>
                                 @if ($key == 0)
                                     @if ($i == 0)
-                                        <td class="text-center" rowspan="{{ count($box[$order]) * count($box_item['item_no_series']) }}">
+                                        @if (count($box_item['item_no_series']) > 1)
+                                            <td class="text-center" rowspan="{{ count($box[$order]) + count($box_item['item_no_series']) }}">
+                                        @else
+                                            <td class="text-center" rowspan="{{ count($box[$order]) * count($box_item['item_no_series']) }}">
+                                        @endif
                                             YAMAHA <br>
                                             {{ $order ?? null }}  <br>
                                             {{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }} <br>

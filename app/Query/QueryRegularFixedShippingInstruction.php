@@ -1630,14 +1630,17 @@ class QueryRegularFixedShippingInstruction extends Model {
             }
 
             $box = [];
+            $qrcode = [];
             foreach ($fixedQuantity as $key => $item) {
                 $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
+                $qrcode[] = array_unique($item->manyFixedQuantityConfirmationBox->pluck('qrcode')->toArray());
             }
 
             Pdf::loadView('pdf.shipping_actual',[
                 'data' => $data,
                 'actual_container' => $actual_container,
-                'box' => $box
+                'box' => $box,
+                'bucket' => $qrcode
             ])->save($pathToFile)
                 ->setPaper('A4','potrait')
                 ->download($filename);
