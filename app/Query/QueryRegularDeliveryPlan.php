@@ -620,7 +620,6 @@ class QueryRegularDeliveryPlan extends Model {
 
     public static function generateBox($params, $id_regular_order_entry, $is_regenerate_box = false, $is_transaction = true){
         try {
-            $is_regenerate_box = $params['is_regenerate_box'];
             if($is_regenerate_box) $request = $params;
             else $request = $params->all();
 
@@ -670,7 +669,7 @@ class QueryRegularDeliveryPlan extends Model {
                     $case_number_2nd_week++;
                 }
 
-                if($is_regenerate_box){
+                if(!$is_regenerate_box){
                     $delivery_plan->update([
                         'is_produksi' => 1, 
                         "bucket_produksi" => $current_bucket+1,
