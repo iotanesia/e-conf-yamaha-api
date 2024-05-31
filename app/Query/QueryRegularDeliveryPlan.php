@@ -687,7 +687,7 @@ class QueryRegularDeliveryPlan extends Model {
                 if($box){
                     $box = $box->toArray();
                     $box_capacity = $box['qty'];
-                    $qty = !$is_regenerate_box ? $request["qty"] : $delivery_plan->qty;
+                    $qty = $is_regenerate_box ? $request["qty"] : $delivery_plan->qty;
                     $loops = (int) ceil($qty / $box_capacity);
                     for ($i=0; $i < $loops ; $i++) {
                         if($qty > $box_capacity)
@@ -701,10 +701,10 @@ class QueryRegularDeliveryPlan extends Model {
                             'updated_at' => now(),
                             'qty_pcs_box' => $qty_pcs_box,
                             'customer_ypmj' => "YMBP",
-                            'lot_packing' => !$is_regenerate_box == false  ? null : $request['lot_packing'],
-                            'packing_date' => !$is_regenerate_box == false ? null : $request['packing_date'],
-                            'is_labeling' => !$is_regenerate_box == false ? null : $request['is_labeling'],
-                            'qrcode' => !$is_regenerate_box == false ? null : $request['qrcode']
+                            'lot_packing' => $is_regenerate_box == false  ? null : $request['lot_packing'],
+                            'packing_date' => $is_regenerate_box == false ? null : $request['packing_date'],
+                            'is_labeling' => $is_regenerate_box == false ? null : $request['is_labeling'],
+                            'qrcode' => $is_regenerate_box == false ? null : $request['qrcode']
                         ];
                         $sum = $qty - $box_capacity;
                         $qty = $sum;
