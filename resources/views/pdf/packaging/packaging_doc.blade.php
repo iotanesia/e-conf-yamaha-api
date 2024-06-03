@@ -188,7 +188,7 @@
                                 <td style='padding-bottom:5px;' class='text-center'>{{ round($box_item['qty_pcs_box'][$i], 2) }}</td>
                                 <td style='padding-bottom:5px;' class='text-center'>{{ number_format($box_item['unit_weight_kg'][$i], 2) }}</td>
                                 <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ?  number_format(array_sum($box_item['total_gross_weight']), 2) : null }}</td>
-                                <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ? $box_item['meas_ypmj'] : null }}</td>
+                                <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ? array_sum((array)$box_item['meas_ypmj']) : null }}</td>
                             </tr>
                         @endfor
                     @endforeach
