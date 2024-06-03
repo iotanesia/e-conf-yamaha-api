@@ -671,7 +671,7 @@ class QueryRegularDeliveryPlan extends Model {
 
                 if(!$is_regenerate_box){
                     $delivery_plan->update([
-                        // 'is_produksi' => 1, 
+                        'is_produksi' => 1, 
                         "bucket_produksi" => $current_bucket+1,
                         "period" => $period,
                         // "case_number" => $case_number
@@ -902,9 +902,9 @@ class QueryRegularDeliveryPlan extends Model {
                     ->first();
 
             $labeling = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $item->id)->where('is_labeling', 0)->get();
-            $is_labeling = 0;
-            if(sizeof($labeling) > 0)
-                $is_labeling = 1;
+            
+            if(sizeof($labeling) > 0) $is_labeling = 0;
+            else $is_labeling = 1;
             return [
                 'id_regular_order_entry' => $item->id_regular_order_entry,
                 'id' => $item->id,
@@ -1676,7 +1676,6 @@ class QueryRegularDeliveryPlan extends Model {
                 }
 
                 $delivery_plan->update([
-                    'is_produksi' => 1, 
                     'customer_ypmj' => $item['customer_ypmj'],
                     'qty'   => $item["qty"],
                     'outer_type'   => $item["outer_type"] ?? $request['outer_type']
