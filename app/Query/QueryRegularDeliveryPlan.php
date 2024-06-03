@@ -671,7 +671,7 @@ class QueryRegularDeliveryPlan extends Model {
 
                 if(!$is_regenerate_box){
                     $delivery_plan->update([
-                        'is_produksi' => 1, 
+                        // 'is_produksi' => 1, 
                         "bucket_produksi" => $current_bucket+1,
                         "period" => $period,
                         // "case_number" => $case_number
@@ -1676,6 +1676,7 @@ class QueryRegularDeliveryPlan extends Model {
                 }
 
                 $delivery_plan->update([
+                    'is_produksi' => 1, 
                     'customer_ypmj' => $item['customer_ypmj'],
                     'qty'   => $item["qty"],
                     'outer_type'   => $item["outer_type"] ?? $request['outer_type']
