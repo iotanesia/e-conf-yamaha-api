@@ -256,6 +256,7 @@ class QueryRegularOrderEntryUpload extends Model {
             Excel::queueImport(new OrderEntry($data->id,[
                 'year' => $data->refRegularOrderEntry->year,
                 'month' => $data->refRegularOrderEntry->month,
+                'datasource' => $data->refRegularOrderEntry->datasource,
             ]),storage_path().'/app/'.$params['filepath']);
 
 
