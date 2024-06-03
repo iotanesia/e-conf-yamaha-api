@@ -679,39 +679,39 @@ class QueryRegularDeliveryPlan extends Model {
                     ]);
                 }
 
-                $box = MstBox::where('item_no', $delivery_plan->item_no)
-                    ->where('datasource', $delivery_plan->datasource)
-                    ->first();
+                // $box = MstBox::where('item_no', $delivery_plan->item_no)
+                //     ->where('datasource', $delivery_plan->datasource)
+                //     ->first();
 
-                if($box){
-                    $box = $box->toArray();
-                    $box_capacity = $box['qty'];
-                    $qty = $is_regenerate_box ? $request["qty"] : $delivery_plan->qty;
-                    $loops = (int) ceil($qty / $box_capacity);
-                    for ($i=0; $i < $loops ; $i++) {
-                        if($qty > $box_capacity)
-                            $qty_pcs_box = $box_capacity;
-                        else
-                            $qty_pcs_box = $qty;
-                        $item = [
-                            "id_regular_delivery_plan" => $id,
-                            'id_box' => $box['id'],
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                            'qty_pcs_box' => $qty_pcs_box,
-                            'customer_ypmj' => "YMBP",
-                            'lot_packing' => $is_regenerate_box == false  ? null : $request['lot_packing'],
-                            'packing_date' => $is_regenerate_box == false ? null : $request['packing_date'],
-                            'is_labeling' => $is_regenerate_box == false ? null : $request['is_labeling'],
-                            'qrcode' => $is_regenerate_box == false ? null : $request['qrcode']
-                        ];
-                        $sum = $qty - $box_capacity;
-                        $qty = $sum;
+                // if($box){
+                //     $box = $box->toArray();
+                //     $box_capacity = $box['qty'];
+                //     $qty = $is_regenerate_box ? $request["qty"] : $delivery_plan->qty;
+                //     $loops = (int) ceil($qty / $box_capacity);
+                //     for ($i=0; $i < $loops ; $i++) {
+                //         if($qty > $box_capacity)
+                //             $qty_pcs_box = $box_capacity;
+                //         else
+                //             $qty_pcs_box = $qty;
+                //         $item = [
+                //             "id_regular_delivery_plan" => $id,
+                //             'id_box' => $box['id'],
+                //             'created_at' => now(),
+                //             'updated_at' => now(),
+                //             'qty_pcs_box' => $qty_pcs_box,
+                //             'customer_ypmj' => "YMBP",
+                //             'lot_packing' => $is_regenerate_box == false  ? null : $request['lot_packing'],
+                //             'packing_date' => $is_regenerate_box == false ? null : $request['packing_date'],
+                //             'is_labeling' => $is_regenerate_box == false ? null : $request['is_labeling'],
+                //             'qrcode' => $is_regenerate_box == false ? null : $request['qrcode']
+                //         ];
+                //         $sum = $qty - $box_capacity;
+                //         $qty = $sum;
 
-                        RegularDeliveryPlanBox::create($item);
-                    }
+                //         RegularDeliveryPlanBox::create($item);
+                //     }
 
-                }
+                // }
             }
 
             if($is_transaction) DB::commit();
@@ -1299,13 +1299,36 @@ class QueryRegularDeliveryPlan extends Model {
                     "customer_ypmj" => $data->customer_ypmj,
                     "qty" => $sisa_qty
                 ];
-                self::create($duplicate);    
+                $new = self::create($duplicate);    
             }
 
             $data->update([
                 "qty" => $params["qty"],
                 "udpated_at" => now()
             ]);
+
+            //update delivery plan box
+            $delivery_plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $params->id)->orderBy('qty_pcs_box', 'asc')->get();
+
+            $check_qty = $params['qty'];
+            foreach ($delivery_plan_box as $update) {
+                if ($check_qty > 0) {
+                    $update->update([
+                        "id_regular_delivery_plan" => $new->id,
+                        'qty_pcs_box' => $check_qty > $update->qty_pcs_box ? $update->qty_pcs_box : $check_qty,
+                    ]);
+
+                    if ($update->qty_pcs_box > $check_qty) {
+                        $item = [
+                            "id_regular_delivery_plan" => $params->id,
+                            'id_box' => $update->id_box,
+                            'qty_pcs_box' => $update->qty_pcs_box - $check_qty,
+                        ];
+                        RegularDeliveryPlanBox::create($item);
+                    }
+                }
+                $check_qty = $params['qty'] - $update->qty_pcs_box;
+            }
 
             if($is_trasaction) DB::commit();
         } catch (\Throwable $th) {

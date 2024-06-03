@@ -68,23 +68,17 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                         $col_etd = 8;
                 
                     $deliver_yearmonth = Carbon::parse(trim($row[$col_etd]))->format('Ym'); // etd_jkt
-                    // return in_array($row[7],['940E']) && $fillter_yearmonth == $deliver_yearmonth;
                     return $fillter_yearmonth == $deliver_yearmonth && trim($row[$col_etd]) !== "";
                 });
 
                 //check mst part
                 $mst_part_false =  $filteredData->map(function ($row) use ($id_regular_order_entry_upload) {
                     if($this->params['datasource'] == 'PYMAC'){
-                        // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
-                        //     ? '999999-9999'
-                        //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
                         $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
                         $check = MstPart::where('item_no',(trim($row[10]).trim($row[11])))->first() ? null : [
                             'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                             'code_consignee' => $consignee == null ? null : $consignee->code,
-                            // 'model' => trim($row[4]),
                             'item_no' => (trim($row[10]).trim($row[11])),
-                            // 'disburse' => trim($row[12]),
                             'delivery' => trim($row[16]),
                             'etd_jkt' => trim($row[16]),
                             'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
@@ -134,19 +128,12 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                 //check mst box
                 $mst_box_false =  $filteredData->map(function ($row) use ($id_regular_order_entry_upload) {
                     if($this->params['datasource'] == 'PYMAC'){
-
-                        // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
-                        //     ? '999999-9999'
-                        //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
-                        
                         $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
                         $check_consignee = $consignee == null ? null : $consignee->code;
                         $check = MstBox::where('item_no',(trim($row[10]).trim($row[11])))->where('code_consignee', $check_consignee)->where('datasource',$this->params['datasource'])->first() ? null : [
                             'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                             'code_consignee' => $consignee == null ? null : $consignee->code,
-                            // 'model' => trim($row[4]),
                             'item_no' => (trim($row[10]).trim($row[11])),
-                            // 'disburse' => trim($row[12]),
                             'delivery' => trim($row[16]),
                             'etd_jkt' => trim($row[16]),
                             'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
@@ -199,17 +186,11 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                 if(count($filter_mst_part_false) == 0 && count($filter_mst_box_false) == 0) {
                     $filteredData->each(function ($row) use ($id_regular_order_entry_upload) {
                         if($this->params['datasource'] == 'PYMAC'){
-                            // $cust_item_no = trim(substr_replace($row[5],'',12)) == trim($row[23])
-                            //     ? '999999-9999'
-                            //     : trim(substr_replace($row[23],'-',6).substr($row[23],6));
-                            
                             $consignee = MstConsignee::where('nick_name', trim($row[1]))->first();
                             QueryRegularOrderEntryUploadDetail::created([
                                 'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                                 'code_consignee' => $consignee == null ? null : $consignee->code,
-                                // 'model' => trim($row[4]),
                                 'item_no' => (trim($row[10]).trim($row[11])),
-                                // 'disburse' => trim($row[12]),
                                 'delivery' => trim($row[16]),
                                 'etd_jkt' => trim($row[16]),
                                 'etd_wh' => Carbon::parse(trim($row[16]))->subDays(2)->format('Ymd'),
@@ -231,9 +212,7 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                             QueryRegularOrderEntryUploadDetail::created([
                                 'id_regular_order_entry_upload' => $id_regular_order_entry_upload,
                                 'code_consignee' => 'YMBP',
-                                // 'model' => trim($row[4]),
                                 'item_no' => str_replace('-', '', $item_serial),
-                                // 'disburse' => trim($row[12]),
                                 'delivery' => trim($row[8]),
                                 'etd_jkt' => trim($row[8]),
                                 'etd_wh' => Carbon::parse(trim($row[8]))->subDays(2)->format('Ymd'),
@@ -241,7 +220,6 @@ class OrderEntry implements ToCollection, WithChunkReading, WithStartRow, WithMu
                                 'qty' => (int)trim($row[7]),
                                 'status' => 'fixed',
                                 'order_no' => substr(trim($row[0]),0,-2),
-                                // 'cust_item_no' => (trim($row[7])."-".trim($row[8])),
                                 'uuid' => (string) Str::uuid(),
                                 'created_at' => now(),
                                 'updated_at' => now(),
