@@ -1270,6 +1270,8 @@ class QueryRegularDeliveryPlan extends Model {
             if(!$data) throw new \Exception("Data not found", 400);
 
             $sisa_qty = $data->qty - (int) $params["qty"];
+            if ((int) $params["qty"] > $data->qty) throw new \Exception("qty exceeds maximum.", 400);
+
             if($sisa_qty != 0){
 
                 $duplicate = [
@@ -1308,26 +1310,34 @@ class QueryRegularDeliveryPlan extends Model {
             ]);
 
             //update delivery plan box
-            $delivery_plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $params->id)->orderBy('qty_pcs_box', 'asc')->get();
+            $delivery_plan_box = RegularDeliveryPlanBox::where('id_regular_delivery_plan', $params->id)->orderBy('qty_pcs_box', 'desc')->get();
 
-            $check_qty = $params['qty'];
-            foreach ($delivery_plan_box as $update) {
+            $check_qty = $params['qty']; 
+            $sisa_qty = $sisa_qty; 
+            foreach ($delivery_plan_box as $update) { 
                 if ($check_qty > 0) {
                     $update->update([
-                        "id_regular_delivery_plan" => $new->id,
+                        "id_regular_delivery_plan" => $params->id,
                         'qty_pcs_box' => $check_qty > $update->qty_pcs_box ? $update->qty_pcs_box : $check_qty,
                     ]);
+                } else {
+                    $update->update([
+                        "id_regular_delivery_plan" => $new->id,
+                        'qty_pcs_box' => $sisa_qty > $update->qty_pcs_box ? $update->qty_pcs_box : $sisa_qty,
+                    ]);
+                    
+                    $sisa_qty = $sisa_qty - $update->qty_pcs_box;
 
-                    if ($update->qty_pcs_box > $check_qty) {
+                    if ($update->qty_pcs_box > $sisa_qty) {
                         $item = [
-                            "id_regular_delivery_plan" => $params->id,
+                            "id_regular_delivery_plan" => $new->id,
                             'id_box' => $update->id_box,
-                            'qty_pcs_box' => $update->qty_pcs_box - $check_qty,
+                            'qty_pcs_box' => $sisa_qty,
                         ];
                         RegularDeliveryPlanBox::create($item);
                     }
                 }
-                $check_qty = $params['qty'] - $update->qty_pcs_box;
+                $check_qty = $check_qty - $update->qty_pcs_box;
             }
 
             if($is_trasaction) DB::commit();
