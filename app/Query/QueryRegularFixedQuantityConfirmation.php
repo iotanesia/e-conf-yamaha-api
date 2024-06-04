@@ -2183,7 +2183,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                 'kode_barang' => $value->refPart->item_serial.', '.trim($value->refPart->description),
                                 'uraian' => 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES',
                                 'kode_satuan' => 'PCE',
-                                'jumlah_satuan' => $qty_ratio[0][$i] ?? null,
+                                'jumlah_satuan' => $i == 0 ? array_sum($qty_ratio[0]) : null,
                                 'kode_kemasan' => 'CT',
                                 'jumlah_kemasan' => $i == 0 ? count(explode(',', $item->id_regular_delivery_plan_box)) : null,
                                 'netto' =>  $i == 0 ? number_format($netto, 2) : null,
