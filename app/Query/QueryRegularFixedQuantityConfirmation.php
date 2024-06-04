@@ -2163,7 +2163,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $item_no[] = $value->item_no;
                     }
     
-                    $mst_box = MstBox::whereIn('id', explode(',', $item->id_box))->get();
+                    $mst_box = MstBox::where('part_set', 'set')->whereIn('item_no', $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray())->get();
                     $nw_gw = self::nettWeightGrossWeight(explode(',', $item->sum_qty), $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
                     $netto = array_sum($nw_gw[0]['unit_weight_kg']);
                     $qty_ratio = self::inputQuantity(explode(',', $item->sum_qty), $mst_box->pluck('qty')->toArray());
@@ -2186,8 +2186,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                 'jumlah_satuan' => $qty_ratio[0][$i] ?? null,
                                 'kode_kemasan' => 'CT',
                                 'jumlah_kemasan' => $i == 0 ? count(explode(',', $item->id_regular_delivery_plan_box)) : null,
-                                // 'netto' => number_format($nw_gw[0]['unit_weight_kg'][$i], 2),
-                                'netto' => number_format($netto, 2),
+                                'netto' =>  $i == 0 ? number_format($netto, 2) : null,
                                 'volume' => $i == 0 ? number_format($volume, 3) : null,
                         ];
                     }
