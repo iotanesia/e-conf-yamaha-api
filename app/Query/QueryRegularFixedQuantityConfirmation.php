@@ -2080,7 +2080,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $id_unique = $value->id_regular_delivery_plan;
                         if (!in_array($id_unique, $seenIds)) {
                             $seenIds[] = $id_unique;
-                            $outer_weight = $value->refRegularDeliveryPlan->refOuterType->outer_weight;
+                            $outer_weight = $value->refRegularDeliveryPlan->refOuterType->outer_weight ?? 0;
                             $need_cartoon = ceil($value->refRegularDeliveryPlan->qty / $value->refMstBox->qty);
                             $total_gross_weight += (($value->refMstBox->unit_weight_gr * $value->refRegularDeliveryPlan->qty)/1000) + ($need_cartoon * $value->refMstBox->weight_inner_carton);
                         }
@@ -2164,9 +2164,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
     
                     $mst_box = MstBox::whereIn('id', explode(',', $item->id_box))->get();
-                    $nw_gw = self::nettWeightGrossWeight(explode(',', $item->sum_qty), $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                    $nw_gw = self::nettWeightGrossWeight($item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('qty')->toArray(), $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
                     $netto = array_sum($nw_gw[0]['unit_weight_kg']);
-                    $qty_ratio = self::inputQuantity(explode(',', $item->sum_qty), $mst_box->pluck('qty')->toArray());
+                    $qty_ratio = self::inputQuantity($item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('qty')->toArray(), $mst_box->pluck('qty')->toArray());
     
                     $volume = 0;
                     foreach ($fixedQuantity->manyFixedQuantityConfirmationBox as $vol) {
@@ -2183,10 +2183,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                 'kode_barang' => $value->refPart->item_serial.', '.trim($value->refPart->description),
                                 'uraian' => 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES',
                                 'kode_satuan' => 'PCE',
-                                'jumlah_satuan' => $qty_ratio[0][$i],
+                                'jumlah_satuan' => $qty_ratio[0][$i] ?? null,
                                 'kode_kemasan' => 'CT',
                                 'jumlah_kemasan' => $i == 0 ? count(explode(',', $item->id_regular_delivery_plan_box)) : null,
-                                'netto' => number_format($nw_gw[0]['unit_weight_kg'][$i], 2),
+                                // 'netto' => number_format($nw_gw[0]['unit_weight_kg'][$i], 2),
+                                'netto' => number_format($netto, 2),
                                 'volume' => $i == 0 ? number_format($volume, 3) : null,
                         ];
                     }
