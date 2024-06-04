@@ -2164,9 +2164,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
     
                     $mst_box = MstBox::whereIn('id', explode(',', $item->id_box))->get();
-                    $nw_gw = self::nettWeightGrossWeight($item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('qty')->toArray(), $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
+                    $nw_gw = self::nettWeightGrossWeight(explode(',', $item->sum_qty), $mst_box->pluck('qty')->toArray(), $mst_box, $item->refRegularDeliveryPlan->manyDeliveryPlanSet);
                     $netto = array_sum($nw_gw[0]['unit_weight_kg']);
-                    $qty_ratio = self::inputQuantity($item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('qty')->toArray(), $mst_box->pluck('qty')->toArray());
+                    $qty_ratio = self::inputQuantity(explode(',', $item->sum_qty), $mst_box->pluck('qty')->toArray());
     
                     $volume = 0;
                     foreach ($fixedQuantity->manyFixedQuantityConfirmationBox as $vol) {
