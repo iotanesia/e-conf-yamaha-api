@@ -2207,7 +2207,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $volume = 0;
                     $qrcode = [];
                     foreach ($fixedQuantity->manyFixedQuantityConfirmationBox as $vol) {
-                        $volume += ($vol->refMstBox->length * $vol->refMstBox->width * $vol->refMstBox->height) / 1000000000;
+                        $volume += round(($vol->refMstBox->length * $vol->refMstBox->width * $vol->refMstBox->height) / 1000000000, 3);
                         $qrcode[] = $vol->qrcode;
                     }
     
