@@ -463,20 +463,21 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $res = [];
         foreach ($data['items'] as $key => $value) {
+            $delivery_plan = RegularDeliveryPlan::find($value['id_regular_delivery_plan']);
             $res[] = [
                 'no' => $key +1,
-                'cust_name' => $value->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $value->refRegularDeliveryPlan->customer_ypmj : ($value->refConsignee->nick_name ?? null),
-                'item_no' => $value->refRegularDeliveryPlan->item_no == null ? implode(',', $value->item_no->toArray()) : $value->item_no,
-                'item_name' => $value->refRegularDeliveryPlan->item_no == null ? implode(',', $value->item_name) : $value->item_name,
-                'cust_item_no' => $value->cust_item_no,
-                'cust_order_no' => $value->order_no,
-                'qty' => (string)$value->qty,
-                'etd_ypmi' => $value->etd_ypmi,
-                'etd_wh' => $value->etd_wh,
-                'etd_jkt' => $value->etd_jkt,
-                'production' => (string)$value->production,
-                'in_dc' => (string)$value->in_dc,
-                'in_wh' => (string)$value->in_wh
+                'cust_name' => $delivery_plan->datasource == Constant::YPMJ_DATASOURCE ? $delivery_plan->customer_ypmj : ($delivery_plan->refConsignee->nick_name ?? null),
+                'item_no' => count((array)$value['item_no']) > 1 ? implode(', ', $value['item_no']->toArray()) : $value['item_no'],
+                'item_name' => count((array)$value['item_no']) > 1 ? implode(', ', $value['item_name']) : $value['item_name'],
+                'cust_item_no' => $value['cust_item_no'],
+                'cust_order_no' => $value['order_no'],
+                'qty' => (string)$value['qty'],
+                'etd_ypmi' => $value['etd_ypmi'],
+                'etd_wh' => $value['etd_wh'],
+                'etd_jkt' => $value['etd_jkt'],
+                'production' => (string)$value['production'],
+                'in_dc' => (string)$value['in_dc'],
+                'in_wh' => (string)$value['in_wh']
             ];
         }
 
