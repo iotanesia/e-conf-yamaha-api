@@ -1640,19 +1640,25 @@ class QueryRegularFixedShippingInstruction extends Model {
 
             foreach ($actual_container as $key => $value) {
                 $fixedQuantity = $value->manyFixedQuantityConfirmation;
+                $boxArray = [];
+                foreach ($fixedQuantity as $order) {
+                    $order_no = $order->order_no;
+                    if (!isset($boxArray[$order_no])) {
+                        $boxArray[$order_no] = [];
+                    }
+                    $boxArray[$order_no][] = $order->order_no;
+                }
             }
 
-            $box = [];
             $qrcode = [];
             foreach ($fixedQuantity as $key => $item) {
-                $box[] = RegularDeliveryPlanBox::with('refBox')->where('id_regular_delivery_plan', $item['id_regular_delivery_plan'])->get()->toArray();
                 $qrcode[] = array_unique($item->manyFixedQuantityConfirmationBox->pluck('qrcode')->toArray());
             }
 
             Pdf::loadView('pdf.shipping_actual',[
                 'data' => $data,
                 'actual_container' => $actual_container,
-                'box' => $box,
+                'box' => $boxArray,
                 'bucket' => $qrcode
             ])->save($pathToFile)
                 ->setPaper('A4','potrait')

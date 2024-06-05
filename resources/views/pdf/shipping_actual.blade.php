@@ -269,7 +269,7 @@
                                             @if ($item->datasource == 'YPMJ')
                                                 <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $key > 0 ? $key+1 : $iteration+1 }} - {{ $key > 0 ? count($bucket[$key]) + $key : count($bucket[$key]) }}</td>
                                             @else
-                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $key > 0 ? $key+1 : $iteration+1 }} - {{ $key > 0 ? count($box[$key]) + $key : count($box) }}</td>
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $key > 0 ? $key+1 : $iteration+1 }} - {{ $key > 0 ? count($box[$order]) + $key : count($box[$order]) }}</td>
                                             @endif
                                         </tr>
                                         <br>
