@@ -922,7 +922,8 @@ class QueryRegularDeliveryPlan extends Model {
                 'packing_date' => isset($box) ? $box->packing_date : "",
                 'qrcode' => isset($box) ? $box->qrcode : "",
                 'qrcode_img' => isset($box) ? route('file.download').'?filename='.$box->qrcode.'&source=qr_labeling' : "",
-                'bucket_produksi' => $current_bucket
+                'bucket_produksi' => $current_bucket,
+                'outer_type' => $item->outer_type
             ];
         });
 
