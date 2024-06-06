@@ -77,7 +77,7 @@
                             <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $key > 0 ? $key+1 : $jml+1 }}</b></p>
                         </td>
-                        <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
+                        <td class="text-center" style="font-size: 23px; font-weight: 500; vertical-align=top;">
                             <p style="padding:0; margin: 0 0 10px 0;"><b>CUSTOMER :</b></p>
                             <b>{{ $item->refConsignee->nick_name ?? $item->code_consignee }}</b>
                             <hr>
@@ -99,7 +99,7 @@
                                                 @if ($item_no !== null)
                                                     <tr>
                                                         @if (count(array_filter($box_item['item_no_series_ypmj'], function($value) { return !is_null($value); })) > 5)
-                                                            <td class="no-br no-bl no-bb no-bt text-center" style="padding: 0; margin: 0; font-size: 15px;"><b>{{ $item_no }}</b></td>
+                                                            <td class="no-br no-bl no-bb no-bt text-center" style="padding: 0; margin: 0; font-size: 17px;"><b>{{ $item_no }}</b></td>
                                                         @else
                                                             <td class="no-br no-bl no-bb no-bt text-center" style="padding: 0; margin: 0;"><b>{{ $item_no }}</b></td>
                                                         @endif
@@ -114,7 +114,7 @@
                                                 @if ($qty_pcs_box !== 0)
                                                     <tr>
                                                         @if (count(array_filter($box_item['qty_pcs_box'], function($value) { return $value != 0; })) > 5)
-                                                            <td class="no-br no-bb no-bt text-center" style="padding: 0 25px 0 25px; margin: 0; font-size: 15px;"><b>{{ $qty_pcs_box }}</b></td>
+                                                            <td class="no-br no-bb no-bt text-center" style="padding: 0 25px 0 25px; margin: 0; font-size: 17px;"><b>{{ $qty_pcs_box }}</b></td>
                                                         @else
                                                             <td class="no-br no-bb no-bt text-center" style="padding: 0 25px 0 25px; margin: 0;"><b>{{ $qty_pcs_box }}</b></td>
                                                         @endif
