@@ -235,7 +235,9 @@ class QueryStockConfirmationOutstockNote extends Model {
             }
 
             $dataSend =  $deliveryPlan->transform(function($item) use($lastData,$request,$stokTemp){
-                $creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id', explode(',', $item->id_prospect_container_creation))->first();
+                if(count(explode(',', $item->id_prospect_container_creation)) > 1) $creation = RegularDeliveryPlanProspectContainerCreation::whereIn('id', explode(',', $item->id_prospect_container_creation))->first();
+                else $creation = null;
+
                 $lsp = $creation == null ? null : ($creation->refMstLsp->name ?? null);
                 $truck = $creation == null ? null : ($creation->refMstTypeDelivery->name ?? null);
                 return [
