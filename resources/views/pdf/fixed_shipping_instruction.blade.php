@@ -264,7 +264,7 @@
                                             <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA {{ $key.'-'.$iteration }}</td>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
                                         </tr>
                                         <tr>
                                             <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $item->no_packaging }}</td>
