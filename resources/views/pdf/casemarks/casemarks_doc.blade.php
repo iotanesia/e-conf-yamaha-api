@@ -98,7 +98,11 @@
                                             @foreach ($box_item['item_no_series_ypmj'] as $item_no)
                                                 @if ($item_no !== null)
                                                     <tr>
-                                                        <td class="no-br no-bl no-bb no-bt text-center" style="padding: 0; margin: 0;"><b>{{ $item_no }}</b></td>
+                                                        @if (count(array_filter($box_item['item_no_series_ypmj'], function($value) { return !is_null($value); })) > 5)
+                                                            <td class="no-br no-bl no-bb no-bt text-center" style="padding: 0; margin: 0; font-size: 15px;"><b>{{ $item_no }}</b></td>
+                                                        @else
+                                                            <td class="no-br no-bl no-bb no-bt text-center" style="padding: 0; margin: 0;"><b>{{ $item_no }}</b></td>
+                                                        @endif
                                                     </tr>
                                                 @endif
                                             @endforeach
@@ -109,7 +113,11 @@
                                             @foreach ($box_item['qty_pcs_box'] as $qty_pcs_box)
                                                 @if ($qty_pcs_box !== 0)
                                                     <tr>
-                                                        <td class="no-br no-bb no-bt text-center" style="padding: 0 25px 0 25px; margin: 0;"><b>{{ $qty_pcs_box }}</b></td>
+                                                        @if (count(array_filter($box_item['qty_pcs_box'], function($value) { return $value != 0; })) > 5)
+                                                            <td class="no-br no-bb no-bt text-center" style="padding: 0 25px 0 25px; margin: 0; font-size: 15px;"><b>{{ $qty_pcs_box }}</b></td>
+                                                        @else
+                                                            <td class="no-br no-bb no-bt text-center" style="padding: 0 25px 0 25px; margin: 0;"><b>{{ $qty_pcs_box }}</b></td>
+                                                        @endif
                                                     </tr>
                                                 @endif
                                             @endforeach
