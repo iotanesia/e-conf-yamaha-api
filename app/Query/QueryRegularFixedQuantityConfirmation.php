@@ -65,7 +65,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 DB::raw('MIN(regular_fixed_quantity_confirmation.production) as production'),
             )->where(function ($query) use ($params){
 
-                if(isset($params->id_fixed_quantity)) $query->where('id', explode(',', $params->id_fixed_quantity));
+                if(isset($params->id_fixed_quantity)) $query->whereIn('id', explode(',', $params->id_fixed_quantity));
                 $query->where('is_actual',Constant::IS_NOL);
                 $query->where('datasource',$params->datasource);
                 $category = $params->category ?? null;
