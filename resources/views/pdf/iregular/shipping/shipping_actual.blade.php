@@ -188,7 +188,7 @@
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" width="80">Carton Box Qty</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->description_of_goods_1}}</td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Carton Boxes</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">{{ in_array($data->description_of_goods_1, [0, 1]) ? 'Carton Box' : 'Carton Boxes' }}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"></td>
                     </tr>
