@@ -833,7 +833,8 @@ class QueryRegularDeliveryPlan extends Model {
             $date_to = str_replace('-','',$params->date_to);
             if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
         })
-        ->whereIn("id", $ids);
+        ->whereIn("id", $ids)
+        ->whereNull('bucket_produksi');
 
         if($params->dropdown == Constant::IS_ACTIVE) {
             $params->limit = null;
