@@ -525,7 +525,7 @@ $orderEntry->address_consignee",
             $column = [
                 DB::raw('COUNT(id) as total_item'),
                 DB::raw('SUM(qty) as qty'),
-                DB::raw('SUM(price*2) as price'),
+                DB::raw('SUM(price) as price'),
                 DB::raw('order_no'),
                 DB::raw('item_code'),
                 DB::raw('item_name')
