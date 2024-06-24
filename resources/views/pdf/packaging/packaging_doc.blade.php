@@ -115,7 +115,7 @@
         <hr>
 
             {{-- per order no --}}
-            @foreach (array_unique($item->manyFixedQuantityConfirmation->pluck('order_no')->toArray()) as $iteration => $order)
+            @foreach (array_unique($item->manyFixedQuantityConfirmation()->orderBy('order_no')->pluck('order_no')->toArray()) as $iteration => $order)
             <table style="margin-top: 10px;">
                 <tr>
                     <td class="no-bt no-bl no-br">Order No. {{ $order ?? null }}</td>
