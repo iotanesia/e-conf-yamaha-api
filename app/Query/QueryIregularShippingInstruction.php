@@ -95,8 +95,6 @@ class QueryIregularShippingInstruction extends Model {
     public static function getCreation($params, $id){
         $data = IregularShippingInstructionCreation::where(["id_iregular_shipping_instruction"=>$id])->first();
         if(!$data) throw new \Exception("id tidak ditemukan", 400);
-
-        $data->net_weight = round($data->net_weight / 1000, 2);
                     
         return [
             'items' => $data,
