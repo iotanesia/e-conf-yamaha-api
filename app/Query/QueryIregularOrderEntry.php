@@ -348,8 +348,11 @@ class QueryIregularOrderEntry extends Model {
         $data->type_transaction = $data->refTypeTransaction;
         $data->checkbox = $data->manyOrderEntryCheckbox;
         $data->doc = $data->manyOrderEntryDoc;
-        $data->part = $data->manyOrderEntryPart;
         $data->tracking = $data->manyTracking;
+        $data->part = $data->manyOrderEntryPart->map(function($item){
+            $item->net_weight = round($item->net_weight / 1000, 2);
+            return $item;
+        });
 
         unset($data->refTypeTransaction);
         unset($data->manyOrderEntryCheckbox);

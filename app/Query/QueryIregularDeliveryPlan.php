@@ -627,7 +627,7 @@ $orderEntry->address_consignee",
         $total = [];
         foreach ($orderEntryPart as $item) {
             $total[$item->item_code] = [
-                'nett_weight' => $item->nett_weight,
+                'nett_weight' => round($item->nett_weight / 1000, 2),
                 'gross_weight' => $item->gross_weight,
                 'measurement' => $item->measurement,
             ];
@@ -673,7 +673,7 @@ $orderEntry->address_consignee",
         $arr = [];
         foreach ($orderEntryPart as $item) {
             $arr[$item->item_code] = [
-                'nett_weight' => $item->nett_weight,
+                'nett_weight' => round($item->nett_weight / 1000, 2),
                 'gross_weight' => $item->gross_weight,
                 'measurement' => $item->measurement,
                 'length' => $item->length,
@@ -761,7 +761,7 @@ $orderEntry->address_consignee",
                 $item = new  \stdClass;
                 $item->description = $part->item_code."   ".$part->item_name;
                 $item->qty = $part->qty;
-                $item->nett_weight = $part->net_weight;
+                $item->nett_weight = round($part->net_weight / 1000, 2);
                 $item->gross_weight = $part->gross_weight;
                 $item->length = $part->length;
                 $item->width = $part->width;

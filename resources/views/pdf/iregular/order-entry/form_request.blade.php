@@ -541,7 +541,7 @@
                                 <th style="font-size: 10px; width: 20%">PO. NUMBER</th>
                                 <th style="font-size: 10px; width: 10%">QTY</th>
                                 <th style="font-size: 10px; width: 14%">PRICE/UNIT</th>
-                                <th style="font-size: 10px; width: 11%">NW (Kgs)</th>
+                                <th style="font-size: 10px; width: 11%">NW (Gram/pcs)</th>
                                 <th style="font-size: 10px; width: 11%">GW (Kgs)</th>
                                 <th style="font-size: 10px; width: 11%">MEASURE (mm)</th>
                             </tr>
