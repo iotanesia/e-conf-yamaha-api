@@ -122,7 +122,7 @@
             <tr>
                 <td class="no-bo">{{ $item->description }}</td>
                 <td class="no-bo" style="text-align: center;">{{ $item->qty }}</td>
-                <td class="no-bo" style="text-align: center;">{{ round($item->nett_weight / 1000, 2) }}</td>
+                <td class="no-bo" style="text-align: center;">{{ $item->nett_weight }}</td>
                 <td class="no-bo" style="text-align: center;">{{ $item->gross_weight }}</td>
                 <td class="no-bo" style="text-align: right;">{{ number_format(($item->length * $item->width * $item->height / 1000000000), 3) }}</td>
             </tr>
