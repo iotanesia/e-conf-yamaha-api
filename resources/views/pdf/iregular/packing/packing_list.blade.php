@@ -213,7 +213,7 @@
                     <td style='padding-bottom:5px;' class='text-center'>{{ $item->description }}</td>
                 @endif
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->qty }}</td>
-                <td style='padding-bottom:5px;' class='text-center'>{{ $item->nett_weight }}</td>
+                <td style='padding-bottom:5px;' class='text-center'>{{ $item->nett_weight * $item->qty }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->gross_weight }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ number_format(($item->length * $item->width * $item->height / 1000000000), 3) }}</td>
             </tr>
@@ -223,7 +223,7 @@
         <tr>
             <td colspan="3" class="text-center"> TOTAL</td>
             <td class="text-center">{{ $total['qty'] }}</td>
-            <td class="text-center">{{ $total['nett_weight'] }}</td>
+            <td class="text-center">{{ $total['nett_weight'] * $total['qty'] }}</td>
             <td class="text-center">{{ $total['gross_weight'] }}</td>
             <td class="text-center">{{ number_format($total['measurement'], 3) }}</td>
         </tr>
