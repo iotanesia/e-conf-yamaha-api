@@ -350,6 +350,7 @@ class QueryIregularOrderEntry extends Model {
         $data->doc = $data->manyOrderEntryDoc;
         $data->tracking = $data->manyTracking;
         $data->part = $data->manyOrderEntryPart->map(function($item){
+            $item->net_weight_doc = $item->net_weight;
             $item->net_weight = round($item->net_weight / 1000, 2);
             return $item;
         });

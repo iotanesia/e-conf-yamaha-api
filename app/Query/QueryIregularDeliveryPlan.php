@@ -643,7 +643,7 @@ $orderEntry->address_consignee",
                 'total_package' => $value->no_package,
                 'total_price' => $value->amount,
                 'measurement' => $total[explode(' ',$value->description)[0]]['measurement'],
-                'nett_weight' => $total[explode(' ',$value->description)[0]]['nett_weight'],
+                'nett_weight' => $total[explode(' ',$value->description)[0]]['nett_weight'] * $value->qty,
                 'gross_weight' => $total[explode(' ',$value->description)[0]]['gross_weight']
             ];
         }
@@ -704,7 +704,7 @@ $orderEntry->address_consignee",
                 'part_no' => explode(' ', $value->description)[0],
                 'qty' => $value->qty,
                 'no' =>  $key +1,
-                'nett_weight' => $arr[explode(' ',$value->description)[0]]['nett_weight'],
+                'nett_weight' => $arr[explode(' ',$value->description)[0]]['nett_weight'] * $value->qty,
                 'gross_weight' => $arr[explode(' ',$value->description)[0]]['gross_weight'],
                 'model_code' => $model_code[explode(' ',$value->description)[0]]['model_code'],
                 'type_box' => $invoice_data->type_package,

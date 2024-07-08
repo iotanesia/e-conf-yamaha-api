@@ -553,7 +553,7 @@
                                     <td style="padding: 3px">{{ $data->part[$i]->order_no }}</td>
                                     <td style="padding: 3px">{{ $data->part[$i]->qty }}</td>
                                     <td style="padding: 3px">{{ $data->part[$i]->price }}</td>
-                                    <td style="padding: 3px">{{ $data->part[$i]->net_weight }}</td>
+                                    <td style="padding: 3px">{{ $data->part[$i]->net_weight_doc }}</td>
                                     <td style="padding: 3px">{{ $data->part[$i]->gross_weight }}</td>
                                     <td style="padding: 3px">{{ $data->part[$i]->measurement }}</td>
                                 </tr>
