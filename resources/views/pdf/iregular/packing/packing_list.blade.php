@@ -185,9 +185,9 @@
             
         <p class="flying-text text-center">
             YAMAHA <br>
-            <br>
-            999999-9999 <br>
-                <br>
+            {{ $delivery_plan->refOrderEntry->manyOrderEntryPart[0]['order_no'] }}<br>
+            {{ $casemark_data[0]['model_code'] }} <br>
+            {{ $casemark_data[0]['destination'] }} <br>
             MADE IN INDONESIA <br>
             INV. No. {{ $invoice_data->invoice_no }} <br>
             C/No. : 1 - {{ count($data) }}

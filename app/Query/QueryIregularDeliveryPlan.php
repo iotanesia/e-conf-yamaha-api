@@ -803,11 +803,13 @@ $orderEntry->address_consignee",
             $packing_data = IregularDeliveryPlanPacking::where('id', $id_iregular_delivery_plan_packing)->first();
             $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
             $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
+            $casemark_data = self::getCaseMark($request, $id_iregular_order_entry)['items'];
 
             Pdf::loadView('pdf.iregular.packing.packing_list', [
                 'data' => $data['items'],
                 'packing_data' => $packing_data,
                 'invoice_data' => $invoice_data,
+                'casemark_data' => $casemark_data,
                 'order_entry' => $delivery_plan->refOrderEntry ?? null,
                 'total' => $total
             ])
