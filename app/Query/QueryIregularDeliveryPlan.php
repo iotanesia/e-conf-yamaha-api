@@ -805,12 +805,40 @@ $orderEntry->address_consignee",
             $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
             $casemark_data = self::getCaseMark($request, $id_iregular_order_entry)['items'];
 
+            $order_no = $packing_data->refDeliveryPlan->refOrderEntry->manyOrderEntryPart()->orderBy('order_no')->get();
+            $per_order = [];
+            $total_per_order = [];
+            foreach ($order_no as $order) {
+                $per_order[$order->order_no] = $delivery_plan->refOrderEntry->manyOrderEntryPart()->where('order_no', $order->order_no)->get();
+                
+                $qty = 0;
+                $nett_weight = 0;
+                $gross_weight = 0;
+                $measurement = 0;
+                foreach ($per_order[$order->order_no] as $value) {
+                    $total_per_order[$order->order_no] = [
+                        'qty' => $qty += $value->qty,
+                        'nett_weight' => $nett_weight += round((float)$value->net_weight / 1000, 2),
+                        'gross_weight' => $gross_weight += (float)$value->gross_weight,
+                        'measurement' => $measurement += ($value->length * $value->width * $value->height / 1000000000)
+                    ];
+                }
+            }
+
+            $casemark = [];
+            foreach ($casemark_data as $value) {
+                $casemark[$value->item_no] = $value;
+            }
+
             Pdf::loadView('pdf.iregular.packing.packing_list', [
                 'data' => $data['items'],
                 'packing_data' => $packing_data,
                 'invoice_data' => $invoice_data,
-                'casemark_data' => $casemark_data,
                 'order_entry' => $delivery_plan->refOrderEntry ?? null,
+                'casemark' => $casemark,
+                'order_no' => $order_no,
+                'per_order' => $per_order,
+                'total_per_order' => $total_per_order,
                 'total' => $total
             ])
             ->save($pathToFile)

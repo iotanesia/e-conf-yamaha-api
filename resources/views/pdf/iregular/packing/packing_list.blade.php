@@ -168,9 +168,10 @@
     </table>
     <hr>
 
+    @foreach ($order_no as $iteration => $order)
     <table style="margin-top: 10px;">
         <tr>
-            <td class="no-bt no-bl no-br">Order No. </td>
+            <td class="no-bt no-bl no-br">Order No. {{ $order->order_no }}</td>
             <td class="no-bt no-bl no-br" colspan="6"></td>
         </tr>
         <tr>
@@ -182,38 +183,27 @@
             <td class="text-center" width="40"> Gross. W <br> (Kgs)</td>
             <td class="text-center" width="40"> Meas. <br> (M3) </td>
         </tr>
-            
-        <p class="flying-text text-center">
-            YAMAHA <br>
-            {{ $packing_data->refDeliveryPlan->refOrderEntry->manyOrderEntryPart[0]['order_no'] ?? null }}<br>
-            {{ $casemark_data[0]['model_code'] ?? null }} <br>
-            {{ $casemark_data[0]['destination'] ?? null }} <br>
-            MADE IN INDONESIA <br>
-            INV. No. {{ $invoice_data->invoice_no }} <br>
-            C/No. : 1 - {{ count($data) }}
-        </p>
-            
-        @foreach ($data as $key => $item)
+
+        @foreach ($per_order[$order->order_no] as $key => $item)
             <tr>
-                <td class="no-bt"></td>
-                @if ($key % 2 == 0 && $key == 0)
-                    <td style='padding-bottom:5px;' class='text-center'>{{ $key+1 }}</td>
+                @if ($key == 0)
+                    <td class="text-center">
+                        YAMAHA <br>
+                        {{ $order->order_no ?? null }}<br>
+                        {{ $casemark[$item->item_code]->model_code ?? null }} <br>
+                        {{ $casemark[$item->item_code]->destination ?? null }} <br>
+                        MADE IN INDONESIA <br>
+                        INV. No. {{ $invoice_data->invoice_no }} <br>
+                        C/No. : {{ $iteration > 0 ? $iteration+1 : $key+1 }} - {{ $iteration > 0 ? count($per_order[$order->order_no]) + $iteration : count($per_order[$order->order_no]) }}
+                    </td>
                 @else
                     <td class="no-bt"></td>
                 @endif
-                @if (count($data) == 1)
-                    <td style='padding:55px 0 55px 0;' class='text-center'>{{ $item->description }}</td>
-                @elseif (count($data) == 2)
-                    <td style='padding:23px;' class='text-center'>{{ $item->description }}</td>
-                @elseif (count($data) == 3)
-                    <td style='padding:15px;' class='text-center'>{{ $item->description }}</td>
-                @elseif (count($data) == 4)
-                    <td style='padding:8px;' class='text-center'>{{ $item->description }}</td>
-                @else
-                    <td style='padding-bottom:5px;' class='text-center'>{{ $item->description }}</td>
-                @endif
+                
+                <td style='padding-bottom:5px;' class='text-center'>{{ $iteration > 0 ? $iteration+$key+1 : $key+1 }}</td>
+                <td style='padding-bottom:5px;' class='text-center'>{{ $item->item_code."   ".$item->item_name }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->qty }}</td>
-                <td style='padding-bottom:5px;' class='text-center'>{{ $item->nett_weight * $item->qty }}</td>
+                <td style='padding-bottom:5px;' class='text-center'>{{ round($item->net_weight / 1000, 2) }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->gross_weight }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ number_format(($item->length * $item->width * $item->height / 1000000000), 3) }}</td>
             </tr>
@@ -222,12 +212,13 @@
         {{-- total --}}
         <tr>
             <td colspan="3" class="text-center"> TOTAL</td>
-            <td class="text-center">{{ $total['qty'] }}</td>
-            <td class="text-center">{{ $total['nett_weight'] * $total['qty'] }}</td>
-            <td class="text-center">{{ $total['gross_weight'] }}</td>
-            <td class="text-center">{{ number_format($total['measurement'], 3) }}</td>
+            <td class="text-center">{{ $total_per_order[$order->order_no]['qty'] }}</td>
+            <td class="text-center">{{ $total_per_order[$order->order_no]['nett_weight'] }}</td>
+            <td class="text-center">{{ number_format($total_per_order[$order->order_no]['gross_weight'], 2) }}</td>
+            <td class="text-center">{{ number_format($total_per_order[$order->order_no]['measurement'], 3) }}</td>
         </tr>
     </table>
+    @endforeach
 
     <table style="margin-top: 20px;">
         <tr>
