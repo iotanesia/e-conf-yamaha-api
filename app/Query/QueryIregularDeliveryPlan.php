@@ -818,7 +818,7 @@ $orderEntry->address_consignee",
                 foreach ($per_order[$order->order_no] as $value) {
                     $total_per_order[$order->order_no] = [
                         'qty' => $qty += $value->qty,
-                        'nett_weight' => $nett_weight += round((float)$value->net_weight / 1000, 2),
+                        'nett_weight' => $nett_weight += round((float)$value->net_weight / 1000, 2) * $value->qty,
                         'gross_weight' => $gross_weight += (float)$value->gross_weight,
                         'measurement' => $measurement += ($value->length * $value->width * $value->height / 1000000000)
                     ];

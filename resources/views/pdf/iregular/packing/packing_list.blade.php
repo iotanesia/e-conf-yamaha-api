@@ -236,7 +236,7 @@
         <tr>
             <td class="no-bo" width="200px">Grand Total Nett Weights</td>
             <td class="no-bo" width="4">:</td>
-            <td width="50px" class="text-right no-bo">{{ $total['nett_weight'] }}</td>
+            <td width="50px" class="text-right no-bo">{{ $total['nett_weight'] * $total['qty'] }}</td>
             <td class="no-bo">Kgs</td>
         </tr>
         <tr>
