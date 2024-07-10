@@ -203,7 +203,7 @@
                 <td style='padding-bottom:5px;' class='text-center'>{{ $iteration > 0 ? $iteration+$key+1 : $key+1 }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->item_code."   ".$item->item_name }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->qty }}</td>
-                <td style='padding-bottom:5px;' class='text-center'>{{ round($item->net_weight / 1000, 2) }}</td>
+                <td style='padding-bottom:5px;' class='text-center'>{{ round($item->net_weight / 1000, 2) * $item->qty }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->gross_weight }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ number_format(($item->length * $item->width * $item->height / 1000000000), 3) }}</td>
             </tr>
