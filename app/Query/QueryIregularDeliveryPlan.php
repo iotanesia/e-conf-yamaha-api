@@ -805,18 +805,18 @@ $orderEntry->address_consignee",
             $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
             $casemark_data = self::getCaseMark($request, $id_iregular_order_entry)['items'];
 
-            $order_no = $packing_data->refDeliveryPlan->refOrderEntry->manyOrderEntryPart()->orderBy('order_no')->get();
+            $order_no = $packing_data->refDeliveryPlan->refOrderEntry->manyOrderEntryPart()->orderBy('order_no')->pluck('order_no');
             $per_order = [];
             $total_per_order = [];
-            foreach ($order_no as $order) {
-                $per_order[$order->order_no] = $delivery_plan->refOrderEntry->manyOrderEntryPart()->where('order_no', $order->order_no)->get();
+            foreach (array_unique($order_no->toArray()) as $order) {
+                $per_order[$order] = $delivery_plan->refOrderEntry->manyOrderEntryPart()->where('order_no', $order)->get();
                 
                 $qty = 0;
                 $nett_weight = 0;
                 $gross_weight = 0;
                 $measurement = 0;
-                foreach ($per_order[$order->order_no] as $value) {
-                    $total_per_order[$order->order_no] = [
+                foreach ($per_order[$order] as $value) {
+                    $total_per_order[$order] = [
                         'qty' => $qty += $value->qty,
                         'nett_weight' => $nett_weight += round((float)$value->net_weight / 1000, 2) * $value->qty,
                         'gross_weight' => $gross_weight += (float)$value->gross_weight,

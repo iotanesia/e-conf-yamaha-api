@@ -168,10 +168,10 @@
     </table>
     <hr>
 
-    @foreach ($order_no as $iteration => $order)
+    @foreach (array_unique($order_no->toArray()) as $iteration => $order)
     <table style="margin-top: 10px;">
         <tr>
-            <td class="no-bt no-bl no-br">Order No. {{ $order->order_no }}</td>
+            <td class="no-bt no-bl no-br">Order No. {{ $order }}</td>
             <td class="no-bt no-bl no-br" colspan="6"></td>
         </tr>
         <tr>
@@ -184,17 +184,17 @@
             <td class="text-center" width="40"> Meas. <br> (M3) </td>
         </tr>
 
-        @foreach ($per_order[$order->order_no] as $key => $item)
+        @foreach ($per_order[$order] as $key => $item)
             <tr>
                 @if ($key == 0)
                     <td class="text-center">
                         YAMAHA <br>
-                        {{ $order->order_no ?? null }}<br>
+                        {{ $order ?? null }}<br>
                         {{ $casemark[$item->item_code]->model_code ?? null }} <br>
                         {{ $casemark[$item->item_code]->destination ?? null }} <br>
                         MADE IN INDONESIA <br>
                         INV. No. {{ $invoice_data->invoice_no }} <br>
-                        C/No. : {{ $iteration > 0 ? $iteration+1 : $key+1 }} - {{ $iteration > 0 ? count($per_order[$order->order_no]) + $iteration : count($per_order[$order->order_no]) }}
+                        C/No. : {{ $iteration > 0 ? $iteration+1 : $key+1 }} - {{ $iteration > 0 ? count($per_order[$order]) + $iteration : count($per_order[$order]) }}
                     </td>
                 @else
                     <td class="no-bt"></td>
@@ -212,10 +212,10 @@
         {{-- total --}}
         <tr>
             <td colspan="3" class="text-center"> TOTAL</td>
-            <td class="text-center">{{ $total_per_order[$order->order_no]['qty'] }}</td>
-            <td class="text-center">{{ $total_per_order[$order->order_no]['nett_weight'] }}</td>
-            <td class="text-center">{{ number_format($total_per_order[$order->order_no]['gross_weight'], 2) }}</td>
-            <td class="text-center">{{ number_format($total_per_order[$order->order_no]['measurement'], 3) }}</td>
+            <td class="text-center">{{ $total_per_order[$order]['qty'] }}</td>
+            <td class="text-center">{{ $total_per_order[$order]['nett_weight'] }}</td>
+            <td class="text-center">{{ number_format($total_per_order[$order]['gross_weight'], 2) }}</td>
+            <td class="text-center">{{ number_format($total_per_order[$order]['measurement'], 3) }}</td>
         </tr>
     </table>
     @endforeach
