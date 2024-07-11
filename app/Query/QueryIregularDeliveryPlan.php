@@ -338,7 +338,7 @@ class QueryIregularDeliveryPlan extends Model {
         $measurement = 0;
         $description_of_goods_2 = 0;
         foreach($orderEntryPart as $item){
-            $netWeight = $netWeight + $item->net_weight; 
+            $netWeight = $netWeight + (round($item->net_weight / 1000, 2) * $item->qty); 
             $grossWeight = $grossWeight + $item->gross_weight; 
             $measurement = $measurement + $item->measurement; 
             $description_of_goods_2 = $description_of_goods_2 + $item->qty;
@@ -369,7 +369,7 @@ $orderEntry->address_consignee",
             "description_of_goods_1_detail" => $deliveryPlanInvoice->type_package,
             "description_of_goods_2_detail" => "OF ".$deliveryPlanInvoice->description_invoice,
             "summary_box" => $summaryBox,
-            "net_weight" => round($netWeight / 1000, 2),
+            "net_weight" => $netWeight,
             "gross_weight" => $grossWeight,
             "measurement" => $measurement,
             "description_of_goods_2"   => $description_of_goods_2,
@@ -614,23 +614,22 @@ $orderEntry->address_consignee",
 
     public static function exportExcel($request, $id_iregular_order_entry)
     {
-        $orderEntryPart = IregularOrderEntryPart::select('iregular_order_entry_part.item_code',
-                        DB::raw('SUM(iregular_order_entry_part.net_weight) as nett_weight'),
-                        DB::raw('SUM(iregular_order_entry_part.gross_weight) as gross_weight'),
-                        DB::raw('SUM(iregular_order_entry_part.measurement) as measurement'),
-                        )
-                        ->where('iregular_order_entry_part.id_iregular_order_entry', $id_iregular_order_entry)
-                        ->groupBy('iregular_order_entry_part.item_code')
-                        ->get();
+        $orderEntryPart = IregularOrderEntryPart::where('id_iregular_order_entry', $id_iregular_order_entry)->get();
         if(!$orderEntryPart) throw new \Exception("id tidak ditemukan", 400);
 
         $total = [];
         foreach ($orderEntryPart as $item) {
-            $total[$item->item_code] = [
-                'nett_weight' => round($item->nett_weight / 1000, 2),
-                'gross_weight' => $item->gross_weight,
-                'measurement' => $item->measurement,
-            ];
+            if (!isset($total[$item->order_no])) {
+                $total[$item->order_no] = [
+                    'nett_weight' => 0,
+                    'gross_weight' => 0,
+                    'measurement' => 0,
+                ];
+            }
+
+            $total[$item->order_no]['nett_weight'] += round($item->net_weight / 1000, 2) * $item->qty;
+            $total[$item->order_no]['gross_weight'] += $item->gross_weight;
+            $total[$item->order_no]['measurement'] += $item->measurement;
         }
 
         $invoice_data = self::getInvoiceDetail($request, $id_iregular_order_entry);
@@ -642,9 +641,9 @@ $orderEntry->address_consignee",
                 'qty' => $value->qty,
                 'total_package' => $value->no_package,
                 'total_price' => $value->amount,
-                'measurement' => $total[explode(' ',$value->description)[0]]['measurement'],
-                'nett_weight' => $total[explode(' ',$value->description)[0]]['nett_weight'] * $value->qty,
-                'gross_weight' => $total[explode(' ',$value->description)[0]]['gross_weight']
+                'measurement' => $total[$value->order_no]['measurement'],
+                'nett_weight' => $total[$value->order_no]['nett_weight'],
+                'gross_weight' => $total[$value->order_no]['gross_weight']
             ];
         }
 
@@ -657,29 +656,28 @@ $orderEntry->address_consignee",
         $delivery_plan = IregularDeliveryPlan::where('id_iregular_order_entry', $id_iregular_order_entry)->first();
         if(!$delivery_plan) throw new \Exception("id tidak ditemukan", 400);
         
-        $orderEntryPart = IregularOrderEntryPart::select('iregular_order_entry_part.item_code',
-                        DB::raw('SUM(iregular_order_entry_part.net_weight) as nett_weight'),
-                        DB::raw('SUM(iregular_order_entry_part.gross_weight) as gross_weight'),
-                        DB::raw('SUM(iregular_order_entry_part.measurement) as measurement'),
-                        DB::raw("string_agg(DISTINCT iregular_order_entry_part.length::character varying, ',') as length"),
-                        DB::raw("string_agg(DISTINCT iregular_order_entry_part.width::character varying, ',') as width"),
-                        DB::raw("string_agg(DISTINCT iregular_order_entry_part.height::character varying, ',') as height"),
-                        )
-                        ->where('iregular_order_entry_part.id_iregular_order_entry', $id_iregular_order_entry)
-                        ->groupBy('iregular_order_entry_part.item_code')
-                        ->get();
+        $orderEntryPart = IregularOrderEntryPart::where('id_iregular_order_entry', $id_iregular_order_entry)->get();
         if(!$orderEntryPart) throw new \Exception("id tidak ditemukan", 400);
 
         $arr = [];
         foreach ($orderEntryPart as $item) {
-            $arr[$item->item_code] = [
-                'nett_weight' => round($item->nett_weight / 1000, 2),
-                'gross_weight' => $item->gross_weight,
-                'measurement' => $item->measurement,
-                'length' => $item->length,
-                'width' => $item->width,
-                'height' => $item->height,
-            ];
+            if (!isset($arr[$item->order_no])) {
+                $arr[$item->order_no] = [
+                    'nett_weight' => 0,
+                    'gross_weight' => 0,
+                    'measurement' => 0,
+                    'length' => 0,
+                    'width' => 0,
+                    'height' => 0,
+                ];
+            }
+
+            $arr[$item->order_no]['nett_weight'] += round($item->net_weight / 1000, 2) * $item->qty;
+            $arr[$item->order_no]['gross_weight'] += $item->gross_weight;
+            $arr[$item->order_no]['measurement'] += $item->measurement;
+            $arr[$item->order_no]['length'] .= $item->length.', ';
+            $arr[$item->order_no]['width'] .= $item->width.', ';
+            $arr[$item->order_no]['height'] .= $item->height.', ';
         }
 
         $casemark_data = IregularDeliveryPlanCaseMark::where('id_iregular_delivery_plan', $delivery_plan->id)->get();
@@ -704,13 +702,13 @@ $orderEntry->address_consignee",
                 'part_no' => explode(' ', $value->description)[0],
                 'qty' => $value->qty,
                 'no' =>  $key +1,
-                'nett_weight' => $arr[explode(' ',$value->description)[0]]['nett_weight'] * $value->qty,
-                'gross_weight' => $arr[explode(' ',$value->description)[0]]['gross_weight'],
+                'nett_weight' => $arr[$value->order_no]['nett_weight'],
+                'gross_weight' => $arr[$value->order_no]['gross_weight'],
                 'model_code' => $model_code[explode(' ',$value->description)[0]]['model_code'],
                 'type_box' => $invoice_data->type_package,
-                'length' => $arr[explode(' ',$value->description)[0]]['length'],
-                'width' => $arr[explode(' ',$value->description)[0]]['width'],
-                'height' => $arr[explode(' ',$value->description)[0]]['height'],
+                'length' => $arr[$value->order_no]['length'],
+                'width' => $arr[$value->order_no]['width'],
+                'height' => $arr[$value->order_no]['height'],
                 'hs_code' => $value->hs_code
             ];
         }
@@ -820,7 +818,7 @@ $orderEntry->address_consignee",
                         'qty' => $qty += $value->qty,
                         'nett_weight' => $nett_weight += round((float)$value->net_weight / 1000, 2) * $value->qty,
                         'gross_weight' => $gross_weight += (float)$value->gross_weight,
-                        'measurement' => $measurement += ($value->length * $value->width * $value->height / 1000000000)
+                        'measurement' => $measurement += round($value->length * $value->width * $value->height / 1000000000, 3)
                     ];
                 }
             }
