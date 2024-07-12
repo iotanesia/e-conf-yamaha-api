@@ -619,17 +619,17 @@ $orderEntry->address_consignee",
 
         $total = [];
         foreach ($orderEntryPart as $item) {
-            if (!isset($total[$item->order_no])) {
-                $total[$item->order_no] = [
+            if (!isset($total[$item->item_code])) {
+                $total[$item->item_code] = [
                     'nett_weight' => 0,
                     'gross_weight' => 0,
                     'measurement' => 0,
                 ];
             }
 
-            $total[$item->order_no]['nett_weight'] += round($item->net_weight / 1000, 2) * $item->qty;
-            $total[$item->order_no]['gross_weight'] += $item->gross_weight;
-            $total[$item->order_no]['measurement'] += $item->measurement;
+            $total[$item->item_code]['nett_weight'] += round($item->net_weight / 1000, 2) * $item->qty;
+            $total[$item->item_code]['gross_weight'] += $item->gross_weight;
+            $total[$item->item_code]['measurement'] += $item->measurement;
         }
 
         $invoice_data = self::getInvoiceDetail($request, $id_iregular_order_entry);
@@ -641,9 +641,9 @@ $orderEntry->address_consignee",
                 'qty' => $value->qty,
                 'total_package' => $value->no_package,
                 'total_price' => $value->amount,
-                'measurement' => $total[$value->order_no]['measurement'],
-                'nett_weight' => $total[$value->order_no]['nett_weight'],
-                'gross_weight' => $total[$value->order_no]['gross_weight']
+                'measurement' => $total[explode(' ', $value->description)[0]]['measurement'],
+                'nett_weight' => $total[explode(' ', $value->description)[0]]['nett_weight'],
+                'gross_weight' => $total[explode(' ', $value->description)[0]]['gross_weight']
             ];
         }
 
