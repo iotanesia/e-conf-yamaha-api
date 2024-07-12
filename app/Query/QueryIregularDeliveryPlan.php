@@ -666,18 +666,18 @@ $orderEntry->address_consignee",
                     'nett_weight' => 0,
                     'gross_weight' => 0,
                     'measurement' => 0,
-                    'length' => 0,
-                    'width' => 0,
-                    'height' => 0,
+                    'length' => null,
+                    'width' => null,
+                    'height' => null,
                 ];
             }
 
             $arr[$item->order_no]['nett_weight'] += round($item->net_weight / 1000, 2) * $item->qty;
             $arr[$item->order_no]['gross_weight'] += $item->gross_weight;
             $arr[$item->order_no]['measurement'] += $item->measurement;
-            $arr[$item->order_no]['length'] .= $item->length.', ';
-            $arr[$item->order_no]['width'] .= $item->width.', ';
-            $arr[$item->order_no]['height'] .= $item->height.', ';
+            $arr[$item->order_no]['length'] .= count($orderEntryPart) > 1 ? $item->length.', ' : $item->length;
+            $arr[$item->order_no]['width'] .= count($orderEntryPart) > 1 ? $item->width.', ' : $item->width;
+            $arr[$item->order_no]['height'] .= count($orderEntryPart) > 1 ? $item->height.', ' : $item->height;
         }
 
         $casemark_data = IregularDeliveryPlanCaseMark::where('id_iregular_delivery_plan', $delivery_plan->id)->get();
@@ -712,7 +712,7 @@ $orderEntry->address_consignee",
                 'hs_code' => $value->hs_code
             ];
         }
-
+dd($data);
         $filename = 'file-'.Carbon::now()->format('Ymd');
         return Excel::download(new IregularCsvExport($data), $filename.'.csv');
     }
