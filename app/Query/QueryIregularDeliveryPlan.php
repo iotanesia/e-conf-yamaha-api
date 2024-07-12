@@ -828,6 +828,13 @@ $orderEntry->address_consignee",
                 $casemark[$value->item_no] = $value;
             }
 
+            $count_package = [];
+            $comulative_count = 0;
+            foreach (array_values(array_unique($order_no->toArray())) as $value) {;
+                $comulative_count += count($per_order[$value]);
+                $count_package[$value] = $comulative_count;
+            }
+
             Pdf::loadView('pdf.iregular.packing.packing_list', [
                 'data' => $data['items'],
                 'packing_data' => $packing_data,
@@ -837,6 +844,7 @@ $orderEntry->address_consignee",
                 'order_no' => $order_no,
                 'per_order' => $per_order,
                 'total_per_order' => $total_per_order,
+                'count_package' => $count_package,
                 'total' => $total
             ])
             ->save($pathToFile)

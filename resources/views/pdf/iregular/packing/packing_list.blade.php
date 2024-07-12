@@ -168,7 +168,7 @@
     </table>
     <hr>
 
-    @foreach (array_unique($order_no->toArray()) as $iteration => $order)
+    @foreach (array_values(array_unique($order_no->toArray())) as $iteration => $order)
     <table style="margin-top: 10px;">
         <tr>
             <td class="no-bt no-bl no-br">Order No. {{ $order }}</td>
@@ -194,13 +194,13 @@
                         {{ $casemark[$item->item_code]->destination ?? null }} <br>
                         MADE IN INDONESIA <br>
                         INV. No. {{ $invoice_data->invoice_no }} <br>
-                        C/No. : {{ $iteration > 0 ? $iteration+1 : $key+1 }} - {{ $iteration > 0 ? count($per_order[$order]) + $iteration : count($per_order[$order]) }}
+                        C/No. : {{ $iteration > 0 ? $count_package[array_values(array_unique($order_no->toArray()))[$iteration-1]] + $key+1 : $key+1 }} - {{ $iteration > 0 ? $count_package[array_values(array_unique($order_no->toArray()))[$iteration-1]] + count($per_order[$order]) : count($per_order[$order]) }}
                     </td>
                 @else
                     <td class="no-bt"></td>
                 @endif
                 
-                <td style='padding-bottom:5px;' class='text-center'>{{ $iteration > 0 ? $iteration+$key+1 : $key+1 }}</td>
+                <td style='padding-bottom:5px;' class='text-center'>{{ $iteration > 0 ? $count_package[array_values(array_unique($order_no->toArray()))[$iteration-1]] + $key+1 : $key+1 }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->item_code."   ".$item->item_name }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ $item->qty }}</td>
                 <td style='padding-bottom:5px;' class='text-center'>{{ round($item->net_weight / 1000, 2) * $item->qty }}</td>
