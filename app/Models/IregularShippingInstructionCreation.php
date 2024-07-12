@@ -79,4 +79,9 @@ class IregularShippingInstructionCreation extends Model
             // $model->uuid = (string) Str::uuid();
         });
     }
+
+    public function refShippingInstruction()
+    {
+        return $this->belongsTo(IregularShippingInstruction::class,'id_iregular_shipping_instruction','id');
+    }
 }

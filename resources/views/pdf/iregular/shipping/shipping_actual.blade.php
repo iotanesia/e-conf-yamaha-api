@@ -231,30 +231,40 @@
             </table>
             <table>
                 <table style="border: 1px solid #000; border-top:hidden;">
-                    <table style="padding-right: 570px"> 
-                        <tr>
-                            <td width="80" class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
-                        </tr>
-                        <tr>
-                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $data->order_no ?? null }}</td>
-                        </tr>
-                        <tr>
-                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">999999-9999</td>
-                        </tr>
-                        <tr>
-                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $data->port ?? null }}</td>
-                        </tr>
-                        <tr>
-                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
-                        </tr>
-                        <tr>
-                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $data->invoice_no }}</td>
-                        </tr>
-                        <tr>
-                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : 1</td>
-                        </tr>
-                        <br>
-                    </table>
+                    <tr>
+                        @foreach (array_values(array_unique($order_no->toArray())) as $iteration => $order)
+                            @foreach ($per_order[$order] as $key => $item)
+                                @if ($key == 0)
+                                    <td class="{{ $key !== 0 ? 'no-bl' : null }}">
+                                        <table> 
+                                            <tr>
+                                                <td width="80" class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $order }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $casemark[$item->item_code]->model_code ?? null }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $casemark[$item->item_code]->destination ?? null }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">MADE IN INDONESIA</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">INV. No. {{ $order_entry->invoice_no }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $iteration > 0 ? $count_package[array_values(array_unique($order_no->toArray()))[$iteration-1]] + $key+1 : $key+1 }} - {{ $iteration > 0 ? $count_package[array_values(array_unique($order_no->toArray()))[$iteration-1]] + count($per_order[$order]) : count($per_order[$order]) }}</td>
+                                            </tr>
+                                            <br>
+                                        </table>
+                                    </td>
+                                @endif
+                            @endforeach
+                        @endforeach
+                    </tr>
                 </table>
             
             {{-- <table>

@@ -104,9 +104,26 @@ class QueryIregularShippingInstruction extends Model {
     public static function printShippingCreation($request,$id,$pathToFile,$filename){
         try {
             $data = self::getCreation($request,$id);
+            $delivery_plan = $data['items']->refShippingInstruction->refDeliveryPlan;
+            $order_entry = $data['items']->refShippingInstruction->refDeliveryPlan->refOrderEntry;
+            $casemark_data = QueryIregularDeliveryPlan::getCaseMark($request, $delivery_plan->id_iregular_order_entry)['items'];
+
+            $order_no = $delivery_plan->refOrderEntry->manyOrderEntryPart()->orderBy('order_no')->pluck('order_no');
+            $per_order = [];
+            foreach (array_unique($order_no->toArray()) as $order) {
+                $per_order[$order] = $delivery_plan->refOrderEntry->manyOrderEntryPart()->where('order_no', $order)->get();
+            }
+
+            $casemark = [];
+            foreach ($casemark_data as $value) {
+                $casemark[$value->item_no] = $value;
+            }
 
             Pdf::loadView('pdf.iregular.shipping.shipping_actual', [
-                'data' => $data['items']
+                'data' => $data['items'],
+                'order_entry' => $order_entry,
+                'order_no' => $order_no,
+                'per_order' => $per_order,
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
