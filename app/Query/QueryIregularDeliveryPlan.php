@@ -712,7 +712,7 @@ $orderEntry->address_consignee",
                 'hs_code' => $value->hs_code
             ];
         }
-dd($data);
+
         $filename = 'file-'.Carbon::now()->format('Ymd');
         return Excel::download(new IregularCsvExport($data), $filename.'.csv');
     }
