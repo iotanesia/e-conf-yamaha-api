@@ -659,27 +659,6 @@ $orderEntry->address_consignee",
         $orderEntryPart = IregularOrderEntryPart::where('id_iregular_order_entry', $id_iregular_order_entry)->get();
         if(!$orderEntryPart) throw new \Exception("id tidak ditemukan", 400);
 
-        $arr = [];
-        foreach ($orderEntryPart as $item) {
-            if (!isset($arr[$item->order_no])) {
-                $arr[$item->order_no] = [
-                    'nett_weight' => 0,
-                    'gross_weight' => 0,
-                    'measurement' => 0,
-                    'length' => null,
-                    'width' => null,
-                    'height' => null,
-                ];
-            }
-
-            $arr[$item->order_no]['nett_weight'] += round($item->net_weight / 1000, 2) * $item->qty;
-            $arr[$item->order_no]['gross_weight'] += $item->gross_weight;
-            $arr[$item->order_no]['measurement'] += $item->measurement;
-            $arr[$item->order_no]['length'] .= count($orderEntryPart) > 1 ? $item->length.', ' : $item->length;
-            $arr[$item->order_no]['width'] .= count($orderEntryPart) > 1 ? $item->width.', ' : $item->width;
-            $arr[$item->order_no]['height'] .= count($orderEntryPart) > 1 ? $item->height.', ' : $item->height;
-        }
-
         $casemark_data = IregularDeliveryPlanCaseMark::where('id_iregular_delivery_plan', $delivery_plan->id)->get();
         $model_code = [];
         foreach ($casemark_data as $val) {
@@ -688,10 +667,17 @@ $orderEntry->address_consignee",
             ];
         }
 
-        $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
         $invoiceDetail = self::getInvoiceDetail($request, $id_iregular_order_entry);
+        $hs_code = [];
+        foreach ($invoiceDetail['items'] as $val) {
+            $hs_code[$val->order_no] = [
+                'hs_code' => $val->hs_code
+            ];
+        }
+
+        $invoice_data = IregularDeliveryPlanInvoice::where('id_iregular_delivery_plan', $delivery_plan->id)->first();
         $data = [];
-        foreach ($invoiceDetail['items'] as $key => $value) {
+        foreach ($orderEntryPart as $key => $value) {
             $data[] = [
                 'gl_account' => 'G/L Account',
                 'coa' => '4421000010',
@@ -699,17 +685,17 @@ $orderEntry->address_consignee",
                 'container' => null,
                 'kosong' => null,
                 'po_no' => $value->order_no,
-                'part_no' => explode(' ', $value->description)[0],
+                'part_no' => $value->item_code,
                 'qty' => $value->qty,
                 'no' =>  $key +1,
-                'nett_weight' => $arr[$value->order_no]['nett_weight'],
-                'gross_weight' => $arr[$value->order_no]['gross_weight'],
-                'model_code' => $model_code[explode(' ',$value->description)[0]]['model_code'],
+                'nett_weight' => round($value->net_weight / 1000, 2) * $value->qty,
+                'gross_weight' => $value->gross_weight,
+                'model_code' => $model_code[$value->item_code]['model_code'],
                 'type_box' => $invoice_data->type_package,
-                'length' => $arr[$value->order_no]['length'],
-                'width' => $arr[$value->order_no]['width'],
-                'height' => $arr[$value->order_no]['height'],
-                'hs_code' => $value->hs_code
+                'length' => $value->length,
+                'width' => $value->width,
+                'height' => $value->height,
+                'hs_code' => $hs_code[$value->order_no]['hs_code']
             ];
         }
 
