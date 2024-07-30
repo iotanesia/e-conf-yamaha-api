@@ -2238,6 +2238,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         });
         $filteredData = array_values(array_filter($data->toArray()));
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
+        usort($flattenedArray, function ($a, $b) {
+            return $a['kode_barang'] <=> $b['kode_barang'];
+        });
         if($id_fixed_quantity[0]->refRegularDeliveryPlan->datasource == "PYMAC") {
             foreach ($flattenedArray as $key => &$subarray) {
                 $subarray["seri_barang"] = $key +1;
@@ -2249,9 +2252,6 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 }
             }
         }
-        usort($flattenedArray, function ($a, $b) {
-            return $a['kode_barang'] <=> $b['kode_barang'];
-        });
         $filename = 'peb-'.Carbon::now()->format('Ymd');
 
         return Excel::download(new PebExport($flattenedArray), $filename.'.xlsx');
