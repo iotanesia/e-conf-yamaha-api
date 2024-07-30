@@ -107,7 +107,7 @@
                 <table>
                     <tr>
                         <td width="80" class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Stuffing Date </td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" colspan="2"> : <b>{{$data->etd_wh}}</b></td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" colspan="2"> : <b>{{$data->instruction_date}}</b></td>
                     </tr>
                     <tr>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Shipped By </td>
