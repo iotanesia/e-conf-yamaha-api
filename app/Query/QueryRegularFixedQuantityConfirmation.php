@@ -2134,6 +2134,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $subarray["no"] = $subarray["no"] == '0' ? $no++ : $flattenedArray[$key-1]["no"];
             }
         }
+        usort($flattenedArray, function ($a, $b) {
+            if ($a['po_no'] == $b['po_no']) {
+                return $a['model_code'] <=> $b['model_code'];
+            }
+            return $a['po_no'] <=> $b['po_no'];
+        });
         $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
         return Excel::download(new PackingExport($flattenedArray), $filename.'.csv');
@@ -2243,6 +2249,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 }
             }
         }
+        usort($flattenedArray, function ($a, $b) {
+            return $a['kode_barang'] <=> $b['kode_barang'];
+        });
         $filename = 'peb-'.Carbon::now()->format('Ymd');
 
         return Excel::download(new PebExport($flattenedArray), $filename.'.xlsx');
