@@ -62,7 +62,7 @@
 
     @foreach ($data as $key => $item) 
     {{-- @if ($check == null) part set --}}
-    @foreach (array_unique($item->manyFixedQuantityConfirmation->pluck('order_no')->toArray()) as $key => $order)
+    @foreach (array_unique($item->manyFixedQuantityConfirmation()->orderBy('order_no')->pluck('order_no')->toArray()) as $key => $order)
         @if ($item->datasource == "YPMJ")
             @foreach ($boxYPMJ as $jml => $box_item)
                 @for ($i=1; $i<=2; $i++)
