@@ -110,7 +110,7 @@
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" colspan="2"> : <b>{{$data->instruction_date}}</b></td>
                     </tr>
                     <tr>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Shipped By </td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">Shipped By </td> 
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" colspan="2"> : {{$data->shipped_by}}</td>
                     </tr>
                     <tr>
