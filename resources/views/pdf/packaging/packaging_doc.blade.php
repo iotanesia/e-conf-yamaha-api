@@ -101,7 +101,7 @@
                 @endif
                 <td class="no-bo">ETA {{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</td>
                 <td class="no-bo">:</td>
-                <td class="no-bo">{{ date('d F Y', strtotime($item->etd_ypmi)) }}</td>
+                <td class="no-bo">-</td>
             </tr>
             <tr>
                 <td class="no-bo" width='70'>Seal No</td>
