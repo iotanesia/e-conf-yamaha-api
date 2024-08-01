@@ -2128,18 +2128,18 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $filteredData = array_values(array_filter($data->toArray()));
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
-        if($id_fixed_quantity[0]->refRegularDeliveryPlan->datasource == "PYMAC") {
-            $no = 1;
-            foreach ($flattenedArray as $key => &$subarray) {
-                $subarray["no"] = $subarray["no"] == '0' ? $no++ : $flattenedArray[$key-1]["no"];
-            }
-        }
         usort($flattenedArray, function ($a, $b) {
             if ($a['po_no'] == $b['po_no']) {
                 return $a['model_code'] <=> $b['model_code'];
             }
             return $a['po_no'] <=> $b['po_no'];
         });
+        if($id_fixed_quantity[0]->refRegularDeliveryPlan->datasource == "PYMAC") {
+            $no = 1;
+            foreach ($flattenedArray as $key => &$subarray) {
+                $subarray["no"] = $subarray["no"] == '0' ? $no++ : $flattenedArray[$key-1]["no"];
+            }
+        }
         $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
         return Excel::download(new PackingExport($flattenedArray), $filename.'.csv');
