@@ -901,7 +901,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
                     'summary_container' => count($summary_box),
-                    'hs_code' => implode(',', $hs_code),
+                    'hs_code' => implode(',', array_unique($hs_code)),
                     'via' => $item->mot,
                     'freight_charge' => 'COLLECT',
                     'incoterm' => 'FOB',
