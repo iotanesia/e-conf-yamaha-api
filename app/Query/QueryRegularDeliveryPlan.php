@@ -1952,6 +1952,7 @@ class QueryRegularDeliveryPlan extends Model {
                 }
                 $deliv_plan = RegularDeliveryPlan::with('manyDeliveryPlanBox')->orderBy('item_no','asc')->whereIn('id',$id_delivery_plan)->get();
 
+                $hs_code = [];
                 $res_box_single = [];
                 $res_box_set = [];
                 foreach ($deliv_plan as $key => $deliv_value) {
@@ -2076,6 +2077,7 @@ class QueryRegularDeliveryPlan extends Model {
                         $res_box_set[] = $box_set;
                     }
 
+                    $hs_code[] = $deliv_value->refPart->hs_code ?? null;
                 }
                 
                 $box = array_merge((array_merge(...$res_box_set) ?? []), (array_merge(...$res_box_single) ?? []));
@@ -2135,7 +2137,7 @@ class QueryRegularDeliveryPlan extends Model {
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
                     'summary_container' => count($summary_box),
-                    'hs_code' => '',
+                    'hs_code' => implode(',', array_unique($hs_code)),
                     'via' => $item->mot,
                     'freight_charge' => 'COLLECT',
                     'incoterm' => 'FOB',
