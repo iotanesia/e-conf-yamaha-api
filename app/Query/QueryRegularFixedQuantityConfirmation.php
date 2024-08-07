@@ -701,8 +701,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->get();
 
             $id_fixed_quantity = [];
+            $item_no = [];
             foreach ($fixedQuantity as $item){
                 $id_fixed_quantity[] = $item->id;
+                $item_no[] = $item->item_no;
             }
 
             $quantityConfirmationBox = RegularFixedQuantityConfirmationBox::select('id_fixed_quantity_confirmation',
@@ -783,6 +785,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'id_fixed_actual_container' => $actual_container->id,
                 'status_bml' => 0,
                 'datasource' => $params->datasource,
+                'item_no' => implode(',', $item_no),
             ];
 
             if($params->datasource == Constant::PYMAC_DATASOURCE){

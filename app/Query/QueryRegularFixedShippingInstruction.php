@@ -610,7 +610,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.etd_jkt::character varying, ',') as etd_jkt")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.code_consignee::character varying, ',') as code_consignee")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.datasource::character varying, ',') as datasource")
-        ,DB::raw("string_agg(DISTINCT b.hs_code::character varying, ',') as hs_code")
+        ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.item_no::character varying, ',') as item_no")
         ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
         ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
         ,DB::raw("string_agg(DISTINCT e.name::character varying, ',') as type_delivery")
@@ -631,7 +631,6 @@ class QueryRegularFixedShippingInstruction extends Model {
         ->where('regular_fixed_actual_container_creation.code_consignee', $params->code_consignee)
         ->where('regular_fixed_actual_container_creation.etd_jkt', $params->etd_jkt)
         ->where('regular_fixed_actual_container_creation.datasource', $params->datasource)
-        ->leftJoin('mst_part as b','regular_fixed_actual_container_creation.item_no','b.item_no')
         ->leftJoin('mst_mot as c','regular_fixed_actual_container_creation.id_mot','c.id')
         ->leftJoin('mst_port_of_discharge as d','regular_fixed_actual_container_creation.code_consignee','d.code_consignee')
         ->leftJoin('mst_port_of_loading as e','regular_fixed_actual_container_creation.id_type_delivery','e.id_type_delivery')
@@ -888,6 +887,12 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $jml_container[] = count(explode(',',$value['summary_box']));
                 }
 
+                $hs_code = [];
+                foreach (explode(',', $item->item_no) as $value) {
+                    $part = MstPart::where('item_no', $value)->first();
+                    $hs_code[] = $part->hs_code;
+                }
+
                 return [
                     'id_actual_container_creation' => $params->id,
                     'code_consignee' => $item->code_consignee,
@@ -896,7 +901,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
                     'summary_container' => count($summary_box),
-                    'hs_code' => $item->hs_code,
+                    'hs_code' => implode(',', $hs_code),
                     'via' => $item->mot,
                     'freight_charge' => 'COLLECT',
                     'incoterm' => 'FOB',
