@@ -62,7 +62,7 @@
 
     @foreach ($data as $key => $item) 
     {{-- @if ($check == null) part set --}}
-    @foreach (array_unique($item->manyFixedQuantityConfirmation()->orderBy('order_no')->pluck('order_no')->toArray()) as $key => $order)
+    @foreach ($order_data as $key => $order)
         @if ($item->datasource == "YPMJ")
             @foreach ($boxYPMJ as $jml => $box_item)
                 @for ($i=1; $i<=2; $i++)
@@ -70,7 +70,7 @@
                     <tr>
                         <td class="text-center" style="font-size: 35px; font-weight: 500; vertical-align=top; padding: 20px;">
                             <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
-                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order ?? null }}</b></p>
+                            <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order['order_no'] ?? null }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>-</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</b></p>
                             <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>
@@ -139,7 +139,7 @@
                 @endfor
             @endforeach
         @else
-            @foreach ($box[$order] as $jml => $box_item)
+            @foreach ($box[$order['order_no'].$order['cust_item_no']] as $jml => $box_item)
                 @for ($i=1; $i<=2; $i++)
 
                 @if ($i == 1)
@@ -150,8 +150,8 @@
                         <tr>
                             <td class="text-center" style="font-size: 40px; font-weight: 500; vertical-align=top; padding: 20px;">
                                 <p style="margin:0 0 15px 0; padding:0;"><b>YAMAHA</b></p>
-                                <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order ?? null }}</b></p>
-                                <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }}</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order['order_no'] ?? null }}</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>{{ $order['cust_item_no'] ?? null }}</b></p>
                                 <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</b></p>
                                 <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>
                                 <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p>
