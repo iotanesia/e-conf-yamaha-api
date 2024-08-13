@@ -115,10 +115,10 @@
         <hr>
 
             {{-- per order no --}}
-            @foreach (array_unique($item->manyFixedQuantityConfirmation()->orderBy('order_no')->pluck('order_no')->toArray()) as $iteration => $order)
+            @foreach ($order_data as $iteration => $order)
             <table style="margin-top: 10px;">
                 <tr>
-                    <td class="no-bt no-bl no-br">Order No. {{ $order ?? null }}</td>
+                    <td class="no-bt no-bl no-br">Order No. {{ $order['order_no'] ?? null }}</td>
                     <td class="no-bt no-bl no-br" colspan="6"></td>
                 </tr>
                 <tr>
@@ -133,7 +133,7 @@
                 
                 {{-- <p class="flying-text text-center">
                     YAMAHA <br>
-                    {{ $order ?? null }}  <br>
+                    {{ $order['order_no'] ?? null }}  <br>
                     999999-9999 <br>
                     {{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }} <br>
                     MADE IN INDONESIA <br>
@@ -166,7 +166,7 @@
                                     @if ($i == 0)
                                         <td class="text-center">
                                             YAMAHA <br>
-                                            {{ $order ?? null }}  <br>
+                                            {{ $order['order_no'] ?? null }}  <br>
                                             - <br>
                                             {{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }} <br>
                                             MADE IN INDONESIA <br>
@@ -193,19 +193,19 @@
                         @endfor
                     @endforeach
                 @else
-                    @foreach ($box[$order] as $key => $box_item)
+                    @foreach ($box[$order['order_no'].$order['cust_item_no']] as $key => $box_item)
                         @for ($i = 0; $i < count($box_item['item_no_series']); $i++)
                             <tr>
                                 @if ($key == 0)
                                     @if ($i == 0)
                                         <td class="text-center">
                                             YAMAHA <br>
-                                            {{ $order ?? null }}  <br>
-                                            {{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }} <br>
+                                            {{ $order['order_no'] ?? null }}  <br>
+                                            {{ $order['cust_item_no'] ?? null }} <br>
                                             {{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }} <br>
                                             MADE IN INDONESIA <br>
                                             INV. No. {{ $item->no_packaging }} <br>
-                                            C/No. : {{ $iteration > 0 ? $iteration+1 : $key+1 }} - {{ $iteration > 0 ? count($box[$order]) + $iteration : count($box[$order]) }}
+                                            C/No. : {{ $iteration > 0 ? $iteration+1 : $key+1 }} - {{ $iteration > 0 ? count($box[$order['order_no'].$order['cust_item_no']]) + $iteration : count($box[$order['order_no'].$order['cust_item_no']]) }}
                                         </td>
                                     @else
                                         <td class="no-bt"></td>
@@ -235,10 +235,10 @@
                 {{-- total --}}
                 <tr>
                     <td colspan="3" class="text-center"> TOTAL</td>
-                    <td class="text-center">{{ $sum_per_order[$order]['qty'] }}</td>
-                    <td class="text-center">{{ number_format(($sum_per_order[$order]['nett_weight']),2) }}</td>
-                    <td class="text-center">{{ number_format(($sum_per_order[$order]['gross_weight']),2) }}</td>
-                    <td class="text-center">{{ $item->datasource == "YPMJ" ? $count_meas_ypmj : number_format(($sum_per_order[$order]['meas']),3) }}</td>
+                    <td class="text-center">{{ $sum_per_order[$order['order_no']]['qty'] }}</td>
+                    <td class="text-center">{{ number_format(($sum_per_order[$order['order_no']]['nett_weight']),2) }}</td>
+                    <td class="text-center">{{ number_format(($sum_per_order[$order['order_no']]['gross_weight']),2) }}</td>
+                    <td class="text-center">{{ $item->datasource == "YPMJ" ? $count_meas_ypmj : number_format(($sum_per_order[$order['order_no']]['meas']),3) }}</td>
                 </tr>
             </table>
             @endforeach
