@@ -514,10 +514,20 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $boxArray = [];
                 foreach ($fixedQuantity as $order) {
                     $order_no = $order->order_no;
+                    $cust_item_no = $order->cust_item_no;
+                    $exists = false;
                     if (!isset($boxArray[$order_no])) {
                         $boxArray[$order_no] = [];
                     }
-                    $boxArray[$order_no][] = $order->order_no;
+                    foreach ($boxArray[$order_no] as $existing_item) {
+                        if ($existing_item['cust_item_no'] === $cust_item_no) {
+                            $exists = true;
+                            break;
+                        }
+                    }
+                    if (!$exists) {
+                        $boxArray[$order_no.$cust_item_no][] = $order->order_no.$order->cust_item_no;
+                    }
                 }
             }
 
@@ -525,12 +535,23 @@ class QueryRegularFixedShippingInstruction extends Model {
             foreach ($fixedQuantity as $key => $item) {
                 $qrcode[] = array_unique($item->manyFixedQuantityConfirmationBox->pluck('qrcode')->toArray());
             }
+
+            $order_data = [];
+            foreach ($actual_container as $item) {
+                $order_data = $item->manyFixedQuantityConfirmation()
+                            ->select('order_no', 'cust_item_no', DB::raw('COUNT(id) as item_count'))  // Aggregate function example
+                            ->groupBy('order_no', 'cust_item_no')
+                            ->orderBy('order_no')
+                            ->get()
+                            ->toArray();
+            }
             
             Pdf::loadView('pdf.fixed_shipping_instruction',[
               'data' => $data,
               'actual_container' => $actual_container,
               'box' => $boxArray,
-              'bucket' => $qrcode
+              'bucket' => $qrcode,
+              'order_data' => $order_data
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
@@ -1117,6 +1138,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                             $res['width'] = $item->refMstBox->width;
                             $res['height'] = $item->refMstBox->height;
                             $res['order_no'] = $item->refRegularDeliveryPlan->order_no;
+                            $res['cust_item_no'] = $item->refRegularDeliveryPlan->cust_item_no;
                             return $res;
                         }
                     });
@@ -1160,6 +1182,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $width = '';
                     $height = '';
                     $order_no = '';
+                    $cust_item_no = '';
                     $count_net_weight = 0;
                     foreach ($mst_box as $key => $value) {
                         $qty_box[] = $value->qty;
@@ -1174,6 +1197,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $width = $value->width;
                         $height = $value->height;
                         $order_no = $deliv_value->order_no;
+                        $cust_item_no = $deliv_value->cust_item_no;
                     }
         
                     $id_deliv_box = [];
@@ -1231,6 +1255,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                             'width' => $width,
                             'height' => $height,
                             'order_no' => $order_no,
+                            'cust_item_no' => $cust_item_no,
                         ];
                     }
                     
@@ -1243,10 +1268,20 @@ class QueryRegularFixedShippingInstruction extends Model {
             $boxArray = [];
             foreach ($box as $box_item) {
                 $order_no = $box_item['order_no'];
+                $cust_item_no = $box_item['cust_item_no'];
+                $exists = false;
                 if (!isset($boxArray[$order_no])) {
                     $boxArray[$order_no] = [];
                 }
-                $boxArray[$order_no][] = $box_item;
+                foreach ($boxArray[$order_no] as $existing_item) {
+                    if ($existing_item['cust_item_no'] === $cust_item_no) {
+                        $exists = true;
+                        break;
+                    }
+                }
+                if (!$exists) {
+                    $boxArray[$order_no.$cust_item_no][] = $box_item;
+                }
             }
             
             $count_qty = 0;
@@ -1294,11 +1329,22 @@ class QueryRegularFixedShippingInstruction extends Model {
                 ];
             }
 
+            $order_data = [];
+            foreach ($data as $item) {
+                $order_data = $item->manyFixedQuantityConfirmation()
+                            ->select('order_no', 'cust_item_no', DB::raw('COUNT(id) as item_count'))  // Aggregate function example
+                            ->groupBy('order_no', 'cust_item_no')
+                            ->orderBy('order_no')
+                            ->get()
+                            ->toArray();
+            }
+
             Pdf::loadView('pdf.packaging.packaging_doc',[
                 'data' => $data,
                 'box' => $boxArray,
                 'boxYPMJ' => $cek[0]->datasource == "YPMJ" ? QueryRegularFixedQuantityConfirmation::groupByQRCode($box) : [],
                 'gross_weight_per_part' => $gross_weight_per_part,
+                'order_data' => $order_data,
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
                 'count_gross_weight' => $count_gross_weight,
@@ -1648,10 +1694,20 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $boxArray = [];
                 foreach ($fixedQuantity as $order) {
                     $order_no = $order->order_no;
+                    $cust_item_no = $order->cust_item_no;
+                    $exists = false;
                     if (!isset($boxArray[$order_no])) {
                         $boxArray[$order_no] = [];
                     }
-                    $boxArray[$order_no][] = $order->order_no;
+                    foreach ($boxArray[$order_no] as $existing_item) {
+                        if ($existing_item['cust_item_no'] === $cust_item_no) {
+                            $exists = true;
+                            break;
+                        }
+                    }
+                    if (!$exists) {
+                        $boxArray[$order_no.$cust_item_no][] = $order->order_no.$order->cust_item_no;
+                    }
                 }
             }
 
@@ -1660,10 +1716,21 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $qrcode[] = array_unique($item->manyFixedQuantityConfirmationBox->pluck('qrcode')->toArray());
             }
 
+            $order_data = [];
+            foreach ($actual_container as $item) {
+                $order_data = $item->manyFixedQuantityConfirmation()
+                            ->select('order_no', 'cust_item_no', DB::raw('COUNT(id) as item_count'))  // Aggregate function example
+                            ->groupBy('order_no', 'cust_item_no')
+                            ->orderBy('order_no')
+                            ->get()
+                            ->toArray();
+            }
+
             Pdf::loadView('pdf.shipping_actual',[
                 'data' => $data,
                 'actual_container' => $actual_container,
                 'box' => $boxArray,
+                'order_data' => $order_data,
                 'bucket' => $qrcode
             ])->save($pathToFile)
                 ->setPaper('A4','potrait')

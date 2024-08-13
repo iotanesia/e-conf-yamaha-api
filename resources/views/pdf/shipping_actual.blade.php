@@ -244,17 +244,17 @@
                 <table style="border: 1px solid #000; border-top:hidden;">
                     <tr>
                         @foreach ($actual_container as $iteration => $item)
-                            @foreach (array_unique($item->manyFixedQuantityConfirmation()->orderBy('order_no')->pluck('order_no')->toArray()) as $key => $order)
+                            @foreach ($order_data as $key => $order)
                                 <td class="{{ $key !== 0 ? 'no-bl' : null }}">
                                     <table> 
                                         <tr>
                                             <td width="80" class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">YAMAHA</td>
                                         </tr>
                                         <tr>
-                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $order ?? null }}</td>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $order['order_no'] ?? null }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $item->manyFixedQuantityConfirmation()->where('order_no', $order)->first()->cust_item_no ?? null }}</td>
+                                            <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $order['cust_item_no'] ?? null }}</td>
                                         </tr>
                                         <tr>
                                             <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</td>
@@ -269,7 +269,7 @@
                                             @if ($item->datasource == 'YPMJ')
                                                 <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $key > 0 ? $key+1 : $iteration+1 }} - {{ $key > 0 ? count($bucket[$key]) + $key : count($bucket[$key]) }}</td>
                                             @else
-                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $key > 0 ? $key+1 : $iteration+1 }} - {{ $key > 0 ? count($box[$order]) + $key : count($box[$order]) }}</td>
+                                                <td class="no-bo text-left" style="padding: 0 0 0 5px; margin: 0;">C/No. : {{ $key > 0 ? $key+1 : $iteration+1 }} - {{ $key > 0 ? count($box[$order['order_no'].$order['cust_item_no']]) + $key : count($box[$order['order_no'].$order['cust_item_no']]) }}</td>
                                             @endif
                                         </tr>
                                         <br>
