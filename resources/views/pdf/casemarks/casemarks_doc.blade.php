@@ -155,7 +155,7 @@
                                 <p style="margin:0 0 15px 0; padding:0;"><b>{{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }}</b></p>
                                 <p style="margin:0 0 15px 0; padding:0;"><b>MADE IN INDONESIA</b></p>
                                 <p style="margin:0 0 15px 0; padding:0;"><b>INV.No. {{ $item->no_packaging }}</b></p>
-                                <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ ($key+1)+$jml }}</b></p>
+                                <p style="margin:0 0 15px 0; padding:0;"><b>C/No. : {{ $key > 0 ? $key+$jml+count($box[$order['order_no'].$order['cust_item_no']]) : $jml+1 }}</b></p>
                             </td>
                             <td class="text-center" style="font-size: 25px; font-weight: 500; vertical-align=top;">
                                 <p style="padding:0; margin: 0 0 10px 0;"><b>CUSTOMER :</b></p>

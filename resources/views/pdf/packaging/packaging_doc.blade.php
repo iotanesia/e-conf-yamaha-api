@@ -205,7 +205,7 @@
                                             {{ $item->refPartOfDischarge()->where('id_mot', $item->id_mot)->first()->port ?? null }} <br>
                                             MADE IN INDONESIA <br>
                                             INV. No. {{ $item->no_packaging }} <br>
-                                            C/No. : {{ $iteration > 0 ? $iteration+1 : $key+1 }} - {{ $iteration > 0 ? count($box[$order['order_no'].$order['cust_item_no']]) + $iteration : count($box[$order['order_no'].$order['cust_item_no']]) }}
+                                            C/No. : {{ $iteration > 0 ? $iteration+$key+count($box[$order['order_no'].$order['cust_item_no']]) : $key+1 }} - {{ $iteration > 0 ? (count($box[$order['order_no'].$order['cust_item_no']]) > 1 ? $iteration+1+count($box[$order['order_no'].$order['cust_item_no']]) : $iteration+count($box[$order['order_no'].$order['cust_item_no']])) : count($box[$order['order_no'].$order['cust_item_no']]) }}
                                         </td>
                                     @else
                                         <td class="no-bt"></td>
@@ -214,7 +214,7 @@
                                     <td class="no-bt"></td>
                                 @endif
                                 @if ($i % 2 == 0 && $i == 0)
-                                    <td style='padding-bottom:5px;' class='text-center'>{{ $iteration > 0 ? $iteration+$key+1 : $key+1 }}</td>
+                                    <td style='padding-bottom:5px;' class='text-center'>{{ $iteration > 0 ? $iteration+$key+count($box[$order['order_no'].$order['cust_item_no']]) : $key+1 }}</td>
                                 @else
                                     <td class="no-bt"></td>
                                 @endif
