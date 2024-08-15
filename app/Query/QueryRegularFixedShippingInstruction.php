@@ -704,7 +704,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $id_fixed_actual = $item->id_fixed_actual_container;
                 foreach ($deliv_plan as $key => $deliv_value) {
                     if ($deliv_value->item_no !== null) {
-                        foreach (explode(',', $item->item_no) as $value) {
+                        foreach (array_filter(explode(',', $item->item_no), function($value) {return !in_array($value, [null,""]);}) as $value) {
                             $part = MstPart::where('item_no', $value)->first();
                             $hs_code[] = $part->hs_code;
                         }
