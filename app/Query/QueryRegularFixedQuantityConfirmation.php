@@ -785,7 +785,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'id_fixed_actual_container' => $actual_container->id,
                 'status_bml' => 0,
                 'datasource' => $params->datasource,
-                'item_no' => implode(',', $item_no),
+                'item_no' => count(array_filter($item_no, function($value) {return $value !== null;})) > 0 ? implode(',', $item_no) : null,
             ];
 
             if($params->datasource == Constant::PYMAC_DATASOURCE){

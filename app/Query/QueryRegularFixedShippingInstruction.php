@@ -700,9 +700,15 @@ class QueryRegularFixedShippingInstruction extends Model {
 
                 $res_box_single = [];
                 $res_box_set = [];
+                $hs_code = [];
                 $id_fixed_actual = $item->id_fixed_actual_container;
                 foreach ($deliv_plan as $key => $deliv_value) {
                     if ($deliv_value->item_no !== null) {
+                        foreach (explode(',', $item->item_no) as $value) {
+                            $part = MstPart::where('item_no', $value)->first();
+                            $hs_code[] = $part->hs_code;
+                        }
+
                         $res = $deliv_value->manyFixedQuantityConfirmationBox->map(function($item, $i) use($id_fixed_actual, $deliv_value, $deliv_plan, $key) {
                             if ($item->refFixedQuantityConfirmation->id_fixed_actual_container == $id_fixed_actual) {
                                 $res['qrcode'] = $item->qrcode;
@@ -760,6 +766,9 @@ class QueryRegularFixedShippingInstruction extends Model {
                     
                     if ($deliv_value->item_no == null) {
                         $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan',$deliv_value->id)->get();
+                        foreach ($plan_set as $value) {
+                            $hs_code[] = $value->refPart->hs_code ?? null;
+                        }
                         $deliv_plan_box = $deliv_value->manyFixedQuantityConfirmationBox()
                                             ->whereHas('refFixedQuantityConfirmation', function ($q) use ($id_fixed_actual) {
                                                 $q->where('id_fixed_actual_container', $id_fixed_actual);
@@ -906,12 +915,6 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $summary_box[] = $value['summary_box'];
                     $container_type[] = $value['container'];
                     $jml_container[] = count(explode(',',$value['summary_box']));
-                }
-
-                $hs_code = [];
-                foreach (explode(',', $item->item_no) as $value) {
-                    $part = MstPart::where('item_no', $value)->first();
-                    $hs_code[] = $part->hs_code;
                 }
 
                 return [
