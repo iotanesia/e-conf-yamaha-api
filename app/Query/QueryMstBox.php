@@ -194,11 +194,14 @@ class QueryMstBox extends Model {
             ]);
 
             $params = $request->all();
-            $id_box = Model::where('id_box', Model::max('id_box'))->first()->id_box;
+            $latest_box = Model::where('id_box', Model::max('id_box'))->first();
+            $id_box = $latest_box->id_box ?? null;
+            $id_mst = $latest_box->id ?? null;
 
             for ($i=0; $i < count($params['item_no']); $i++) { 
                 $mst_part = MstPart::where('item_no', $params['item_no'][$i])->get();
                 self::create([
+                    "id" => $id_mst == null ? 1 : $id_mst +1,
                     "no_box" => $params['no_box'] ?? null,
                     "datasource" => $params['datasource'] ?? null,
                     "id_group_product" => count($params['item_no']) > 1 ? $params['id_group_product'][$i] : $params['id_group_product'],

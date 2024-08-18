@@ -11,6 +11,7 @@ class MstBox extends Model
     use HasFactory,SoftDeletes;
     protected $table = 'mst_box';
     public $fillable = [
+        'id',
         'no_box',
         'id_part',
         'id_group_product',
