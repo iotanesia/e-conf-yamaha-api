@@ -1701,11 +1701,19 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             $order_data = [];
             foreach ($data as $item) {
                 $order_data = $item->manyFixedQuantityConfirmation()
-                            ->select('order_no', 'cust_item_no', DB::raw('COUNT(id) as item_count'))  // Aggregate function example
+                            ->select('order_no', 'cust_item_no', DB::raw('COUNT(id) as item_count')) 
                             ->groupBy('order_no', 'cust_item_no')
                             ->orderBy('order_no')
                             ->get()
                             ->toArray();
+            }
+
+            $package_number = [];
+            ksort($boxArray);
+            foreach ($boxArray as $order => $value) {
+                foreach ($value as $key => $innerValue) {
+                    $package_number[$order.$key] = count($package_number) + 1;
+                }
             }
 
             Pdf::loadView('pdf.casemarks.casemarks_doc',[
@@ -1713,6 +1721,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'data' => $data,
                 'order_data' => $order_data,
                 'box' => $boxArray,
+                'package_number' => $package_number,
                 'boxYPMJ' => $data[0]->datasource == "YPMJ" ? self::groupByQRCode($box) : []
             ])
             ->save($pathToFile)
@@ -1981,12 +1990,21 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                             ->toArray();
             }
 
+            $package_number = [];
+            ksort($boxArray);
+            foreach ($boxArray as $order => $value) {
+                foreach ($value as $key => $innerValue) {
+                    $package_number[$order.$key] = count($package_number) + 1;
+                }
+            }
+
             Pdf::loadView('pdf.packaging.packaging_doc',[
                 'data' => $data,
                 'box' => $boxArray,
                 'boxYPMJ' => $data[0]->datasource == "YPMJ" ? self::groupByQRCode($box) : [],
                 'gross_weight_per_part' => $gross_weight_per_part,
                 'order_data' => $order_data,
+                'package_number' => $package_number,
                 'count_qty' => $count_qty,
                 'count_net_weight' => $count_net_weight,
                 'count_gross_weight' => $count_gross_weight,
