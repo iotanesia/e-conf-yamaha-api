@@ -553,6 +553,11 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $package_number[$order.$key] = count($package_number) + 1;
                 }
             }
+
+            $chunks = array_chunk(explode(',', $data->hs_code), 3);
+            $hscode = array_map(function($chunk) {
+                return implode(',', $chunk);
+            }, $chunks);
             
             Pdf::loadView('pdf.fixed_shipping_instruction',[
               'data' => $data,
@@ -560,7 +565,8 @@ class QueryRegularFixedShippingInstruction extends Model {
               'box' => $boxArray,
               'package_number' => $package_number,
               'bucket' => $qrcode,
-              'order_data' => $order_data
+              'order_data' => $order_data,
+              'hscode' => $hscode
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
