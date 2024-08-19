@@ -1795,13 +1795,19 @@ class QueryRegularFixedShippingInstruction extends Model {
                 }
             }
 
+            $chunks = array_chunk(explode(',', $data->hs_code), 3);
+            $hscode = array_map(function($chunk) {
+                return implode(',', $chunk);
+            }, $chunks);
+
             Pdf::loadView('pdf.shipping_actual',[
                 'data' => $data,
                 'actual_container' => $actual_container,
                 'box' => $boxArray,
                 'package_number' => $package_number,
                 'order_data' => $order_data,
-                'bucket' => $qrcode
+                'bucket' => $qrcode,
+                'hscode' => $hscode
             ])->save($pathToFile)
                 ->setPaper('A4','potrait')
                 ->download($filename);

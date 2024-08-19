@@ -171,6 +171,10 @@
     
                 </table>
             </table>
+
+            @if (count($hscode) > 2)
+                <div class="page_break"></div>
+            @endif
             
             <table style="border: 1px solid #000; border-top:hidden; border-bottom:hidden;">
                 <table>
@@ -228,7 +232,11 @@
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">B/L </td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;" colspan="2"> : {{$data->bl}}</td>
                         <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;">HS CODE</td>
-                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : {{$data->hs_code}}</td>
+                        <td class="no-bo" style="padding: 0 0 0 5px; margin: 0;"> : 
+                            @foreach ($hscode as $item)
+                                {{$item}} <br>
+                            @endforeach
+                        </td>
                     </tr>
                 </table>
             </table>
