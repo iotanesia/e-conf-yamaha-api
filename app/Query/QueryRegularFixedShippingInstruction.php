@@ -1699,11 +1699,19 @@ class QueryRegularFixedShippingInstruction extends Model {
             $order_data = [];
             foreach ($data as $item) {
                 $order_data = $item->manyFixedQuantityConfirmation()
-                            ->select('order_no', 'cust_item_no', DB::raw('COUNT(id) as item_count'))  // Aggregate function example
+                            ->select('order_no', 'cust_item_no', DB::raw('COUNT(id) as item_count'))  
                             ->groupBy('order_no', 'cust_item_no')
                             ->orderBy('order_no')
                             ->get()
                             ->toArray();
+            }
+
+            $package_number = [];
+            ksort($boxArray);
+            foreach ($boxArray as $order => $value) {
+                foreach ($value as $key => $innerValue) {
+                    $package_number[$order.$key] = count($package_number) + 1;
+                }
             }
             
             Pdf::loadView('pdf.casemarks.casemarks_doc',[
@@ -1711,6 +1719,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'data' => $data,
                 'order_data' => $order_data,
                 'box' => $boxArray,
+                'package_number' => $package_number,
                 'boxYPMJ' => $cek[0]->datasource == "YPMJ" ? QueryRegularFixedQuantityConfirmation::groupByQRCode($box) : []
             ])
             ->save($pathToFile)
