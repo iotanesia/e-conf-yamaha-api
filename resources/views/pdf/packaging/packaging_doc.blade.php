@@ -235,10 +235,10 @@
                 {{-- total --}}
                 <tr>
                     <td colspan="3" class="text-center"> TOTAL</td>
-                    <td class="text-center">{{ $sum_per_order[$order['order_no']]['qty'] }}</td>
-                    <td class="text-center">{{ number_format(($sum_per_order[$order['order_no']]['nett_weight']),2) }}</td>
-                    <td class="text-center">{{ number_format(($sum_per_order[$order['order_no']]['gross_weight']),2) }}</td>
-                    <td class="text-center">{{ $item->datasource == "YPMJ" ? $count_meas_ypmj : number_format(($sum_per_order[$order['order_no']]['meas']),3) }}</td>
+                    <td class="text-center">{{ $sum_per_order[$order['order_no'].$order['cust_item_no']]['qty'] }}</td>
+                    <td class="text-center">{{ number_format(($sum_per_order[$order['order_no'].$order['cust_item_no']]['nett_weight']),2) }}</td>
+                    <td class="text-center">{{ number_format(($sum_per_order[$order['order_no'].$order['cust_item_no']]['gross_weight']),2) }}</td>
+                    <td class="text-center">{{ $item->datasource == "YPMJ" ? $count_meas_ypmj : number_format(($sum_per_order[$order['order_no'].$order['cust_item_no']]['meas']),3) }}</td>
                 </tr>
             </table>
             @endforeach

@@ -1971,7 +1971,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $count_gross_weight_per_order += array_sum($val['total_gross_weight']);
                     $count_meas_per_order[] = round((($val['length'] * $val['width'] * $val['height']) / 1000000000), 3);
                     $count_meas_ypmj_per_order[] = $val['meas_ypmj'] ?? null;
-                    $order_no = $val['order_no'];
+                    $order_no = $val['order_no'].$val['cust_item_no'];
                 }
                 $sum_res_per_order[$order_no] = [
                     'qty' => $count_qty_per_order,
