@@ -2204,7 +2204,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
         usort($flattenedArray, function ($a, $b) {
             if ($a['po_no'] == $b['po_no']) {
-                return $a['part_no'] <=> $b['part_no'];
+                return $a['model_code'] <=> $b['model_code'];
             }
             return $a['po_no'] <=> $b['po_no'];
         });
