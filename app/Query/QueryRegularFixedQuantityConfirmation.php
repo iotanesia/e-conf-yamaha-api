@@ -1196,8 +1196,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 ->groupBy('id_fixed_actual_container')
                 ->get();
             if(count($check) > 1) throw new \Exception("Code consignee, ETD JKT and datasource not same", 400);
+
             $drp = $check[0];
             $prospect = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $drp->id_fixed_actual_container)->first();
+            if($prospect->summary_box < 2) throw new \Exception("Only one item exists in the summary box", 400);
+
             $nextprospect = RegularFixedActualContainerCreation::where(function ($query) use ($prospect){
                 $query->where('code_consignee',$prospect->code_consignee);
                 $query->where('datasource',$prospect->datasource);
