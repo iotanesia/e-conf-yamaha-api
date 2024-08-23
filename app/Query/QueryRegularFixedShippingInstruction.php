@@ -556,7 +556,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
             $chunks = array_chunk(explode(',', $data->hs_code), 3);
             $hscode = array_map(function($chunk) {
-                return implode(',', $chunk);
+                return implode(', ', $chunk);
             }, $chunks);
             
             Pdf::loadView('pdf.fixed_shipping_instruction',[
@@ -1797,7 +1797,7 @@ class QueryRegularFixedShippingInstruction extends Model {
 
             $chunks = array_chunk(explode(',', $data->hs_code), 3);
             $hscode = array_map(function($chunk) {
-                return implode(',', $chunk);
+                return implode(', ', $chunk);
             }, $chunks);
 
             Pdf::loadView('pdf.shipping_actual',[
