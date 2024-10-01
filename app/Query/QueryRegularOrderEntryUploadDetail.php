@@ -71,21 +71,18 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
                 if ($item->item_no == null) {
                   $item_no_set = RegularOrderEntryUploadDetailSet::where('id_detail', $item->id)->get()->pluck('item_no');
-                  $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get();
+                  $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->orderBy('id')->orderBy('id')->get();
                   $grouped_items = [];
                   foreach ($item_no_series as $value) {
-                      $grouped_items[$value->num_set][] = ['item_no_series' =>$value->item_no_series, 'id_box' => $value->id, 'no_box' => $value->no_box];
+                      $grouped_items[$value->num_set][] = [
+                                                            'item_no_series' =>$value->item_no_series, 
+                                                            'id_box' => $value->id, 
+                                                            'no_box' => $value->no_box,
+                                                            'item_name' => $value->refPart->description ?? null
+                                                          ];
                   }
                   foreach ($grouped_items as $value) {
                     if(count($value) == count($item_no_set)) $item_no_series = collect($value);
-                  }
-                  $mst_part = MstPart::select('mst_part.item_no',
-                                        DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
-                                        ->whereIn('mst_part.item_no', $item_no_set->toArray())
-                                        ->groupBy('mst_part.item_no')->get();
-                  $item_name = [];
-                  foreach ($mst_part as $value) {
-                    $item_name[] = $value->description;
                   }
 
                   $mst_box = MstBox::whereIn('item_no', $item_no_set->toArray())
@@ -129,7 +126,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 $set["code_consignee"] = $item->code_consignee;
                 $set["cust_name"] = $custname;
                 $set["model"] = $item->model;
-                $set["item_name"] = $item->item_no == null ? $item_name : $itemname;
+                $set["item_name"] = $item->item_no == null ? $item_no_series->pluck('item_name')->toArray() : $itemname;
                 $set["item_no"] = $item->item_no == null ? ($item_no_series == null ? null : $item_no_series->pluck('item_no_series')->toArray()) : ($item_no_series == null ? MstPart::where("item_no", $item->item_no)->first()->item_serial : $item_no_series->item_no_series);
                 $set["disburse"] = $item->disburse;
                 $set["delivery"] = $item->delivery;

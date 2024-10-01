@@ -450,21 +450,18 @@ class QueryRegularDeliveryPlan extends Model {
 
             if ($item->item_no == null) {
                 $item_no_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id)->get()->pluck('item_no');
-                $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get();
+                $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->orderBy('id')->get();
                 $grouped_items = [];
                 foreach ($item_no_series as $value) {
-                    $grouped_items[$value->num_set][] = $value->item_no_series;
+                    $grouped_items[$value->num_set][] = [
+                                                          'item_no_series' =>$value->item_no_series, 
+                                                          'id_box' => $value->id, 
+                                                          'no_box' => $value->no_box,
+                                                          'item_name' => $value->refPart->description ?? null
+                                                        ];
                 }
                 foreach ($grouped_items as $value) {
-                  if(count($value) == count($item_no_set)) $item_no_series = $value;
-                }
-                $mst_part = MstPart::select('mst_part.item_no',
-                                    DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
-                                    ->whereIn('mst_part.item_no', $item_no_set->toArray())
-                                    ->groupBy('mst_part.item_no')->get();
-                $item_name = [];
-                foreach ($mst_part as $value) {
-                $item_name[] = $value->description;
+                  if(count($value) == count($item_no_set)) $item_no_series = collect($value);
                 }
 
                 $mst_box = MstBox::whereIn('item_no', $item_no_set->toArray())
@@ -488,8 +485,8 @@ class QueryRegularDeliveryPlan extends Model {
             $set["code_consignee"] = $item->code_consignee;
             $set["cust_name"] = $custname;
             $set["model"] = $item->model;
-            $set["item_name"] = $item->item_no == null ? $item_name : $itemname;
-            $set["item_no"] = $item->item_no == null ? ($item_no_series == null ? null : $item_no_series) : ($item_no_series == null ? MstPart::where("item_no", $item->item_no)->first()->item_serial : $item_no_series->item_no_series);
+            $set["item_name"] = $item->item_no == null ? $item_no_series->pluck('item_name')->toArray() : $itemname;
+            $set["item_no"] = $item->item_no == null ? (count($item_no_series->pluck('item_no')->toArray()) == 0 ? null : $item_no_series->pluck('item_name')->toArray()) : ($item_no_series == null ? MstPart::where("item_no", $item->item_no)->first()->item_serial : $item_no_series->item_no_series);
             $set["disburse"] = $item->disburse;
             $set["delivery"] = $item->delivery;
             $set["qty"] = $item->qty;

@@ -122,21 +122,18 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
                     if ($item->refRegularDeliveryPlan->item_no == null) {
                         $item_no_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
-                        $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get();
+                        $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->orderBy('id')->get();
                         $grouped_items = [];
                         foreach ($item_no_series as $value) {
-                            $grouped_items[$value->num_set][] = $value->item_no_series;
+                            $grouped_items[$value->num_set][] = [
+                                                                  'item_no_series' =>$value->item_no_series, 
+                                                                  'id_box' => $value->id, 
+                                                                  'no_box' => $value->no_box,
+                                                                  'item_name' => $value->refPart->description ?? null
+                                                                ];
                         }
                         foreach ($grouped_items as $value) {
-                          if(count($value) == count($item_no_set)) $item_no_series = $value;
-                        }
-                        $mst_part = MstPart::select('mst_part.item_no',
-                                            DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
-                                            ->whereIn('mst_part.item_no', $item_no_set->toArray())
-                                            ->groupBy('mst_part.item_no')->get();
-                        $item_name = [];
-                        foreach ($mst_part as $value) {
-                            $item_name[] = $value->description;
+                          if(count($value) == count($item_no_set)) $item_no_series = collect($value);
                         }
                     }
                 }
@@ -147,9 +144,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $item->production = $item->production ?? null;
                 $item->in_dc = $item->in_dc ?? null;
                 $item->in_wh = $item->in_wh ?? null;
-                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series : $item->refRegularDeliveryPlan->refPart->item_serial;
+                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_no')->toArray() : $item->refRegularDeliveryPlan->refPart->item_serial;
                 // $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_set : $item->refRegularDeliveryPlan->item_no;
-                $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name : $item->refRegularDeliveryPlan->refPart->description;
+                $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_name')->toArray() : $item->refRegularDeliveryPlan->refPart->description;
 
                 unset(
                     $item->refConsignee,
@@ -1573,7 +1570,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $set_qty[] = $value->qty;
                     }
 
-                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no'))->get();
+                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no'))->orderBy('id')->get();
                     $grouped_items = [];
                     foreach ($item_no_series as $value) {
                         $grouped_items[$value->num_set][] = $value->item_no_series;
@@ -1836,7 +1833,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $set_qty[] = $value->qty;
                     }
 
-                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no'))->get();
+                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no'))->orderBy('id')->get();
                     $grouped_items = [];
                     foreach ($item_no_series as $value) {
                         $grouped_items[$value->num_set][] = $value->item_no_series;
