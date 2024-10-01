@@ -122,7 +122,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
                     if ($item->refRegularDeliveryPlan->item_no == null) {
                         $item_no_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
-                        $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get()->pluck('item_no_series');
+                        $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get();
+                        $grouped_items = [];
+                        foreach ($item_no_series as $value) {
+                            $grouped_items[$value->num_set][] = $value->item_no_series;
+                        }
+                        foreach ($grouped_items as $value) {
+                          if(count($value) == count($item_no_set)) $item_no_series = $value;
+                        }
                         $mst_part = MstPart::select('mst_part.item_no',
                                             DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
                                             ->whereIn('mst_part.item_no', $item_no_set->toArray())
