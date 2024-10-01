@@ -72,6 +72,13 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                 if ($item->item_no == null) {
                   $item_no_set = RegularOrderEntryUploadDetailSet::where('id_detail', $item->id)->get()->pluck('item_no');
                   $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get();
+                  $grouped_items = [];
+                  foreach ($item_no_series as $value) {
+                      $grouped_items[$value->num_set][] = ['item_no_series' =>$value->item_no_series, 'id_box' => $value->id, 'no_box' => $value->no_box];
+                  }
+                  foreach ($grouped_items as $value) {
+                    if(count($value) == count($item_no_set)) $item_no_series = collect($value);
+                  }
                   $mst_part = MstPart::select('mst_part.item_no',
                                         DB::raw("string_agg(DISTINCT mst_part.description::character varying, ',') as description"))
                                         ->whereIn('mst_part.item_no', $item_no_set->toArray())
@@ -114,9 +121,9 @@ class QueryRegularOrderEntryUploadDetail extends Model {
                       'height' =>  "",
                   ];
               }
-                
+
                 $set["id"] = $item->id;
-                $set["id_box"] = $item->item_no == null ? ($item_no_series == null ? null : $item_no_series->pluck('id')->toArray()) : ($item_no_series == null ? null : $item_no_series->id);
+                $set["id_box"] = $item->item_no == null ? ($item_no_series == null ? null : $item_no_series->pluck('id_box')->toArray()) : ($item_no_series == null ? null : $item_no_series->id);
                 $set["no_box"] = $item->item_no == null ? ($item_no_series == null ? null : $item_no_series->pluck('no_box')->toArray()) : ($item_no_series == null ? null : $item_no_series->no_box);
                 $set["id_regular_order_entry_upload"] = $item->id_regular_order_entry_upload;
                 $set["code_consignee"] = $item->code_consignee;
