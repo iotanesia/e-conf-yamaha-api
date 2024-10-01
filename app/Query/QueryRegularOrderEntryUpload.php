@@ -556,6 +556,10 @@ class QueryRegularOrderEntryUpload extends Model {
             $items = RegularOrderEntry::find($upload->id_regular_order_entry);
             if(!$items) throw new \Exception("Data tidak ditemukan", 500);
 
+            $dataSet = self::getDifferentPartSet($upload->id_regular_order_entry,$params->id);
+            $result = collect($dataSet)->toArray() ?? null;
+            self::insertSet($result, $upload);
+
             $data = self::getDifferentPart($upload->id_regular_order_entry,$params->id);
             $result = collect($data)->toArray() ?? null;
 
@@ -751,5 +755,94 @@ class QueryRegularOrderEntryUpload extends Model {
                     c.etd_wh
                     FROM
                     regular_delivery_plan c WHERE c.id_regular_order_entry = ?"), [$id,$id_regular_order_entry_upload,$id]) ?? null;
+    }
+
+    public static function getDifferentPartSet($id,$id_regular_order_entry_upload){
+
+        return DB::select(DB::raw("
+            SELECT
+                a.datasource,
+                c.code_consignee,
+                c.model,
+                c.item_no,
+                c.disburse,
+                c.delivery,
+                c.qty,
+                c.order_no,
+                c.cust_item_no,
+                c.etd_jkt,
+                c.etd_ypmi,
+                c.etd_wh
+            FROM
+                regular_order_entry a
+            JOIN
+                regular_order_entry_upload b ON a.id = b.id_regular_order_entry
+            JOIN
+                regular_order_entry_upload_detail c ON b.id = c.id_regular_order_entry_upload
+            WHERE
+                c.status = 'fixed'
+                AND c.jenis = 'set'
+                AND c.is_delivery_plan = 0
+                AND a.id = ?
+                AND b.id = ?
+        "), [$id, $id_regular_order_entry_upload]) ?? null;
+    }
+
+    public static function insertSet($result, $upload)
+    {
+        if($result){
+            foreach ($result as $item){
+
+                $store = RegularDeliveryPlan::create([
+                    "model" => $item->model,
+                    "item_no" => $item->item_no,
+                    "code_consignee" => $item->code_consignee,
+                    "disburse" => $item->disburse,
+                    "delivery" => $item->delivery,
+                    "qty" => $item->qty,
+                    "order_no" => $item->order_no,
+                    "cust_item_no" => $item->cust_item_no,
+                    "etd_jkt" => $item->etd_jkt,
+                    "etd_ypmi" => $item->etd_ypmi,
+                    "etd_wh" => $item->etd_wh,
+                    "id_regular_order_entry" => $upload->id_regular_order_entry,
+                    "created_at" => now(),
+                    "is_inquiry" => 0,
+                    'datasource' => $item->datasource,
+                    // "id_regular_order_entry_upload_detail" => $item->id,
+                    "uuid" => (string) Str::uuid(),
+                    "jenis" => $item->item_no == null ? 'set' : 'single',
+                    "is_produksi" => $item->datasource == Constant::YPMJ_DATASOURCE ? 0 : null,
+                    "customer_ypmj" => $item->datasource == Constant::YPMJ_DATASOURCE ? "YMBP" : null,
+                ]);
+
+               $box = VFinishBox::where([
+                    "model" => $item->model,
+                    "item_no" => $item->item_no,
+                    "code_consignee" => $item->code_consignee,
+                    "disburse" => $item->disburse,
+                    "delivery" => $item->delivery,
+                    "qty" => $item->qty,
+                    "order_no" => $item->order_no,
+                    "cust_item_no" => $item->cust_item_no,
+                    "etd_jkt" => $item->etd_jkt,
+                    "id_regular_order_entry" => $upload->id_regular_order_entry,
+               ])
+               ->get()->map(function ($item_box) use ($store) {
+                   return [
+                       'id_box' => $item_box->id_box,
+                       'id_regular_delivery_plan' => $store->id,
+                       'created_at' => now(),
+                       'qty_pcs_box' => $item_box->qty_pcs_box
+                   ];
+               })->toArray();
+
+
+               foreach (array_chunk($box,1000) as $item_box) {
+                   RegularDeliveryPlanBox::insert($item_box);
+               }
+
+            }
+        }
     }
 }
