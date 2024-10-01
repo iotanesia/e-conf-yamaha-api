@@ -1186,7 +1186,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $set_qty[] = $value->qty;
                     }
 
-                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no'))->orderBy('item_no_series')->get();
+                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no'))->get();
                     $grouped_items = [];
                     foreach ($item_no_series as $value) {
                         $grouped_items[$value->num_set][] = $value->item_no_series;
@@ -1574,7 +1574,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $set_qty[] = $value->qty;
                     }
 
-                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no'))->orderBy('item_no_series')->get();
+                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $plan_set->pluck('item_no'))->get();
                     $grouped_items = [];
                     foreach ($item_no_series as $value) {
                         $grouped_items[$value->num_set][] = $value->item_no_series;
