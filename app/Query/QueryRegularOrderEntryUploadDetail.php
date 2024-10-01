@@ -71,7 +71,7 @@ class QueryRegularOrderEntryUploadDetail extends Model {
 
                 if ($item->item_no == null) {
                   $item_no_set = RegularOrderEntryUploadDetailSet::where('id_detail', $item->id)->get()->pluck('item_no');
-                  $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get();
+                  $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->orderBy('item_no_series')->get();
                   $grouped_items = [];
                   foreach ($item_no_series as $value) {
                       $grouped_items[$value->num_set][] = ['item_no_series' =>$value->item_no_series, 'id_box' => $value->id, 'no_box' => $value->no_box];

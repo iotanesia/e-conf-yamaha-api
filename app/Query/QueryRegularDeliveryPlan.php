@@ -450,7 +450,7 @@ class QueryRegularDeliveryPlan extends Model {
 
             if ($item->item_no == null) {
                 $item_no_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id)->get()->pluck('item_no');
-                $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->get();
+                $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->orderBy('item_no_series')->get();
                 $grouped_items = [];
                 foreach ($item_no_series as $value) {
                     $grouped_items[$value->num_set][] = $value->item_no_series;
