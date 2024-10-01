@@ -26,21 +26,9 @@ class QueryRegularOrderEntry extends Model {
         $key = self::cast.json_encode($params->query());
         return Helper::storageCache($key, function () use ($params){
             $query = self::where(function ($query) use ($params){
-
-                $category = $params->category ?? null;
-                if($category) {
-                    $query->where($category, 'ilike', $params->kueri);
-                }
-
-
-               if($params->search) $query->where('year', 'like', "'%$params->search%'")
-                            ->orWhere('month', 'like',  "'%$params->search%'")
-                            ->orWhere('period', 'like',  "'%$params->search%'")
-                            ->orWhere('datasource', 'like',  "'%$params->search%'");
-
+                if($params->datasource) $query->where('datasource', "$params->datasource");
             });
 
-            if($params->datasource) $query->where('datasource', "$params->datasource");
             if($params->withTrashed == 'true') $query->withTrashed();
             if($params->dropdown == Constant::IS_ACTIVE) {
                 $params->limit = null;
