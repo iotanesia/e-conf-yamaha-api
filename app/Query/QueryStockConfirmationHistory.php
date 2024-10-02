@@ -557,9 +557,11 @@ class QueryStockConfirmationHistory extends Model
     
                     $description = [];
                     $item_no = [];
-                    foreach ($delivery_plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet as $key => $value) {
-                        $description[] = $value->refPart->description;
-                        $item_no[] = $value->refPart->item_serial ?? null;
+                    $item_no_set = $delivery_plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+                    $mst = MstBox::whereIn('item_no', $item_no_set)->get();
+                    foreach ($mst as $value) {
+                        $description[] = $value->refPart->description ?? null;
+                        $item_serial[] = $value->item_no_series ?? null;
                     }
     
                     $part_no = $delivery_plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
