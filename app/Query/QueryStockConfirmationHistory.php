@@ -149,6 +149,14 @@ class QueryStockConfirmationHistory extends Model
             foreach ($plan_box as $key => $val) {
                 $qty += $val->qty_pcs_box;
                 if (in_array($val->id, $check_scan->toArray())) {
+                    if ($val->refRegularDeliveryPlan->item_no == null) {
+                        $item_no = [];
+                        $item_no_set = $val->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+                        $mst = MstBox::whereIn('item_no', $item_no_set)->get();
+                        foreach ($mst as $value) {
+                            $item_no[] = $value->item_no_series ?? null;
+                        }
+                    }
                     $group_qty[] = $val->qty_pcs_box;
                     $group_arr[] = [
                         'id' => $val->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? 'YPMJ-'.$val->refRegularDeliveryPlan->id_regular_order_entry.'-'.$val->refRegularDeliveryPlan->bucket_produksi : ($val->refRegularDeliveryPlan->item_no == null ? $val->id.'-'.count($val->refRegularDeliveryPlan->manyDeliveryPlanSet) : $val->id),
@@ -156,7 +164,7 @@ class QueryStockConfirmationHistory extends Model
                         'id_regular_order_entry' => $val->refRegularDeliveryPlan->id_regular_order_entry,
                         'code_consignee' => $val->refRegularDeliveryPlan->code_consignee,
                         'model' => $val->refRegularDeliveryPlan->model,
-                        'item_no' => $val->refRegularDeliveryPlan->item_no == null ? $val->refRegularDeliveryPlan->manyDeliveryPlanSet()->with('refBox')->get()->pluck('refBox')->pluck('item_no_series') : $val->refRegularDeliveryPlan->refPart->item_serial,
+                        'item_no' => $val->refRegularDeliveryPlan->item_no == null ? $item_no : $val->refRegularDeliveryPlan->refPart->item_serial,
                         'qty' =>  $val->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $val->refRegularDeliveryPlan->qty : $val->qty_pcs_box,
                         'disburse' => $val->refRegularDeliveryPlan->disburse,
                         'delivery' => $val->refRegularDeliveryPlan->delivery,
