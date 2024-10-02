@@ -486,7 +486,7 @@ class QueryRegularDeliveryPlan extends Model {
             $set["cust_name"] = $custname;
             $set["model"] = $item->model;
             $set["item_name"] = $item->item_no == null ? $item_no_series->pluck('item_name')->toArray() : $itemname;
-            $set["item_no"] = $item->item_no == null ? (count($item_no_series->pluck('item_no_series')->toArray()) == 0 ? null : $item_no_series->pluck('item_name')->toArray()) : ($item_no_series == null ? MstPart::where("item_no", $item->item_no)->first()->item_serial : $item_no_series->item_no_series);
+            $set["item_no"] = $item->item_no == null ? (count($item_no_series->pluck('item_no_series')->toArray()) == 0 ? null : $item_no_series->pluck('item_no_series')->toArray()) : ($item_no_series == null ? MstPart::where("item_no", $item->item_no)->first()->item_serial : $item_no_series->item_no_series);
             $set["disburse"] = $item->disburse;
             $set["delivery"] = $item->delivery;
             $set["qty"] = $item->qty;
