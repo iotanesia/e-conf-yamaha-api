@@ -313,9 +313,27 @@ class QueryStockConfirmationOutstockNote extends Model {
                                                             ->groupBy('id_stock_confirmation', 'qty')
                                                             ->get();
 
+            $result = [];
+            foreach ($items as $item) {
+                $item_no = [];
+                $item_name = [];
+                $item_no_set = $item->refStokConfirmation->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+                $mst = MstBox::whereIn('item_no', $item_no_set)->get();
+                foreach ($mst as $value) {
+                    $item_name[] = $value->refPart->description ?? null;
+                    $item_no[] = $value->item_no_series ?? null;
+                }
+
+                $result = [
+                    'item_no'.$item->id_note_detail.$item->order_no => $item_no,
+                    'item_name'.$item->id_note_detail.$item->order_no => $item_name
+                ];
+            }
+
             Pdf::loadView('pdf.stock-confirmation.outstock.delivery_note',[
               'data' => $data,
               'items' => $items,
+              'result' => $result,
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')

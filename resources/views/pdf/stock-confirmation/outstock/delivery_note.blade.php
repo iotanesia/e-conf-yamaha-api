@@ -118,8 +118,8 @@
                     <td class="text-center">{{ $loop->iteration }}.</td>
                     <td class="text-center">
                         @if ($item->item_no == null)
-                            @foreach ($item->refStokConfirmation->refRegularDeliveryPlan->manyDeliveryPlanSet()->orderby('item_no', 'asc')->get() as $item_no)
-                                {{ $item_no->refBox->item_no_series }} <br>
+                            @foreach ($result['item_no'.$item->id_note_detail.$item->order_no] as $item_no)
+                                {{ $item_no }} <br>
                             @endforeach
                         @else
                             {{ $item->refMstPart->item_serial }}
@@ -127,8 +127,8 @@
                     </td>
                     <td class="text-center">
                         @if ($item->item_no == null)
-                            @foreach ($item->refStokConfirmation->refRegularDeliveryPlan->manyDeliveryPlanSet()->orderby('item_no', 'asc')->get() as $description)
-                                {{ $description->refPart->description }} <br>
+                            @foreach ($result['item_name'.$item->id_note_detail.$item->order_no] as $item_name)
+                                {{ $item_name }} <br>
                             @endforeach
                         @else
                             {{ $item->refMstPart->description}}
