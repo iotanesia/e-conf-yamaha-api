@@ -314,12 +314,21 @@ class QueryStockConfirmationHistory extends Model
         if (!$data) throw new \Exception("Data not found", 400);
 
         $data->transform(function ($item) {
+            if ($item->refRegularDeliveryPlan->item_no == null) {
+                $item_no = [];
+                $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+                $mst = MstBox::whereIn('item_no', $item_no_set)->get();
+                foreach ($mst as $value) {
+                    $item_no[] = $value->item_no_series ?? null;
+                }
+            }
+
             $res['id'] = $item->qr_key;
             $res['id_regular_delivery_plan'] = $item->refRegularDeliveryPlan->id;
             $res['id_regular_order_entry'] = $item->refRegularDeliveryPlan->id_regular_order_entry;
             $res['code_consignee'] = $item->refRegularDeliveryPlan->code_consignee;
             $res['model'] = $item->refRegularDeliveryPlan->model;
-            $res['item_no'] = $item->refRegularDeliveryPlan->item_no == null ? $item->refRegularDeliveryPlan->manyDeliveryPlanSet()->get()->pluck('refBox')->pluck('item_no_series') : $item->refRegularDeliveryPlan->refPart->item_serial;
+            $res['item_no'] = $item->refRegularDeliveryPlan->item_no == null ? $item_no : $item->refRegularDeliveryPlan->refPart->item_serial;
             $res['qty'] =  $item->qty;
             $res['disburse'] = $item->refRegularDeliveryPlan->disburse;
             $res['delivery'] = $item->refRegularDeliveryPlan->delivery;
