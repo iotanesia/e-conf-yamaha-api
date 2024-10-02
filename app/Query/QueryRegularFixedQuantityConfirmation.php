@@ -2142,26 +2142,46 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $mst_box = MstBox::whereIn('item_no', $plan_set->pluck('item_no')->toArray())->get();
                     $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_box], $mst_box->pluck('qty')->toArray(), $mst_box, $plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
                     $ratio_qty = self::inputQuantity($deliv_plan_box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray());
+                    
+                    $item_no_set = $plan_set->pluck('item_no')->toArray();
+                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set)->orderBy('id')->get();
+                    $grouped_items = [];
+                    foreach ($item_no_series as $value) {
+                        $grouped_items[$value->num_set][] = [
+                                                              'item_no_series' =>$value->item_no_series, 
+                                                              'item_name' => $value->refPart->description ?? null,
+                                                              'hs_code' => $value->refPart->hs_code ?? null,
+                                                              'gl_account' => $value->refPart->gl_account ?? null,
+                                                              'coa' => $value->refPart->coa ?? null,
+                                                              'cost_center' => $value->refPart->cost_center ?? null,
+                                                              'length' => $value->length ?? null,
+                                                              'width' => $value->width ?? null,
+                                                              'height' => $value->height ?? null,
+                                                            ];
+                    }
+                    foreach ($grouped_items as $value) {
+                      if(count($value) == count($item_no_set)) $item_no_series = collect($value);
+                    }
                     $res = [];
-                    foreach ($plan_set as $key => $value) {
+                    foreach ($item_no_series as $key => $value) {
                         $res[] = [
-                            'gl_account' => $value->refPart->gl_account,
-                            'coa' => $value->refPart->coa,
-                            'cost_center' => $value->refPart->cost_center,
+                            'gl_account' => $value['gl_account'],
+                            'coa' => $value['coa'],
+                            'cost_center' => $value['cost_center'],
                             'urutan_no_container' => ($container_creation->iteration.' ('.$container_creation->refMstContainer->container_type.')') ?? null,
                             'kosong' => null,
                             'po_no' => $fixedQuantity->order_no,
-                            'part_no' => $value->refPart->item_serial,
+                            'part_no' => $value['item_no_series'],
                             'qty' => $ratio_qty[0][$key],
                             'no' => $key == 0 ? '0' : null,
                             'nw' => str_replace('.',',',number_format($nw_gw[0]['unit_weight_kg'][$key], 2)),
                             'gw' => str_replace('.',',',number_format($nw_gw[0]['total_gross_weight'][$key], 2)),
                             'model_code' => $fixedQuantity->cust_item_no,
                             'type_box' => 'CARTON BOX',
-                            'panjang' => $value->refBox->length,
-                            'lebar' => $value->refBox->width,
-                            'tinggi' => $value->refBox->height,
-                            'hs_code' => $value->refPart->hs_code
+                            'panjang' => $value['length'],
+                            'lebar' => $value['width'],
+                            'tinggi' => $value['height'],
+                            'hs_code' => $value['hs_code']
                         ];
                     }
                     return $res;
@@ -2220,12 +2240,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
         $filteredData = array_values(array_filter($data->toArray()));
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
-        usort($flattenedArray, function ($a, $b) {
-            if ($a['po_no'] == $b['po_no']) {
-                return $a['model_code'] <=> $b['model_code'];
-            }
-            return $a['po_no'] <=> $b['po_no'];
-        });
+        // usort($flattenedArray, function ($a, $b) {
+        //     if ($a['po_no'] == $b['po_no']) {
+        //         return $a['model_code'] <=> $b['model_code'];
+        //     }
+        //     return $a['po_no'] <=> $b['po_no'];
+        // });
         if($id_fixed_quantity[0]->refRegularDeliveryPlan->datasource == "PYMAC") {
             $no = 1;
             foreach ($flattenedArray as $key => &$subarray) {
