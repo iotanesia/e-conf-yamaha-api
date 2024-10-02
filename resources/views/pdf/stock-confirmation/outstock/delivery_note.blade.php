@@ -118,8 +118,12 @@
                     <td class="text-center">{{ $loop->iteration }}.</td>
                     <td class="text-center">
                         @if ($item->item_no == null)
-                            @foreach ($result['item_no'.$item->id_note_detail.$item->order_no] as $item_no)
-                                {{ $item_no }} <br>
+                            @foreach ($result as $val)
+                                @if (isset($val['item_no'.$item->id_note_detail.$item->order_no]))
+                                    @foreach ($val['item_no'.$item->id_note_detail.$item->order_no] as $item_no)
+                                        {{ $item_no }} <br>
+                                    @endforeach
+                                @endif
                             @endforeach
                         @else
                             {{ $item->refMstPart->item_serial }}
@@ -127,8 +131,12 @@
                     </td>
                     <td class="text-center">
                         @if ($item->item_no == null)
-                            @foreach ($result['item_name'.$item->id_note_detail.$item->order_no] as $item_name)
-                                {{ $item_name }} <br>
+                            @foreach ($result as $val)
+                                @if (isset($val['item_name'.$item->id_note_detail.$item->order_no]))
+                                    @foreach ($val['item_name'.$item->id_note_detail.$item->order_no] as $item_name)
+                                        {{ $item_name }} <br>
+                                    @endforeach
+                                @endif
                             @endforeach
                         @else
                             {{ $item->refMstPart->description}}

@@ -368,7 +368,7 @@ class QueryRegularFixedPackingCreation extends Model {
                     $item_no[] = $value->item_no_series ?? null;
                 }
 
-                $result = [
+                $result[] = [
                     'item_no'.$item->id_fixed_actual_container.$item->order_no => $item_no,
                     'item_name'.$item->id_fixed_actual_container.$item->order_no => $item_name
                 ];

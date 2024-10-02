@@ -324,7 +324,7 @@ class QueryStockConfirmationOutstockNote extends Model {
                     $item_no[] = $value->item_no_series ?? null;
                 }
 
-                $result = [
+                $result[] = [
                     'item_no'.$item->id_note_detail.$item->order_no => $item_no,
                     'item_name'.$item->id_note_detail.$item->order_no => $item_name
                 ];
