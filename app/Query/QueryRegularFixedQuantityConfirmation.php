@@ -144,7 +144,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $item->production = $item->production ?? null;
                 $item->in_dc = $item->in_dc ?? null;
                 $item->in_wh = $item->in_wh ?? null;
-                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_no')->toArray() : $item->refRegularDeliveryPlan->refPart->item_serial;
+                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_no_series')->toArray() : $item->refRegularDeliveryPlan->refPart->item_serial;
                 // $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_set : $item->refRegularDeliveryPlan->item_no;
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_name')->toArray() : $item->refRegularDeliveryPlan->refPart->description;
 
