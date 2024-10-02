@@ -1361,8 +1361,8 @@ class QueryRegularDeliveryPlan extends Model {
             $description = [];
             $item_serial = [];
             foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $value) {
-                $description[] = $value->refPart->description;
-                $item_serial[] = $value->refPart->item_serial;
+                $description[] = $value->refBox->refPart->description ?? null;
+                $item_serial[] = $value->refBox->item_no_series ?? null;
             }
         }
         
