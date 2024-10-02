@@ -118,13 +118,13 @@
                     <td class="text-center">{{ $loop->iteration }}.</td>
                     @if ($item->item_no == null)
                         <td class="text-center">
-                            @foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $item_no)
-                                {{ $item_no->refPart->item_serial }} <br>
+                            @foreach ($result['item_no'.$item->id_fixed_actual_container.$item->order_no] as $item_no)
+                                {{ $item_no }} <br>
                             @endforeach
                         </td>
                         <td class="text-center">
-                            @foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $part)
-                                {{ $part->refPart->description }} <br>
+                            @foreach ($result['item_name'.$item->id_fixed_actual_container.$item->order_no] as $item_no)
+                                {{ $item_no }} <br>
                             @endforeach
                         </td>
                     @else

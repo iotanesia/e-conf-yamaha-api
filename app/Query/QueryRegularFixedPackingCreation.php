@@ -357,9 +357,27 @@ class QueryRegularFixedPackingCreation extends Model {
                         ->get();
             }
 
+            $result = [];
+            foreach ($items as $item) {
+                $item_no = [];
+                $item_name = [];
+                $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+                $mst = MstBox::whereIn('item_no', $item_no_set)->get();
+                foreach ($mst as $value) {
+                    $item_name[] = $value->refPart->description ?? null;
+                    $item_no[] = $value->item_no_series ?? null;
+                }
+
+                $result = [
+                    'item_no'.$item->id_fixed_actual_container.$item->order_no => $item_no,
+                    'item_name'.$item->id_fixed_actual_container.$item->order_no => $item_name
+                ];
+            }
+
             Pdf::loadView('pdf.packing-creation.delivery_note',[
               'data' => $data,
               'items' => $items,
+              'result' => $result,
             ])
             ->save($pathToFile)
             ->setPaper('A4','potrait')
