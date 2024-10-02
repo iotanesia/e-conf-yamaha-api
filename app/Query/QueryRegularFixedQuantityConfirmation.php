@@ -2272,20 +2272,33 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $volume += round(($vol->refMstBox->length * $vol->refMstBox->width * $vol->refMstBox->height) / 1000000000, 3);
                     }
     
+                    $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set)->orderBy('id')->get();
+                    $grouped_items = [];
+                    foreach ($item_no_series as $value) {
+                        $grouped_items[$value->num_set][] = [
+                                                              'item_no_series' =>$value->item_no_series, 
+                                                              'item_name' => $value->refPart->description ?? null,
+                                                              'hs_code' => $value->refPart->hs_code ?? null
+                                                            ];
+                    }
+                    foreach ($grouped_items as $value) {
+                      if(count($value) == count($item_no_set)) $item_no_series = collect($value);
+                    }
                     $res = [];
-                    foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $i => $value) {
+                    foreach ($item_no_series as $i => $value) {
                         $res[] = [
                                 'no_packaging' => $fixedQuantity->refFixedActualContainer->no_packaging ?? null,
                                 'tanggal' => date('Ymd', strtotime($fixedQuantity->refFixedActualContainer->created_at)) ?? null,
                                 'seri_barang' => null,
-                                'hs' => $value->refPart->hs_code,
-                                'kode_barang' => $value->refPart->item_serial.', '.trim($value->refPart->description),
+                                'hs' => $value['hs_code'],
+                                'kode_barang' => $value['item_no_series'].', '.trim($value['item_name']),
                                 'uraian' => 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES',
                                 'kode_satuan' => 'PCE',
-                                'jumlah_satuan' => $i == 0 ? array_sum($qty_ratio[0]) : null,
+                                'jumlah_satuan' => $qty_ratio[0][$i] ?? null,
                                 'kode_kemasan' => 'CT',
                                 'jumlah_kemasan' => $i == 0 ? count(explode(',', $item->id_regular_delivery_plan_box)) : null,
-                                'netto' =>  $i == 0 ? number_format($netto, 2) : null,
+                                'netto' =>  number_format($nw_gw[0]['unit_weight_kg'][$i], 2) ?? null,
                                 'volume' => $i == 0 ? number_format($volume, 3) : null,
                         ];
                     }
@@ -2330,9 +2343,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         });
         $filteredData = array_values(array_filter($data->toArray()));
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
-        usort($flattenedArray, function ($a, $b) {
-            return $a['kode_barang'] <=> $b['kode_barang'];
-        });
+        // usort($flattenedArray, function ($a, $b) {
+        //     return $a['kode_barang'] <=> $b['kode_barang'];
+        // });
         $result = [];
         foreach ($flattenedArray as $item) {
             $found = false;
