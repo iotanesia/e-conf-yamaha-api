@@ -1360,9 +1360,11 @@ class QueryRegularDeliveryPlan extends Model {
         if ($check_set == null) {
             $description = [];
             $item_serial = [];
-            foreach ($item->refRegularDeliveryPlan->manyDeliveryPlanSet as $value) {
-                $description[] = $value->refBox->refPart->description ?? null;
-                $item_serial[] = $value->refBox->item_no_series ?? null;
+            $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+            $mst = MstBox::whereIn('item_no', $item_no_set)->get();
+            foreach ($mst as $value) {
+                $description[] = $value->refPart->description ?? null;
+                $item_serial[] = $value->item_no_series ?? null;
             }
         }
         
