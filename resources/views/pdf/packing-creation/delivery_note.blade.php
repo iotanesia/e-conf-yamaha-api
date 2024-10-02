@@ -119,8 +119,8 @@
                     @if ($item->item_no == null)
                         <td class="text-center">
                             @foreach ($result as $val)
-                                @if (isset($val['item_no'.$item->id_fixed_actual_container.$item->order_no]))
-                                    @foreach ($val['item_no'.$item->id_fixed_actual_container.$item->order_no] as $item_no)
+                                @if (isset($val['item_no'.$item->id_regular_delivery_plan.$item->order_no]))
+                                    @foreach ($val['item_no'.$item->id_regular_delivery_plan.$item->order_no] as $item_no)
                                         {{ $item_no }} <br>
                                     @endforeach
                                 @endif
@@ -128,8 +128,8 @@
                         </td>
                         <td class="text-center">
                             @foreach ($result as $val)
-                                @if (isset($val['item_name'.$item->id_fixed_actual_container.$item->order_no]))
-                                    @foreach ($val['item_name'.$item->id_fixed_actual_container.$item->order_no] as $item_name)
+                                @if (isset($val['item_name'.$item->id_regular_delivery_plan.$item->order_no]))
+                                    @foreach ($val['item_name'.$item->id_regular_delivery_plan.$item->order_no] as $item_name)
                                         {{ $item_name }} <br>
                                     @endforeach
                                 @endif

@@ -369,8 +369,8 @@ class QueryRegularFixedPackingCreation extends Model {
                 }
 
                 $result[] = [
-                    'item_no'.$item->id_fixed_actual_container.$item->order_no => $item_no,
-                    'item_name'.$item->id_fixed_actual_container.$item->order_no => $item_name
+                    'item_no'.$item->id_regular_delivery_plan.$item->order_no => $item_no,
+                    'item_name'.$item->id_regular_delivery_plan.$item->order_no => $item_name
                 ];
             }
 
