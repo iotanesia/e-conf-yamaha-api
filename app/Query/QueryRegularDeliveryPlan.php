@@ -1361,7 +1361,7 @@ class QueryRegularDeliveryPlan extends Model {
             $description = [];
             $item_serial = [];
             $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
-            $mst = MstBox::whereIn('item_no', $item_no_set)->orderBy('id')->get();
+            $mst = MstBox::whereIn('item_no', $item_no_set)->where('part_set', 'set')->orderBy('id')->get();
             foreach ($mst as $value) {
                 $description[] = $value->refPart->description ?? null;
                 $item_serial[] = $value->item_no_series ?? null;

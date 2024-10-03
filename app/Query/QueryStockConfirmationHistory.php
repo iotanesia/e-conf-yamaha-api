@@ -152,7 +152,7 @@ class QueryStockConfirmationHistory extends Model
                     if ($val->refRegularDeliveryPlan->item_no == null) {
                         $item_no = [];
                         $item_no_set = $val->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
-                        $mst = MstBox::whereIn('item_no', $item_no_set)->orderBy('id')->get();
+                        $mst = MstBox::whereIn('item_no', $item_no_set)->where('part_set', 'set')->orderBy('id')->get();
                         foreach ($mst as $value) {
                             $item_no[] = $value->item_no_series ?? null;
                         }
@@ -317,7 +317,7 @@ class QueryStockConfirmationHistory extends Model
             if ($item->refRegularDeliveryPlan->item_no == null) {
                 $item_no = [];
                 $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
-                $mst = MstBox::whereIn('item_no', $item_no_set)->orderBy('id')->get();
+                $mst = MstBox::whereIn('item_no', $item_no_set)->where('part_set', 'set')->orderBy('id')->get();
                 foreach ($mst as $value) {
                     $item_no[] = $value->item_no_series ?? null;
                 }
@@ -579,7 +579,7 @@ class QueryStockConfirmationHistory extends Model
                     $description = [];
                     $item_no = [];
                     $item_no_set = $delivery_plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
-                    $mst = MstBox::whereIn('item_no', $item_no_set)->orderBy('id')->get();
+                    $mst = MstBox::whereIn('item_no', $item_no_set)->where('part_set', 'set')->orderBy('id')->get();
                     foreach ($mst as $value) {
                         $description[] = $value->refPart->description ?? null;
                         $item_no[] = $value->item_no_series ?? null;
@@ -1252,7 +1252,7 @@ class QueryStockConfirmationHistory extends Model
                 $item_no = [];
                 $item_name = [];
                 $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
-                $mst = MstBox::whereIn('item_no', $item_no_set)->orderBy('id')->get();
+                $mst = MstBox::whereIn('item_no', $item_no_set)->where('part_set', 'set')->orderBy('id')->get();
                 foreach ($mst as $value) {
                     $item_name[] = $value->refPart->description ?? null;
                     $item_no[] = $value->item_no_series ?? null;

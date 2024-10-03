@@ -359,19 +359,21 @@ class QueryRegularFixedPackingCreation extends Model {
 
             $result = [];
             foreach ($items as $item) {
-                $item_no = [];
-                $item_name = [];
-                $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
-                $mst = MstBox::whereIn('item_no', $item_no_set)->orderBy('id')->get();
-                foreach ($mst as $value) {
-                    $item_name[] = $value->refPart->description ?? null;
-                    $item_no[] = $value->item_no_series ?? null;
+                if ($item->item_no == null) {
+                    $item_no = [];
+                    $item_name = [];
+                    $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+                    $mst = MstBox::whereIn('item_no', $item_no_set)->where('part_set', 'set')->orderBy('id')->get();
+                    foreach ($mst as $value) {
+                        $item_name[] = $value->refPart->description ?? null;
+                        $item_no[] = $value->item_no_series ?? null;
+                    }
+    
+                    $result[] = [
+                        'item_no'.$item->id_regular_delivery_plan.$item->order_no => $item_no,
+                        'item_name'.$item->id_regular_delivery_plan.$item->order_no => $item_name
+                    ];
                 }
-
-                $result[] = [
-                    'item_no'.$item->id_regular_delivery_plan.$item->order_no => $item_no,
-                    'item_name'.$item->id_regular_delivery_plan.$item->order_no => $item_name
-                ];
             }
 
             Pdf::loadView('pdf.packing-creation.delivery_note',[
