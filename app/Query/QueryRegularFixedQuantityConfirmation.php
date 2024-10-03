@@ -2126,7 +2126,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         $id_fixed_quantity = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $id)->get();
         $query = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', $id_fixed_quantity->pluck('id')->toArray())
         ->whereNotNull('id_prospect_container_creation')
-        ->orderBy('id_prospect_container_creation','asc')
+        ->orderBy('id_regular_delivery_plan','asc')
         ->get();
 
         $data = $query->map(function ($item, $key) use($query){
