@@ -446,13 +446,17 @@ class QueryStockConfirmationHistory extends Model
                     $status = 'Out Of Date';
                 }
 
-                $deliv_plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
-                $part_set = MstPart::whereIn('item_no', $deliv_plan_set->toArray())->orderBy('item_serial', 'asc')->get();
-                $item_serial_set = [];
-                $item_name_set = [];
-                foreach ($part_set as $key => $value) {
-                    $item_serial_set[] = $value->item_serial;
-                    $item_name_set[] = $value->description;
+                $item_no_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->refRegularDeliveryPlan->id)->get()->pluck('item_no');
+                $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set->toArray())->orderBy('id')->get();
+                $grouped_items = [];
+                foreach ($item_no_series as $value) {
+                    $grouped_items[$value->num_set][] = [
+                                                          'item_no_series' =>$value->item_no_series,
+                                                          'item_name' => $value->refPart->description ?? null
+                                                        ];
+                }
+                foreach ($grouped_items as $value) {
+                  if(count($value) == count($item_no_set)) $item_no_series = collect($value);
                 }
 
                 if ($item->refRegularDeliveryPlan->item_no == null) {
@@ -472,8 +476,8 @@ class QueryStockConfirmationHistory extends Model
                 $datasource = $item->refRegularDeliveryPlan->datasource;
                 $item->status_tracking = $status ?? null;
                 $item->cust_name = $datasource == Constant::YPMJ_DATASOURCE ? $item->refRegularDeliveryPlan->customer_ypmj : $item->refRegularDeliveryPlan->refConsignee->nick_name;
-                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_serial_set : $item->refRegularDeliveryPlan->refPart->item_serial;
-                $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_name_set : $item->refRegularDeliveryPlan->refPart->description;
+                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_no_series')->toArray() : $item->refRegularDeliveryPlan->refPart->item_serial;
+                $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_name')->toArray() : $item->refRegularDeliveryPlan->refPart->description;
                 $item->cust_item_no = $item->refRegularDeliveryPlan->cust_item_no;
                 $item->cust_order_no = $item->refRegularDeliveryPlan->order_no;
                 $item->qty = $item->refRegularDeliveryPlan->qty;
