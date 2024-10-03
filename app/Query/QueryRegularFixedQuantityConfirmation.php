@@ -2175,7 +2175,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                             'qty' => $ratio_qty[0][$key],
                             'no' => $key == 0 ? '0' : null,
                             'nw' => str_replace('.',',',number_format($nw_gw[0]['unit_weight_kg'][$key], 2)),
-                            'gw' => str_replace('.',',',number_format($nw_gw[0]['total_gross_weight'][$key], 2)),
+                            'gw' => str_replace('.',',',number_format(array_sum($nw_gw[0]['total_gross_weight']), 2)),
                             'model_code' => $fixedQuantity->cust_item_no,
                             'type_box' => 'CARTON BOX',
                             'panjang' => $value['length'],
