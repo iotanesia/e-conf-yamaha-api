@@ -2139,7 +2139,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $plan_set = RegularDeliveryPlanSet::where('id_delivery_plan', $item->id_regular_delivery_plan)->get();
                     $deliv_plan_box = $fixedQuantity->manyFixedQuantityConfirmationBox()
                                         ->where('id_regular_delivery_plan',$item->id_regular_delivery_plan)->where('qrcode','!=',null)->get();
-                    $mst_box = MstBox::whereIn('item_no', $plan_set->pluck('item_no')->toArray())->get();
+                    $mst_box = MstBox::whereIn('item_no', $plan_set->pluck('item_no')->toArray())->where('part_set', 'set')->get();
                     $nw_gw = self::nettWeightGrossWeight([$item->qty_pcs_box], $mst_box->pluck('qty')->toArray(), $mst_box, $plan_box->refRegularDeliveryPlan->manyDeliveryPlanSet);
                     $ratio_qty = self::inputQuantity($deliv_plan_box->pluck('qty_pcs_box')->toArray(), $mst_box->pluck('qty')->toArray());
                     
@@ -2248,8 +2248,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $data_single[] = $value;
             }
         }
-        $merge_set_single = array_merge($data_set, $data_single);
-        $flattenedArray = call_user_func_array('array_merge', $merge_set_single);
+
+        $flattenedArray_set = call_user_func_array('array_merge', $data_set);
+        $flattenedArray_single = call_user_func_array('array_merge', $data_single);
+        usort($flattenedArray_single, function ($a, $b) {
+            return $a['part_no'] <=> $b['part_no'];
+        });
+
+        $flattenedArray = array_merge($flattenedArray_set, $flattenedArray_single);
         usort($flattenedArray, function ($a, $b) {
             return $a['po_no'].$a['model_code'] <=> $b['po_no'].$b['model_code'];
         });
