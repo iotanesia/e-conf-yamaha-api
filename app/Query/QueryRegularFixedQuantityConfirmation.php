@@ -2239,13 +2239,20 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         });
 
         $filteredData = array_values(array_filter($data->toArray()));
-        $flattenedArray = call_user_func_array('array_merge', $filteredData);
-        // usort($flattenedArray, function ($a, $b) {
-        //     if ($a['po_no'] == $b['po_no']) {
-        //         return $a['model_code'] <=> $b['model_code'];
-        //     }
-        //     return $a['po_no'] <=> $b['po_no'];
-        // });
+        $data_set = [];
+        $data_single = [];
+        foreach ($filteredData as $value) {
+            if (count($value) > 1) {
+                $data_set[] = $value;
+            } else {
+                $data_single[] = $value;
+            }
+        }
+        $merge_set_single = array_merge($data_set, $data_single);
+        $flattenedArray = call_user_func_array('array_merge', $merge_set_single);
+        usort($flattenedArray, function ($a, $b) {
+            return $a['po_no'].$a['model_code'] <=> $b['po_no'].$b['model_code'];
+        });
         if($id_fixed_quantity[0]->refRegularDeliveryPlan->datasource == "PYMAC") {
             $no = 1;
             foreach ($flattenedArray as $key => &$subarray) {
