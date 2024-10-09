@@ -2376,9 +2376,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         });
         $filteredData = array_values(array_filter($data->toArray()));
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
-        // usort($flattenedArray, function ($a, $b) {
-        //     return $a['kode_barang'] <=> $b['kode_barang'];
-        // });
+        usort($flattenedArray, function ($a, $b) {
+            return $a['kode_barang'] <=> $b['kode_barang'];
+        });
         $result = [];
         foreach ($flattenedArray as $item) {
             $found = false;
