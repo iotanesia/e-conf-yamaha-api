@@ -648,7 +648,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.datasource::character varying, ',') as datasource")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.item_no::character varying, ',') as item_no")
         ,DB::raw("string_agg(DISTINCT c.name::character varying, ',') as mot")
-        ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port")
+        ,DB::raw("string_agg(DISTINCT d.port::character varying, ',') as port_of_discharge")
         ,DB::raw("string_agg(DISTINCT e.name::character varying, ',') as type_delivery")
         ,DB::raw("string_agg(DISTINCT f.container_type::character varying, ',') as container_type")
         ,DB::raw("string_agg(DISTINCT f.container_value::character varying, ',') as container_value")
@@ -658,6 +658,7 @@ class QueryRegularFixedShippingInstruction extends Model {
         ,DB::raw("string_agg(DISTINCT h.address1::character varying, ',') as consignee_address")
         ,DB::raw("string_agg(DISTINCT i.no_packaging::character varying, ',') as no_packaging")
         ,DB::raw("string_agg(DISTINCT j.id::character varying, ',') as id_fixed_shipping_instruction")
+        ,DB::raw("string_agg(DISTINCT k.name::character varying, ',') as port")
         ,DB::raw("string_agg(DISTINCT regular_fixed_actual_container_creation.id_fixed_actual_container::character varying, ',') as id_fixed_actual_container")
         ,DB::raw("SUM(f.net_weight) as net_weight")
         ,DB::raw("SUM(f.gross_weight) as gross_weight")
@@ -668,13 +669,17 @@ class QueryRegularFixedShippingInstruction extends Model {
         ->where('regular_fixed_actual_container_creation.etd_jkt', $params->etd_jkt)
         ->where('regular_fixed_actual_container_creation.datasource', $params->datasource)
         ->leftJoin('mst_mot as c','regular_fixed_actual_container_creation.id_mot','c.id')
-        ->leftJoin('mst_port_of_discharge as d','regular_fixed_actual_container_creation.code_consignee','d.code_consignee')
+        ->leftJoin('mst_port_of_discharge as d', function ($join) {
+            $join->on('regular_fixed_actual_container_creation.code_consignee', '=', 'd.code_consignee')
+                 ->on(DB::raw('CAST(regular_fixed_actual_container_creation.id_type_delivery AS VARCHAR)'), '=', 'd.tipe');
+        })
         ->leftJoin('mst_port_of_loading as e','regular_fixed_actual_container_creation.id_type_delivery','e.id_type_delivery')
         ->leftJoin('mst_container as f','regular_fixed_actual_container_creation.id_container','f.id')
         ->leftJoin('regular_delivery_plan_shipping_instruction_creation as g','regular_fixed_actual_container_creation.id_fixed_shipping_instruction_creation','g.id')
         ->leftJoin('mst_consignee as h','regular_fixed_actual_container_creation.code_consignee','h.code')
         ->leftJoin('regular_fixed_actual_container as i','regular_fixed_actual_container_creation.id_fixed_actual_container','i.id')
         ->leftJoin('regular_fixed_shipping_instruction as j','regular_fixed_actual_container_creation.id_fixed_shipping_instruction','j.id')
+        ->leftJoin('mst_port as k','d.id_port','k.id')
         ->groupBy('regular_fixed_actual_container_creation.id_fixed_shipping_instruction')
         ->paginate(1);
         if(!$data) throw new \Exception("Data not found", 400);
@@ -952,7 +957,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'net_weight' => number_format($count_net_weight,2),
                     'gross_weight' => number_format($count_gross_weight,2),
                     'measurement' => $params->datasource == 'YPMJ' ? array_sum($count_meas_ypmj) : number_format(array_sum($count_meas),3),
-                    'port_of_discharge' => $item->port,
+                    'port_of_discharge' => $item->port_of_discharge.', '.$item->port,
                     'port_of_loading' => $item->type_delivery,
                     'type_delivery' => $item->type_delivery,
                     'count' => $item->summary_container,
