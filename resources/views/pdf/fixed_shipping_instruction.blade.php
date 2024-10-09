@@ -172,10 +172,6 @@
                 </table>
             </table>
 
-            @if (count($hscode) > 2)
-                <div class="page_break"></div>
-            @endif
-            
             <table style="border: 1px solid #000; border-top:hidden; border-bottom:hidden;">
                 <table>
                     <tr>
@@ -339,6 +335,11 @@
                 </tr>
             </table> --}}
         </table>
+
+        @if (count($hscode) > 2)
+            <div class="page_break"></div>
+        @endif
+
         <p>Sincerelly Yours</p>
         <table style="width:320px">
             <tr>
