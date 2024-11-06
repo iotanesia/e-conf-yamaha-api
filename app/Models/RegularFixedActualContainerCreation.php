@@ -73,4 +73,9 @@ class RegularFixedActualContainerCreation extends Model
     {
         return $this->hasMany(RegularFixedQuantityConfirmation::class,'id_fixed_actual_container_creation','id');
     }
+
+    public function manyItemNoActual()
+    {
+        return $this->hasMany(RegularFixedActualContainerCreationItemNo::class,'id_regular_fixed_actual_container_creation','id');
+    }
 }

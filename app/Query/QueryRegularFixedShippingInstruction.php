@@ -14,6 +14,7 @@ use App\Models\RegularDeliveryPlanBox;
 use App\Models\RegularDeliveryPlanSet;
 use App\Models\RegularFixedActualContainer;
 use App\Models\RegularFixedActualContainerCreation;
+use App\Models\RegularFixedActualContainerCreationItemNo;
 use App\Models\RegularFixedPackingCreationNote;
 use App\Models\RegularFixedQuantityConfirmation;
 use App\Models\RegularFixedQuantityConfirmationBox;
@@ -717,6 +718,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     $id_delivery_plan[] = $id_delivery->id_regular_delivery_plan;
                 }
                 $deliv_plan = RegularDeliveryPlan::with('manyFixedQuantityConfirmationBox')->orderBy('item_no','asc')->whereIn('id',$id_delivery_plan)->get();
+                $itemNoActual = RegularFixedActualContainerCreationItemNo::whereIn('id_regular_fixed_actual_container_creation',  explode(',',$params->id))->get();
 
                 $res_box_single = [];
                 $res_box_set = [];
@@ -724,8 +726,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                 $id_fixed_actual = $item->id_fixed_actual_container;
                 foreach ($deliv_plan as $key => $deliv_value) {
                     if ($deliv_value->item_no !== null) {
-                        foreach (array_filter(explode(',', $item->item_no), function($value) {return !in_array($value, [null,""]);}) as $value) {
-                            $part = MstPart::where('item_no', $value)->first();
+                        foreach ($itemNoActual as $value) {
+                            $part = MstPart::where('item_no', $value->item_no)->first();
                             $hs_code[] = $part->hs_code;
                         }
 
@@ -945,7 +947,7 @@ class QueryRegularFixedShippingInstruction extends Model {
                     'etd_jkt' => $item->etd_jkt,
                     'etd_wh' => $item->etd_wh,
                     'summary_container' => count($summary_box),
-                    'hs_code' => implode(',', array_unique($hs_code)),
+                    'hs_code' => implode(', ', array_unique($hs_code)),
                     'via' => $item->mot,
                     'freight_charge' => 'COLLECT',
                     'incoterm' => 'FOB',
