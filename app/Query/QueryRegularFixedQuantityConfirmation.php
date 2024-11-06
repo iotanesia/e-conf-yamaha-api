@@ -27,6 +27,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PackingExport;
 use App\Exports\PebExport;
 use App\Exports\FixedQuantityExport;
+use App\Models\RegularFixedActualContainerCreationItemNo;
 use App\Models\RegularFixedShippingInstructionCreation;
 use App\Models\RegularStokConfirmationHistory;
 use App\Models\RegularStokConfirmationTemp;
@@ -789,8 +790,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'id_fixed_actual_container' => $actual_container->id,
                 'status_bml' => 0,
                 'datasource' => $params->datasource,
-                'item_no' => count(array_filter($item_no, function($value) {return $value !== null;})) > 0 ? implode(',', $item_no) : null,
             ];
+
+            $itemNoActual = count(array_filter($item_no, function($value) {return $value !== null;})) > 0 ? $item_no : [];
 
             if($params->datasource == Constant::PYMAC_DATASOURCE){
 
@@ -813,7 +815,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     
                     $check = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $actual_container->id)->where('space', null)->first();
                     if($check) $check->forceDelete();
-                    RegularFixedActualContainerCreation::create($creation);
+                    $actual = RegularFixedActualContainerCreation::create($creation);
+                    self::itemNoActualContainer($actual, $itemNoActual, $creation['summary_box']); //insert item no
     
                     $sum_row_length = $sum_row_length - 12031;
                 }
@@ -844,7 +847,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
                 $check = RegularFixedActualContainerCreation::where('id_fixed_actual_container', $actual_container->id)->where('space', null)->first();
                 if($check) $check->forceDelete();
-                RegularFixedActualContainerCreation::create($creation);
+                $actual = RegularFixedActualContainerCreation::create($creation);
+                self::itemNoActualContainer($actual, $itemNoActual, $creation['summary_box']); //insert item no
 
                 $upd = RegularFixedActualContainer::where('id',$params->id)->first();
                 $upd->is_actual = 99;
@@ -866,6 +870,28 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             DB::rollBack();
             throw $th;
         }
+    }
+
+    public static function itemNoActualContainer($actual, $itemNoActual, $summaryBox)
+    {
+        $count = $summaryBox;
+        $data = $itemNoActual;
+
+        $currentCount = 0;
+        foreach($data as $item) {
+            if ($currentCount >= $count) {
+                break; 
+            }
+            
+            $store = new RegularFixedActualContainerCreationItemNo;
+            $attr['id_regular_fixed_actual_container_creation'] = $actual->id;
+            $attr['item_no'] = $item;
+            $store->fill($attr);
+            $store->save();
+            
+            $currentCount++; 
+        }
+
     }
     
     public static function ratioSummaryBox($qty, $sum_row_length, $divisor)
