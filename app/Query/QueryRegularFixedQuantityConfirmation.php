@@ -792,7 +792,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'datasource' => $params->datasource,
             ];
 
-            $itemNoActual = count(array_filter($item_no, function($value) {return $value !== null;})) > 0 ? $item_no : [];
+            //cek jika item_no tidak null
+            $itemNoActual = array_filter($item_no, function($value) {
+                return $value !== null;
+            });
+            $itemNoActual = !empty($itemNoActual) ? $itemNoActual : [];
 
             if($params->datasource == Constant::PYMAC_DATASOURCE){
 
