@@ -46,7 +46,7 @@ class MstBox extends Model
     ];
 
     public function refPart(){
-        return $this->belongsTo(MstPart::class,'id_part','id');
+        return $this->belongsTo(MstPart::class,'item_no','item_no');
     }
 
     public function refGroupProduct(){
