@@ -723,9 +723,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             ->orderBy('count_box','desc')
             ->get()
             ->map(function ($item, $index) {
+                $datasource = $item->refFixedQuantityConfirmation->datasource;
 
-                $row_length = $item->refMstBox->fork_side == 'Length' ? ($item->refMstBox->width * (int)ceil($item->count_box / 4)) : ($item->refMstBox->length * (int)ceil($item->count_box / 4));
-                $count_box = $item->count_box;
+                if($datasource == "YPMJ") $row_length = $item->refMstBox->weight_inner_carton ?? null;
+                else $row_length = $item->refMstBox->fork_side == 'Length' ? ($item->refMstBox->width * (int)ceil($item->count_box / 4)) : ($item->refMstBox->length * (int)ceil($item->count_box / 4));
+                
                 $box = RegularFixedQuantityConfirmationBox::select('regular_fixed_quantity_confirmation_box.id')
                                                             ->where('id_fixed_quantity_confirmation', $item->id_fixed_quantity_confirmation)
                                                             ->whereNull('id_prospect_container_creation')
@@ -743,13 +745,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     'label' => $item->refMstBox->no_box,
                     'width' =>  $item->refMstBox->width,
                     'length' => $item->refMstBox->length,
-                    'count_box' => $count_box,
+                    'count_box' => $item->count_box,
                     'sum_qty' => $item->sum_qty,
                     'priority' => $index + 1,
                     'forkside' => $item->refMstBox->fork_side,
                     'stackingCapacity' => $item->refMstBox->stack_capacity,
-                    'row' => (int)ceil($count_box / 4),
-                    'first_row_length' => $item->refMstBox->fork_side == 'Length' ? $item->refMstBox->width : $item->refMstBox->length,
                     'row_length' => $row_length,
                     'box' => $box,
                     'box_set_count' => $box_set_count
@@ -758,25 +758,15 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             $box_set_count = 0;
             $sum_row_length = 0;
-            $sum_count_box = 0;
             $sum_qty_box = [];
-            $first_row_length = [];
-            $first_row = [];
-            $first_count_box = [];
             $row_length = [];
             $count_box = [];
-            $big_row_length = [];
             foreach ($quantityConfirmationBox as $key => $value) {
                 $box_set_count += $value['box_set_count'];
                 $sum_row_length += $value['row_length'];
-                $sum_count_box += $value['count_box'];
                 $sum_qty_box[] = $value['sum_qty'];
-                $first_row_length[] = $quantityConfirmationBox[$key]['first_row_length'];
-                $first_row[] = $quantityConfirmationBox[$key]['row'];
-                $first_count_box[] = $quantityConfirmationBox[$key]['count_box'];
                 $row_length[] = $quantityConfirmationBox[$key]['row_length'];
                 $count_box[] = $quantityConfirmationBox[$key]['count_box'];
-                $big_row_length[] = $quantityConfirmationBox[$key]['first_row_length'] * $quantityConfirmationBox[$key]['row'];
             }
 
             $creation = [
