@@ -532,7 +532,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         })->paginate($params->limit ?? null);
 
         $data->map(function ($item){
-            $item->cust_name = $item->datasource == Constant::YPMJ_DATASOURCE ? $item->code_consignee : $item->refConsignee->nick_name ?? null;
+            $item->cust_name = $item->refConsignee->nick_name ?? null;
             $item->mot = $item->refMot->name ?? null;
             $item->status_desc = 'Confirmed';
 
