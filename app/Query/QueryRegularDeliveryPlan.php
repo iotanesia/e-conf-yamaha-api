@@ -438,12 +438,8 @@ class QueryRegularDeliveryPlan extends Model {
         ->paginate($params->limit ?? null);
 
         $data->transform(function ($item){
-            $custname = "";
-            if($item->datasource == Constant::PYMAC_DATASOURCE)
-                $custname = self::getCustName($item->code_consignee);
-            else if($item->datasource == Constant::YPMJ_DATASOURCE)
-                $custname = $item->customer_ypmj;
 
+            $custname = self::getCustName($item->code_consignee);
             $itemname = self::getPart($item->item_no);
 
             $item_no_series = MstBox::where('item_no', $item->item_no)->first();
