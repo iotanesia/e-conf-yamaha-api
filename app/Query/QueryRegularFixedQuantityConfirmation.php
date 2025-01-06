@@ -264,7 +264,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
             $no_packaging = $data[0]['order_no'].$iteration;
             $tanggal = $check[0]['etd_jkt'];
-            $code_consignee = $check[0]['code_consignee'];
+            $code_consignee = $params->datasource == Constant::YPMJ_DATASOURCE ? $check_qty_confirmation[0]->refRegularDeliveryPlan->code_consignee : $check[0]['code_consignee'];
             $datasource = $check[0]['datasource'];
 
             if($params->datasource == Constant::YPMJ_DATASOURCE){
