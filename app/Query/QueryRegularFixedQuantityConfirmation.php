@@ -1092,7 +1092,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     }
                 }
 
-                $item->cust_name = $item->datasource == Constant::YPMJ_DATASOURCE ? $item->code_consignee : $item->refMstConsignee->nick_name ?? null;
+                $item->cust_name = $item->refMstConsignee->nick_name ?? null;
                 $item->id_type_delivery = $item->id_type_delivery;
                 $item->type_delivery = $item->refMstTypeDelivery->name ?? null;
                 $item->lsp = $item->refMstLsp->name ?? null;
