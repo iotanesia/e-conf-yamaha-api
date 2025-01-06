@@ -84,10 +84,10 @@
                             <table>
                                 <tr>
                                     <td class="no-bl no-bt no-bb text-center" rowspan="2"><p style="padding:0; margin:0 0 20px 0;"><b>PART NO.</b></p> </td>
-                                    <td class="no-br no-bt text-center"><p style="padding:0; margin:0;"><b>QTY</b></p> </td>
+                                    <td class="no-br no-bt text-center"><p style="padding:0 0 0 20px; margin:0;"><b>QTY</b></p> </td>
                                 </tr>
                                 <tr>
-                                    <td class="no-br no-bb text-center"><p style="padding:0; margin:0;"><b>PCS</b></p> </td>
+                                    <td class="no-br no-bb text-center"><p style="padding:0 0 0 20px; margin:0;"><b>PCS</b></p> </td>
                                 </tr>
                             </table>
                             <hr>
