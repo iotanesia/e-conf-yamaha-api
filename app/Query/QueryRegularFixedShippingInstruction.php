@@ -521,7 +521,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                         $boxArray[$order_no] = [];
                     }
                     foreach ($boxArray[$order_no] as $existing_item) {
-                        if ($existing_item['cust_item_no'] === $cust_item_no) {
+                        $exist = $existing_item['cust_item_no'] ?? $existing_item;
+                        if ($exist === $cust_item_no) {
                             $exists = true;
                             break;
                         }
