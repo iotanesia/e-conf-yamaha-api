@@ -1986,7 +1986,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $count_qty += array_sum($box_item['qty_pcs_box']);
                 $count_net_weight += array_sum($box_item['unit_weight_kg']);
                 $count_gross_weight += array_sum($box_item['total_gross_weight']);
-                $count_meas[] = round((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000), 3);
+                $count_meas[] = in_array($box_item['length'], ['',null]) ? 0 : round((($box_item['length'] * $box_item['width'] * $box_item['height']) / 1000000000), 3);
                 $count_meas_ypmj[] = $box_item['meas_ypmj'] ?? 0;
                 $gross_weight_per_part[] = $box_item['total_gross_weight'];
             }
@@ -2007,7 +2007,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $count_qty_per_order += array_sum($val['qty_pcs_box']);
                     $count_net_weight_per_order += array_sum($val['unit_weight_kg']);
                     $count_gross_weight_per_order += array_sum($val['total_gross_weight']);
-                    $count_meas_per_order[] = round((($val['length'] * $val['width'] * $val['height']) / 1000000000), 3);
+                    $count_meas_per_order[] = in_array($val['length'], ['',null]) ? 0 : round((($val['length'] * $val['width'] * $val['height']) / 1000000000), 3);
                     $count_meas_ypmj_per_order[] = $val['meas_ypmj'] ?? null;
                     $order_no = $val['order_no'].$val['cust_item_no'];
                 }
