@@ -2144,13 +2144,21 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     public static function exportCSV($request, $id)
     {
         $id_fixed_quantity = RegularFixedQuantityConfirmation::where('id_fixed_actual_container', $id)->get();
-        $query = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', $id_fixed_quantity->pluck('id')->toArray())
+        $query = RegularFixedQuantityConfirmationBox::select(
+            DB::raw('SUM(regular_fixed_quantity_confirmation_box.qty_pcs_box) as qty_pcs_box'),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan::character varying, ',') as id_regular_delivery_plan"),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan_box::character varying, ',') as id_regular_delivery_plan_box"),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_prospect_container_creation::character varying, ',') as id_prospect_container_creation"),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
+        )
+        ->whereIn('id_fixed_quantity_confirmation', $id_fixed_quantity->pluck('id')->toArray())
         ->whereNotNull('id_prospect_container_creation')
+        ->groupBy('id_fixed_quantity_confirmation')
         ->orderBy('id_regular_delivery_plan','asc')
         ->get();
 
         $data = $query->map(function ($item, $key) use($query){
-            $plan_box = RegularDeliveryPlanBox::where('id', $item->id_regular_delivery_plan_box)->first();
+            $plan_box = RegularDeliveryPlanBox::whereIn('id', explode(',',$item->id_regular_delivery_plan_box))->first();
             $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)->first();
             $container_creation = RegularFixedActualContainerCreation::where('id', $item->id_prospect_container_creation)->first();
 
@@ -2243,11 +2251,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res['no'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? count(array_unique($qrcode)) : '0';
                     $res['nw'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? number_format($total_net_weight, 2) : str_replace('.',',',number_format($nw_gw[0]['unit_weight_kg'][0], 2)) ?? null;
                     $res['gw'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? number_format($total_gross_weight+$outer_weight, 2) : str_replace('.',',',number_format($nw_gw[0]['total_gross_weight'][0], 2)) ?? null;
-                    $res["model_code"] = $fixedQuantity->cust_item_no ?? null;
+                    $res["model_code"] = $fixedQuantity->model ?? '-';
                     $res["type_box"] = 'CARTON BOX';
-                    $res["panjang"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->length : ($plan_box->refBox->length ?? null);
-                    $res["lebar"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->width : ($plan_box->refBox->width ?? null);
-                    $res["tinggi"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->height : ($plan_box->refBox->height ?? null);
+                    $res["panjang"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? ($item->refRegularDeliveryPlan->refOuterType->length * 10) : ($plan_box->refBox->length ?? null);
+                    $res["lebar"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? ($item->refRegularDeliveryPlan->refOuterType->width * 10) : ($plan_box->refBox->width ?? null);
+                    $res["tinggi"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? ($item->refRegularDeliveryPlan->refOuterType->height * 10) : ($plan_box->refBox->height ?? null);
                     $res["hs_code"] = $plan_box->refRegularDeliveryPlan->refPart->hs_code;
                     
                     return [$res];
