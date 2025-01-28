@@ -1265,7 +1265,8 @@ class QueryStockConfirmationHistory extends Model
 
             $item->item_number = $item_no;
             $item->item_name = $item_name;
-            $item->qty = count(explode(',', $item->id_stok_temp)) . ' x ' . $item->qty;
+            // $item->qty = count(explode(',', $item->id_stok_temp)) . ' x ' . $item->qty;
+            $item->qty = $item->qty;
             $item->order_no = $item->refRegularDeliveryPlan->order_no;
             $item->cust_name = $item->refRegularDeliveryPlan->datasource == Constant::YPMJ_DATASOURCE ? $item->refRegularDeliveryPlan->customer_ypmj : $item->refRegularDeliveryPlan->refConsignee->nick_name;
 
