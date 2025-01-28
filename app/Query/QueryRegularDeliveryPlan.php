@@ -796,70 +796,71 @@ class QueryRegularDeliveryPlan extends Model {
             array_push($periods, ["id" => $id, "period" => $period]);
         }
 
-
-        $query = self::where('id_regular_order_entry',$id_regular_order_entry)
-            ->where(function ($query) use ($params){
-            $category = $params->category ?? null;
-            $kueri = $params->kueri ?? null;
-        
-            if ($category && $kueri) {
-                if ($category == 'cust_name') {
-                    $query->whereHas('refConsignee', function ($q) use ($kueri) {
-                        $q->where('nick_name', 'like', '%' . $kueri . '%');
-                    });
-                } elseif ($category == 'item_name') {
-                    $query->whereHas('refPart', function ($q) use ($kueri) {
-                        $q->where('description', 'like', '%' . $kueri . '%');
-                    });
-                }elseif ($category == 'etd_ypmi') {
-                    $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
-                }elseif ($category == 'etd_wh') {
-                    $query->where('etd_wh', 'like', '%' . $kueri . '%');
-                }elseif ($category == 'etd_jkt') {
-                    $query->where('etd_jkt', 'like', '%' . $kueri . '%');
-                } else {
-                    $query->where('etd_jkt', 'like', '%' . $kueri . '%')
-                        ->orWhere('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%')
-                        ->orWhere('order_no', 'like', '%' . $kueri . '%')
-                        ->orWhere('cust_item_no', 'like', '%' . $kueri . '%')
-                        ->orWhere('qty', 'like', '%' . $kueri . '%')
-                        ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
-                        ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+        $res = [];
+        foreach ($ids as $id_val) {
+            $data = self::where('id_regular_order_entry',$id_regular_order_entry)
+                ->where(function ($query) use ($params){
+                $category = $params->category ?? null;
+                $kueri = $params->kueri ?? null;
+            
+                if ($category && $kueri) {
+                    if ($category == 'cust_name') {
+                        $query->whereHas('refConsignee', function ($q) use ($kueri) {
+                            $q->where('nick_name', 'like', '%' . $kueri . '%');
+                        });
+                    } elseif ($category == 'item_name') {
+                        $query->whereHas('refPart', function ($q) use ($kueri) {
+                            $q->where('description', 'like', '%' . $kueri . '%');
+                        });
+                    }elseif ($category == 'etd_ypmi') {
+                        $query->where('etd_ypmi', 'like', '%' . $kueri . '%');
+                    }elseif ($category == 'etd_wh') {
+                        $query->where('etd_wh', 'like', '%' . $kueri . '%');
+                    }elseif ($category == 'etd_jkt') {
+                        $query->where('etd_jkt', 'like', '%' . $kueri . '%');
+                    } else {
+                        $query->where('etd_jkt', 'like', '%' . $kueri . '%')
+                            ->orWhere('item_no', 'like', '%' . str_replace('-', '', $kueri) . '%')
+                            ->orWhere('order_no', 'like', '%' . $kueri . '%')
+                            ->orWhere('cust_item_no', 'like', '%' . $kueri . '%')
+                            ->orWhere('qty', 'like', '%' . $kueri . '%')
+                            ->orWhere('etd_ypmi', 'like', '%' . $kueri . '%')
+                            ->orWhere('etd_wh', 'like', '%' . $kueri . '%');
+                    }
                 }
-            }
-
-            // $filterdate = Helper::filterDate($params);
-            $date_from = str_replace('-','',$params->date_from);
-            $date_to = str_replace('-','',$params->date_to);
-            if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
-        })
-        ->whereIn("id", $ids)
-        ->whereNull('bucket_produksi');
-
-        if($params->dropdown == Constant::IS_ACTIVE) {
-            $params->limit = null;
-            $params->page = 1;
-        }
-        
-        $data = $query
-        ->orderBy('id','asc')
-        ->paginate($params->limit ?? null);
-
-        return [
-            'items' => $data->transform(function ($item) use ($periods){
-
+    
+                // $filterdate = Helper::filterDate($params);
+                $date_from = str_replace('-','',$params->date_from);
+                $date_to = str_replace('-','',$params->date_to);
+                if($params->date_from || $params->date_to) $query->whereBetween('etd_jkt',[$date_from, $date_to]);
+            })
+            ->where("id", $id_val)
+            ->whereNull('bucket_produksi')
+            ->paginate($params->limit ?? null);
+    
+            // if($params->dropdown == Constant::IS_ACTIVE) {
+            //     $params->limit = null;
+            //     $params->page = 1;
+            // }
+            
+            // $data = $query
+            // ->orderBy('id','asc')
+            // ->paginate($params->limit ?? null);
+    
+            $res[] = $data->transform(function ($item) use ($periods){
+    
                 $period = "";
                 foreach($periods as $p){
                     if($p["id"] == $item->id)
                         $period = $p["period"];
                 }
-
+    
                 $ypmj_box = MstBox::where('item_no', $item->item_no)->where('datasource', 'YPMJ')->first();
                 $_temp = [];
                 if(isset($ypmj_box) && $ypmj_box->qty > 0)
                     $_temp[] = ["qty" => $ypmj_box->qty. ' x '.ceil($item->qty / $ypmj_box->qty)];
                 $box = $_temp;
-
+    
                 return [
                     'id' => $item->id,
                     'item_no' => $item->item_no,
@@ -869,7 +870,11 @@ class QueryRegularDeliveryPlan extends Model {
                     'period' => $period,
                     'box' => $box
                 ];
-            }),
+            })->toArray()[0];
+        }
+
+        return [
+            'items' => $res,
             'last_page' => $data->lastPage(),
             'attributes' => [
                 'total' => $data->total(),
