@@ -143,7 +143,7 @@
                         @endif
                     </td>
                     <td class="text-center">{{ $item->order_no }}</td>
-                    <td class="text-center">{{ count(explode(',', $item->id_note_detail)).' x '.$item->qty }}</td>
+                    <td class="text-center">{{ $item->qty }}</td>
                     <td class="text-center">{{ $item->refStokConfirmation->refRegularDeliveryPlan->datasource == "YPMJ" ? $item->refStokConfirmation->refRegularDeliveryPlan->customer_ypmj :  $item->refStokConfirmation->refConsignee->nick_name ?? null }}</td>
                 </tr>
             @endforeach
