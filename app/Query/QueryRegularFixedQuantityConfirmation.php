@@ -2312,8 +2312,20 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         ->groupBy('id_regular_delivery_plan')
         ->orderBy('created_at','asc')
         ->get();
+        
+        $jml_order = [];
+        $i = 1;
+        foreach ($query as $key => $val) {
+            $current_order_no = $val->refFixedQuantityConfirmation->order_no;
+            if (!isset($jml_order[$current_order_no])) {
+                $jml_order[$current_order_no] = []; // Initialize the group if it doesn't exist
+                $i = 1;
+            }
+        
+            $jml_order[$current_order_no][] = $i++;
+        }
 
-        $data = $query->map(function ($item, $key){
+        $data = $query->map(function ($item, $key) use($jml_order){
             $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)->first();
 
             if ($fixedQuantity && $fixedQuantity->id_fixed_actual_container !== null) {
@@ -2386,14 +2398,14 @@ class QueryRegularFixedQuantityConfirmation extends Model {
     
                     $res['no_packaging'] = $fixedQuantity->refFixedActualContainer->no_packaging ?? null;
                     $res['tanggal'] = date('Ymd', strtotime($fixedQuantity->refFixedActualContainer->created_at)) ?? null;
-                    $res['seri_barang'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? count(array_unique($qrcode)) : null;
+                    $res['seri_barang'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? $jml_order[$fixedQuantity->order_no][$key] : null;
                     $res['hs'] = $hs_code;
                     $res['kode_barang'] = $kode_barang;
                     $res['uraian'] = 'PRODUCTION PARTS FOR YAMAHA MOTORCYCLES';
                     $res['kode_satuan'] = 'PCE';
                     $res['jumlah_satuan'] = $item->sum_qty;
                     $res['kode_kemasan'] = 'CT';
-                    $res['jumlah_kemasan'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? count(array_unique($qrcode)) : count(explode(',', $item->id_regular_delivery_plan_box));
+                    $res['jumlah_kemasan'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? $jml_order[$fixedQuantity->order_no][$key]-1 : count(explode(',', $item->id_regular_delivery_plan_box));
                     $res['netto'] = number_format($netto, 2);
                     $res['volume'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->measurement : number_format($volume, 3);
     
