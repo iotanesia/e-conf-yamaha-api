@@ -2150,6 +2150,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_regular_delivery_plan_box::character varying, ',') as id_regular_delivery_plan_box"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_prospect_container_creation::character varying, ',') as id_prospect_container_creation"),
             DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_box::character varying, ',') as id_box"),
+            DB::raw("string_agg(DISTINCT regular_fixed_quantity_confirmation_box.id_fixed_quantity_confirmation::character varying, ',') as id_fixed_quantity_confirmation"),
         )
         ->whereIn('id_fixed_quantity_confirmation', $id_fixed_quantity->pluck('id')->toArray())
         ->whereNotNull('id_prospect_container_creation')
@@ -2157,7 +2158,19 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         ->orderBy('id_regular_delivery_plan','asc')
         ->get();
 
-        $data = $query->map(function ($item, $key) use($query){
+        $jml_order = [];
+        $i = 1;
+        foreach ($query as $key => $val) {
+            $current_order_no = $val->refFixedQuantityConfirmation->order_no;
+            if (!isset($jml_order[$current_order_no])) {
+                $jml_order[$current_order_no] = []; // Initialize the group if it doesn't exist
+                $i = 1;
+            }
+        
+            $jml_order[$current_order_no][] = $i++;
+        }
+        
+        $data = $query->map(function ($item, $key) use($query, $jml_order){
             $plan_box = RegularDeliveryPlanBox::whereIn('id', explode(',',$item->id_regular_delivery_plan_box))->first();
             $fixedQuantity = RegularFixedQuantityConfirmation::where('id_regular_delivery_plan', $item->id_regular_delivery_plan)->first();
             $container_creation = RegularFixedActualContainerCreation::where('id', $item->id_prospect_container_creation)->first();
@@ -2247,7 +2260,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res["kosong"] = null;
                     $res["po_no"] = $fixedQuantity->order_no ?? null;
                     $res["part_no"] = $plan_box->refRegularDeliveryPlan->refPart->item_serial;
-                    $res["qty"] = $item->qty_pcs_box ?? null;
+                    $res["qty"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? (count($jml_order[$fixedQuantity->order_no]) == $key+1 ? count($jml_order[$fixedQuantity->order_no]) : null) : $item->qty_pcs_box;
                     $res['no'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? count(array_unique($qrcode)) : '0';
                     $res['nw'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? number_format($total_net_weight, 2) : str_replace('.',',',number_format($nw_gw[0]['unit_weight_kg'][0], 2)) ?? null;
                     $res['gw'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? number_format($total_gross_weight+$outer_weight, 2) : str_replace('.',',',number_format($nw_gw[0]['total_gross_weight'][0], 2)) ?? null;
