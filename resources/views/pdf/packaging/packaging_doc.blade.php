@@ -185,7 +185,13 @@
                                     <td class="no-bt"></td>
                                 @endif
                                 <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
-                                <td style='padding-bottom:5px;' class='text-center'>{{ count($box_item['item_no_series']) > 1 ? round($box_item['qty_pcs_box'][$i], 2) : round(array_sum($box_item['qty_pcs_box']), 2) }}</td>
+
+                                @if (count($box_item['item_no_series']) > 1)
+                                    <td style='padding-bottom:5px;' class='text-center'>{{ (count($box_item['qty_pcs_box']) != count($box_item['item_no_series']) && $i > 0) ? round($box_item['qty_pcs_box'][$i-1], 2) : round($box_item['qty_pcs_box'][$i], 2) }}</td>
+                                @else
+                                    <td style='padding-bottom:5px;' class='text-center'>{{ round(array_sum($box_item['qty_pcs_box']), 2) }}</td>
+                                @endif
+
                                 <td style='padding-bottom:5px;' class='text-center'>{{ count($box_item['item_no_series']) > 1 ? number_format($box_item['unit_weight_kg'][$i], 2) : number_format(array_sum($box_item['unit_weight_kg']), 2) }}</td>
                                 <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ?  number_format(array_sum($box_item['total_gross_weight']), 2) : null }}</td>
                                 <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ? array_sum((array)$box_item['meas_ypmj']) : null }}</td>
@@ -235,9 +241,27 @@
                 {{-- total --}}
                 <tr>
                     <td colspan="3" class="text-center"> TOTAL</td>
-                    <td class="text-center">{{ $sum_per_order[$order['order_no'].$order['cust_item_no']]['qty'] }}</td>
-                    <td class="text-center">{{ number_format(($sum_per_order[$order['order_no'].$order['cust_item_no']]['nett_weight']),2) }}</td>
-                    <td class="text-center">{{ number_format(($sum_per_order[$order['order_no'].$order['cust_item_no']]['gross_weight']),2) }}</td>
+                    <td class="text-center">
+                        @if ($item->datasource == "YPMJ")
+                            {{ count($boxYPMJ) > 1 ? $sum_per_order[$order['order_no'].$order['cust_item_no']]['qty'] : $count_qty }}
+                        @else
+                            {{ $sum_per_order[$order['order_no'].$order['cust_item_no']]['qty'] }}
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        @if ($item->datasource == "YPMJ")
+                            {{ count($boxYPMJ) > 1 ? number_format(($sum_per_order[$order['order_no'].$order['cust_item_no']]['nett_weight']),2) : number_format($count_net_weight,2) }}
+                        @else
+                            {{ number_format(($sum_per_order[$order['order_no'].$order['cust_item_no']]['nett_weight']),2) }}
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        @if ($item->datasource == "YPMJ")
+                            {{ count($boxYPMJ) > 1 ? number_format(($sum_per_order[$order['order_no'].$order['cust_item_no']]['gross_weight']),2) : number_format($count_gross_weight,2) }}
+                        @else
+                            {{ number_format(($sum_per_order[$order['order_no'].$order['cust_item_no']]['gross_weight']),2) }}
+                        @endif
+                    </td>
                     <td class="text-center">{{ $item->datasource == "YPMJ" ? $count_meas_ypmj : number_format(($sum_per_order[$order['order_no'].$order['cust_item_no']]['meas']),3) }}</td>
                 </tr>
             </table>
