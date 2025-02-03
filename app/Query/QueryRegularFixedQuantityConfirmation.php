@@ -1779,9 +1779,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             foreach ($data[0]->manyFixedQuantityConfirmation as $id_delivery) {
                 $id_delivery_plan[] = $id_delivery->id_regular_delivery_plan;
             }
-            // $deliv_plan = RegularDeliveryPlan::with('manyFixedQuantityConfirmationBox')->orderBy('item_no','asc')->whereIn('id',$id_delivery_plan)->get();
-            $deliv_plan = RegularDeliveryPlan::with('manyFixedQuantityConfirmationBox')->orderBy('urutan','asc')->whereIn('id',$id_delivery_plan)->get();
-
+            
+            if($data[0]->datasource == "YPMJ") $deliv_plan = RegularDeliveryPlan::with('manyFixedQuantityConfirmationBox')->orderBy('urutan','asc')->whereIn('id',$id_delivery_plan)->get();
+            else $deliv_plan = RegularDeliveryPlan::with('manyFixedQuantityConfirmationBox')->orderBy('item_no','asc')->whereIn('id',$id_delivery_plan)->get();
+        
             $res_box_single = [];
             $res_box_set = [];
             foreach ($deliv_plan as $key => $deliv_value) {
@@ -1962,6 +1963,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             
             $box = array_merge((array_merge(...$res_box_set) ?? []), (array_merge(...$res_box_single) ?? []));
             $boxArray = [];
+            $arrYpmj = [];
+            $totalGrossYpmj = [];
             foreach ($box as $box_item) {
                 $order_no = $box_item['order_no'];
                 $cust_item_no = $box_item['cust_item_no'];
@@ -1977,6 +1980,21 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 }
                 if (!$exists) {
                     $boxArray[$order_no.$cust_item_no][] = $box_item;
+                }
+                $arrYpmj[$box_item['qrcode'].$box_item['item_no_series'][0]] = [
+                    'item_no_series' => $box_item['item_no_series'][0],
+                    'total_gross_weight' => $box_item['total_gross_weight'][0],
+                    'qty_pcs_box' => $box_item['qty_pcs_box'][0],
+                    'unit_weight_kg' => $box_item['unit_weight_kg'][0],
+                ];
+
+                $qrcode = $box_item['qrcode'];
+                if (isset($totalGrossYpmj[$qrcode])) {
+                    $totalGrossYpmj[$qrcode]['total_gross_weight'] += $box_item['total_gross_weight'][0];
+                } else {
+                    $totalGrossYpmj[$qrcode] = [
+                        'total_gross_weight' => $box_item['total_gross_weight'][0],
+                    ];
                 }
             }
             
@@ -2047,6 +2065,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 'data' => $data,
                 'box' => $boxArray,
                 'boxYPMJ' => $data[0]->datasource == "YPMJ" ? self::groupByQRCode($box) : [],
+                'arrYPMJ' => $data[0]->datasource == "YPMJ" ? $arrYpmj : [],
+                'totalGrossYPMJ' => $data[0]->datasource == "YPMJ" ? $totalGrossYpmj : [],
                 'gross_weight_per_part' => $gross_weight_per_part,
                 'order_data' => $order_data,
                 'package_number' => $package_number,

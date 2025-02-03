@@ -186,14 +186,9 @@
                                 @endif
                                 <td style='padding-bottom:5px;' class='text-center'>{{ $box_item['item_no_series'][$i] }}</td>
 
-                                @if (count($box_item['item_no_series']) > 1)
-                                    <td style='padding-bottom:5px;' class='text-center'>{{ (count($box_item['qty_pcs_box']) != count($box_item['item_no_series']) && $i > 0) ? round($box_item['qty_pcs_box'][$i-1], 2) : round($box_item['qty_pcs_box'][$i], 2) }}</td>
-                                @else
-                                    <td style='padding-bottom:5px;' class='text-center'>{{ round(array_sum($box_item['qty_pcs_box']), 2) }}</td>
-                                @endif
-
-                                <td style='padding-bottom:5px;' class='text-center'>{{ count($box_item['item_no_series']) > 1 ? number_format($box_item['unit_weight_kg'][$i], 2) : number_format(array_sum($box_item['unit_weight_kg']), 2) }}</td>
-                                <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ?  number_format(array_sum($box_item['total_gross_weight']), 2) : null }}</td>
+                                <td style='padding-bottom:5px;' class='text-center'>{{ count($box_item['item_no_series']) > 1 ? round($arrYPMJ[$box_item['qrcode'].$box_item['item_no_series'][$i]]['qty_pcs_box']) : round(array_sum($box_item['qty_pcs_box'])) }}</td>
+                                <td style='padding-bottom:5px;' class='text-center'>{{ count($box_item['item_no_series']) > 1 ? number_format($arrYPMJ[$box_item['qrcode'].$box_item['item_no_series'][$i]]['unit_weight_kg'], 2) : number_format(array_sum($box_item['unit_weight_kg']), 2) }}</td>
+                                <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ?  number_format($totalGrossYPMJ[$box_item['qrcode']]['total_gross_weight'], 2) : null }}</td>
                                 <td style='padding-bottom:5px;' class='text-center'>{{ $i % 2 == 0 && $i == 0 ? array_sum((array)$box_item['meas_ypmj']) : null }}</td>
                             </tr>
                         @endfor
