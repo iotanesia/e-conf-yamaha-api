@@ -638,7 +638,7 @@ class QueryRegularDeliveryPlan extends Model {
             $case_number_1st_week = 1;
             $case_number_2nd_week = 1;
 
-            foreach($request["id"] as $id){
+            foreach($request["id"] as $key => $id){
                 $delivery_plan = self::find($id);
                 
 
@@ -675,7 +675,8 @@ class QueryRegularDeliveryPlan extends Model {
                         "bucket_produksi" => $current_bucket+1,
                         "period" => $period,
                         // "case_number" => $case_number
-                        "case_number" => 1
+                        "case_number" => 1,
+                        "urutan" => $key +1,
                     ]);
                 }
 

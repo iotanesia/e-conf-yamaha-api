@@ -43,6 +43,7 @@ class RegularDeliveryPlan extends Model
         "period",
         "customer_ypmj",
         "outer_type",
+        "urutan",
     ];
 
     public static function boot()
