@@ -894,9 +894,9 @@ class QueryRegularDeliveryPlan extends Model {
 
         $data = RegularDeliveryPlan::where('id_regular_order_entry', $id_regular_order_entry)
         ->where('bucket_produksi', $current_bucket)
-        ->orderBy('etd_jkt', 'asc')
-        ->orderBy('case_number', 'asc')
-
+        // ->orderBy('etd_jkt', 'asc')
+        // ->orderBy('case_number', 'asc')
+        ->orderBy('urutan', 'asc')
         ->paginate($params->limit ?? null);
         
         $data->transform(function ($item) use ($current_bucket)
