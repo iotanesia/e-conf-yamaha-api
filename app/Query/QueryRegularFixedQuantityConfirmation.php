@@ -1779,7 +1779,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             foreach ($data[0]->manyFixedQuantityConfirmation as $id_delivery) {
                 $id_delivery_plan[] = $id_delivery->id_regular_delivery_plan;
             }
-            $deliv_plan = RegularDeliveryPlan::with('manyFixedQuantityConfirmationBox')->orderBy('item_no','asc')->whereIn('id',$id_delivery_plan)->get();
+            // $deliv_plan = RegularDeliveryPlan::with('manyFixedQuantityConfirmationBox')->orderBy('item_no','asc')->whereIn('id',$id_delivery_plan)->get();
+            $deliv_plan = RegularDeliveryPlan::with('manyFixedQuantityConfirmationBox')->orderBy('urutan','asc')->whereIn('id',$id_delivery_plan)->get();
 
             $res_box_single = [];
             $res_box_set = [];
