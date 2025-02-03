@@ -148,6 +148,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                 $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_no_series')->toArray() : $item->refRegularDeliveryPlan->refPart->item_serial;
                 // $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_set : $item->refRegularDeliveryPlan->item_no;
                 $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_name')->toArray() : $item->refRegularDeliveryPlan->refPart->description;
+                $item->urutan = $item->refRegularDeliveryPlan->urutan ?? null;
 
                 unset(
                     $item->refConsignee,
@@ -156,6 +157,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
 
                 return $item;
             });
+
+            $collection = $collection->sortBy('urutan')->values();
 
             return [
                 'items' => self::groupByQRKey($collection->toArray()),
