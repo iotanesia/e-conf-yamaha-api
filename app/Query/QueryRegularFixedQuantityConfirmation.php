@@ -2444,7 +2444,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res['kode_satuan'] = 'PCE';
                     $res['jumlah_satuan'] = $item->sum_qty;
                     $res['kode_kemasan'] = 'CT';
-                    $res['jumlah_kemasan'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? ($key == $jml_kemasan ? 1 : 0) : count(explode(',', $item->id_regular_delivery_plan_box));
+                    $res['jumlah_kemasan'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? ($key == $jml_kemasan ? "1" : "0") : count(explode(',', $item->id_regular_delivery_plan_box));
                     $res['netto'] = number_format($netto, 2);
                     $res['volume'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->measurement : number_format($volume, 3);
                     $res['urutan'] = $item->refRegularDeliveryPlan->urutan;
