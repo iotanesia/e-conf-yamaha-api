@@ -2233,7 +2233,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                             'panjang' => $value['length'],
                             'lebar' => $value['width'],
                             'tinggi' => $value['height'],
-                            'hs_code' => $value['hs_code']
+                            'hs_code' => $value['hs_code'],
+                            'urutan' => null,
                         ];
                     }
                     return $res;
@@ -2280,7 +2281,8 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res["panjang"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? ($item->refRegularDeliveryPlan->refOuterType->length * 10) : ($plan_box->refBox->length ?? null);
                     $res["lebar"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? ($item->refRegularDeliveryPlan->refOuterType->width * 10) : ($plan_box->refBox->width ?? null);
                     $res["tinggi"] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? ($item->refRegularDeliveryPlan->refOuterType->height * 10) : ($plan_box->refBox->height ?? null);
-                    $res["hs_code"] = $plan_box->refRegularDeliveryPlan->refPart->hs_code;
+                    $res["hs_code"] = $plan_box->refRegularDeliveryPlan->refPart->hs_code ?? null;
+                    $res["urutan"] = $plan_box->refRegularDeliveryPlan->urutan ?? null;
                     
                     return [$res];
                 }
@@ -2316,6 +2318,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             foreach ($flattenedArray as $key => &$subarray) {
                 $subarray["no"] = $subarray["no"] == '0' ? $no++ : $flattenedArray[$key-1]["no"];
             }
+        } else {
+            usort($flattenedArray, function ($a, $b) {
+                return $a['urutan'] <=> $b['urutan'];
+            });
         }
         $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
@@ -2397,6 +2403,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                 'jumlah_kemasan' => $i == 0 ? count(explode(',', $item->id_regular_delivery_plan_box)) : null,
                                 'netto' =>  number_format($nw_gw[0]['unit_weight_kg'][$i], 2) ?? null,
                                 'volume' => $i == 0 ? number_format($volume, 3) : null,
+                                'urutan' => null,
                         ];
                     }
     
@@ -2432,6 +2439,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res['jumlah_kemasan'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? $jml_order[$fixedQuantity->order_no][$key]-1 : count(explode(',', $item->id_regular_delivery_plan_box));
                     $res['netto'] = number_format($netto, 2);
                     $res['volume'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->measurement : number_format($volume, 3);
+                    $res['urutan'] = $item->refRegularDeliveryPlan->urutan;
     
                     return [$res];
                 }
@@ -2442,6 +2450,10 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         $flattenedArray = call_user_func_array('array_merge', $filteredData);
         usort($flattenedArray, function ($a, $b) {
             return $a['kode_barang'] <=> $b['kode_barang'];
+        });
+        
+        usort($flattenedArray, function ($a, $b) {
+            return $a['urutan'] <=> $b['urutan'];
         });
         $result = [];
         foreach ($flattenedArray as $item) {
