@@ -203,41 +203,46 @@ class QueryRegularFixedPackingCreation extends Model {
         }
 
         if(!$data) throw new \Exception("data tidak ditemukan", 400);
-        return [
-            'items' => $data->getCollection()->transform(function($item){
 
-                if ($item->refRegularDeliveryPlan->item_no == null) {
-                    $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
-                    $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set)->orderBy('id')->get();
-                    $grouped_items = [];
-                    foreach ($item_no_series as $value) {
-                        $grouped_items[$value->num_set][] = [
-                                                              'item_no_series' =>$value->item_no_series, 
-                                                              'id_box' => $value->id, 
-                                                              'no_box' => $value->no_box,
-                                                              'item_name' => $value->refPart->description ?? null
-                                                            ];
-                    }
-                    foreach ($grouped_items as $value) {
-                      if(count($value) == count($item_no_set)) $item_no_series = collect($value);
-                    }
+        $collection = $data->getCollection()->transform(function($item){
+
+            if ($item->refRegularDeliveryPlan->item_no == null) {
+                $item_no_set = $item->refRegularDeliveryPlan->manyDeliveryPlanSet->pluck('item_no')->toArray();
+                $item_no_series = MstBox::where('part_set', 'set')->whereIn('item_no', $item_no_set)->orderBy('id')->get();
+                $grouped_items = [];
+                foreach ($item_no_series as $value) {
+                    $grouped_items[$value->num_set][] = [
+                                                          'item_no_series' =>$value->item_no_series, 
+                                                          'id_box' => $value->id, 
+                                                          'no_box' => $value->no_box,
+                                                          'item_name' => $value->refPart->description ?? null
+                                                        ];
                 }
+                foreach ($grouped_items as $value) {
+                  if(count($value) == count($item_no_set)) $item_no_series = collect($value);
+                }
+            }
 
-                $qty_pcs_box = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', explode(',', $item->id_quantity_confirmation))->get();
+            $qty_pcs_box = RegularFixedQuantityConfirmationBox::whereIn('id_fixed_quantity_confirmation', explode(',', $item->id_quantity_confirmation))->get();
 
-                $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_no_series')->toArray() : [$item->item_serial];
-                $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_name')->toArray() : trim($item->refRegularDeliveryPlan->refPart->description);
-                $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name ?? ($item->refFixedActualContainer->code_consignee ?? null);
-                $item->no_invoice = $item->refFixedActualContainer->no_packaging;
-                // $item->in_wh = count(explode(',', $item->count)) . ' x ' . array_sum($qty_pcs_box->pluck('qty_pcs_box')->toArray());
-                $item->in_wh = $item->count.' x '.array_sum(explode(',', $item->qty_pcs_box));
-                unset(
-                    $item->refRegularDeliveryPlan,
-                    $item->refFixedActualContainer
-                );
+            $item->item_no = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_no_series')->toArray() : [$item->item_serial];
+            $item->item_name = $item->refRegularDeliveryPlan->item_no == null ? $item_no_series->pluck('item_name')->toArray() : trim($item->refRegularDeliveryPlan->refPart->description);
+            $item->cust_name = $item->refRegularDeliveryPlan->refConsignee->nick_name ?? ($item->refFixedActualContainer->code_consignee ?? null);
+            $item->no_invoice = $item->refFixedActualContainer->no_packaging;
+            // $item->in_wh = count(explode(',', $item->count)) . ' x ' . array_sum($qty_pcs_box->pluck('qty_pcs_box')->toArray());
+            $item->in_wh = $item->count.' x '.array_sum(explode(',', $item->qty_pcs_box));
+            $item->urutan = $item->refRegularDeliveryPlan->urutan;
+            unset(
+                $item->refRegularDeliveryPlan,
+                $item->refFixedActualContainer
+            );
 
-                return $item;
-            }),
+            return $item;
+        });
+
+        $collection = $collection->sortBy('urutan')->values();
+        return [
+            'items' => $collection,
             'last_page' => $data->lastPage()
         ];
     }

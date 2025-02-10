@@ -2273,7 +2273,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res["po_no"] = $fixedQuantity->order_no ?? null;
                     $res["part_no"] = $plan_box->refRegularDeliveryPlan->refPart->item_serial;
                     $res["qty"] = $item->qty_pcs_box ?? null;
-                    $res['no'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? count(array_unique($qrcode)) : '0';
+                    $res['no'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? (string)count(array_unique($qrcode)) : '0';
                     $res['nw'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? number_format($total_net_weight, 2) : str_replace('.',',',number_format($nw_gw[0]['unit_weight_kg'][0], 2)) ?? null;
                     $res['gw'] = $plan_box->refRegularDeliveryPlan->datasource == "YPMJ" ? number_format($total_gross_weight+$outer_weight, 2) : str_replace('.',',',number_format($nw_gw[0]['total_gross_weight'][0], 2)) ?? null;
                     $res["model_code"] = $fixedQuantity->model ?? '-';
