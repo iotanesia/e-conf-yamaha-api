@@ -2325,7 +2325,12 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         }
         $filename = 'packing-list-'.Carbon::now()->format('Ymd');
 
-        return Excel::download(new PackingExport($flattenedArray), $filename.'.csv');
+        $result = array_map(function($item) {
+            unset($item['urutan']);
+            return $item;
+        }, $flattenedArray);
+
+        return Excel::download(new PackingExport($result), $filename.'.csv');
     }
 
     public static function exportPEB($request, $id)
@@ -2426,6 +2431,9 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                         $volume += round(($vol->refMstBox->length * $vol->refMstBox->width * $vol->refMstBox->height) / 1000000000, 3);
                         $qrcode[] = $vol->qrcode;
                     }
+
+                    if($fixedQuantity->refFixedActualContainer->datasource == "YPMJ") $jml_kemasan = max($jml_order[$fixedQuantity->order_no]) - 1;
+                    else $jml_kemasan = null;
     
                     $res['no_packaging'] = $fixedQuantity->refFixedActualContainer->no_packaging ?? null;
                     $res['tanggal'] = date('Ymd', strtotime($fixedQuantity->refFixedActualContainer->created_at)) ?? null;
@@ -2436,7 +2444,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res['kode_satuan'] = 'PCE';
                     $res['jumlah_satuan'] = $item->sum_qty;
                     $res['kode_kemasan'] = 'CT';
-                    $res['jumlah_kemasan'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? $jml_order[$fixedQuantity->order_no][$key]-1 : count(explode(',', $item->id_regular_delivery_plan_box));
+                    $res['jumlah_kemasan'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? ($key == $jml_kemasan ? 1 : 0) : count(explode(',', $item->id_regular_delivery_plan_box));
                     $res['netto'] = number_format($netto, 2);
                     $res['volume'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->measurement : number_format($volume, 3);
                     $res['urutan'] = $item->refRegularDeliveryPlan->urutan;
@@ -2485,6 +2493,11 @@ class QueryRegularFixedQuantityConfirmation extends Model {
         }
         $filename = 'peb-'.Carbon::now()->format('Ymd');
 
+        $result = array_map(function($item) {
+            unset($item['urutan']);
+            return $item;
+        }, $result);
+        
         return Excel::download(new PebExport($result), $filename.'.xlsx');
     }
 
