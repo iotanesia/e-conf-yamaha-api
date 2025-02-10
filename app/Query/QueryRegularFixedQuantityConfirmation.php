@@ -2469,7 +2469,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             foreach ($result as &$res) {
                 if ($res['kode_barang'] == $item['kode_barang']) {
                     $res['jumlah_satuan'] += $item['jumlah_satuan'];
-                    $res['jumlah_kemasan'] += $item['jumlah_kemasan'];
+                    // $res['jumlah_kemasan'] += $item['jumlah_kemasan'];
                     $res['netto'] += $item['netto'];
                     $res['volume'] += $item['volume'];
                     $found = true;
