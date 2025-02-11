@@ -88,11 +88,11 @@
                 <td style="vertical-align: top;"><u>Consignee:</u> 
                     <br> {{ $data->refMstConsignee->name ?? $data->consignee }} 
                     <br> {{ $data->refMstConsignee->address1 ?? null }} 
-                    {{ $data->refMstConsignee->address2 ?? null }} 
+                    {!! nl2br(e($data->refMstConsignee->address2 ?? null)) !!}
                     <br> {{ $data->refMstConsignee->tel ?? null }} 
                     <br> {{ $data->refMstConsignee->fax ?? null }} 
                 </td>
-                <td style="vertical-align: top;"><u>Notify Part:</u> <br> {!! nl2br(e($data->notify_part)) !!}</td>
+                <td style="vertical-align: top;"><u>Notify Party:</u> <br> {!! nl2br(e($data->notify_part)) !!}</td>
             </tr>
         </table>
         <table class="no-bt no-bb">
