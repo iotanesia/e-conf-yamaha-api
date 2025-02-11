@@ -1105,8 +1105,8 @@ class QueryRegularFixedShippingInstruction extends Model {
     }
 
     public static function printPackagingShipping($request,$id,$pathToFile,$filename)
-    {
-        try {
+    {set_time_limit(300);
+        // try {
             $cek = RegularFixedActualContainerCreation::where('id_fixed_shipping_instruction', $id)->get();
             foreach ($cek  as $value) {
                 $data = RegularFixedActualContainer::where('id', $value->id_fixed_actual_container)->get();
@@ -1299,6 +1299,8 @@ class QueryRegularFixedShippingInstruction extends Model {
             
             $box = array_merge((array_merge(...$res_box_set) ?? []), (array_merge(...$res_box_single) ?? []));
             $boxArray = [];
+            $arrYpmj = [];
+            $totalGrossYpmj = [];
             foreach ($box as $box_item) {
                 $order_no = $box_item['order_no'];
                 $cust_item_no = $box_item['cust_item_no'];
@@ -1314,6 +1316,21 @@ class QueryRegularFixedShippingInstruction extends Model {
                 }
                 if (!$exists) {
                     $boxArray[$order_no.$cust_item_no][] = $box_item;
+                }
+                $arrYpmj[$box_item['qrcode'].$box_item['item_no_series'][0]] = [
+                    'item_no_series' => $box_item['item_no_series'][0],
+                    'total_gross_weight' => $box_item['total_gross_weight'][0],
+                    'qty_pcs_box' => $box_item['qty_pcs_box'][0],
+                    'unit_weight_kg' => $box_item['unit_weight_kg'][0],
+                ];
+
+                $qrcode = $box_item['qrcode'];
+                if (isset($totalGrossYpmj[$qrcode])) {
+                    $totalGrossYpmj[$qrcode]['total_gross_weight'] += $box_item['total_gross_weight'][0];
+                } else {
+                    $totalGrossYpmj[$qrcode] = [
+                        'total_gross_weight' => $box_item['total_gross_weight'][0],
+                    ];
                 }
             }
             
@@ -1385,6 +1402,8 @@ class QueryRegularFixedShippingInstruction extends Model {
                 'box' => $boxArray,
                 'package_number' => $package_number,
                 'boxYPMJ' => $cek[0]->datasource == "YPMJ" ? QueryRegularFixedQuantityConfirmation::groupByQRCode($box) : [],
+                'arrYPMJ' => $data[0]->datasource == "YPMJ" ? $arrYpmj : [],
+                'totalGrossYPMJ' => $data[0]->datasource == "YPMJ" ? $totalGrossYpmj : [],
                 'gross_weight_per_part' => $gross_weight_per_part,
                 'order_data' => $order_data,
                 'count_qty' => $count_qty,
@@ -1400,9 +1419,9 @@ class QueryRegularFixedShippingInstruction extends Model {
             ->setPaper('A4','potrait')
             ->download($filename);
 
-        } catch (\Throwable $th) {
-            return Helper::setErrorResponse($th);
-        }
+        // } catch (\Throwable $th) {
+        //     return Helper::setErrorResponse($th);
+        // }
     }
 
     public static function packingCreationDeliveryNoteHead($request,$id)
