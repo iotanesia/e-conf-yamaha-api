@@ -2407,8 +2407,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                                 'kode_kemasan' => 'CT',
                                 'jumlah_kemasan' => $i == 0 ? count(explode(',', $item->id_regular_delivery_plan_box)) : null,
                                 'netto' =>  number_format($nw_gw[0]['unit_weight_kg'][$i], 2) ?? null,
-                                'volume' => $i == 0 ? number_format($volume, 3) : null,
-                                'urutan' => null,
+                                'volume' => $i == 0 ? number_format($volume, 3) : null
                         ];
                     }
     
@@ -2447,8 +2446,7 @@ class QueryRegularFixedQuantityConfirmation extends Model {
                     $res['jumlah_kemasan'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? ($key == $jml_kemasan ? "1" : "0") : count(explode(',', $item->id_regular_delivery_plan_box));
                     $res['netto'] = number_format($netto, 2);
                     $res['volume'] = $fixedQuantity->refFixedActualContainer->datasource == "YPMJ" ? $item->refRegularDeliveryPlan->refOuterType->measurement : number_format($volume, 3);
-                    $res['urutan'] = $item->refRegularDeliveryPlan->urutan;
-    
+                    
                     return [$res];
                 }
             }
@@ -2460,9 +2458,6 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             return $a['kode_barang'] <=> $b['kode_barang'];
         });
         
-        usort($flattenedArray, function ($a, $b) {
-            return $a['urutan'] <=> $b['urutan'];
-        });
         $result = [];
         foreach ($flattenedArray as $item) {
             $found = false;
@@ -2492,11 +2487,6 @@ class QueryRegularFixedQuantityConfirmation extends Model {
             }
         }
         $filename = 'peb-'.Carbon::now()->format('Ymd');
-
-        $result = array_map(function($item) {
-            unset($item['urutan']);
-            return $item;
-        }, $result);
         
         return Excel::download(new PebExport($result), $filename.'.xlsx');
     }
